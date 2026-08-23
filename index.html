@@ -1,28 +1,57 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lower Secondary Science — lesson decks</title>
+<title>Lesson decks</title>
 <style>
  *{box-sizing:border-box;margin:0;padding:0}
  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#FDFBF7;color:#33404F;
    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
  .card{max-width:640px;width:100%}
  h1{font-size:1.9rem;color:#C0392B;margin-bottom:4px}
- p.sub{color:#6b7686;margin-bottom:26px}
+ p.sub{color:#6b7686;margin-bottom:20px}
+
+ /* subject tabs */
+ .tabs{display:flex;gap:8px;border-bottom:2px solid #E4DED4;margin-bottom:20px}
+ .tab{font:inherit;font-weight:700;font-size:.95rem;color:#6b7686;background:none;border:0;
+   border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 14px;cursor:pointer;
+   border-radius:8px 8px 0 0;transition:color .15s,border-color .15s}
+ .tab:hover{color:#33404F}
+ .tab:focus-visible{outline:3px solid #33404F;outline-offset:2px}
+ .tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+ .panel[hidden]{display:none}
+
+ /* per-subject accent */
+ #panel-science{--accent:#C0392B}
+ #panel-physics{--accent:#1F6F8B}
+ .tabs{--accent:#C0392B}
+ .tabs:has(#tab-physics[aria-selected="true"]){--accent:#1F6F8B}
+
  a.deck{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;
    background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;margin-bottom:12px;
    transition:border-color .15s,transform .15s}
- a.deck:hover{border-color:#C0392B;transform:translateY(-2px)}
- .num{background:#C0392B;color:#fff;font-weight:800;border-radius:10px;
+ a.deck:hover{border-color:var(--accent);transform:translateY(-2px)}
+ a.deck:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+ .num{background:var(--accent);color:#fff;font-weight:800;border-radius:10px;
    width:46px;height:46px;display:grid;place-items:center;font-size:1rem;flex:0 0 auto}
+ .num.sm{font-size:.8rem}
  .t{font-weight:700}
  .d{font-size:.86rem;color:#6b7686}
  h2.ch{font-size:1.02rem;color:#33404F;margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid #E4DED4}
+ .panel > h2.ch:first-child{margin-top:0}
  .note{margin-top:22px;font-size:.84rem;color:#8a94a3;line-height:1.5}
+ @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body><div class="card">
-  <h1>Lower Secondary Science</h1>
-  <p class="sub">Click a lesson to open it full screen</p>
+  <h1>Lesson decks</h1>
+  <p class="sub">Choose a subject, then click a lesson to open it full screen</p>
+
+  <div class="tabs" role="tablist" aria-label="Subject">
+    <button class="tab" id="tab-science" role="tab" aria-controls="panel-science" aria-selected="true">Lower Secondary Science</button>
+    <button class="tab" id="tab-physics" role="tab" aria-controls="panel-physics" aria-selected="false" tabindex="-1">Science (Physics)</button>
+  </div>
+
+  <!-- ===== Lower Secondary Science ===== -->
+  <div class="panel" id="panel-science" role="tabpanel" aria-labelledby="tab-science" tabindex="0">
 
   <h2 class="ch">Chapter 7 — The Particulate Nature of Matter</h2>
   <a class="deck" href="Ch7.1.html" target="_blank" rel="noopener">
@@ -116,8 +145,75 @@
     <span><span class="t">How do medical advancements impact us?</span><br>
     <span class="d">Slides, interactives, and questions to submit</span></span>
   </a>
+  </div><!-- /panel-science -->
+
+  <!-- ===== Science (Physics) ===== -->
+  <div class="panel" id="panel-physics" role="tabpanel" aria-labelledby="tab-physics" tabindex="0" hidden>
+
+  <h2 class="ch">Chapter 9 — Waves</h2>
+  <a class="deck" href="Phy9.1.html" target="_blank" rel="noopener">
+    <span class="num">9.1</span>
+    <span><span class="t">How can we describe wave motion?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+  <a class="deck" href="Phy9.2a.html" target="_blank" rel="noopener">
+    <span class="num sm">9.2a</span>
+    <span><span class="t">How can we describe the characteristics of waves?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+  <a class="deck" href="Phy9.2b.html" target="_blank" rel="noopener">
+    <span class="num sm">9.2b</span>
+    <span><span class="t">How are speed, frequency and period related?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+  <a class="deck" href="Phy9.2c.html" target="_blank" rel="noopener">
+    <span class="num sm">9.2c</span>
+    <span><span class="t">What happens to a wave when the medium changes?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+  </div><!-- /panel-physics -->
 
   <!-- add a lesson: copy one block above, change the href, number and title -->
+  <!-- add a subject: add a .tab button and a matching .panel, then list it in SUBJECTS below -->
   <p class="note">Opens in a new tab so the slides run full size.
      Put your name and class in the bar at the top before submitting an answer.</p>
-</div></body></html>
+</div>
+
+<script>
+(function(){
+  var SUBJECTS = ["science","physics"];
+  var tabs   = SUBJECTS.map(function(s){ return document.getElementById("tab-"+s); });
+  var panels = SUBJECTS.map(function(s){ return document.getElementById("panel-"+s); });
+
+  function show(name, focusTab){
+    var i = SUBJECTS.indexOf(name);
+    if (i < 0) i = 0;
+    tabs.forEach(function(t,n){
+      var on = (n === i);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      panels[n].hidden = !on;
+    });
+    if (focusTab) tabs[i].focus();
+  }
+
+  tabs.forEach(function(t,n){
+    t.addEventListener("click", function(){
+      history.replaceState(null, "", "#" + SUBJECTS[n]);
+      show(SUBJECTS[n]);
+    });
+    t.addEventListener("keydown", function(e){
+      var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var next = (n + d + SUBJECTS.length) % SUBJECTS.length;
+      history.replaceState(null, "", "#" + SUBJECTS[next]);
+      show(SUBJECTS[next], true);
+    });
+  });
+
+  window.addEventListener("hashchange", function(){ show(location.hash.slice(1)); });
+  show(location.hash.slice(1));
+})();
+</script>
+</body></html>
