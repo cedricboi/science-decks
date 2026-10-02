@@ -23,8 +23,10 @@
  /* per-subject accent */
  #panel-science{--accent:#C0392B}
  #panel-physics{--accent:#1F6F8B}
+ #panel-g3physics{--accent:#6B4C9A}
  .tabs{--accent:#C0392B}
  .tabs:has(#tab-physics[aria-selected="true"]){--accent:#1F6F8B}
+ .tabs:has(#tab-g3physics[aria-selected="true"]){--accent:#6B4C9A}
 
  a.deck{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;
    background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;margin-bottom:12px;
@@ -47,7 +49,8 @@
 
   <div class="tabs" role="tablist" aria-label="Subject">
     <button class="tab" id="tab-science" role="tab" aria-controls="panel-science" aria-selected="true">Lower Secondary Science</button>
-    <button class="tab" id="tab-physics" role="tab" aria-controls="panel-physics" aria-selected="false" tabindex="-1">G3 Physics</button>
+    <button class="tab" id="tab-g3physics" role="tab" aria-controls="panel-g3physics" aria-selected="false" tabindex="-1">G3 Physics</button>
+    <button class="tab" id="tab-physics" role="tab" aria-controls="panel-physics" aria-selected="false" tabindex="-1">G2 Combined</button>
   </div>
 
   <!-- ===== Lower Secondary Science ===== -->
@@ -159,22 +162,8 @@
   </a>
   </div><!-- /panel-science -->
 
-  <!-- ===== G3 Physics ===== -->
+  <!-- ===== G2 Combined ===== -->
   <div class="panel" id="panel-physics" role="tabpanel" aria-labelledby="tab-physics" tabindex="0" hidden>
-
-  <h2 class="ch">Chapter 1 — Physical Quantities, Units and Measurements</h2>
-  <a class="deck" href="Phy1.html" target="_blank" rel="noopener">
-    <span class="num">1</span>
-    <span><span class="t">How do we measure physical quantities accurately?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Chapter 2 — Kinematics</h2>
-  <a class="deck" href="Phy2.html" target="_blank" rel="noopener">
-    <span class="num">2</span>
-    <span><span class="t">How do we describe the motion of objects?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
 
   <h2 class="ch">Chapter 9 — Waves</h2>
   <a class="deck" href="Phy9.1.html" target="_blank" rel="noopener">
@@ -206,6 +195,24 @@
   </a>
   </div><!-- /panel-physics -->
 
+  <!-- ===== G3 Physics ===== -->
+  <div class="panel" id="panel-g3physics" role="tabpanel" aria-labelledby="tab-g3physics" tabindex="0" hidden>
+
+  <h2 class="ch">Chapter 1 — Physical Quantities, Units and Measurements</h2>
+  <a class="deck" href="Phy1.html" target="_blank" rel="noopener">
+    <span class="num">1</span>
+    <span><span class="t">How do we measure physical quantities accurately?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+
+  <h2 class="ch">Chapter 2 — Kinematics</h2>
+  <a class="deck" href="Phy2.html" target="_blank" rel="noopener">
+    <span class="num">2</span>
+    <span><span class="t">How do we describe the motion of objects?</span><br>
+    <span class="d">Slides, interactives, and questions to submit</span></span>
+  </a>
+  </div><!-- /panel-g3physics -->
+
   <!-- add a lesson: copy one block above, change the href, number and title -->
   <!-- add a subject: add a .tab button and a matching .panel, then list it in SUBJECTS below -->
   <p class="note">Opens in a new tab so the slides run full size.
@@ -214,7 +221,7 @@
 
 <script>
 (function(){
-  var SUBJECTS = ["science","physics"];
+  var SUBJECTS = ["science","g3physics","physics"];
   var tabs   = SUBJECTS.map(function(s){ return document.getElementById("tab-"+s); });
   var panels = SUBJECTS.map(function(s){ return document.getElementById("panel-"+s); });
 
@@ -232,7 +239,7 @@
 
   tabs.forEach(function(t,n){
     t.addEventListener("click", function(){
-      history.replaceState(null, "", "#" + SUBJECTS[n]);
+      try { history.replaceState(null, "", "#" + SUBJECTS[n]); } catch (e) {}
       show(SUBJECTS[n]);
     });
     t.addEventListener("keydown", function(e){
