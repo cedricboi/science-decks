@@ -4183,8 +4183,19 @@ window.KIT=KIT;
     if (handedQ && (isCheckTask(handedQ) || !byId[handedQ])) { var q = handedQ; handedQ = ''; setTimeout(function () { goToTask(q); }, 300); }
     // The first check is spread over four seconds, for a class that opens the deck together.
     askTimer = setTimeout(checkAsk, Math.floor(Math.random() * 4000));
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) { checkAsk(); keepAwake(); } });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { checkAsk(); keepAwake(); } else sendAway(); });
+    window.addEventListener('pagehide', sendAway);
     keepAwake();
+  }
+  /* Off the slides: the moment the page is hidden, a short note tells Live Board, so the teacher's phone shows
+     it within seconds. Coming back is the next check, which clears it. Sent with sendBeacon, which still goes
+     out while the page is being hidden or closed. */
+  function sendAway() {
+    var me = readJ(ID_KEY);
+    if (presenting || !me || !me.cls) return;
+    var body = JSON.stringify({ api: 'away', topicId: cfg.topicId, who: { cls: me.cls, name: me.name }, away: true, dev: DEV });
+    try { if (navigator.sendBeacon && navigator.sendBeacon(cfg.endpoint, new Blob([body], { type: 'text/plain;charset=utf-8' }))) return; } catch (e) { /* use fetch */ }
+    try { original.call(window, cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body, keepalive: true }).catch(function () {}); } catch (e) { /* nothing more to do */ }
   }
 
   /* ---------------- lesson control ---------------- */
