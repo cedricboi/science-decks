@@ -3952,7 +3952,11 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
         the checklist on the last slide is numbered like the slides and shows work done on any
         iPad, the register number confirms the name, and the teacher can reset a name from
         Live Board. How often the iPad checks is set by Live Board (more often while the
-        teacher is asking or leading). */
+        teacher is asking or leading).
+     10. Revise: My mistakes (the questions answered wrong the first time, from any iPad, each with
+        its slide, ticked off once put right) and Practise (the chapter check, or the deck's questions,
+        in a new order with new numbers; no points, nothing sent). On the last slide, by the name, and
+        from My Science (#revise). Closed while the class's answers are held. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3961,6 +3965,13 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
   if (!cfg.endpoint) return;
 
   var VERSION = 7;
+  /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
+     without it their answers would never send. */
+  try {
+    if (window.AbortSignal && !AbortSignal.timeout && window.AbortController) {
+      AbortSignal.timeout = function (ms) { var c = new AbortController(); setTimeout(function () { c.abort(); }, ms); return c.signal; };
+    }
+  } catch (e) { /* nothing to add */ }
   var ID_KEY = 'liveboard.identity', ROSTER_KEY = 'liveboard.roster', DEV_KEY = 'liveboard.device';
   var PRES_KEY = 'liveboard.presenter', PRES_CLS = 'liveboard.presenterClass';
   var DWELL_KEY = 'liveboard.dwell:' + (cfg.topicId || '');
@@ -4046,6 +4057,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
           var info = {};
           b.events.forEach(function (e) {
             var t = byId[e.task]; if (t && !info[t.id]) info[t.id] = describe(t);
+            noteFirst(e);
             if (asking && e.task === asking.taskId && e.action === 'submit') answeredAsk();
           });
           b.liveBoard = { deckTitle: title, questions: info, deckUrl: deckUrl, chapterCheck: checkIds, slideCount: slideCount(),
@@ -4154,7 +4166,64 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
     'body.lb-presenting #fx-rail{display:none!important}' +
     '.lbrev{display:block;margin-top:8px;font:900 14px Arial,sans-serif!important;padding:8px 14px!important;border:2px solid #101014!important;border-radius:0!important;background:#f5c400!important;color:#101014!important;cursor:pointer;box-shadow:none!important;transform:none!important;text-transform:none!important}' +
     '.lbrev-box{margin-top:8px;padding:12px;border-left:5px solid #12804f;background:#fff;font:16px/1.45 Arial,sans-serif;white-space:pre-wrap}' +
-    '.lbx-who button{font:700 13px Arial,sans-serif!important;padding:6px 12px!important;min-height:0!important;border:2px solid #fff!important;background:transparent!important;color:#fff!important;box-shadow:none!important;transform:none!important;cursor:pointer;text-transform:none!important}';
+    '.lbx-who button{font:700 13px Arial,sans-serif!important;padding:6px 12px!important;min-height:0!important;border:2px solid #fff!important;background:transparent!important;color:#fff!important;box-shadow:none!important;transform:none!important;cursor:pointer;text-transform:none!important}' +
+    '.lbx-panel.lbv-wide{width:min(680px,100%);padding:20px 22px 22px}' +
+    '.lbv-head,.lbp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}' +
+    '.lbx .lbv-head h2{margin:0}' +
+    '.lbx button.lbv-x{font:900 22px/1 Arial,sans-serif!important;padding:4px 12px!important;min-height:38px;flex:none}' +
+    '.lbx .lbv-sub{margin:0 0 4px;color:#3a3740;font-size:15px}' +
+    '.lbv-sec{margin-top:18px}' +
+    '.lbx .lbv-sec h3{margin:0 0 6px;font:900 13px Arial,sans-serif;letter-spacing:.7px;text-transform:uppercase;color:#b70020;background:none;padding:0;box-shadow:none;transform:none;border:0}' +
+    '.lbx .lbv-sec p{margin:0 0 10px}' +
+    '.lbx .lbv-note{background:#fff7d6;border-left:4px solid #f5c400;padding:8px 10px;font-size:14px}' +
+    '.lbx .lbv-wait{color:#5b5862}' +
+    '.lbv-row{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:2px solid #ebe7de}' +
+    '.lbv-row .lbv-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}' +
+    '.lbv-where{font:700 12px Arial,sans-serif;color:#5b5862;letter-spacing:.3px}' +
+    '.lbv-q{font:700 16px/1.35 Arial,sans-serif;color:#101014;overflow-wrap:anywhere}' +
+    '.lbv-row.done .lbv-q{font-weight:400;color:#5b5862}' +
+    '.lbx .lbv-row button{padding:8px 12px!important;min-height:40px;font-size:14px!important;flex:none}' +
+    '.lbv-done{margin:4px 0 8px}' +
+    '.lbv-done summary{cursor:pointer;font:700 14px Arial,sans-serif;color:#12804f;padding:6px 0}' +
+    '.lbv-acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0 4px}' +
+    '.lbx .lbv-first p{margin:0 0 8px}' +
+    '.lbx button.lbv-big{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:3px;width:100%;text-align:left;background:#101014!important;color:#fff!important;box-shadow:5px 5px 0 #e9082b!important}' +
+    '.lbx button.lbv-big b{font:900 18px Arial,sans-serif}' +
+    '.lbx button.lbv-big span{font:400 14px/1.35 Arial,sans-serif;opacity:.92}' +
+    '.lbx button.lbv-big:hover:not(:disabled){background:#e9082b!important}' +
+    '.lbx button.lbv-link{border:0!important;background:none!important;padding:4px 0!important;min-height:0;text-decoration:underline;font-size:14px!important}' +
+    '.lbx button.lbv-link:hover:not(:disabled){background:none!important;color:#b70020!important}' +
+    '.lbx .lbv-big-note{font:700 18px/1.4 Arial,sans-serif;margin:14px 0 4px;color:#101014}' +
+    '.lbv-card{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:18px 0 8px;padding:16px 18px;background:#fff;border:3px solid #101014;box-shadow:6px 6px 0 #12804f;font:16px/1.45 Arial,Helvetica,sans-serif;color:#101014;text-align:left;max-width:100%;box-sizing:border-box}' +
+    '.lbv-card .lbv-tx{flex:1;min-width:200px;display:flex;flex-direction:column;gap:3px}' +
+    '.lbv-card .lbv-h{font:900 20px/1.2 Arial,sans-serif;color:#101014}' +
+    '.lbv-card button{font:900 16px Arial,sans-serif!important;padding:12px 24px!important;border:2px solid #101014!important;border-radius:0!important;background:#12804f!important;color:#fff!important;cursor:pointer;min-height:46px;box-shadow:4px 4px 0 #101014!important;transform:none!important;text-transform:none!important;width:auto!important}' +
+    '.lbv-card button:disabled{opacity:.45;cursor:default}' +
+    '.lbp-tag{background:#12804f;color:#fff;font:900 12px Arial,sans-serif;letter-spacing:.6px;text-transform:uppercase;padding:4px 8px}' +
+    '.lbp-count{font:900 15px Arial,sans-serif;margin-left:auto;font-variant-numeric:tabular-nums}' +
+    '.lbp-where{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font:700 13px Arial,sans-serif;color:#5b5862;margin:10px 0 0}' +
+    '.lbp-q{font:900 21px/1.35 Arial,sans-serif;margin:12px 0 14px;color:#101014;overflow-wrap:anywhere}' +
+    '.lbp-new{display:inline-block;margin:-6px 0 12px;font:700 12px Arial,sans-serif;color:#0b5e3a;background:#ddf5ea;padding:3px 8px}' +
+    '.lbp-opts{display:grid;gap:8px;margin-bottom:12px}' +
+    '.lbx button.lbp-opt{text-align:left;font:700 17px/1.35 Arial,sans-serif!important;padding:12px 14px!important;min-height:50px}' +
+    '.lbx button.lbp-opt:disabled{opacity:1}' +
+    '.lbx button.lbp-opt:hover:not(:disabled){background:#fff!important;color:#101014!important;box-shadow:inset 0 0 0 2px #101014!important}' +
+    '.lbx button.lbp-opt.ok{background:#12804f!important;color:#fff!important;border-color:#12804f!important}' +
+    '.lbx button.lbp-opt.no{background:#fde8eb!important;color:#8a0018!important;border-color:#b70020!important;text-decoration:line-through}' +
+    '.lbp-entry{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}' +
+    '.lbx .lbp-entry input{flex:1;min-width:140px;width:auto;margin:0}' +
+    '.lbp-entry b{font:900 18px Arial,sans-serif}' +
+    '.lbx .lbp-entry button{flex:none}' +
+    '.lbx textarea.lbp-text{display:block;width:100%;min-height:110px;font:17px/1.4 Arial,sans-serif;padding:11px 12px;border:2px solid #101014;border-radius:0;margin:0 0 12px;box-sizing:border-box;resize:vertical;color:#101014;background:#fff}' +
+    '.lbp-fb{font:16px/1.45 Arial,sans-serif;margin:0 0 12px;padding:8px 12px;border-left:5px solid #101014;background:#f5f3ee;color:#101014}' +
+    '.lbp-fb:empty{display:none}' +
+    '.lbp-fb.ok{border-left-color:#12804f;background:#effaf4}' +
+    '.lbp-fb.no{border-left-color:#b70020;background:#fdf0f1}' +
+    '.lbx button.lbp-next{width:100%}' +
+    '.lbp-score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:10px 0 14px}' +
+    '.lbp-score b{font:900 46px/1 "Arial Black",Arial,sans-serif;font-variant-numeric:tabular-nums}' +
+    '.lbx .lbp-endrow{margin-top:16px}' +
+    '.lbp-back{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147482900;font:900 16px Arial,sans-serif;padding:12px 20px;border:2px solid #101014;background:#12804f;color:#fff;box-shadow:4px 4px 0 #101014;cursor:pointer}';
   document.head.appendChild(css);
 
   var nameBox = document.getElementById('student-name');
@@ -4210,6 +4279,12 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
       ch.type = 'button';
       ch.addEventListener('click', askPin);
       whoLine.appendChild(ch);
+      var rv = el('button', 'lbv-open', 'Revise');
+      rv.type = 'button';
+      rv.hidden = inLesson() || !stateKnown() || heldNow();
+      rv.addEventListener('click', function (e) { if (e) e.preventDefault(); openRevise(); });
+      whoLine.appendChild(rv);
+      if (reviseWanted) { reviseWanted = false; setTimeout(openRevise, 700); }
     } else {
       whoLine.appendChild(document.createTextNode('Your answers are not being saved yet.'));
       var go = el('button', '', 'Choose your name');
@@ -4383,6 +4458,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
      the teacher is asking (&q=task id). Both are taken out of the address bar. */
   var handedId = null, handedQ = '';
   var presentMode = /(?:^#|&)present(?:&|$)/.test(location.hash);
+  var reviseWanted = !presentMode && /(?:^#|&)revise(?:&|$)/.test(location.hash);
   var presentCls = (location.hash.match(/(?:^#|&)cls=([^&]+)/) || [])[1] || '';
   try { presentCls = decodeURIComponent(presentCls).toUpperCase(); } catch (e) { presentCls = ''; }
   (function () {
@@ -4392,7 +4468,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
       var parts = []; try { parts = decodeURIComponent(m[1]).split('|'); } catch (e) { parts = []; }
       if (parts.length === 2 && parts[0] && parts[1]) handedId = { cls: parts[0], name: parts[1] };
     }
-    if (m || q) { try { history.replaceState(null, '', location.pathname + location.search + (presentMode ? '#present' : '')); } catch (e) {} }
+    if (m || q || reviseWanted) { try { history.replaceState(null, '', location.pathname + location.search + (presentMode ? '#present' : '')); } catch (e) {} }
   })();
   function fromLink() { var h = handedId; handedId = null; return h; }
 
@@ -4587,7 +4663,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
     });
     document.body.appendChild(askBar);
   }
-  var ctl = null, fails = 0, followedAt = 0, readSecs = 15;
+  var ctl = null, ctlKnown = false, fails = 0, followedAt = 0, readSecs = 15;
   function pendingCount() { try { return window.ScienceSync && typeof window.ScienceSync.pending === 'function' ? window.ScienceSync.pending().length : 0; } catch (e) { return 0; } }
   function checkAsk() {
     clearTimeout(askTimer);
@@ -4602,6 +4678,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
       if (r && r.readSecs) readSecs = r.readSecs;
       if (r && r.reset) { resetHere(); return; }
       ctl = r && r.ctl ? r.ctl : null;
+      ctlKnown = true;
       applyLook(); enforce();
       if (!mineAsked && me && me.cls) askMine(me);
       var a = r && r.ok && r.ask && byId[r.ask.taskId] ? r.ask : null;
@@ -4729,6 +4806,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
       });
     }
     document.body.classList.toggle('lb-vid', vid);
+    syncReviseButton();
   }
 
   /* ---------------- time on each slide ---------------- */
@@ -4736,6 +4814,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
   function readIds() { return Object.keys(dwell).filter(function (k) { return dwell[k] >= readSecs; }); }
   function onSlideChange(id) {
     if (presenting) { sendLead(); return; }
+    if (reviseCard && reviseCard.getAttribute('data-host') === id) loadReview(false).then(null, function () {});
     // Send the record now and then as the student moves, so the slides they opened are kept.
     var me = readJ(ID_KEY), S = window.ScienceSync;
     if (me && me.cls && S && typeof S.sync === 'function' && Date.now() - lastSync > 120000) {
@@ -4992,6 +5071,487 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
     });
   }
 
+  /* ---------------- revise: My mistakes and Practise ---------------- */
+  /* After the lesson, students revise in the deck itself (the Revise card on the last slide, the Revise button
+     by their name, or the deck opened from My Science with #revise).
+     My mistakes: the questions they got wrong on the first try, from any iPad (kept by Live Board) and from
+     this iPad's own record, each with its slide. A later right answer, in the deck or in Practise, puts it right.
+     Practise: the chapter check again (a deck without one: its questions), in a new order, the choices
+     shuffled, and new numbers in calculations that have a recipe in #practice-variants. Nothing is sent to
+     the teacher and there are no points. The chapter check can be practised only after the student's own
+     first try, so the first try still counts. While the class's answers are held in a lesson, Revise waits. */
+  var FIRST_KEY = 'liveboard.first:' + (cfg.topicId || ''), PFIX_KEY = 'liveboard.pfix:' + (cfg.topicId || '');
+  var variants = {};
+  try { var vEl = document.getElementById('practice-variants'); variants = vEl ? JSON.parse(vEl.textContent) || {} : {}; } catch (e) { variants = {}; }
+  function whoKey() { var me = readJ(ID_KEY); return me && me.cls ? me.cls + '|' + me.name : ''; }
+  function firstRec() {
+    var r = readJ(FIRST_KEY), k = whoKey();
+    if (!r || r.who !== k || !r.seen) r = { who: k, seen: {}, w: {}, f: {} };
+    return r;
+  }
+  /* Every answer the deck sends passes here: the first answer to a question decides whether it is a mistake. */
+  function noteFirst(e) {
+    var t = e && byId[e.task];
+    if (!t || t.kind === 'written' || e.action !== 'submit' || e.valid === false || presenting) return;
+    var r = firstRec();
+    if (!r.who) return;
+    var c = e.correct === true ? true : e.correct === false ? false : null;
+    if (!r.seen[t.id]) { r.seen[t.id] = 1; if (c === false) r.w[t.id] = 1; }
+    else if (c === true && r.w[t.id]) r.f[t.id] = 1;
+    writeJ(FIRST_KEY, r);
+  }
+  function pfixList() { var x = readJ(PFIX_KEY); return x && x.who === whoKey() && Array.isArray(x.ids) ? x.ids : []; }
+  function addPfix(id) { var ids = pfixList(); if (ids.indexOf(id) < 0) { ids.push(id); writeJ(PFIX_KEY, { who: whoKey(), ids: ids }); } }
+  var review = null, reviewAt = 0, reviewBusy = null, reviewFailed = false, retiring = false;
+  /* Live Board's list for this student (and the questions put right in Practise, sent with it). */
+  function loadReview(force) {
+    var me = readJ(ID_KEY);
+    if (!me || !me.cls || presenting) return Promise.resolve(null);
+    if (!force && review && Date.now() - reviewAt < 30000) return Promise.resolve(review);
+    if (reviewBusy) return reviewBusy;
+    var send = pfixList().slice();
+    reviewBusy = api({ api: 'review', topicId: cfg.topicId, who: { cls: me.cls, name: me.name }, fixed: send }).then(function (r) {
+      reviewBusy = null;
+      if (!r || !r.ok) { var e1 = new Error(r && r.error || 'no list'); e1.kind = 'old'; throw e1; }
+      review = r; reviewAt = Date.now(); reviewFailed = false;
+      if (send.length) {
+        var left = pfixList().filter(function (id) { return send.indexOf(id) < 0; });
+        writeJ(PFIX_KEY, left.length ? { who: whoKey(), ids: left } : null);
+      }
+      // Mistakes on questions this deck no longer has (or no longer marks) are retired, so My Science
+      // does not count them for ever.
+      var gone = (r.wrong || []).filter(function (id) { return (!byId[id] || byId[id].kind === 'written') && (r.fixed || []).indexOf(id) < 0; });
+      if (gone.length && !retiring) { retiring = true; gone.forEach(addPfix); setTimeout(function () { loadReview(true).then(null, function () {}); }, 50); }
+      drawReviseCard();
+      syncReviseButton();
+      return r;
+    }, function (err) { reviewBusy = null; reviewFailed = true; drawReviseCard(); syncReviseButton(); throw err; });
+    return reviewBusy;
+  }
+  function mistakes() {
+    var r = firstRec(), w = {}, f = {}, seen = {};
+    ((review && review.wrong) || []).forEach(function (id) { w[id] = 1; });
+    ((review && review.answered) || []).forEach(function (id) { seen[id] = 1; });
+    // This iPad's own first tries count only for questions Live Board has not had an answer to (yet):
+    // a first try on another iPad comes first.
+    Object.keys(r.w).forEach(function (id) { if (!seen[id]) w[id] = 1; });
+    ((review && review.fixed) || []).concat(Object.keys(r.f), pfixList()).forEach(function (id) { f[id] = 1; });
+    var ids = Object.keys(w).filter(function (id) { return byId[id] && byId[id].kind !== 'written'; })
+      .sort(function (a, b) { return order[a] - order[b]; });
+    return { todo: ids.filter(function (id) { return !f[id]; }), done: ids.filter(function (id) { return f[id]; }) };
+  }
+  /* Whether the class's answers are held is known once the first live check or the list has come back
+     (or failed, offline, when the deck shows its own feedback anyway). Until then Revise shows nothing that
+     could give an answer away. */
+  function stateKnown() { var me = readJ(ID_KEY); return !(me && me.cls) || ctlKnown || !!review || reviewFailed; }
+  function heldNow() {
+    if (ctlKnown && ctl) return !!(ctl.hold && !ctl.relAll);
+    return !!(review && review.held);
+  }
+  function inLesson() { return !!(ctl && ((ctl.hold && !ctl.relAll) || ctl.follow || ctl.pause || ctl.lead)); }
+  function checkTried() {
+    if (!checkIds.length) return true;
+    if (review && review.checkTries > 0) return true;
+    var r = firstRec();
+    return checkIds.some(function (id) { return r.seen[id]; });
+  }
+  function slideInfo(id) {
+    var t = byId[id], s = slideOf(t), sl = s.n ? slideList()[s.n - 1] : null, ttl = s.title;
+    if (!ttl && sl) { var h = sl.querySelector('h1, h2'); ttl = h ? h.textContent.replace(/\s+/g, ' ').trim() : ''; }
+    return { n: s.n, title: ttl };
+  }
+  function isReviseOverlay() { return !!(overlay && overlay.getAttribute('data-lbv')); }
+
+  /* The card on the last slide (the checklist slide in decks that have one). */
+  var reviseCard = null;
+  function addReviseCard() {
+    if (presentMode || reviseCard) return;
+    var host = summaryId ? document.getElementById(summaryId) : null;
+    if (!host) { var all = slideList(); host = all[all.length - 1]; }
+    if (!host) return;
+    reviseCard = el('div', 'lbv-card');
+    reviseCard.setAttribute('data-host', host.id || '');
+    var anchor = host.querySelector('.quick-progress');
+    if (anchor) anchor.parentNode.insertBefore(reviseCard, anchor.nextSibling);
+    else (host.querySelector('.inner') || host).appendChild(reviseCard);
+    drawReviseCard();
+  }
+  var cardKey = '';
+  function drawReviseCard() {
+    if (!reviseCard) return;
+    var me = readJ(ID_KEY), line;
+    if (!stateKnown()) line = 'See your mistakes and practise this lesson again.';
+    else if (heldNow()) line = 'Opens when your teacher shows the answers.';
+    else if (!me || !me.cls) line = 'Practise the questions again. Choose your name to keep a list of your mistakes.';
+    else {
+      var m = mistakes();
+      line = (m.todo.length ? m.todo.length + (m.todo.length === 1 ? ' mistake' : ' mistakes') + ' to put right. '
+        : m.done.length ? 'Every mistake put right. ' : 'No mistakes to put right. ') +
+        (!checkIds.length ? 'Practise the questions in a new order.' : checkTried() ? 'Practise the chapter check with new numbers.'
+          : 'After the chapter check, practise it here with new numbers.');
+    }
+    if (line === cardKey) return;
+    cardKey = line;
+    reviseCard.innerHTML = '';
+    var tx = el('div', 'lbv-tx');
+    tx.appendChild(el('b', 'lbv-h', 'Revise this lesson'));
+    tx.appendChild(el('span', '', line));
+    reviseCard.appendChild(tx);
+    var b = el('button', '', 'Revise'); b.type = 'button';
+    b.disabled = heldNow();
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openRevise(); });
+    reviseCard.appendChild(b);
+  }
+
+  function bigBtn(title, sub, go) {
+    var b = el('button', 'lbv-big'); b.type = 'button';
+    b.appendChild(el('b', '', title)); b.appendChild(el('span', '', sub));
+    b.addEventListener('click', go);
+    return b;
+  }
+  function reviseHead(p, text, onClose) {
+    var head = el('div', 'lbv-head');
+    head.appendChild(el('h2', '', text));
+    var x = el('button', 'lbv-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close');
+    x.addEventListener('click', onClose || closeOverlay);
+    head.appendChild(x);
+    p.appendChild(head);
+  }
+  function openRevise() {
+    if (presenting) return;
+    dropBackPill();
+    var p = panel();
+    overlay.setAttribute('data-lbv', 'revise');
+    p.classList.add('lbv-wide');
+    reviseHead(p, 'Revise this lesson');
+    var body = el('div', 'lbv-body');
+    p.appendChild(body);
+    var me = readJ(ID_KEY);
+    if (me && me.cls) {
+      drawRevise(body, 'loading');
+      loadReview(true).then(function () { drawRevise(body, ''); }, function () { drawRevise(body, 'offline'); });
+    } else drawRevise(body, '');
+  }
+  function drawRevise(body, state) {
+    if (!document.body.contains(body)) return;
+    body.innerHTML = '';
+    if (!stateKnown()) { body.appendChild(el('p', 'lbv-wait', 'One moment…')); return; }
+    if (heldNow()) {
+      body.appendChild(el('p', 'lbv-big-note', 'Your teacher is holding the answers for this lesson. Revise opens when they show them.'));
+      return;
+    }
+    body.appendChild(el('p', 'lbv-sub', 'Practice gives no points and is not sent to your teacher.'));
+    var me = readJ(ID_KEY), signed = !!(me && me.cls), m = mistakes();
+    if (signed && state === 'loading') { body.appendChild(el('p', 'lbv-wait', 'Getting your list…')); return; }
+    var acts = el('div', 'lbv-acts');
+    if (signed && state !== 'loading' && m.todo.length) acts.appendChild(bigBtn('Practise my mistakes', m.todo.length + (m.todo.length === 1 ? ' question' : ' questions') + '. Right first time puts one right.',
+      function () { startPractice(m.todo, 'mistakes'); }));
+    if (checkIds.length) {
+      var nv = checkIds.filter(function (id) { return variants[id]; }).length;
+      if (checkTried()) acts.appendChild(bigBtn('Practise the chapter check', checkIds.length + ' questions in a new order' + (nv ? ', with new numbers in the calculations' : ''),
+        function () { startPractice(checkIds, 'check'); }));
+      else if (state === 'loading') acts.appendChild(el('p', 'lbv-wait', 'Checking your chapter check…'));
+      else {
+        var first = el('div', 'lbv-first'), at = slideInfo(checkIds[0]).n;
+        first.appendChild(el('p', '', 'Do the chapter check first' + (at ? ' (slide ' + at + ')' : '') + '. Your first try is the one that counts. After that you can practise it here as often as you like.'));
+        var g = el('button', 'lbv-plain', 'Go to the chapter check'); g.type = 'button';
+        g.addEventListener('click', function () { closeOverlay(); goToTask(checkIds[0]); });
+        first.appendChild(g);
+        acts.appendChild(first);
+      }
+    } else {
+      var all = list.filter(function (t) { return t.kind === 'choice' || t.kind === 'number'; }).map(function (t) { return t.id; });
+      if (all.length) acts.appendChild(bigBtn('Practise the questions', all.length + ' questions from this lesson, in a new order', function () { startPractice(all, 'all'); }));
+    }
+    if (acts.children.length) body.appendChild(acts);
+    var sec = el('div', 'lbv-sec lbv-mine');
+    sec.appendChild(el('h3', '', 'My mistakes'));
+    if (!signed) sec.appendChild(el('p', '', 'Choose your name on this iPad to keep a list of the questions you get wrong.'));
+    else if (state === 'loading') sec.appendChild(el('p', 'lbv-wait', 'Getting your list…'));
+    else {
+      if (state === 'offline') sec.appendChild(el('p', 'lbv-note', 'Live Board did not send your full list, so this shows the answers given on this iPad.'));
+      if (!m.todo.length && !m.done.length) sec.appendChild(el('p', '', 'No mistakes on your first tries so far.'));
+      else {
+        sec.appendChild(el('p', '', m.todo.length ? 'Questions you got wrong the first time. Look at the slide again, then practise them.' : 'You have put every one right.'));
+        m.todo.forEach(function (id) { sec.appendChild(mistakeRow(id, false)); });
+        if (m.done.length) {
+          var det = el('details', 'lbv-done');
+          det.appendChild(el('summary', '', '✓ ' + m.done.length + ' put right'));
+          m.done.forEach(function (id) { det.appendChild(mistakeRow(id, true)); });
+          sec.appendChild(det);
+        }
+      }
+    }
+    body.appendChild(sec);
+  }
+  /* A chapter check question is taught earlier in the deck: the first other question on the same objective
+     shows where, so Go to the slide goes there rather than back to the check. */
+  function teachSlide(id) {
+    var t = byId[id];
+    if (!t || !isCheckTask(id) || !t.objective) return null;
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      if (x.objective === t.objective && !isCheckTask(x.id) && x.slide && document.getElementById(x.slide)) {
+        var e = document.getElementById(x.slide), sl = e.classList.contains('slide') ? e : e.closest('.slide');
+        if (sl && sl.id) return sl;
+      }
+    }
+    return null;
+  }
+  function placeOf(id) {
+    var sl = teachSlide(id);
+    if (sl) {
+      var h = sl.querySelector('h1, h2');
+      return { el: sl, label: 'Chapter check · taught on slide ' + (slideList().indexOf(sl) + 1) + (h ? ' · ' + h.textContent.replace(/\s+/g, ' ').trim() : '') };
+    }
+    var s = slideInfo(id);
+    return { el: null, label: (s.n ? 'Slide ' + s.n : 'Slide') + (s.title ? ' · ' + s.title : '') };
+  }
+  function goPlace(id) { var pl = placeOf(id); closeOverlay(); if (pl.el) goSlide(pl.el.id); else goToTask(id); }
+  function mistakeRow(id, done, text) {
+    var t = byId[id], pl = placeOf(id), row = el('div', 'lbv-row' + (done ? ' done' : ''));
+    var tx = el('div', 'lbv-tx');
+    tx.appendChild(el('span', 'lbv-where', pl.label));
+    tx.appendChild(el('span', 'lbv-q', text || t.question));
+    row.appendChild(tx);
+    var go = el('button', '', 'Go to the slide'); go.type = 'button';
+    go.addEventListener('click', function () { goPlace(id); });
+    row.appendChild(go);
+    return row;
+  }
+
+  /* ----- new numbers: #practice-variants -----
+     { "taskId": { "vars": { "a": { "from": 1200, "to": 9800, "step": 100 }, "who": ["coach", "lorry"] },
+                   "let": { "raw": "a + b" }, "ok": "a % 1000 !== 0", "q": "Rewrite {a} µA in mA.",
+                   "answer": "a / 1000", "show": { "answer": 2, "raw": "sf4" }, "unit": "mA", "tol": 0.01,
+                   "model": "... = {answer} mA.", "hint": "..." } }  (or a list of these, one chosen at random)
+     Expressions may use the variables and rd(x, places), sf(x, figures), abs, min, max, sqrt, pow.
+     show gives decimal places (a number) or significant figures ("sf3") for a value in the text. */
+  function rd(x, n) { var p = Math.pow(10, n); return Math.round((x + (x >= 0 ? 1 : -1) * 1e-9) * p) / p; }
+  function sf(x, n) { return x === 0 ? 0 : Number(Number(x).toPrecision(n)); }
+  function calc(expr, s) {
+    var names = Object.keys(s);
+    var fn = new Function(names.concat(['rd', 'sf', 'abs', 'min', 'max', 'sqrt', 'pow']).join(','), '"use strict"; return (' + expr + ');');
+    return fn.apply(null, names.map(function (k) { return s[k]; }).concat([rd, sf, Math.abs, Math.min, Math.max, Math.sqrt, Math.pow]));
+  }
+  function fmt(x, spec) {
+    if (typeof x !== 'number') return String(x);
+    var t;
+    if (typeof spec === 'number') t = x.toFixed(spec);
+    else if (/^sf\d+$/.test(spec || '')) { t = x.toPrecision(Number(spec.slice(2))); if (/e/.test(t)) t = String(Number(t)); }
+    else t = String(Number(x.toPrecision(12)));
+    return t.replace(/^-/, '−');
+  }
+  function fillIn(text, s, show) {
+    return String(text || '').replace(/\{(\w+)\}/g, function (m0, k) { return s.hasOwnProperty(k) ? fmt(s[k], (show || {})[k]) : m0; });
+  }
+  function places(step) { var m = String(step).split('.')[1]; return m ? m.length : 0; }
+  function makeVariant(t) {
+    var v = variants[t.id];
+    if (Array.isArray(v)) v = v[Math.floor(Math.random() * v.length)];
+    if (!v || !v.q || !v.answer) return null;
+    try {
+      for (var tries = 0; tries < 200; tries++) {
+        var s = {};
+        Object.keys(v.vars || {}).forEach(function (k) {
+          var d = v.vars[k];
+          if (Array.isArray(d)) s[k] = d[Math.floor(Math.random() * d.length)];
+          else { var n = Math.round((d.to - d.from) / d.step); s[k] = rd(d.from + d.step * Math.floor(Math.random() * (n + 1)), places(d.step)); }
+        });
+        Object.keys(v['let'] || {}).forEach(function (k) { s[k] = calc(v['let'][k], s); });
+        if (v.ok && !calc(v.ok, s)) continue;
+        var ans = calc(v.answer, s);
+        if (typeof ans !== 'number' || !isFinite(ans)) continue;
+        s.answer = ans;
+        return { q: fillIn(v.q, s, v.show), correct: ans, shown: fmt(ans, (v.show || {}).answer), model: fillIn(v.model || '', s, v.show),
+          unit: v.unit != null ? v.unit : (t.unit || ''), tol: v.rtol != null ? Math.abs(ans) * v.rtol : v.hasOwnProperty('tol') ? v.tol : null,
+          hint: v.hint || t.hint || '', dp: v.dp != null ? v.dp : null, sf: v.sf != null ? v.sf : null };
+      }
+    } catch (e) { return null; }
+    return null;
+  }
+
+  /* ----- the practice itself ----- */
+  var prac = null, backPill = null;
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  // Choices that point at each other ("Both A and B", "All of the above") keep their order.
+  function canShuffle(opts) { return !opts.some(function (o) { return /\b(all|none|both|neither) of (the|these)\b|\b(above|below)\b|^(both|neither)\b|\b[A-D] and [A-D]\b/i.test(String(o)); }); }
+  function practiceItem(id) {
+    var t = byId[id], v = t.kind === 'number' ? makeVariant(t) : null, opts = (t.options || []).slice();
+    return { id: id, kind: t.kind, q: v ? v.q : t.question, options: t.kind === 'choice' && canShuffle(opts) ? shuffle(opts) : opts,
+      correct: v ? v.correct : t.correct, shown: v ? v.shown : String(t.correct == null ? '' : t.correct), unit: v ? v.unit : (t.unit || ''),
+      tol: v ? v.tol : t.tol, model: v ? v.model : (t.model || ''), hint: v ? v.hint : (t.hint || ''), why: v ? {} : (t.why || {}),
+      dp: v ? v.dp : null, sf: v ? v.sf : null, fresh: !!v, tries: 0, firstRight: null, done: false, value: '' };
+  }
+  function startPractice(ids, kind) {
+    prac = { kind: kind, ids: ids.slice(), items: shuffle(ids.slice()).map(practiceItem), i: 0 };
+    drawPractice();
+  }
+  function parseNum(v) {
+    var c = String(v).trim().replace(/[−–]/g, '-').replace(/,/g, '').replace(/\s+/g, '');
+    c = c.replace(/[×x]10\^?([+-]?\d+)$/i, 'e$1');
+    if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(c)) return NaN;
+    return Number(c);
+  }
+  /* How a typed number is written: its decimal places, and the significant figures it can stand for
+     (a whole number ending in zeros, such as 40, can be 1 or 2 figures). */
+  function formOf(str) {
+    var c = String(str).trim().replace(/[\u2212\u2013]/g, '-').replace(/,/g, '').replace(/\s+/g, '').replace(/^[+-]/, '');
+    var mant = c.split(/e|[×x]10/i)[0], dec = mant.indexOf('.') >= 0 ? mant.split('.')[1].length : 0;
+    var digits = mant.replace('.', '').replace(/^0+/, '');
+    if (mant.indexOf('.') >= 0) return { dp: dec, sfMin: digits.length, sfMax: digits.length };
+    var trimmed = digits.replace(/0+$/, '');
+    return { dp: 0, sfMin: Math.max(1, trimmed.length), sfMax: Math.max(1, digits.length) };
+  }
+  function dropBackPill() { if (backPill) { backPill.remove(); backPill = null; } }
+  function drawPractice() {
+    dropBackPill();
+    if (!stateKnown() || heldNow()) { openRevise(); return; }
+    var it = prac.items[prac.i];
+    var p = panel();
+    overlay.setAttribute('data-lbv', 'practice');
+    p.classList.add('lbv-wide', 'lbp');
+    if (!it) { drawPracticeEnd(p); return; }
+    var head = el('div', 'lbp-head');
+    head.appendChild(el('span', 'lbp-tag', 'Practice · no points'));
+    head.appendChild(el('span', 'lbp-count', (prac.i + 1) + ' / ' + prac.items.length));
+    var x = el('button', 'lbv-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Stop practising');
+    x.addEventListener('click', function () { flushPractice(); openRevise(); });
+    head.appendChild(x);
+    p.appendChild(head);
+    if (prac.kind !== 'check') {
+      var where = el('div', 'lbp-where');
+      var pl = placeOf(it.id);
+      where.appendChild(el('span', '', pl.el ? pl.label.replace('Chapter check', 'From the chapter check') : 'From ' + pl.label.replace(/^Slide/, 'slide')));
+      var look = el('button', 'lbv-link', 'See the slide'); look.type = 'button';
+      look.addEventListener('click', function () {
+        goPlace(it.id);
+        backPill = el('button', 'lbp-back', '← Back to practice'); backPill.type = 'button';
+        backPill.addEventListener('click', drawPractice);
+        document.body.appendChild(backPill);
+      });
+      where.appendChild(look);
+      p.appendChild(where);
+    }
+    p.appendChild(el('div', 'lbp-q', it.q));
+    if (it.fresh) p.appendChild(el('div', 'lbp-new', 'New numbers'));
+    var fb = el('div', 'lbp-fb'); fb.setAttribute('aria-live', 'polite');
+    var next = el('button', 'lbx-go lbp-next', prac.i + 1 < prac.items.length ? 'Next question' : 'See how you did'); next.type = 'button';
+    next.hidden = !it.done;
+    next.addEventListener('click', function () { prac.i++; drawPractice(); });
+    function finish(text, good) {
+      it.done = true;
+      if (it.firstRight && mistakes().todo.indexOf(it.id) >= 0) addPfix(it.id);
+      say(text, good);
+      next.hidden = false;
+      setTimeout(function () { try { next.focus(); } catch (e) {} }, 30);
+    }
+    function say(text, good) { fb.textContent = text; fb.className = 'lbp-fb ' + (good === true ? 'ok' : good === false ? 'no' : ''); }
+    var answerText = it.shown + (it.unit ? ' ' + it.unit : '');
+    if (it.kind === 'choice') {
+      var opts = el('div', 'lbp-opts');
+      var lockAll = function () { Array.prototype.forEach.call(opts.children, function (c) { c.disabled = true; }); };
+      it.options.forEach(function (o) {
+        var b = el('button', 'lbp-opt', o); b.type = 'button';
+        if (it.done && o === String(it.correct)) b.classList.add('ok');
+        b.disabled = it.done;
+        b.addEventListener('click', function () {
+          if (it.done || b.disabled) return;
+          it.tries++;
+          var right = o === String(it.correct);
+          if (it.tries === 1) it.firstRight = right;
+          if (right) { b.classList.add('ok'); lockAll(); finish('Right. ' + it.model, true); return; }
+          b.classList.add('no'); b.disabled = true;
+          if (it.tries >= 2) {
+            Array.prototype.forEach.call(opts.children, function (c) { if (c.textContent === String(it.correct)) c.classList.add('ok'); });
+            lockAll(); finish('Not this time. The answer is “' + it.correct + '”. ' + it.model, false);
+          } else say('Not yet. ' + (it.why[o] || it.hint || 'Think again about what the slide showed.') + ' Try once more.', false);
+        });
+        opts.appendChild(b);
+      });
+      p.appendChild(opts);
+    } else if (it.kind === 'number') {
+      var row = el('div', 'lbp-entry'), inp = el('input');
+      inp.inputMode = 'decimal'; inp.autocomplete = 'off'; inp.placeholder = 'Your answer'; inp.value = it.value;
+      inp.setAttribute('aria-label', 'Your answer' + (it.unit ? ', in ' + it.unit : ''));
+      inp.disabled = it.done;
+      row.appendChild(inp);
+      if (it.unit) row.appendChild(el('b', '', it.unit));
+      var chk = el('button', 'lbx-go', 'Check'); chk.type = 'button'; chk.disabled = it.done;
+      row.appendChild(chk);
+      p.appendChild(row);
+      var mark = function () {
+        if (it.done) return;
+        it.value = inp.value;
+        var v = parseNum(inp.value.replace(new RegExp('\\s*' + String(it.unit || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$'), ''));
+        if (!isFinite(v)) { say('Type a number, for example 4.5 or 3.0e8.', null); return; }
+        it.tries++;
+        var tol = it.tol != null ? Number(it.tol) : Math.max(Math.abs(Number(it.correct)) * 0.005, 1e-14);
+        var right = Math.abs(v - Number(it.correct)) <= tol + 1e-12;
+        var form = formOf(inp.value), badForm = '';
+        if (right && it.dp != null && form.dp !== it.dp) badForm = 'The value is right, but write it to ' + it.dp + (it.dp === 1 ? ' decimal place.' : ' decimal places.');
+        if (right && it.sf != null && (it.sf < form.sfMin || it.sf > form.sfMax)) badForm = 'The value is right, but write it to ' + it.sf + ' significant figures.';
+        if (badForm) right = false;
+        if (it.tries === 1) it.firstRight = right;
+        if (right) { inp.disabled = chk.disabled = true; finish('Right. ' + it.model, true); return; }
+        if (badForm && it.tries < 2) { say('Not yet. ' + badForm + ' Try once more.', false); inp.select(); return; }
+        if (it.tries >= 2) { inp.disabled = chk.disabled = true; finish('Not this time. The answer is ' + answerText + '. ' + it.model, false); return; }
+        say('Not yet. ' + (it.hint || 'Check each step, and the unit.') + ' Try once more.', false);
+        inp.select();
+      };
+      chk.addEventListener('click', mark);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); mark(); } });
+      if (!it.done) setTimeout(function () { try { inp.focus(); } catch (e) {} }, 60);
+    } else {
+      var ta = el('textarea', 'lbp-text'); ta.placeholder = 'Write your answer, then compare it with the model answer.'; ta.value = it.value;
+      ta.addEventListener('input', function () { it.value = ta.value; });
+      p.appendChild(ta);
+      var show = el('button', 'lbx-go', 'Show the model answer'); show.type = 'button'; show.hidden = it.done;
+      show.addEventListener('click', function () { show.hidden = true; finish('Model answer: ' + (it.model || 'none given') + ' Did yours say the same?', null); });
+      p.appendChild(show);
+    }
+    if (it.done && !fb.textContent) say(it.firstRight === true ? 'Right. ' + it.model : it.kind === 'written' ? 'Model answer: ' + it.model : 'The answer is ' + answerText + '. ' + it.model, it.kind === 'written' ? null : it.firstRight === true);
+    p.appendChild(fb);
+    p.appendChild(next);
+  }
+  function drawPracticeEnd(p) {
+    flushPractice();
+    reviseHead(p, 'How you did', function () { openRevise(); });
+    var marked = prac.items.filter(function (x) { return x.kind !== 'written'; });
+    var right = marked.filter(function (x) { return x.firstRight === true; }).length;
+    var missed = prac.items.filter(function (x) { return x.firstRight === false; });
+    var big = el('div', 'lbp-score');
+    big.appendChild(el('b', '', right + ' / ' + marked.length));
+    big.appendChild(el('span', '', 'right first time' + (marked.length < prac.items.length ? ' (written answers are not marked)' : '')));
+    p.appendChild(big);
+    if (missed.length) {
+      p.appendChild(el('p', '', 'Look at these slides again:'));
+      missed.forEach(function (x) { p.appendChild(mistakeRow(x.id, false, x.q)); });
+    } else if (marked.length) p.appendChild(el('p', '', 'Every one right first time.'));
+    var row = el('div', 'lbx-row lbp-endrow');
+    var again = el('button', 'lbx-go', 'Practise again'); again.type = 'button';
+    again.title = 'A new order' + (prac.items.some(function (x) { return x.fresh; }) ? ' and new numbers' : '');
+    again.addEventListener('click', function () { startPractice(prac.ids, prac.kind); });
+    row.appendChild(again);
+    if (missed.length && missed.length < prac.items.length) {
+      var some = el('button', '', 'Just the ones I missed'); some.type = 'button';
+      some.addEventListener('click', function () { startPractice(missed.map(function (x) { return x.id; }), prac.kind === 'check' ? 'check' : 'mistakes'); });
+      row.appendChild(some);
+    }
+    var back = el('button', '', 'Back to Revise'); back.type = 'button';
+    back.addEventListener('click', openRevise);
+    row.appendChild(back);
+    p.appendChild(row);
+  }
+  /* Questions put right in practice go to Live Board with the next list request (now, in the background). */
+  function flushPractice() { if (pfixList().length) loadReview(true).then(null, function () {}); }
+  function syncReviseButton() {
+    var b = whoLine.querySelector('.lbv-open');
+    if (b) b.hidden = presenting || inLesson() || !stateKnown() || heldNow();
+    if (heldNow() || (ctl && ctl.pause)) { dropBackPill(); if (isReviseOverlay()) closeOverlay(); }
+    if (reviseCard) drawReviseCard();
+  }
+
   /* ---------------- sending again ---------------- */
   // The deck sends an answer once, a second after it is checked. If Live Board was busy or the
   // connection dropped, the answer stays saved on the iPad. This sends it again by itself: first
@@ -5022,6 +5582,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
 
   function start() {
     if (presentMode) { startPresenter(); return; }
+    addReviseCard();
     var id = readJ(ID_KEY);
     if (!id) writeJ(RESET_KEY, null);
     if (id && id.cls && id.name) {
