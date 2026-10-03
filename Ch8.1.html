@@ -3442,7 +3442,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
         answer and Save on the exit ticket. Ask now answers from Live Board are shown on the slide too.
      5. Hold answers: right or wrong, the explanations and model answers stay hidden until the teacher
         shows them on Live Board.
-     6. Presenter mode: the presenter bar sits in the bottom bar, and every question gets Reveal answer. */
+     6. Presenter mode: every question gets Reveal answer (after the teacher PIN). */
   if (window.__lbClassic) return;
   window.__lbClassic = true;
   function readJSON(id) { var e = document.getElementById(id); if (!e) return null; try { return JSON.parse(e.textContent); } catch (x) { return null; } }
@@ -3703,7 +3703,7 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
   /* ---------- presenter: Reveal answer on every question ---------- */
   if (presenting) {
     setInterval(function () {
-      if (!document.body.classList.contains('lb-presenting') && !document.querySelector('.lbpres')) return;   // after the PIN
+      if (!document.body.classList.contains('lb-presenter')) return;   // after the PIN
       [].forEach.call(document.querySelectorAll('.lbcq[data-question]'), function (w) {
         if (w.querySelector('.lbrev')) return;
         var t = byId[w.getAttribute('data-question')];
@@ -3764,8 +3764,9 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
         teacher opens it, Hold answers (feedback and model answers hidden until released),
         whole-class slides (hooks) done together, and videos played on the board.
      7. Presenter mode: the deck opened with #present at the end of its address, after the
-        teacher PIN. No name is asked, nothing is saved, every question gets Reveal answer, and
-        the slide shown is the slide the class follows.
+        teacher PIN and the class being taught (which starts the lesson for that class). No name
+        is asked, nothing is saved, every question gets Reveal answer, and the slide shown is the
+        slide the class follows. Pause and Follow are on the teacher's phone.
      8. Time on each slide (a page counts as read after the teacher's read time), an ID for
         each iPad, the number of answers waiting to send, and where the student is, so Live
         Board can show read, skimmed, stuck, offline and two iPads under one name. The record
@@ -3906,6 +3907,13 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
     '.lbx .lbx-testhint{display:block;margin-top:6px;font-weight:400;font-size:13px;color:#3a3740}' +
     '.lbx-who .lbx-testhint{display:none}' +
     '.lbx button.lbx-skip{border:0!important;background:none!important;color:#3a3740!important;padding:6px 0!important;margin-top:14px;font-weight:400!important;font-size:14px!important;text-decoration:underline;min-height:0}' +
+    '.lbx .lbx-classes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:2px 0 4px}' +
+    '.lbx button.lbx-class{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px 16px!important;min-height:64px;text-align:left}' +
+    '.lbx button.lbx-class b{font:900 22px/1.1 "Arial Black",Arial,sans-serif}' +
+    '.lbx button.lbx-class span{font:700 12px Arial,sans-serif;color:#12804f}' +
+    '.lbx button.lbx-class.last{border-color:#e9082b!important;box-shadow:4px 4px 0 #e9082b!important}' +
+    '.lbx button.lbx-class:hover:not(:disabled) span{color:#9be3c0}' +
+    '.lbx .lbx-wait{color:#3a3740}' +
     '.lbx .lbx-big{font:900 24px/1.25 "Arial Black",Arial,sans-serif;margin:4px 0 16px;color:#101014}' +
     '.lbx-who{margin-top:18px;color:#f3e8d4;font:15px Arial,sans-serif;display:flex;gap:12px;align-items:center;flex-wrap:wrap}' +
     '.lbx-who b{color:#fff}' +
@@ -4659,7 +4667,14 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
   setInterval(addSteppers, 1500);
 
   /* ---------------- presenter mode ---------------- */
-  var presenting = false, presPin = '', presCls = '', presBar = null, leadTimer = null, presCtl = {}, presStatus = '';
+  /* The teacher's copy on the projector. After the teacher PIN it asks which class is being taught.
+     Choosing one starts the lesson for that class in Live Board, as Start lesson does: the lesson shows
+     on those students' My Science as the lesson in class now, and their iPads follow this slide. Opened
+     from Live Board's Start lesson (#present&cls=...), the class is already known and nothing is asked.
+     Pause, Follow and who is where are on the teacher's phone, so the slides show only one small line,
+     "Presenting to 1TG5", with Change class. Changing class ends the lesson for the class before. */
+  var presenting = false, presPin = '', presCls = '', leadTimer = null, presInfo = null;
+  var PRES_NOW = 'liveboard.presenting:' + (cfg.topicId || '');
   function startPresenter() {
     presenting = true;
     whoLine.textContent = 'Presenter mode. Nothing is saved on this computer.';
@@ -4669,58 +4684,120 @@ body.theme-arcade .scene-card{ color: var(--txt, #EAF0FF); }
     askPinFor(function (pin) { presPin = pin; try { sessionStorage.setItem(PRES_KEY, pin); } catch (e) {} closeOverlay(); presenterReady(); });
   }
   function presenterReady() {
-    loadRoster().then(function () {
-      presCls = presentCls || readJ(PRES_CLS) || (roster[0] && roster[0].cls) || '';
-      if (presentCls) writeJ(PRES_CLS, presentCls);
-      if (!roster.some(function (c) { return c.cls === presCls; })) presCls = roster[0] ? roster[0].cls : '';
-      drawPresBar(); sendLead();
-      clearInterval(leadTimer); leadTimer = setInterval(sendLead, 12000);
-    }).catch(function (err) { failNote(whoLine, err, 'Presenter mode'); });
+    document.body.classList.add('lb-presenter');   // after the PIN: Reveal answer on every question
     setInterval(addReveals, 1000);
+    var again = '';
+    try { again = sessionStorage.getItem(PRES_NOW) || ''; } catch (e) { again = ''; }
+    if (presentCls) startFor(presentCls, null);
+    else if (again === '-') showOnly();
+    else if (again) beginLead(again);   // this tab chose already (the page was reloaded)
+    else askClass();
   }
-  function drawPresBar() {
-    if (presBar) presBar.remove();
-    presBar = el('div', 'lbpres');
-    presBar.appendChild(el('span', '', 'Presenting to'));
-    var sel = el('select');
-    roster.forEach(function (c) { if (c.cls !== 'TEST') sel.appendChild(new Option(c.cls, c.cls)); });
-    sel.value = presCls;
-    sel.addEventListener('change', function () { presCls = sel.value; writeJ(PRES_CLS, presCls); sendLead(); });
-    presBar.appendChild(sel);
-    [['follow', 'Class follows me'], ['pause', 'Pause iPads']].forEach(function (x) {
-      var b = el('button', presCtl[x[0]] ? 'on' : '', x[1]); b.type = 'button'; b.setAttribute('data-k', x[0]);
-      b.setAttribute('aria-pressed', String(!!presCtl[x[0]]));
-      b.addEventListener('click', function () {
-        var set = {}; set[x[0]] = !presCtl[x[0]];
-        // The button changes at once; it goes back if Live Board did not take the change.
-        var was = presCtl; presCtl = Object.assign({}, presCtl, set); drawPresBar();
-        api({ api: 'control', pin: presPin, topicId: cfg.topicId, cls: presCls, set: set }).then(function (r) {
-          if (r && r.ok) { presCtl = r.ctl || presCtl; drawPresBar(); sendLead(); } else { presCtl = was; drawPresBar(); }
-        }, function () { presCtl = was; drawPresBar(); });
+  /* The classes, the parts of this lesson (its modules) and which classes are in this lesson now. */
+  function loadPresentInfo() {
+    if (presInfo) return Promise.resolve(presInfo);
+    return api({ api: 'present', pin: presPin, topicId: cfg.topicId }).then(function (r) {
+      if (r && r.ok && Array.isArray(r.classes)) { presInfo = r; return r; }
+      throw new Error('older Live Board');
+    }).catch(function (err) {
+      if (err && err.kind) throw err;
+      // A Live Board from before this: the class list only.
+      return loadRoster().then(function () {
+        presInfo = { classes: roster.map(function (c) { return c.cls; }), lessons: [], running: {} };
+        return presInfo;
       });
-      presBar.appendChild(b);
     });
-    var st = el('span', 'lbpres-st', presStatus);
-    st.id = 'lbpres-st';
-    presBar.appendChild(st);
-    // In the deck's footer, in place of the module rail, so it covers nothing on the slide.
-    var foot = document.querySelector('.footer-middle');
-    if (foot) { presBar.classList.add('in-foot'); document.body.classList.add('lb-presenting'); foot.appendChild(presBar); }
-    else document.body.appendChild(presBar);
+  }
+  function askClass(err) {
+    var p = panel();
+    p.appendChild(el('h2', '', 'Which class are you teaching?'));
+    p.appendChild(el('p', '', 'Their iPads follow your slides, and the lesson shows on their My Science.'));
+    var top = el('div'), box = el('div', 'lbx-classes'), msg = el('p', 'lbx-msg');
+    p.appendChild(top); p.appendChild(box);
+    box.appendChild(el('p', 'lbx-wait', 'Loading the classes…'));
+    p.appendChild(msg);
+    var skip = el('button', 'lbx-skip', 'Just show the slides, without a class'); skip.type = 'button';
+    skip.addEventListener('click', function () { endFor(presCls); try { sessionStorage.setItem(PRES_NOW, '-'); } catch (e) {} closeOverlay(); showOnly(); });
+    p.appendChild(skip);
+    if (presCls) {
+      var keep = el('button', 'lbx-skip', 'Keep presenting to ' + presCls); keep.type = 'button';
+      keep.addEventListener('click', closeOverlay);
+      p.appendChild(keep);
+    }
+    if (err) failNote(msg, err, 'Starting the lesson');
+    loadPresentInfo().then(function (info) {
+      box.innerHTML = '';
+      var part = null;
+      if (info.lessons && info.lessons.length) {
+        var lab = el('label', '', 'Part of the lesson');
+        part = el('select');
+        part.appendChild(new Option('The whole lesson', '-1'));
+        var n = slideNow();
+        info.lessons.forEach(function (l, i) {
+          part.appendChild(new Option(l.t + ' (slides ' + l.from + '–' + l.to + ')', String(i)));
+          if (n >= l.from && n <= l.to && n > 1) part.value = String(i);
+        });
+        lab.appendChild(part); top.appendChild(lab);
+      }
+      var last = readJ(PRES_CLS);
+      info.classes.filter(function (c) { return c !== 'TEST'; }).forEach(function (c) {
+        var b = el('button', 'lbx-class' + (c === last ? ' last' : ''));
+        b.type = 'button';
+        b.appendChild(el('b', '', c));
+        if (info.running && info.running[c]) b.appendChild(el('span', '', 'In this lesson now'));
+        b.addEventListener('click', function () {
+          Array.prototype.forEach.call(box.querySelectorAll('button'), function (x) { x.disabled = true; });
+          var li = part && part.value !== '-1' ? Number(part.value) : null;
+          if (presCls && presCls !== c) endFor(presCls);
+          startFor(c, li);
+        });
+        box.appendChild(b);
+      });
+      if (!box.childNodes.length) box.appendChild(el('p', '', 'There are no classes on the class list yet.'));
+    }).catch(function (e2) { box.innerHTML = ''; failNote(msg, e2, 'Choosing the class'); });
+  }
+  /* Starts the lesson for one class, or carries on with it if it is already running. */
+  function startFor(cls, li) {
+    var l = li != null && presInfo && presInfo.lessons ? presInfo.lessons[li] : null;
+    api({ api: 'start', pin: presPin, topicId: cfg.topicId, cls: cls, from: l ? l.from : 0, to: l ? l.to : 0, title: l ? l.t : 'The whole lesson' })
+      .then(function (r) {
+        if (r && r.ok) return r;
+        if (r && /PIN/i.test(r.error || '')) { var e = new Error('PIN'); e.pin = true; throw e; }
+        // A Live Board from before this: at least make the iPads follow.
+        return api({ api: 'control', pin: presPin, topicId: cfg.topicId, cls: cls, set: { follow: true, hold: true, pause: false } });
+      })
+      .then(function () { closeOverlay(); beginLead(cls); })
+      .catch(function (err) {
+        if (err && err.pin) { try { sessionStorage.removeItem(PRES_KEY); } catch (e) {} presPin = ''; startPresenter(); return; }
+        askClass(err);
+      });
+  }
+  /* Ends the lesson for a class this tab was presenting to (when changing class). */
+  function endFor(cls) {
+    if (!cls || !presPin) return;
+    api({ api: 'end', pin: presPin, topicId: cfg.topicId, cls: cls }).catch(function () {});
+  }
+  function beginLead(cls) {
+    presCls = cls; writeJ(PRES_CLS, cls);
+    try { sessionStorage.setItem(PRES_NOW, cls); } catch (e) {}
+    drawPresLine();
+    sendLead();
+    clearInterval(leadTimer); leadTimer = setInterval(sendLead, 12000);
+  }
+  function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); }
+  function drawPresLine() {
+    whoLine.innerHTML = '';
+    if (presCls) { whoLine.appendChild(document.createTextNode('Presenting to ')); whoLine.appendChild(el('b', '', presCls)); }
+    else whoLine.appendChild(document.createTextNode('Showing the slides, no class.'));
+    var ch = el('button', '', presCls ? 'Change class' : 'Choose a class'); ch.type = 'button';
+    ch.addEventListener('click', function (e) { if (e) e.preventDefault(); askClass(); });
+    whoLine.appendChild(ch);
   }
   function sendLead() {
     if (!presenting || !presPin || !presCls) return;
     var sl = currentSlide();
     if (!sl) return;
-    api({ api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 }).then(function (r) {
-      if (!r || !r.ok) return;
-      var changed = JSON.stringify(r.ctl || {}) !== JSON.stringify(presCtl);
-      presCtl = r.ctl || {};
-      if (changed) drawPresBar();
-      var st = document.getElementById('lbpres-st');
-      presStatus = r.active ? r.here + ' of ' + r.active + ' here' + (r.behind ? ', ' + r.behind + ' behind' : '') : 'No iPads in yet';
-      if (st) st.textContent = presStatus;
-    }).catch(function () {});
+    api({ api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 }).catch(function () {});
   }
   function addReveals() {
     Array.prototype.forEach.call(document.querySelectorAll('.question[data-question]'), function (q) {
