@@ -1,0 +1,265 @@
+{
+ "about": "The list of lessons on this site. index.html, Live Board and My Science read it. Live Board and Claude update it when a lesson is added; you never need to edit it by hand.",
+ "updated": "2026-10-03T00:00:00Z",
+ "liveboard": "https://script.google.com/macros/s/AKfycby82lORj2Vx0YJZ88lnB10R4Dc7h1XRJpRW9j1KDOL1WAu5euaZcCfcm_XBRjiH_oTQ/exec",
+ "subjects": [
+  {
+   "id": "science",
+   "name": "Lower Secondary Science",
+   "color": "#C0392B",
+   "groups": [
+    {
+     "name": "Chapter 7 — The Particulate Nature of Matter",
+     "items": [
+      {
+       "file": "Ch7.1.html",
+       "num": "7.1",
+       "title": "What is the particulate nature of matter?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch7.2.html",
+       "num": "7.2",
+       "title": "How do we explain the properties of the states of matter?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch7.3.html",
+       "num": "7.3",
+       "title": "How does it explain heating and cooling?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch7.4.html",
+       "num": "7.4",
+       "title": "How does it help explain other phenomena?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      }
+     ]
+    },
+    {
+     "name": "Chapter 8 — Atoms and Molecules",
+     "items": [
+      {
+       "file": "Ch8.1.html",
+       "num": "8.1",
+       "title": "What is the simplest unit of an element?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch8.2.html",
+       "num": "8.2",
+       "title": "How does proton number identify an element?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch8.3.html",
+       "num": "8.3",
+       "title": "How do we represent elements and compounds?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch8.4.html",
+       "num": "8.4",
+       "title": "What can atomic technologies do, and what do they cost us?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      }
+     ]
+    },
+    {
+     "name": "Chapter 9 — Forces and Energy",
+     "items": [
+      {
+       "file": "Ch9.1.html",
+       "num": "9.1",
+       "title": "How do forces in nature affect us?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch9.2.html",
+       "num": "9.2",
+       "title": "What are the types of forces?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch9.3.html",
+       "num": "9.3",
+       "title": "What happens when objects interact?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch9.4.html",
+       "num": "9.4",
+       "title": "How is energy conserved?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch9.5.html",
+       "num": "9.5",
+       "title": "What are the sources of energy we use?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      }
+     ]
+    },
+    {
+     "name": "Chapter 16 — Human Sexual Reproductive System",
+     "items": [
+      {
+       "file": "Ch16.1.html",
+       "num": "16.1",
+       "title": "What is the function of the system?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch16.2.html",
+       "num": "16.2",
+       "title": "How do the parts work together?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch16.3.html",
+       "num": "16.3",
+       "title": "How can the function be disrupted?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Ch16.4.html",
+       "num": "16.4",
+       "title": "How do medical advancements impact us?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      }
+     ]
+    },
+    {
+     "name": "Study tools",
+     "items": [
+      {
+       "file": "Sec1LSSStudyBuddy.html",
+       "num": "★",
+       "title": "Sec 1 Lower Secondary Science Study Buddy",
+       "note": "Revise and practise on your own",
+       "kind": "tool",
+       "small": true
+      },
+      {
+       "file": "2LSSStudyBuddy.html",
+       "num": "★",
+       "title": "Sec 2 Lower Secondary Science Study Buddy",
+       "note": "Revise and practise on your own",
+       "kind": "tool",
+       "small": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "g3physics",
+   "name": "G3 Physics",
+   "color": "#6B4C9A",
+   "groups": [
+    {
+     "name": "Chapter 1 — Physical Quantities, Units and Measurements",
+     "items": [
+      {
+       "file": "Phy1.html",
+       "num": "1",
+       "title": "How do we measure physical quantities accurately?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck",
+       "topicId": "ch1-physical-quantities-6091-v1",
+       "live": true
+      }
+     ]
+    },
+    {
+     "name": "Chapter 2 — Kinematics",
+     "items": [
+      {
+       "file": "Phy2.html",
+       "num": "2",
+       "title": "How do we describe the motion of objects?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck",
+       "topicId": "ch2-kinematics-6091-v1",
+       "live": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "physics",
+   "name": "G2 Combined",
+   "color": "#1F6F8B",
+   "groups": [
+    {
+     "name": "Chapter 9 — Waves",
+     "items": [
+      {
+       "file": "Phy9.1.html",
+       "num": "9.1",
+       "title": "How can we describe wave motion?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck"
+      },
+      {
+       "file": "Phy9.2a.html",
+       "num": "9.2a",
+       "title": "How can we describe the characteristics of waves?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck",
+       "small": true
+      },
+      {
+       "file": "Phy9.2b.html",
+       "num": "9.2b",
+       "title": "How are speed, frequency and period related?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck",
+       "small": true
+      },
+      {
+       "file": "Phy9.2c.html",
+       "num": "9.2c",
+       "title": "What happens to a wave when the medium changes?",
+       "note": "Slides, interactives, and questions to submit",
+       "kind": "deck",
+       "small": true
+      }
+     ]
+    },
+    {
+     "name": "Study tools",
+     "items": [
+      {
+       "file": "PhyStudyBuddy.html",
+       "num": "★",
+       "title": "Physics Study Buddy",
+       "note": "Revise and practise on your own",
+       "kind": "tool",
+       "small": true
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

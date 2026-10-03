@@ -1,45 +1,34 @@
 # science-decks
 
-Lower Secondary Science lesson decks, served as a website from this repository.
+Lower Secondary Science and Physics lesson decks, served as a website from this repository.
 
 **Live site:** https://cedricboi.github.io/science-decks/
+
+Students open lessons from **My Science** (Live Board) on the Google Site. This site's own index page is a backup that lists the same lessons.
 
 ## What is in here
 
 | File | What it is |
 |---|---|
-| `index.html` | the hub page students land on — links every deck |
-| `Ch7.1.html` | Chapter 7.1 deck (already in the repo) |
-| `Ch16.1.html` – `Ch16.4.html` | Chapter 16 decks, one per subsection |
+| `lessons.json` | the list of lessons: subject tabs, chapters, numbers and titles. The index page, Live Board and My Science all read it |
+| `index.html` | the backup lesson page. It builds itself from `lessons.json`, so it never needs editing |
+| `Ch….html`, `Phy….html` | one deck per file |
+| `…StudyBuddy.html` | study tools |
 | `.nojekyll` | stops GitHub processing the files and breaking them |
-| `download/` | whatever you had here before — untouched |
 
-Every deck is one self-contained file. Fonts, images and diagrams are embedded,
-so a deck keeps working if the school wifi drops mid-lesson. Two things reach
-the network and both fail softly: the YouTube embeds (each has a visible link
-beside it) and the Submit button on written answers (the answer stays in the
-box and a Copy button appears).
+Every deck is one self-contained file. Fonts, images and diagrams are embedded, so a deck keeps working if the school wifi drops mid-lesson.
 
-## Uploading a new chapter
+## Adding or updating a lesson
 
-1. **Add file → Upload files** on the repo's Code tab
-2. Drag the deck files in, and `index.html` if the hub changed
-3. Commit to `main`
-4. Wait about a minute, then hard-refresh the live site
+Use **one** of these. Both put the deck online, connect it to Live Board, and add it to `lessons.json`, so it appears on the index page, in My Science and in Live Board's Start lesson list.
 
-Keep files flat at the root. GitHub's web uploader flattens dropped folders, so
-a deck linked as `decks/Ch16.1.html` will 404 while the file itself sits at the
-root.
+1. **Live Board > Lessons > Add or update a lesson.** Choose the HTML file on your laptop, check the subject, chapter and title, press **Put it online**.
+2. **Ask Claude.** Decks built with deckforge are published by Claude at the end of the build.
 
-## Adding a lesson to the hub by hand
+GitHub takes about a minute to show a new file. To update a lesson, add it again with the same file name.
 
-Open `index.html`, copy one `<a class="deck">` block, and change the three
-things in it: the `href`, the number in `<span class="num">`, and the title.
+Uploading by hand on GitHub still works, but then the lesson is not added to `lessons.json` and not connected to Live Board.
 
 ## Where student answers go
 
-Each deck posts written answers to the Google Apps Script endpoint set on its
-`<body data-collect-url="…">`, along with the student's name, class, subsection
-and question id. If submissions stop arriving, re-deploy the Apps Script and
-re-authorise it — the deck will report `Could not send` and offer students a
-Copy button rather than losing their work.
+Decks with **Live Board** in their saving block send answers to the Live Board web app named in `lessons.json` (`liveboard`). The older decks (Chapters 7, 8, 9, 16 and Physics 9) send written answers to the older Apps Script set on their `<body data-collect-url="…">`.

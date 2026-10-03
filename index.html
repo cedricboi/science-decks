@@ -20,13 +20,7 @@
  .tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
  .panel[hidden]{display:none}
 
- /* per-subject accent */
- #panel-science{--accent:#C0392B}
- #panel-physics{--accent:#1F6F8B}
- #panel-g3physics{--accent:#6B4C9A}
- .tabs{--accent:#C0392B}
- .tabs:has(#tab-physics[aria-selected="true"]){--accent:#1F6F8B}
- .tabs:has(#tab-g3physics[aria-selected="true"]){--accent:#6B4C9A}
+ /* each subject's colour comes from lessons.json */
 
  a.deck{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;
    background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;margin-bottom:12px;
@@ -42,218 +36,82 @@
  .panel > h2.ch:first-child{margin-top:0}
  .note{margin-top:22px;font-size:.84rem;color:#8a94a3;line-height:1.5}
  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+ .msg{background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;color:#6b7686}
 </style></head>
 <body><div class="card">
   <h1>Lesson decks</h1>
   <p class="sub">Choose a subject, then click a lesson to open it full screen</p>
 
-  <div class="tabs" role="tablist" aria-label="Subject">
-    <button class="tab" id="tab-science" role="tab" aria-controls="panel-science" aria-selected="true">Lower Secondary Science</button>
-    <button class="tab" id="tab-g3physics" role="tab" aria-controls="panel-g3physics" aria-selected="false" tabindex="-1">G3 Physics</button>
-    <button class="tab" id="tab-physics" role="tab" aria-controls="panel-physics" aria-selected="false" tabindex="-1">G2 Combined</button>
-  </div>
+  <div class="tabs" role="tablist" aria-label="Subject" id="tabs"></div>
+  <div id="panels"><p class="msg" id="loading">Loading the lessons…</p></div>
 
-  <!-- ===== Lower Secondary Science ===== -->
-  <div class="panel" id="panel-science" role="tabpanel" aria-labelledby="tab-science" tabindex="0">
-
-  <h2 class="ch">Chapter 7 — The Particulate Nature of Matter</h2>
-  <a class="deck" href="Ch7.1.html" target="_blank" rel="noopener">
-    <span class="num">7.1</span>
-    <span><span class="t">What is the particulate nature of matter?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch7.2.html" target="_blank" rel="noopener">
-    <span class="num">7.2</span>
-    <span><span class="t">How do we explain the properties of the states of matter?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch7.3.html" target="_blank" rel="noopener">
-    <span class="num">7.3</span>
-    <span><span class="t">How does it explain heating and cooling?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch7.4.html" target="_blank" rel="noopener">
-    <span class="num">7.4</span>
-    <span><span class="t">How does it help explain other phenomena?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Chapter 8 — Atoms and Molecules</h2>
-  <a class="deck" href="Ch8.1.html" target="_blank" rel="noopener">
-    <span class="num">8.1</span>
-    <span><span class="t">What is the simplest unit of an element?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch8.2.html" target="_blank" rel="noopener">
-    <span class="num">8.2</span>
-    <span><span class="t">How does proton number identify an element?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch8.3.html" target="_blank" rel="noopener">
-    <span class="num">8.3</span>
-    <span><span class="t">How do we represent elements and compounds?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch8.4.html" target="_blank" rel="noopener">
-    <span class="num">8.4</span>
-    <span><span class="t">What can atomic technologies do, and what do they cost us?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Chapter 9 — Forces and Energy</h2>
-  <a class="deck" href="Ch9.1.html" target="_blank" rel="noopener">
-    <span class="num">9.1</span>
-    <span><span class="t">How do forces in nature affect us?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch9.2.html" target="_blank" rel="noopener">
-    <span class="num">9.2</span>
-    <span><span class="t">What are the types of forces?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch9.3.html" target="_blank" rel="noopener">
-    <span class="num">9.3</span>
-    <span><span class="t">What happens when objects interact?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch9.4.html" target="_blank" rel="noopener">
-    <span class="num">9.4</span>
-    <span><span class="t">How is energy conserved?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch9.5.html" target="_blank" rel="noopener">
-    <span class="num">9.5</span>
-    <span><span class="t">What are the sources of energy we use?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Chapter 16 — Human Sexual Reproductive System</h2>
-  <a class="deck" href="Ch16.1.html" target="_blank" rel="noopener">
-    <span class="num">16.1</span>
-    <span><span class="t">What is the function of the system?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch16.2.html" target="_blank" rel="noopener">
-    <span class="num">16.2</span>
-    <span><span class="t">How do the parts work together?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch16.3.html" target="_blank" rel="noopener">
-    <span class="num">16.3</span>
-    <span><span class="t">How can the function be disrupted?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Ch16.4.html" target="_blank" rel="noopener">
-    <span class="num">16.4</span>
-    <span><span class="t">How do medical advancements impact us?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Study tools</h2>
-  <a class="deck" href="Sec1LSSStudyBuddy.html" target="_blank" rel="noopener">
-    <span class="num sm">★</span>
-    <span><span class="t">Sec 1 Lower Secondary Science Study Buddy</span><br>
-    <span class="d">Revise and practise on your own</span></span>
-  </a>
-  <a class="deck" href="2LSSStudyBuddy.html" target="_blank" rel="noopener">
-    <span class="num sm">★</span>
-    <span><span class="t">Sec 2 Lower Secondary Science Study Buddy</span><br>
-    <span class="d">Revise and practise on your own</span></span>
-  </a>
-  </div><!-- /panel-science -->
-
-  <!-- ===== G2 Combined ===== -->
-  <div class="panel" id="panel-physics" role="tabpanel" aria-labelledby="tab-physics" tabindex="0" hidden>
-
-  <h2 class="ch">Chapter 9 — Waves</h2>
-  <a class="deck" href="Phy9.1.html" target="_blank" rel="noopener">
-    <span class="num">9.1</span>
-    <span><span class="t">How can we describe wave motion?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Phy9.2a.html" target="_blank" rel="noopener">
-    <span class="num sm">9.2a</span>
-    <span><span class="t">How can we describe the characteristics of waves?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Phy9.2b.html" target="_blank" rel="noopener">
-    <span class="num sm">9.2b</span>
-    <span><span class="t">How are speed, frequency and period related?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  <a class="deck" href="Phy9.2c.html" target="_blank" rel="noopener">
-    <span class="num sm">9.2c</span>
-    <span><span class="t">What happens to a wave when the medium changes?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Study tools</h2>
-  <a class="deck" href="PhyStudyBuddy.html" target="_blank" rel="noopener">
-    <span class="num sm">★</span>
-    <span><span class="t">Physics Study Buddy</span><br>
-    <span class="d">Revise and practise on your own</span></span>
-  </a>
-  </div><!-- /panel-physics -->
-
-  <!-- ===== G3 Physics ===== -->
-  <div class="panel" id="panel-g3physics" role="tabpanel" aria-labelledby="tab-g3physics" tabindex="0" hidden>
-
-  <h2 class="ch">Chapter 1 — Physical Quantities, Units and Measurements</h2>
-  <a class="deck" href="Phy1.html" target="_blank" rel="noopener">
-    <span class="num">1</span>
-    <span><span class="t">How do we measure physical quantities accurately?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-
-  <h2 class="ch">Chapter 2 — Kinematics</h2>
-  <a class="deck" href="Phy2.html" target="_blank" rel="noopener">
-    <span class="num">2</span>
-    <span><span class="t">How do we describe the motion of objects?</span><br>
-    <span class="d">Slides, interactives, and questions to submit</span></span>
-  </a>
-  </div><!-- /panel-g3physics -->
-
-  <!-- add a lesson: copy one block above, change the href, number and title -->
-  <!-- add a subject: add a .tab button and a matching .panel, then list it in SUBJECTS below -->
+  <!-- This page builds itself from lessons.json. To add or update a lesson, use Add or update a lesson
+       in Live Board (Lessons tab), or ask Claude. Nothing here needs editing by hand. -->
   <p class="note">Opens in a new tab so the slides run full size.
      Put your name and class in the bar at the top before submitting an answer.</p>
 </div>
 
 <script>
 (function(){
-  var SUBJECTS = ["science","g3physics","physics"];
-  var tabs   = SUBJECTS.map(function(s){ return document.getElementById("tab-"+s); });
-  var panels = SUBJECTS.map(function(s){ return document.getElementById("panel-"+s); });
+  var tabsBox = document.getElementById("tabs"), panelsBox = document.getElementById("panels");
+  var SUBJECTS = [], tabs = [], panels = [];
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
+  function build(cat){
+    panelsBox.innerHTML = "";
+    (cat.subjects || []).forEach(function(s, n){
+      SUBJECTS.push(s.id);
+      var t = el("button", "tab", s.name);
+      t.id = "tab-" + s.id; t.setAttribute("role", "tab"); t.setAttribute("aria-controls", "panel-" + s.id);
+      tabsBox.appendChild(t); tabs.push(t);
+      var p = el("div", "panel");
+      p.id = "panel-" + s.id; p.setAttribute("role", "tabpanel"); p.setAttribute("aria-labelledby", "tab-" + s.id); p.tabIndex = 0;
+      p.style.setProperty("--accent", s.color || "#C0392B");
+      (s.groups || []).forEach(function(g){
+        if (!g.items || !g.items.length) return;
+        p.appendChild(el("h2", "ch", g.name));
+        g.items.forEach(function(it){
+          var a = el("a", "deck"); a.href = it.file; a.target = "_blank"; a.rel = "noopener";
+          a.appendChild(el("span", "num" + (it.small || it.kind === "tool" || String(it.num).length > 4 ? " sm" : ""), it.kind === "tool" ? "\u2605" : it.num));
+          var w = el("span"); w.appendChild(el("span", "t", it.title)); w.appendChild(document.createElement("br"));
+          w.appendChild(el("span", "d", it.note || (it.kind === "tool" ? "Revise and practise on your own" : "Slides, interactives, and questions to submit")));
+          a.appendChild(w); p.appendChild(a);
+        });
+      });
+      panelsBox.appendChild(p); panels.push(p);
+      t.addEventListener("click", function(){
+        try { history.replaceState(null, "", "#" + s.id); } catch (e) {}
+        show(s.id);
+      });
+      t.addEventListener("keydown", function(e){
+        var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        var next = (n + d + SUBJECTS.length) % SUBJECTS.length;
+        try { history.replaceState(null, "", "#" + SUBJECTS[next]); } catch (e2) {}
+        show(SUBJECTS[next], true);
+      });
+    });
+    show(location.hash.slice(1));
+  }
   function show(name, focusTab){
     var i = SUBJECTS.indexOf(name);
     if (i < 0) i = 0;
-    tabs.forEach(function(t,n){
+    tabs.forEach(function(t, n){
       var on = (n === i);
       t.setAttribute("aria-selected", on ? "true" : "false");
       t.tabIndex = on ? 0 : -1;
+      t.style.setProperty("--accent", panels[n].style.getPropertyValue("--accent"));
       panels[n].hidden = !on;
     });
-    if (focusTab) tabs[i].focus();
+    tabsBox.style.setProperty("--accent", panels[i] ? panels[i].style.getPropertyValue("--accent") : "#C0392B");
+    if (focusTab && tabs[i]) tabs[i].focus();
   }
-
-  tabs.forEach(function(t,n){
-    t.addEventListener("click", function(){
-      try { history.replaceState(null, "", "#" + SUBJECTS[n]); } catch (e) {}
-      show(SUBJECTS[n]);
-    });
-    t.addEventListener("keydown", function(e){
-      var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-      if (!d) return;
-      e.preventDefault();
-      var next = (n + d + SUBJECTS.length) % SUBJECTS.length;
-      history.replaceState(null, "", "#" + SUBJECTS[next]);
-      show(SUBJECTS[next], true);
-    });
-  });
-
   window.addEventListener("hashchange", function(){ show(location.hash.slice(1)); });
-  show(location.hash.slice(1));
+  fetch("lessons.json?t=" + Date.now(), { cache: "no-store" })
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(build)
+    .catch(function(){ document.getElementById("loading").textContent = "The list of lessons did not load. Check the connection and refresh the page."; });
 })();
 </script>
 </body></html>
