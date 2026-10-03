@@ -6455,7 +6455,7 @@ try{
     api({ api: 'live', topicId: cfg.topicId, who: me && me.cls ? { cls: me.cls, name: me.name } : null, slide: slideNow(), total: slideCount(),
       dev: DEV, v: VERSION, on: Math.round((Date.now() - curSince) / 1000), rd: rd, pend: pendingCount(), sid: cur ? cur.id : '' }).then(function (r) {
       fails = 0; offlineNote();
-      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, r.poll * 1000 * (0.85 + Math.random() * 0.3)); }
+      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, pollSecs(r) * 1000 * (0.85 + Math.random() * 0.3)); }
       if (r && r.readSecs) readSecs = r.readSecs;
       if (r && r.reset) { resetHere(); return; }
       ctl = r && r.ctl ? r.ctl : null;
@@ -6475,6 +6475,16 @@ try{
       if (a.ends && a.ends < Date.now()) return;
       showAsk(a, !!a.quiet);
     }).catch(function () { fails++; offlineNote(); });
+  }
+  /* How long until the next check. Live Board says 14 seconds (6 while it is asking or leading). While the
+     class is in a lesson (the teacher presenting, Follow me, Hold answers, Pause, or a question asked) the
+     iPad checks every 3 seconds, so Pause and Follow reach it in a few seconds. Outside a lesson it keeps to
+     Live Board's slower pace. */
+  var FAST_SECS = 3;
+  function pollSecs(r) {
+    var c = r.ctl || {};
+    var lesson = !!(r.ask || c.pause || c.follow || c.hold || c.lead);
+    return lesson ? Math.min(r.poll, FAST_SECS) : r.poll;
   }
   function startLive() {
     if (askLive) return;
@@ -6713,7 +6723,11 @@ try{
       b.setAttribute('aria-pressed', String(!!presCtl[x[0]]));
       b.addEventListener('click', function () {
         var set = {}; set[x[0]] = !presCtl[x[0]];
-        api({ api: 'control', pin: presPin, topicId: cfg.topicId, cls: presCls, set: set }).then(function (r) { if (r && r.ok) { presCtl = r.ctl || presCtl; drawPresBar(); sendLead(); } });
+        // The button changes at once; it goes back if Live Board did not take the change.
+        var was = presCtl; presCtl = Object.assign({}, presCtl, set); drawPresBar();
+        api({ api: 'control', pin: presPin, topicId: cfg.topicId, cls: presCls, set: set }).then(function (r) {
+          if (r && r.ok) { presCtl = r.ctl || presCtl; drawPresBar(); sendLead(); } else { presCtl = was; drawPresBar(); }
+        }, function () { presCtl = was; drawPresBar(); });
       });
       presBar.appendChild(b);
     });
