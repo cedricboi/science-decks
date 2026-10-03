@@ -3512,7 +3512,12 @@ window.KIT=KIT;
      10. Revise: My mistakes (the questions answered wrong the first time, from any iPad, each with
         its slide, ticked off once put right) and Practise (the chapter check, or the deck's questions,
         in a new order with new numbers; no points, nothing sent). On the last slide, by the name, and
-        from My Science (#revise). Closed while the class's answers are held. */
+        from My Science (#revise). Closed while the class's answers are held.
+     11. One home: the slides opened from the Teacher Hub (#present&cls=..&part=..&at=..&tk=..) are signed
+        in and know the class and the part, so nothing is asked. While presenting, Results (on every slide)
+        shows how the class answered the questions on the slide, with no names. A student cannot change
+        their own name (the teacher resets it from the phone), and a student whose register number does not
+        match asks the teacher's phone to be let in, so no PIN is typed on a student's iPad. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3720,6 +3725,30 @@ window.KIT=KIT;
     '.lbpres.in-foot{position:static;box-shadow:none;padding:4px 8px;max-width:none;flex-wrap:nowrap;gap:8px;font-size:13px}' +
     '.lbpres.in-foot button{padding:5px 10px!important;font-size:13px!important}' +
     'body.lb-presenting #fx-rail{display:none!important}' +
+    '.lbres-btn{position:fixed;left:150px;bottom:14px;z-index:2147482000;font:900 16px Arial,sans-serif;padding:10px 18px;border:2px solid #101014;border-radius:0;background:#fff;color:#101014;box-shadow:4px 4px 0 #e9082b;cursor:pointer;opacity:.9}' +
+    '.lbres-btn:hover{background:#101014;color:#fff;opacity:1}' +
+    '.lbres{position:fixed;inset:0;z-index:2147483100;background:rgba(10,10,14,.88);display:flex;align-items:center;justify-content:center;padding:3vh 3vw;font:20px/1.4 Arial,Helvetica,sans-serif;color:#101014}' +
+    '.lbres-panel{background:#fff;border:3px solid #101014;box-shadow:10px 10px 0 #e9082b;width:min(1100px,100%);max-height:94vh;overflow:auto;padding:24px 28px}' +
+    '.lbres-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}' +
+    '.lbres-top h2{margin:0;font:900 36px/1.1 "Arial Black",Arial,sans-serif;background:none;color:#101014;box-shadow:none;transform:none;padding:0;text-transform:none;letter-spacing:-.5px}' +
+    '.lbres-sub{color:#3a3740;font-size:18px;flex:1}' +
+    '.lbres button{font:900 16px Arial,sans-serif!important;padding:10px 16px!important;border:2px solid #101014!important;border-radius:0!important;background:#fff!important;color:#101014!important;cursor:pointer;box-shadow:none!important;transform:none!important}' +
+    '.lbres button:hover{background:#101014!important;color:#fff!important}' +
+    '.lbres-body{display:grid;gap:18px}' +
+    '.lbres-q{border-top:3px solid #101014;padding-top:14px}' +
+    '.lbres-q h3{margin:0 0 4px;font:900 26px/1.25 Arial,sans-serif;color:#101014;background:none;text-transform:none;letter-spacing:0;padding:0;box-shadow:none}' +
+    '.lbres-n{color:#3a3740;font-size:18px;margin-bottom:10px}' +
+    '.lbres-bar{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) 3.2em;gap:14px;align-items:center;margin:8px 0;font-size:22px}' +
+    '.lbres-bar .l{overflow-wrap:anywhere}' +
+    '.lbres-bar .t{height:34px;background:#efece6;position:relative}' +
+    '.lbres-bar .t i{position:absolute;left:0;top:0;bottom:0;background:#101014;min-width:3px}' +
+    '.lbres-bar b{font:900 24px Arial,sans-serif;text-align:right}' +
+    '.lbres-bar.ok .l{font-weight:900;color:#0b7a45}' +
+    '.lbres-bar.ok .l::before{content:"\u2713  "}' +
+    '.lbres-bar.ok .t i{background:#12a05c}' +
+    '.lbres-pct{font:900 30px Arial,sans-serif;color:#0b7a45}' +
+    '.lbres-wait{color:#3a3740;font-size:20px;margin:6px 0}' +
+    '@media (max-width:700px){.lbres-bar{grid-template-columns:1fr 3em}.lbres-bar .t{grid-column:1/-1;grid-row:2}}' +
     '.lbrev{display:block;margin-top:8px;font:900 14px Arial,sans-serif!important;padding:8px 14px!important;border:2px solid #101014!important;border-radius:0!important;background:#f5c400!important;color:#101014!important;cursor:pointer;box-shadow:none!important;transform:none!important;text-transform:none!important}' +
     '.lbrev-box{margin-top:8px;padding:12px;border-left:5px solid #12804f;background:#fff;font:16px/1.45 Arial,sans-serif;white-space:pre-wrap}' +
     '.lbx-who button{font:700 13px Arial,sans-serif!important;padding:6px 12px!important;min-height:0!important;border:2px solid #fff!important;background:transparent!important;color:#fff!important;box-shadow:none!important;transform:none!important;cursor:pointer;text-transform:none!important}' +
@@ -3831,10 +3860,6 @@ window.KIT=KIT;
       whoLine.appendChild(document.createTextNode('Signed in as '));
       whoLine.appendChild(el('b', '', id.name));
       whoLine.appendChild(document.createTextNode(', ' + id.cls + '.'));
-      var ch = el('button', '', 'Change name');
-      ch.type = 'button';
-      ch.addEventListener('click', askPin);
-      whoLine.appendChild(ch);
       var rv = el('button', 'lbv-open', 'Revise');
       rv.type = 'button';
       rv.hidden = inLesson() || !stateKnown() || heldNow();
@@ -3935,8 +3960,8 @@ window.KIT=KIT;
         tries++;
         msg.textContent = 'That register number does not match ' + id.name + '. Check your name and number.';
         if (tries >= 2 && !p.querySelector('.lbx-skip')) {
-          var sk = el('button', 'lbx-skip', 'My teacher will type the PIN instead'); sk.type = 'button';
-          sk.addEventListener('click', function () { askPinFor(function () { lockIn(id); }); });
+          var sk = el('button', 'lbx-skip', 'Ask your teacher to let you in'); sk.type = 'button';
+          sk.addEventListener('click', function () { askLetIn(id); });
           p.appendChild(sk);
         }
         return;
@@ -3945,6 +3970,39 @@ window.KIT=KIT;
     });
     row.appendChild(back); row.appendChild(yes); p.appendChild(row); p.appendChild(msg);
     if (inp) setTimeout(function () { inp.focus(); }, 50);
+  }
+  /* Let in: the register number did not match, so the student asks the teacher's phone, which shows the name
+     with Let in and No. Nothing is typed on this iPad by the teacher. */
+  function askLetIn(id) {
+    var p = panel();
+    p.appendChild(el('h2', '', 'Ask your teacher'));
+    p.appendChild(el('div', 'lbx-big', id.name + ', ' + id.cls));
+    var info = el('p', '', 'Asking your teacher…'); p.appendChild(info);
+    var row = el('div', 'lbx-row'), back = el('button', '', 'Go back'); back.type = 'button';
+    row.appendChild(back); p.appendChild(row);
+    var msg = el('p', 'lbx-msg'); p.appendChild(msg);
+    var stop = false, timer = null, mine = p;
+    back.addEventListener('click', function () { stop = true; clearTimeout(timer); openGate(); });
+    var gone = function () { return stop || !overlay || !overlay.contains(mine); };
+    api({ api: 'gatehelp', cls: id.cls, name: id.name, dev: DEV }).then(function (r) {
+      if (gone()) return;
+      // A Live Board not updated yet does not know Let in: the teacher types the PIN here instead, as before.
+      if (r && r.ok === false && /Unknown request/.test(r.error || '')) { askPinFor(function () { lockIn(id); }); return; }
+      if (!r || !r.ok || !r.key) { info.textContent = (r && r.error) || 'That did not work. Go back and try again.'; return; }
+      info.textContent = 'Your teacher sees your name on their phone. Wait here: the lesson opens by itself when they let you in.';
+      (function check() {
+        timer = setTimeout(function () {
+          if (gone()) return;
+          api({ api: 'gatehelp', key: r.key }).then(function (st) {
+            if (gone()) return;
+            if (st && st.state === 'ok') { lockIn(id); return; }
+            if (st && st.state === 'no') { info.textContent = 'Your teacher did not let you in. Go back and check that you chose your own name.'; return; }
+            if (st && st.state === 'gone') { info.textContent = 'Nobody answered in time. Go back and try again.'; return; }
+            check();
+          }).catch(function () { check(); });
+        }, 3000);
+      })();
+    }).catch(function (err) { if (!gone()) failNote(msg, err, 'Asking your teacher'); });
   }
   /* The teacher's PIN, for something only the teacher may do on this iPad. */
   function askPinFor(done) {
@@ -4017,6 +4075,12 @@ window.KIT=KIT;
   var reviseWanted = !presentMode && /(?:^#|&)revise(?:&|$)/.test(location.hash);
   var presentCls = (location.hash.match(/(?:^#|&)cls=([^&]+)/) || [])[1] || '';
   try { presentCls = decodeURIComponent(presentCls).toUpperCase(); } catch (e) { presentCls = ''; }
+  // From the Teacher Hub: a sign-in (tk), the part to teach (a number, or all), and a slide to carry on from.
+  // They are taken out of the address bar straight away, so the sign-in is not left on show.
+  var presentTk = presentMode ? (location.hash.match(/(?:^#|&)tk=(tk_[a-f0-9]{24,})/) || [])[1] || '' : '';
+  var presentPart = presentMode ? (location.hash.match(/(?:^#|&)part=(all|\d+)/) || [])[1] || '' : '';
+  var presentAt = presentMode ? Math.round(Number((location.hash.match(/(?:^#|&)at=(\d+)/) || [])[1]) || 0) : 0;
+  if (presentMode && /(?:^#|&)(?:tk|part|at|cls)=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search + '#present'); } catch (e) {} }
   (function () {
     var m = location.hash.match(/(?:^#|&)lb=([^&]+)/), q = location.hash.match(/(?:^#|&)q=([^&]+)/);
     if (q) { try { handedQ = decodeURIComponent(q[1]); } catch (e) { handedQ = ''; } }
@@ -4482,14 +4546,31 @@ window.KIT=KIT;
   /* The teacher's copy on the projector. After the teacher PIN it asks which class is being taught.
      Choosing one starts the lesson for that class in Live Board, as Start lesson does: the lesson shows
      on those students' My Science as the lesson in class now, and their iPads follow this slide. Opened
-     from Live Board's Start lesson (#present&cls=...), the class is already known and nothing is asked.
+     from the Teacher Hub (#present&cls=...&part=...&tk=...), it is signed in and the class and part are
+     known, so nothing is asked.
      Pause, Follow and who is where are on the teacher's phone, so the slides show only one small line,
      "Presenting to 1TG5", with Change class. Changing class ends the lesson for the class before. */
-  var presenting = false, presPin = '', presCls = '', leadTimer = null, presInfo = null;
+  var presenting = false, presPin = '', presCls = '', leadTimer = null, presInfo = null, pendingStart = null, authAsking = false, revealTimer = null;
+  /* The sign-in or PIN stopped working (a sign-in from the Hub ran out, or the PIN was changed): ask for the PIN on
+     this screen, then carry on (the lesson asked for by the Hub, or leading the class). */
+  function presAuthLost() {
+    if (authAsking) return;
+    authAsking = true;
+    try { sessionStorage.removeItem(PRES_KEY); } catch (e) {}
+    presPin = '';
+    askPinFor(function (pin) {
+      presPin = pin; authAsking = false;
+      try { sessionStorage.setItem(PRES_KEY, pin); } catch (e) {}
+      closeOverlay();
+      presInfo = null;
+      if (pendingStart) presenterReady(); else if (presCls) sendLead(); else askClass();
+    });
+  }
   var PRES_NOW = 'liveboard.presenting:' + (cfg.topicId || '');
   function startPresenter() {
     presenting = true;
     whoLine.textContent = 'Presenter mode. Nothing is saved on this computer.';
+    if (presentTk) { presPin = presentTk; presentTk = ''; try { sessionStorage.setItem(PRES_KEY, presPin); } catch (e) {} presenterReady(); return; }
     var saved = '';
     try { saved = sessionStorage.getItem(PRES_KEY) || ''; } catch (e) { saved = ''; }
     if (saved) { presPin = saved; presenterReady(); return; }
@@ -4497,10 +4578,16 @@ window.KIT=KIT;
   }
   function presenterReady() {
     document.body.classList.add('lb-presenter');   // after the PIN: Reveal answer on every question
-    setInterval(addReveals, 1000);
+    if (!revealTimer) revealTimer = setInterval(addReveals, 1000);
     var again = '';
     try { again = sessionStorage.getItem(PRES_NOW) || ''; } catch (e) { again = ''; }
-    if (presentCls) startFor(presentCls, null);
+    if (presentCls) { pendingStart = { cls: presentCls, part: presentPart, at: presentAt }; presentCls = ''; presentPart = ''; presentAt = 0; }
+    if (pendingStart) {
+      var ps = pendingStart;
+      if (ps.part && ps.part !== 'all') loadPresentInfo().then(function () { startFor(ps.cls, Number(ps.part), true); }, function (er) { if (er && er.pin) { presAuthLost(); return; } startFor(ps.cls, null); });
+      else startFor(ps.cls, null, ps.part === 'all');
+      if (ps.at > 1) setTimeout(function () { var s0 = slideList()[ps.at - 1]; if (s0) goSlide(s0.id); }, 700);
+    }
     else if (again === '-') showOnly();
     else if (again) beginLead(again);   // this tab chose already (the page was reloaded)
     else askClass();
@@ -4510,9 +4597,10 @@ window.KIT=KIT;
     if (presInfo) return Promise.resolve(presInfo);
     return api({ api: 'present', pin: presPin, topicId: cfg.topicId }).then(function (r) {
       if (r && r.ok && Array.isArray(r.classes)) { presInfo = r; return r; }
+      if (r && r.ok === false && /PIN|sign-in/i.test(r.error || '')) { var ep = new Error('PIN'); ep.pin = true; throw ep; }
       throw new Error('older Live Board');
     }).catch(function (err) {
-      if (err && err.kind) throw err;
+      if (err && (err.kind || err.pin)) throw err;
       // A Live Board from before this: the class list only.
       return loadRoster().then(function () {
         presInfo = { classes: roster.map(function (c) { return c.cls; }), lessons: [], running: {} };
@@ -4566,21 +4654,22 @@ window.KIT=KIT;
         box.appendChild(b);
       });
       if (!box.childNodes.length) box.appendChild(el('p', '', 'There are no classes on the class list yet.'));
-    }).catch(function (e2) { box.innerHTML = ''; failNote(msg, e2, 'Choosing the class'); });
+    }).catch(function (e2) { if (e2 && e2.pin) { presAuthLost(); return; } box.innerHTML = ''; failNote(msg, e2, 'Choosing the class'); });
   }
   /* Starts the lesson for one class, or carries on with it if it is already running. */
-  function startFor(cls, li) {
+  function startFor(cls, li, chosen) {
     var l = li != null && presInfo && presInfo.lessons ? presInfo.lessons[li] : null;
-    api({ api: 'start', pin: presPin, topicId: cfg.topicId, cls: cls, from: l ? l.from : 0, to: l ? l.to : 0, title: l ? l.t : 'The whole lesson' })
+    // chosen: the part was picked in the Hub, so a different part already running for the class is replaced.
+    api({ api: 'start', pin: presPin, topicId: cfg.topicId, cls: cls, from: l ? l.from : 0, to: l ? l.to : 0, title: l ? l.t : 'The whole lesson', force: !!chosen })
       .then(function (r) {
         if (r && r.ok) return r;
-        if (r && /PIN/i.test(r.error || '')) { var e = new Error('PIN'); e.pin = true; throw e; }
+        if (r && /PIN|sign-in/i.test(r.error || '')) { var e = new Error('PIN'); e.pin = true; throw e; }
         // A Live Board from before this: at least make the iPads follow.
         return api({ api: 'control', pin: presPin, topicId: cfg.topicId, cls: cls, set: { follow: true, hold: true, pause: false } });
       })
       .then(function () { closeOverlay(); beginLead(cls); })
       .catch(function (err) {
-        if (err && err.pin) { try { sessionStorage.removeItem(PRES_KEY); } catch (e) {} presPin = ''; startPresenter(); return; }
+        if (err && err.pin) { presAuthLost(); return; }
         askClass(err);
       });
   }
@@ -4592,11 +4681,86 @@ window.KIT=KIT;
   function beginLead(cls) {
     presCls = cls; writeJ(PRES_CLS, cls);
     try { sessionStorage.setItem(PRES_NOW, cls); } catch (e) {}
+    pendingStart = null;
     drawPresLine();
     sendLead();
     clearInterval(leadTimer); leadTimer = setInterval(sendLead, 12000);
+    resultsButton(true);
   }
-  function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); }
+  function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); resultsButton(false); }
+  /* Results: how the class answered the questions on the slide being shown, for the projector. No names. The
+     right answer shows only when the teacher asks for it. It follows the slide, and asks again every 3 seconds. */
+  // Results sits by Presenting to (when that line is on screen, as in the top bar of older decks), and otherwise
+  // as a small button at the bottom, beside the deck's Back button.
+  var resBtn = null, resBox = null, resTimer = null, resPlace = null;
+  function resultsButton(on) {
+    clearInterval(resPlace);
+    if (!on) { if (resBtn) { resBtn.remove(); resBtn = null; } closeResults(); return; }
+    if (!resBtn) {
+      resBtn = el('button', 'lbres-btn', 'Results'); resBtn.type = 'button';
+      resBtn.title = 'How the class answered the questions on this slide. No names.';
+      resBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openResults(); });
+      document.body.appendChild(resBtn);
+    }
+    placeResults(); resPlace = setInterval(placeResults, 800);
+  }
+  function placeResults() {
+    if (!resBtn) return;
+    var r = whoLine.getBoundingClientRect();
+    resBtn.hidden = whoLine.offsetParent !== null && r.width > 0 && r.bottom > 0 && r.top < window.innerHeight && !!whoLine.querySelector('.lbres-in');
+  }
+  function closeResults() { clearInterval(resTimer); resTimer = null; if (resBox) { resBox.remove(); resBox = null; } }
+  function openResults() {
+    closeResults();
+    var showRight = false, last = null;
+    resBox = el('div', 'lbres'); resBox.setAttribute('role', 'dialog'); resBox.setAttribute('aria-modal', 'true'); resBox.setAttribute('aria-label', 'Results');
+    var p = el('div', 'lbres-panel'), top = el('div', 'lbres-top');
+    top.appendChild(el('h2', '', 'Results'));
+    var sub = el('span', 'lbres-sub', presCls); top.appendChild(sub);
+    var right = el('button', 'lbres-right', 'Show the right answer'); right.type = 'button'; right.hidden = true;
+    right.addEventListener('click', function () { showRight = !showRight; right.textContent = showRight ? 'Hide the right answer' : 'Show the right answer'; draw(last); });
+    var x = el('button', 'lbres-x', 'Close'); x.type = 'button'; x.addEventListener('click', closeResults);
+    top.appendChild(right); top.appendChild(x); p.appendChild(top);
+    var body = el('div', 'lbres-body'); body.appendChild(el('p', 'lbres-wait', 'Loading…')); p.appendChild(body);
+    resBox.appendChild(p); document.body.appendChild(resBox);
+    resBox.addEventListener('click', function (e) { if (e.target === resBox) closeResults(); });
+    function draw(r) {
+      if (!r || !resBox) return;
+      body.innerHTML = '';
+      var qs = r.questions || [];
+      sub.textContent = (r.n ? 'Slide ' + r.n + ' · ' : '') + presCls;
+      right.hidden = !qs.some(function (q) { return q.pct != null || (q.choices && q.choices.some(function (o) { return o.ok; })); });
+      if (!qs.length) { body.appendChild(el('p', 'lbres-wait', 'No questions on this slide. Results follow the slide you are showing.')); return; }
+      qs.forEach(function (q) {
+        var card = el('section', 'lbres-q');
+        card.appendChild(el('h3', '', q.title));
+        card.appendChild(el('div', 'lbres-n', q.answered + ' of ' + q.size + ' answered' + (q.choices ? ' · first tries' : '')));
+        if (q.choices && q.choices.length) {
+          var most = 1;
+          q.choices.forEach(function (o) { if (o.n > most) most = o.n; });
+          q.choices.forEach(function (o) {
+            var row = el('div', 'lbres-bar' + (showRight && o.ok ? ' ok' : ''));
+            row.appendChild(el('span', 'l', o.t));
+            var tr = el('span', 't'), fill = el('i'); fill.style.width = Math.round(100 * o.n / most) + '%'; tr.appendChild(fill);
+            row.appendChild(tr); row.appendChild(el('b', '', String(o.n)));
+            card.appendChild(row);
+          });
+        } else if (q.pct != null && showRight) card.appendChild(el('div', 'lbres-pct', q.pct + '% right on the first try'));
+        else if (q.kind === 'written') card.appendChild(el('p', 'lbres-wait', 'Written answers show on your phone and in Live Board.'));
+        body.appendChild(card);
+      });
+    }
+    function poll() {
+      if (!resBox) return;
+      api({ api: 'results', pin: presPin, topicId: cfg.topicId, cls: presCls, n: slideNow() }).then(function (r) {
+        if (!resBox) return;
+        if (!r || r.ok === false) { body.innerHTML = ''; body.appendChild(el('p', 'lbres-wait', r && r.error && !/Unknown request/.test(r.error) ? r.error : 'Results need the new version of Live Board: update its deployment (Deploy > Manage deployments > New version).')); return; }
+        last = r; draw(r);
+      }).catch(function (err) { if (resBox && !last) { body.innerHTML = ''; var m = el('p', 'lbres-wait'); failNote(m, err, 'Results'); body.appendChild(m); } });
+    }
+    poll(); resTimer = setInterval(poll, 3000);
+  }
+  document.addEventListener('keydown', function (e) { if (resBox && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeResults(); } }, true);
   function drawPresLine() {
     whoLine.innerHTML = '';
     if (presCls) { whoLine.appendChild(document.createTextNode('Presenting to ')); whoLine.appendChild(el('b', '', presCls)); }
@@ -4604,12 +4768,20 @@ window.KIT=KIT;
     var ch = el('button', '', presCls ? 'Change class' : 'Choose a class'); ch.type = 'button';
     ch.addEventListener('click', function (e) { if (e) e.preventDefault(); askClass(); });
     whoLine.appendChild(ch);
+    if (presCls) {
+      var rs = el('button', 'lbres-in', 'Results'); rs.type = 'button';
+      rs.title = 'How the class answered the questions on this slide. No names.';
+      rs.addEventListener('click', function (e) { if (e) e.preventDefault(); openResults(); });
+      whoLine.appendChild(rs);
+    }
+    if (typeof placeResults === 'function') placeResults();
   }
   function sendLead() {
     if (!presenting || !presPin || !presCls) return;
     var sl = currentSlide();
     if (!sl) return;
-    api({ api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 }).catch(function () {});
+    api({ api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 })
+      .then(function (r) { if (r && r.ok === false && /PIN|sign-in/i.test(r.error || '')) presAuthLost(); }, function () {});
   }
   function addReveals() {
     Array.prototype.forEach.call(document.querySelectorAll('.question[data-question]'), function (q) {

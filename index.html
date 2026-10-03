@@ -37,18 +37,32 @@
  .note{margin-top:22px;font-size:.84rem;color:#8a94a3;line-height:1.5}
  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
  .msg{background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;color:#6b7686}
+ /* students: My Science is where to start */
+ .mysci{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#1B1F3B;color:#fff;border-radius:16px;padding:16px 18px;margin:0 0 22px}
+ .mysci[hidden]{display:none}
+ .mysci .tx{flex:1 1 260px;min-width:0}
+ .mysci b{display:block;font-size:1.08rem}
+ .mysci span{font-size:.9rem;color:#D5DAEA}
+ .mysci a{flex:0 0 auto;background:#FFE45C;color:#1B1F3B;font-weight:800;text-decoration:none;border-radius:12px;padding:12px 18px}
+ .mysci a:hover{background:#fff}
+ .mysci a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 </style></head>
 <body><div class="card">
   <h1>Lesson decks</h1>
   <p class="sub">Choose a subject, then click a lesson to open it full screen</p>
 
+  <div class="mysci" id="mysci" hidden>
+    <div class="tx"><b>Students: open My Science</b><span>Your lessons, the lesson your class is on now, homework and points, in one place. Your answers go to your teacher from there.</span></div>
+    <a id="mysci-go" target="_blank" rel="noopener">Open My Science</a>
+  </div>
+
   <div class="tabs" role="tablist" aria-label="Subject" id="tabs"></div>
   <div id="panels"><p class="msg" id="loading">Loading the lessons…</p></div>
 
   <!-- This page builds itself from lessons.json. To add or update a lesson, use Add or update a lesson
-       in Live Board (Lessons tab), or ask Claude. Nothing here needs editing by hand. -->
+       on the Teacher Hub's Teach tab, or ask Claude. Nothing here needs editing by hand. -->
   <p class="note">Opens in a new tab so the slides run full size.
-     Put your name and class in the bar at the top before submitting an answer.</p>
+     The first time, each iPad asks for your class and name. Only your teacher can change it.</p>
 </div>
 
 <script>
@@ -59,6 +73,11 @@
 
   function build(cat){
     panelsBox.innerHTML = "";
+    // My Science is Live Board's student page: its link is in lessons.json.
+    if (/^https:\/\/script\.google\.com\//.test(cat.liveboard || "")) {
+      document.getElementById("mysci-go").href = cat.liveboard;
+      document.getElementById("mysci").hidden = false;
+    }
     (cat.subjects || []).forEach(function(s, n){
       SUBJECTS.push(s.id);
       var t = el("button", "tab", s.name);
