@@ -1,6 +1,6 @@
 {
  "about": "The list of lessons on this site. index.html, Live Board and My Science read it. Live Board and Claude update it when a lesson is added; you never need to edit it by hand.",
- "updated": "2026-10-03T13:41:41Z",
+ "updated": "2026-10-03T14:39:24Z",
  "liveboard": "https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec",
  "subjects": [
   {
@@ -16,28 +16,36 @@
        "num": "7.1",
        "title": "What is the particulate nature of matter?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-7-1",
+       "live": true
       },
       {
        "file": "Ch7.2.html",
        "num": "7.2",
        "title": "How do we explain the properties of the states of matter?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-7-2",
+       "live": true
       },
       {
        "file": "Ch7.3.html",
        "num": "7.3",
        "title": "How does it explain heating and cooling?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-7-3",
+       "live": true
       },
       {
        "file": "Ch7.4.html",
        "num": "7.4",
        "title": "How does it help explain other phenomena?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-7-4",
+       "live": true
       }
      ]
     },
@@ -49,28 +57,36 @@
        "num": "8.1",
        "title": "What is the simplest unit of an element?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-8-1",
+       "live": true
       },
       {
        "file": "Ch8.2.html",
        "num": "8.2",
        "title": "How does proton number identify an element?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-8-2",
+       "live": true
       },
       {
        "file": "Ch8.3.html",
        "num": "8.3",
        "title": "How do we represent elements and compounds?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-8-3",
+       "live": true
       },
       {
        "file": "Ch8.4.html",
        "num": "8.4",
        "title": "What can atomic technologies do, and what do they cost us?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-8-4",
+       "live": true
       }
      ]
     },
@@ -82,35 +98,45 @@
        "num": "9.1",
        "title": "How do forces in nature affect us?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-9-1",
+       "live": true
       },
       {
        "file": "Ch9.2.html",
        "num": "9.2",
        "title": "What are the types of forces?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-9-2",
+       "live": true
       },
       {
        "file": "Ch9.3.html",
        "num": "9.3",
        "title": "What happens when objects interact?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-9-3",
+       "live": true
       },
       {
        "file": "Ch9.4.html",
        "num": "9.4",
        "title": "How is energy conserved?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-9-4",
+       "live": true
       },
       {
        "file": "Ch9.5.html",
        "num": "9.5",
        "title": "What are the sources of energy we use?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-9-5",
+       "live": true
       }
      ]
     },
@@ -122,28 +148,36 @@
        "num": "16.1",
        "title": "What is the function of the system?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-16-1",
+       "live": true
       },
       {
        "file": "Ch16.2.html",
        "num": "16.2",
        "title": "How do the parts work together?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-16-2",
+       "live": true
       },
       {
        "file": "Ch16.3.html",
        "num": "16.3",
        "title": "How can the function be disrupted?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-16-3",
+       "live": true
       },
       {
        "file": "Ch16.4.html",
        "num": "16.4",
        "title": "How do medical advancements impact us?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "lss-16-4",
+       "live": true
       }
      ]
     },
@@ -218,7 +252,9 @@
        "num": "9.1",
        "title": "How can we describe wave motion?",
        "note": "Slides, interactives, and questions to submit",
-       "kind": "deck"
+       "kind": "deck",
+       "topicId": "g2phy-9-1",
+       "live": true
       },
       {
        "file": "Phy9.2a.html",
@@ -226,7 +262,9 @@
        "title": "How can we describe the characteristics of waves?",
        "note": "Slides, interactives, and questions to submit",
        "kind": "deck",
-       "small": true
+       "small": true,
+       "topicId": "g2phy-9-2a",
+       "live": true
       },
       {
        "file": "Phy9.2b.html",
@@ -234,7 +272,9 @@
        "title": "How are speed, frequency and period related?",
        "note": "Slides, interactives, and questions to submit",
        "kind": "deck",
-       "small": true
+       "small": true,
+       "topicId": "g2phy-9-2b",
+       "live": true
       },
       {
        "file": "Phy9.2c.html",
@@ -242,7 +282,9 @@
        "title": "What happens to a wave when the medium changes?",
        "note": "Slides, interactives, and questions to submit",
        "kind": "deck",
-       "small": true
+       "small": true,
+       "topicId": "g2phy-9-2c",
+       "live": true
       }
      ]
     },
