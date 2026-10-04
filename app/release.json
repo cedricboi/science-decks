@@ -1,7 +1,7 @@
 {
   "build": "2026-10-07-one",
   "seq": 18,
-  "ref": "1ab0de9518fdbf0e5665ecbc4a1544a63cc7af72",
+  "ref": "main",
   "title": "My Science: one app",
   "notes": [
     "Live Board and the Teacher Hub in one app, with one teacher PIN",
@@ -22,7 +22,7 @@
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "f64e35fe88304fee4a9821adadb14000b705ba623b7f37fe0c2dbe65e5888768"
+      "sha256": "cecf1460785b42129067579166a188875af29dc27e02ca05b2f9816a6fb0ae0d"
     },
     {
       "name": "Guide",

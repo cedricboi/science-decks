@@ -374,7 +374,9 @@ function clean_(s, max) {
 /* The class list is the Students tab of the Worksheet Hub sheet when one is set
    (Live Board > 5), otherwise this sheet's own Students tab. */
 function rosterSheet_() {
-  var id = getSetting_('Class list sheet ID');
+  var id = '';
+  try { id = typeof hubSheetId_ === 'function' ? hubSheetId_() : ''; } catch (err) { id = ''; }
+  if (!id) id = getSetting_('Class list sheet ID');
   if (id) {
     var sh = SpreadsheetApp.openById(id).getSheetByName('Students');
     if (!sh) throw new Error('The Worksheet Hub sheet has no Students tab.');
@@ -387,13 +389,11 @@ function readRoster_() {
   var cache = CacheService.getScriptCache();
   var hit = cache.get('roster');
   if (hit) return JSON.parse(hit);
-  var rows = rosterSheet_().getDataRange().getValues();
-  var head = rows[0].map(function (h) { return String(h).trim().toLowerCase(); });
-  var ci = head.indexOf('class'), ni = head.indexOf('name'), ri = -1;
-  head.forEach(function (h, i) { if (ri < 0 && /^reg/.test(h)) ri = i; });   // "Reg No" or the Hub's "Reg No (optional)" 
-  if (ci < 0 || ni < 0) throw new Error('The Students tab needs Class and Name columns.');
+  var sh = rosterSheet_(), rows = sh.getDataRange().getValues();
+  var col = rosterCols_(rows);
+  var ci = col.ci, ni = col.ni, ri = col.ri;
   var out = {};
-  for (var i = 1; i < rows.length; i++) {
+  for (var i = col.start; i < rows.length; i++) {
     var cls = String(rows[i][ci]).trim().toUpperCase();
     var name = String(rows[i][ni]).trim();
     if (!cls || !name) continue;
@@ -406,8 +406,29 @@ function readRoster_() {
       return a.name.localeCompare(b.name);
     });
   });
+  if (!Object.keys(out).length && col.plain) {
+    var where = '';
+    try { where = ' of the "' + sh.getParent().getName() + '" sheet'; } catch (err) { where = ''; }
+    throw new Error('The class list is empty: the Students tab' + where + ' has no students. Put Class in column A, Reg No in B and Name in C, from row 2.');
+  }
   cachePut_('roster', JSON.stringify(out), 120);
   return out;
+}
+/* Which columns hold the class, name and register number: the first of the top five rows that has a Class column
+   and a Name column ("Student name", "Reg No (optional)", "Index no." and the like count), or else the Teacher Hub's
+   own layout, A Class, B Reg No, C Name, from row 2, as the Hub itself reads it. */
+function rosterCols_(rows) {
+  for (var r = 0; r < Math.min(5, rows.length); r++) {
+    var ci = -1, ni = -1, ri = -1;
+    rows[r].forEach(function (h, i) {
+      h = String(h).trim().toLowerCase();
+      if (ci < 0 && /^(class|form)\b/.test(h)) ci = i;
+      else if (ni < 0 && /\bname\b/.test(h)) ni = i;
+      else if (ri < 0 && /^(reg|index|register|no\b|no\.)/.test(h)) ri = i;
+    });
+    if (ci >= 0 && ni >= 0) return { start: r + 1, ci: ci, ni: ni, ri: ri };
+  }
+  return { start: 1, ci: 0, ri: 1, ni: 2, plain: true };
 }
 
 function findStudent_(cls, name) {
