@@ -1,7 +1,7 @@
 {
   "build": "2026-10-08-dark",
   "seq": 19,
-  "ref": "main",
+  "ref": "e1765047317aec608fa51d9066aaaac41f1e711c",
   "title": "My Science: dark mode, and pages that update themselves",
   "notes": [
     "Dark mode on every page: it follows each phone, iPad and laptop, and the moon button picks the other look",
@@ -86,7 +86,7 @@
     {
       "seq": 19,
       "build": "2026-10-08-dark",
-      "ref": "main",
+      "ref": "e1765047317aec608fa51d9066aaaac41f1e711c",
       "needsServer": 19,
       "files": [
         {
