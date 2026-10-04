@@ -1,52 +1,49 @@
 {
-  "build": "2026-10-07-one",
-  "seq": 18,
-  "ref": "f72c990d335c63a23d6a02e7765cf45a396f17ae",
-  "title": "My Science: one app",
+  "build": "2026-10-08-dark",
+  "seq": 19,
+  "ref": "main",
+  "title": "My Science: dark mode, and pages that update themselves",
   "notes": [
-    "Live Board and the Teacher Hub in one app, with one teacher PIN",
-    "Your phone runs the lesson: Teach on the projector, End brings the projector back",
-    "Worksheets named with a sub-chapter number link themselves",
-    "Needs you shows only what needs doing, on the Hub and on your phone",
-    "Claude marks a worksheet it has marked before all at once",
-    "Setup check, with a fix for each thing, and one-click updates"
+    "Dark mode on every page: it follows each phone, iPad and laptop, and the moon button picks the other look",
+    "Pages update themselves from the lesson site: a page change reaches everyone within about 15 minutes",
+    "Updates only ever need the server files they changed: Setup check lists them, with the code page"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "8012ed0d5d02ff91443ee6399cb42da3ba36055a381f4514b769cc11b95ac288"
+      "sha256": "d8d4f2b26da250bcf5048045e02cc134babb0ba237ebba23d1537cf4f0b06718"
     },
     {
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "cecf1460785b42129067579166a188875af29dc27e02ca05b2f9816a6fb0ae0d"
+      "sha256": "1eb65e691bc4882b44d9349d61aeeb98d18844396d4e2b2a221a062c01d28984"
     },
     {
       "name": "Guide",
       "type": "HTML",
       "path": "Guide.html",
-      "sha256": "a32600acb484c8bd8cee3438f9750acbba54f22ada53dfa466afd4ad0b30b62a"
+      "sha256": "7eb1532abe8017bb880a1c5e70a0846ce72f1b7b86ad324444a3f21235ff6e01"
     },
     {
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "abb06a11a548e886c7a1fb910c8548a7a6eb6ab7745e77d1fbba365ac741c4ae"
+      "sha256": "28fc4fc691abfb076183d7785286d73206dbeb3f4eb89745f50ce07e41902050"
     },
     {
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "9cd1c25109f9033e4616acf3dcf72d6d7dfe7a1c8fdbdf10e4fb752ae196cc06"
+      "sha256": "3f13ff1d11c8852ed582ec241e78a9a980713120055d624bcb6f3c6abd7cadda"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "6ef5fff8d514df20305297359affbccf3c7ac61eb17c909916cdf4a474ebba46"
+      "sha256": "5936ef1d5573c3299fa79213a12b352d2abd50652f7201a5c5e56ab1ddd649e8"
     },
     {
       "name": "Ink",
@@ -64,7 +61,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "118b36d4028bdb1355b7c062131bfb3ae23c5f629d938066bb19ad1b1debe3b1"
+      "sha256": "fdf2eeb625b21fb4c4ac8e77351d9bb84984ab08400fcc81d8841149a9326708"
     },
     {
       "name": "Styles",
@@ -76,13 +73,80 @@
       "name": "Teacher",
       "type": "HTML",
       "path": "Teacher.html",
-      "sha256": "08ce54ea8e80c9d9e2a0de27ab2cb82fa448b8b55f6904a67849e5a227c37d0f"
+      "sha256": "bd43b31770c211a596dd57172ad35c1a38c55403851f06972fc353a3c4311063"
     },
     {
       "name": "appsscript",
       "type": "JSON",
       "path": "appsscript.json",
-      "sha256": "44e905499992507cc0397bec7814476d613654379011aebba34aac87e0b97a21"
+      "sha256": "6b5aa20bc57879c07f931e1cfe964706b4aa9cd53a2efb578c82c71da83fc590"
     }
-  ]
+  ],
+  "pages": [
+    {
+      "seq": 19,
+      "build": "2026-10-08-dark",
+      "ref": "main",
+      "needsServer": 19,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "7eb1532abe8017bb880a1c5e70a0846ce72f1b7b86ad324444a3f21235ff6e01"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "28fc4fc691abfb076183d7785286d73206dbeb3f4eb89745f50ce07e41902050"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "5936ef1d5573c3299fa79213a12b352d2abd50652f7201a5c5e56ab1ddd649e8"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "b37a79c8f5199b5a5de98adfddbc1c27ff5f7de38788946e1e5060ff4b996787"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "fdf2eeb625b21fb4c4ac8e77351d9bb84984ab08400fcc81d8841149a9326708"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "bd43b31770c211a596dd57172ad35c1a38c55403851f06972fc353a3c4311063"
+        }
+      ]
+    }
+  ],
+  "server": [
+    {
+      "seq": 19,
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs",
+        "appsscript.json"
+      ],
+      "notes": [
+        "Dark mode on every page: it follows each phone, iPad and laptop, and the moon button picks the other look",
+        "Pages update themselves from the lesson site: a page change reaches everyone within about 15 minutes",
+        "Updates only ever need the server files they changed: Setup check lists them, with the code page"
+      ]
+    }
+  ],
+  "codePage": "https://claude.ai/artifact/H2KB9NpFgN3kPztEQQYsLC"
 }

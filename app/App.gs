@@ -14,10 +14,11 @@
 //   /exec?embed=ms        homework, inside My Science (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-07-one';
+var APP_BUILD = '2026-10-08-dark';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
+  PAGE_MEMO_ = {};
   if (p.api === 'build') {
     return ContentService.createTextOutput(JSON.stringify({ app: 'liveboard', build: BUILD, one: APP_BUILD }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -895,7 +896,7 @@ function setupChecks_() {
     var lb = Object.keys(readRoster_()).filter(function (c) { return c !== 'TEST'; }), hubCls = hubReady_() ? Object.keys(studentsByClass_()) : [];
     var key = function (c) { return String(c).toUpperCase().replace(/[\s\-_.]+/g, ''); }, hk = hubCls.map(key);
     var missing = lb.filter(function (c) { return hk.indexOf(key(c)) < 0; });
-    if (!lb.length) add('classes', 'bad', 'No classes yet', 'Add students to the Students tab of the Live Board sheet.');
+    if (!lb.length) add('classes', 'bad', 'No classes yet', 'Add students to the Students tab of the Teacher Hub sheet (Class in column A, Reg No in B, Name in C).');
     else if (hubReady_() && missing.length) add('classes', 'warn', 'Some classes are not in the Teacher Hub', missing.join(', ') + ' are on Live Board\'s class list but not on the Hub\'s Students tab, so no homework is set for them.');
     else add('classes', 'ok', 'Classes', lb.join(', '));
   } catch (e) { add('classes', 'warn', 'The class lists could not be read', String(e.message || e)); }
@@ -944,10 +945,14 @@ function api_t_setupCheck(token, withUpdate) {
   var list = setupChecks_(), up = null;
   if (withUpdate) {
     try { up = api_t_updateCheck(token, false); } catch (e) { up = { error: String(e.message || e) }; }
-    if (up && up.newer) list.unshift({ id: 'update', level: 'warn', title: 'An update is ready: ' + up.latest, detail: (up.notes || []).join(' · ') + (up.owner ? '' : ' (Only the owner of My Science can update: open the Teacher Hub signed in to Google with that account.)'), fix: up.owner ? { act: 'update', label: 'Update' } : null, link: '' });
-    else if (up && up.latest) list.push({ id: 'update', level: 'ok', title: 'Up to date', detail: 'Build ' + APP_BUILD + '.', fix: null, link: '' });
+    if (up && up.newer) list.unshift({ id: 'update', level: 'warn', title: 'Release ' + up.pasteSeq + ': paste ' + up.paste.join(', '),
+      detail: ((up.notes || []).join(' · ') + ' ').trim() + ' Only these files: the pages update by themselves. Copy them from the code page into the Live Board sheet\'s script, save each, then Deploy > Manage deployments > New version.', fix: null, link: up.codePage || '' });
+    else if (up && !up.error) list.push({ id: 'update', level: 'ok', title: 'Server code up to date', detail: 'Release ' + APP_SEQ + ' (' + APP_BUILD + '). Nothing to paste.', fix: null, link: '' });
     else if (up && up.error) list.push({ id: 'update', level: 'info', title: 'Updates could not be checked', detail: up.error, fix: null, link: '' });
-    if (up && up.state && up.state.prev && up.state.prev.version) list.push({ id: 'undo', level: 'info', title: 'Last update: ' + (up.state.prev.toBuild || ''), detail: 'Undo puts My Science back on ' + (up.state.prev.build || 'the version before') + '.', fix: { act: 'undo', label: 'Undo the update' }, link: '' });
+    if (up && up.pages) {
+      if (up.pages.from === 'site') list.push({ id: 'pages', level: 'ok', title: 'Pages update themselves', detail: 'From the lesson site, release ' + up.pages.seq + '. A page change reaches everyone within about 15 minutes.', fix: { act: 'pages_local', label: 'Use the pasted pages' }, link: '' });
+      else list.push({ id: 'pages', level: 'info', title: 'Pages: the copy pasted into the script', detail: 'Because ' + up.pages.why + '.', fix: /switched/.test(up.pages.why) ? { act: 'pages_site', label: 'Update by themselves' } : null, link: '' });
+    }
   }
   return { checks: list, build: APP_BUILD, update: up };
 }
@@ -957,6 +962,8 @@ function api_t_setupFix(token, act) {
   if (act === 'timers') { ensureTick_(true); return { ok: true, done: 'Timer on' }; }
   if (act === 'autolink_on') { props.setProperty('AUTO_LINK', 'on'); if (!props.getProperty('AUTO_LINK_AT')) props.setProperty('AUTO_LINK_AT', String(Date.now())); ensureTick_(tickWanted_()); return { ok: true, done: 'Worksheets link themselves from now on' }; }
   if (act === 'autolink_off') { props.setProperty('AUTO_LINK', 'off'); return { ok: true, done: 'Switched off' }; }
+  if (act === 'pages_local') { props.setProperty('PAGES_LOCAL', '1'); return { ok: true, done: 'The pasted pages from now on' }; }
+  if (act === 'pages_site') { props.deleteProperty('PAGES_LOCAL'); CacheService.getScriptCache().remove('pg_rel'); return { ok: true, done: 'Pages update themselves again' }; }
   if (act === 'unpair') { var n = unpairAll_(); return { ok: true, done: n + ' unpaired. Pair your phone and the projector again.' }; }
   throw new Error('Unknown fix.');
 }
@@ -979,140 +986,168 @@ function showLinks() {
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(560).setHeight(320), 'My links');
 }
 
-/* ---------- one-click updates ---------- */
+/* ---------- updates: pages by themselves, server code from the code page ---------- */
 //
-// New versions of My Science are put in the app folder of the lesson repository (cedricboi/science-decks):
-// release.json (the release number, what is new, the commit holding the files, and each file's SHA-256) and the
-// files themselves. Update (Teacher Hub > Setup check and updates, the owner only) reads them at that commit,
-// checks each file against its SHA-256, writes them into this script with the Apps Script API (files the release
-// does not list are kept), saves a new version and puts the web address on it. Undo puts back the code and the web
-// address of the version before. Students' and the teacher's data are not touched. It needs the Apps Script API
-// switched on once, for the owner's account: https://script.google.com/home/usersettings
-var APP_SEQ = 18;   // the release number (newer releases have bigger numbers)
-var UPDATE_REPO = 'cedricboi/science-decks', UPDATE_BRANCH = 'main', UPDATE_DIR = 'app/', UPDATE_SETTINGS = 'https://script.google.com/home/usersettings';
-function updRaw_(ref, path) {
-  var res = UrlFetchApp.fetch('https://raw.githubusercontent.com/' + UPDATE_REPO + '/' + encodeURIComponent(ref) + '/' + UPDATE_DIR + path, { muteHttpExceptions: true });
-  var code = res.getResponseCode();
-  if (code === 404) throw new Error('UPDATE_NONE: There is no ' + path + ' in the app folder of ' + UPDATE_REPO + ' yet.');
-  if (code !== 200) throw new Error('GitHub did not give ' + path + ' (error ' + code + '). Try again in a minute.');
-  return res.getContentText('UTF-8');
-}
-function updSha_(text) {
-  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8)
-    .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
-}
-function updRelease_(fresh) {
-  var cache = CacheService.getScriptCache();
-  if (!fresh) { var hit = parseJson_(cache.get('upd_rel')); if (hit) return hit; }
-  var rel = JSON.parse(updRaw_(UPDATE_BRANCH, 'release.json'));
-  if (!rel || !rel.build || !Array.isArray(rel.files) || !rel.files.length) throw new Error('The release on GitHub is not complete.');
-  try { cache.put('upd_rel', JSON.stringify(rel), 3600); } catch (e) { /* asked again next time */ }
-  return rel;
-}
-function updNewer_(rel) { return rel && (Number(rel.seq) ? Number(rel.seq) > APP_SEQ : String(rel.build) > String(APP_BUILD)); }
-/* The Apps Script API, as the owner of this script. */
-function updApi_(method, path, body) {
-  var opt = { method: method, muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, contentType: 'application/json' };
-  if (body) opt.payload = JSON.stringify(body);
-  var res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects/' + ScriptApp.getScriptId() + path, opt);
-  var code = res.getResponseCode(), out = {};
-  try { out = JSON.parse(res.getContentText() || '{}'); } catch (e) { out = {}; }
-  if (code >= 200 && code < 300) return out;
-  var why = out.error && out.error.message ? out.error.message : 'error ' + code;
-  if (/usersettings|has not enabled|not been used|disabled/i.test(why)) throw new Error('UPDATE_API_OFF: Updates need the Apps Script API switched on for your Google account. Open ' + UPDATE_SETTINGS + ', switch on Google Apps Script API, then press Update again.');
-  if (code === 403) throw new Error('UPDATE_SCOPE: Google says this script may not change itself yet (' + why + '). In the script editor, run setupMyScience once to give it permission, then press Update again.');
-  throw new Error('The Apps Script API said: ' + why);
-}
-/* The permissions this script has now (from Google's token check). */
-function updGranted_() {
-  try {
-    var res = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?access_token=' + encodeURIComponent(ScriptApp.getOAuthToken()), { muteHttpExceptions: true });
-    var j = JSON.parse(res.getContentText() || '{}');
-    return String(j.scope || '').split(/\s+/).filter(String);
-  } catch (e) { return null; }
-}
-function updDeploymentId_() {
-  var m = /^https:\/\/script\.google\.com\/(?:a\/macros\/[^\/]+|a\/[^\/]+\/macros|macros)(?:\/u\/\d+)?\/s\/([-\w]+)\/exec/.exec(selfUrl_() || '');
-  return m ? m[1] : '';
-}
-function updState_() {
-  var p = PropertiesService.getScriptProperties();
-  return { prev: parseJson_(p.getProperty('UPDATE_PREV')), last: parseJson_(p.getProperty('UPDATE_LAST')) };
-}
-function updBusy_(on) {
-  var cache = CacheService.getScriptCache();
-  if (on) { if (cache.get('upd_busy')) throw new Error('An update is already running.'); cache.put('upd_busy', '1', 300); }
-  else cache.remove('upd_busy');
+// New versions of My Science are put in the app folder of the lesson repository (cedricboi/science-decks). Its
+// release.json lists the page sets (see the pages above: they reach everyone by themselves) and, for each release
+// that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
+// ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
+// Home card say which files to paste, with the code page's link; nothing else is ever pasted.
+var APP_SEQ = 19;   // the release number of this server code (newer releases have bigger numbers)
+/* The server files changed by releases newer than this one, and what those releases bring. */
+function updServerNeeded_(rel) {
+  var files = {}, notes = [], latest = 0;
+  ((rel && rel.server) || []).forEach(function (s) {
+    if (!s || typeof s !== 'object' || !(Number(s.seq) > APP_SEQ)) return;
+    latest = Math.max(latest, Number(s.seq));
+    (Array.isArray(s.files) ? s.files : []).forEach(function (f) { if (/^[\w.-]+$/.test(String(f))) files[f] = 1; });
+    (Array.isArray(s.notes) ? s.notes : []).forEach(function (n) { if (notes.length < 8) notes.push(String(n)); });
+  });
+  return { files: Object.keys(files).sort(), notes: notes, seq: latest };
 }
 function api_t_updateCheck(token, fresh) {
   teacher_(token);
-  var out = { current: APP_BUILD, seq: APP_SEQ, latest: '', newer: false, notes: [], title: '', can: !!updDeploymentId_(), owner: isOwner_(), state: updState_() };
+  if (fresh) { CacheService.getScriptCache().remove('pg_rel'); PAGE_MEMO_ = {}; }
+  var st = pagesState_(), rel = st.rel || null, need = updServerNeeded_(rel);
+  if (!rel) return { current: APP_BUILD, seq: APP_SEQ, error: 'The lesson site did not answer, so updates could not be checked. Try again in a few minutes.', paste: [], newer: false,
+    pages: { from: st.from, seq: st.seq || 0, build: st.build || '', why: st.why || '' }, notes: [], codePage: '', owner: isOwner_() };
+  return {
+    current: APP_BUILD, seq: APP_SEQ, latest: rel ? rel.build : '', latestSeq: rel ? rel.seq : 0,
+    pages: { from: st.from, seq: st.seq || 0, build: st.build || '', why: st.why || '' },
+    paste: need.files, pasteSeq: need.seq, newer: need.files.length > 0,
+    notes: need.notes.length ? need.notes : (rel ? rel.notes : []), title: rel ? rel.title : '',
+    codePage: rel && /^https:\/\/claude\.ai\//.test(rel.codePage) ? rel.codePage : '', owner: isOwner_()
+  };
+}
+// The old Update and Undo buttons (an open page from before this release may still show them).
+function api_t_updateRun(token) { teacher_(token); throw new Error('Updates are pasted now: Setup check lists the files, with the code page\'s link.'); }
+function api_t_updateUndo(token) { teacher_(token); throw new Error('Updates are pasted now: Setup check lists the files, with the code page\'s link.'); }
+
+/* ---------- pages that update themselves from the lesson site ---------- */
+//
+// The pages (Teacher, Student, HubTeacher, Homework, Guide, Rewards, Ink, Styles) come from the newest release in the
+// app folder of the lesson repository whose server code this script already has: release.json lists page sets,
+// newest first, each with the commit holding it, the server release it needs (needsServer) and each file's SHA-256.
+// A page is read at that commit, checked against its SHA-256, and kept in the cache (packed) for six hours, so a
+// page change reaches every iPad, phone and laptop within ten minutes of being put on the lesson site, with nothing
+// to paste. Anything wrong (GitHub slow or down, a check that fails, a release that needs newer server code, or the
+// owner's switch, PAGES_LOCAL) means the copy pasted into this script, which always works.
+var PAGES_REPO = 'cedricboi/science-decks', PAGES_RAW = 'https://raw.githubusercontent.com/';
+var PAGES_REL_SECS = 600, PAGES_KEEP_SECS = 21600, PAGES_CHUNK = 90000;
+var PAGE_NAMES = ['Teacher', 'Student', 'HubTeacher', 'Homework', 'Guide', 'Rewards', 'Ink', 'Styles'];
+var PAGE_MEMO_ = {};   // for this request only: the page set chosen, and each page's text
+
+/* The release list from the lesson site (only what the pages need), cached ten minutes. null: none to use.
+   While one execution asks GitHub (or when GitHub does not answer), the others use the last good list, so a slow
+   GitHub never holds up a page for long. */
+function pagesRelease_() {
+  var cache = CacheService.getScriptCache(), hit = cache.get('pg_rel');
+  if (hit) return parseJson_(hit);
+  var last = parseJson_(cache.get('pg_rel_last'));
+  if (last && cache.get('pg_rel_busy')) return last;
+  cache.put('pg_rel_busy', '1', 30);
+  var rel = null;
   try {
-    var rel = updRelease_(!!fresh);
-    out.latest = rel.build; out.newer = updNewer_(rel); out.notes = (rel.notes || []).slice(0, 12); out.title = rel.title || '';
-  } catch (e) { out.error = String(e.message || e).replace(/^UPDATE_NONE: /, ''); }
+    var res = UrlFetchApp.fetch(PAGES_RAW + PAGES_REPO + '/main/app/release.json', { muteHttpExceptions: true });
+    if (res.getResponseCode() === 200) {
+      var r = JSON.parse(res.getContentText('UTF-8'));
+      rel = { seq: Number(r.seq) || 0, build: String(r.build || ''), pages: Array.isArray(r.pages) ? r.pages.slice(0, 8) : [],
+        server: Array.isArray(r.server) ? r.server.slice(0, 40) : [], notes: Array.isArray(r.notes) ? r.notes.slice(0, 12).map(String) : [],
+        title: String(r.title || ''), codePage: String(r.codePage || '') };
+    }
+  } catch (err) { rel = null; }
+  if (rel) { cachePut_('pg_rel', JSON.stringify(rel), PAGES_REL_SECS); cachePut_('pg_rel_last', JSON.stringify(rel), PAGES_KEEP_SECS); }
+  else if (last) { cachePut_('pg_rel', JSON.stringify(last), 120); rel = last; }   // GitHub did not answer: the last good list, asked again in two minutes
+  else cachePut_('pg_rel', 'null', 120);
+  cache.remove('pg_rel_busy');
+  return rel;
+}
+/* The page set to use: the newest one whose server code this script has. null: the pasted pages. */
+function pagesSet_() {
+  if (PAGE_MEMO_.set !== undefined) return PAGE_MEMO_.set;
+  var set = null;
+  try {
+    if (PropertiesService.getScriptProperties().getProperty('PAGES_LOCAL') !== '1') {
+      var rel = pagesRelease_(), list = rel ? rel.pages : [];
+      for (var i = 0; i < list.length && !set; i++) {
+        var p = list[i];
+        if (p && Number(p.needsServer) <= APP_SEQ && /^[0-9a-f]{40}$/.test(String(p.ref || '')) && Array.isArray(p.files)) set = p;
+      }
+    }
+  } catch (err) { set = null; }
+  PAGE_MEMO_.set = set;
+  return set;
+}
+function pageSha_(text) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8)
+    .map(function (b) { return ('0' + (b & 255).toString(16)).slice(-2); }).join('');
+}
+function pagePack_(text) { return Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(text, 'text/plain', 'page.txt')).getBytes()); }
+function pageUnpack_(packed) {
+  try { return Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(packed), 'application/x-gzip', 'page.gz')).getDataAsString('UTF-8'); }
+  catch (err) { return null; }
+}
+/* One page of the set: from the cache, or from GitHub at the set's commit (checked, then cached). null: not to be had. */
+function pageRemote_(set, name) {
+  var f = null;
+  set.files.forEach(function (x) { if (x && x.name === name) f = x; });
+  if (!f || !/^[0-9a-f]{64}$/.test(String(f.sha256 || '')) || !/^[\w.-]+$/.test(String(f.path || ''))) return null;
+  var cache = CacheService.getScriptCache(), key = 'pg_' + f.sha256.slice(0, 24), n = Number(cache.get(key + '_n') || 0);
+  if (n > 0) {
+    var keys = [];
+    for (var i = 0; i < n; i++) keys.push(key + '_' + i);
+    var got = cache.getAll(keys), parts = [];
+    for (var j = 0; j < n && parts; j++) { if (got[keys[j]] == null) parts = null; else parts.push(got[keys[j]]); }
+    if (parts) { var hit = pageUnpack_(parts.join('')); if (hit != null) return hit; }
+  }
+  if (cache.get(key + '_bad')) return null;   // failed a moment ago: not asked again for ten minutes
+  var res = UrlFetchApp.fetch(PAGES_RAW + PAGES_REPO + '/' + set.ref + '/app/' + f.path, { muteHttpExceptions: true });
+  var text = res.getResponseCode() === 200 ? res.getContentText('UTF-8') : null;
+  // the page must be exactly the one the release lists, and a page from the lesson site never runs code on the server
+  if (text == null || pageSha_(text) !== f.sha256 || /<\?(?!!=\s*include_\('(?:Styles|Ink)'\);?\s*\?>)/.test(text)) { cache.put(key + '_bad', '1', 600); return null; }
+  try {
+    var packed = pagePack_(text), put = {}, count = Math.ceil(packed.length / PAGES_CHUNK);
+    for (var k = 0; k < count; k++) put[key + '_' + k] = packed.slice(k * PAGES_CHUNK, (k + 1) * PAGES_CHUNK);
+    cache.putAll(put, PAGES_KEEP_SECS);
+    cache.put(key + '_n', String(count), PAGES_KEEP_SECS);   // last, so a half-written page is never read
+  } catch (err) { /* read from GitHub again next time */ }
+  return text;
+}
+/* The pages a request needs, all from the same place: every one from the lesson site, or every one pasted (a page and
+   the styles it pulls in always match). */
+function pagesLoad_(names) {
+  var set = pagesSet_(), out = {}, ok = !!set;
+  if (ok) {
+    for (var i = 0; i < names.length && ok; i++) {
+      var t = null;
+      try { t = pageRemote_(set, names[i]); } catch (err) { t = null; }
+      if (t == null) ok = false; else out[names[i]] = t;
+    }
+  }
+  if (!ok) {
+    out = {};
+    names.forEach(function (n) { out[n] = HtmlService.createHtmlOutputFromFile(n).getContent(); });
+    PAGE_MEMO_.from = 'pasted';
+  } else PAGE_MEMO_.from = 'site';
+  names.forEach(function (n) { PAGE_MEMO_[n] = out[n]; });
   return out;
 }
-function api_t_updateRun(token) {
-  teacher_(token);
-  needOwner_('Update');
-  updBusy_(true);
-  try { return updateRun_(); } finally { updBusy_(false); }
+/* A page with its includes (Styles, Ink) put in as plain text: no page is ever run as a server template. */
+function pageAssembled_(name) {
+  return pageHtml_(name).replace(/<\?!=\s*include_\('(Styles|Ink)'\);?\s*\?>/g, function (m, n) { return pageHtml_(n); });
 }
-function updateRun_() {
-  var dep = updDeploymentId_();
-  if (!dep) throw new Error('The web address is not known, so the update cannot be put live. Set it with My Science > Change the web app link in the sheet.');
-  var rel = updRelease_(true), ref = rel.ref || UPDATE_BRANCH;
-  // 1. The files, from GitHub, at the release's own commit, each checked against its SHA-256.
-  var files = rel.files.map(function (f) {
-    if (!/^(SERVER_JS|HTML|JSON)$/.test(f.type) || !/^[\w.-]+$/.test(f.name || '') || !/^[\w.-]+$/.test(f.path || '')) throw new Error('The release lists a file it cannot use: ' + f.name);
-    var src = updRaw_(ref, f.path);
-    if (f.sha256 && updSha_(src) !== String(f.sha256).toLowerCase()) throw new Error('GitHub is still putting the new files out (' + f.path + ' is not the one the release lists). Try again in a few minutes.');
-    return { name: f.name, type: f.type, source: src };
-  });
-  // 2. This script's files now: those the release does not list are kept.
-  var cur = updApi_('get', '/content');
-  var keep = (cur.files || []).filter(function (f) { return !files.some(function (n) { return n.name === f.name && n.type === f.type; }); })
-    .map(function (f) { return { name: f.name, type: f.type, source: f.source }; });
-  var props = PropertiesService.getScriptProperties();
-  // 3. New permissions: only the manifest goes in now (the old code keeps running), until the owner has allowed them.
-  var man = files.filter(function (f) { return f.name === 'appsscript'; })[0], need = [];
-  if (man) {
-    var want = (parseJson_(man.source) || {}).oauthScopes || [], have = updGranted_();
-    if (have) need = want.filter(function (s) { return have.indexOf(s) < 0; });
-  }
-  if (need.length) {
-    var oldFiles = (cur.files || []).filter(function (f) { return f.name !== 'appsscript'; }).map(function (f) { return { name: f.name, type: f.type, source: f.source }; });
-    updApi_('put', '/content', { scriptId: ScriptApp.getScriptId(), files: oldFiles.concat([man]) });
-    props.setProperty('UPDATE_LAST', JSON.stringify({ build: rel.build, at: Date.now(), live: false, need: need }));
-    return { ok: true, live: false, build: rel.build, need: need,
-      message: 'This update needs a permission My Science did not have before. In the Live Board sheet\'s script, run setupMyScience once (Google asks you to allow it), then press Update again.' };
-  }
-  updApi_('put', '/content', { scriptId: ScriptApp.getScriptId(), files: files.concat(keep) });
-  // 4. A new version, and the web address on it.
-  var v = updApi_('post', '/versions', { description: 'My Science ' + rel.build });
-  var d = updApi_('get', '/deployments/' + dep), prevV = d.deploymentConfig && d.deploymentConfig.versionNumber;
-  updApi_('put', '/deployments/' + dep, { deploymentConfig: { scriptId: ScriptApp.getScriptId(), versionNumber: v.versionNumber, manifestFileName: 'appsscript', description: 'My Science ' + rel.build } });
-  if (prevV) props.setProperty('UPDATE_PREV', JSON.stringify({ version: prevV, build: APP_BUILD, at: Date.now(), to: v.versionNumber, toBuild: rel.build }));
-  props.setProperty('UPDATE_LAST', JSON.stringify({ build: rel.build, at: Date.now(), live: true, version: v.versionNumber }));
-  CacheService.getScriptCache().remove('upd_rel');
-  return { ok: true, live: true, build: rel.build, version: v.versionNumber, undo: !!prevV };
+/* One page's text (after pagesLoad_ for a page with includes, the same source as the page). */
+function pageHtml_(name) {
+  if (typeof PAGE_MEMO_[name] === 'string') return PAGE_MEMO_[name];
+  return pagesLoad_([name])[name];
 }
-/* Undo: the code and the web address go back to the version before the last update (the timers run the saved
-   code, so both go back). */
-function api_t_updateUndo(token) {
-  teacher_(token);
-  needOwner_('Undo');
-  var dep = updDeploymentId_(), props = PropertiesService.getScriptProperties(), prev = parseJson_(props.getProperty('UPDATE_PREV'));
-  if (!dep || !prev || !prev.version) throw new Error('There is no update to undo.');
-  updBusy_(true);
-  try {
-    var old = updApi_('get', '/content?versionNumber=' + encodeURIComponent(prev.version));
-    if (old.files && old.files.length) updApi_('put', '/content', { scriptId: ScriptApp.getScriptId(), files: old.files.map(function (f) { return { name: f.name, type: f.type, source: f.source }; }) });
-    updApi_('put', '/deployments/' + dep, { deploymentConfig: { scriptId: ScriptApp.getScriptId(), versionNumber: prev.version, manifestFileName: 'appsscript', description: 'My Science ' + (prev.build || '') + ' (undo)' } });
-  } finally { updBusy_(false); }
-  props.deleteProperty('UPDATE_PREV');
-  props.setProperty('UPDATE_LAST', JSON.stringify({ build: prev.build || '', at: Date.now(), live: true, version: prev.version, undone: true }));
-  return { ok: true, build: prev.build || '', version: prev.version };
+/* Where the pages come from now, for Setup check. */
+function pagesState_() {
+  var p = PropertiesService.getScriptProperties();
+  var rel = pagesRelease_();
+  if (p.getProperty('PAGES_LOCAL') === '1') return { from: 'pasted', why: 'switched to the pasted pages', rel: rel };
+  if (!rel) return { from: 'pasted', why: 'the lesson site did not answer' };
+  var set = pagesSet_();
+  if (!set) return { from: 'pasted', why: rel.pages.length ? 'the newest pages need newer server code' : 'the lesson site has no pages yet', rel: rel };
+  return { from: 'site', seq: Number(set.seq) || 0, build: String(set.build || ''), rel: rel };
 }
-

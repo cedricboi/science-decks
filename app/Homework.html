@@ -3,6 +3,43 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
+<script>
+  /* Light or dark: this device's own setting, unless the moon button chose the other look. The choice is kept on this
+     device for every My Science page on it, and pages already open change with it. */
+  (function () {
+    var K = 'ms_theme', root = document.documentElement, mem = '';
+    function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
+    function device() { return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    function now() { return chosen() || device(); }
+    function store(v) { mem = v || ''; try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) { /* kept in mem */ } }
+    // Night chosen earlier on the Teacher Hub or the homework page carries over, once.
+    try { if (!localStorage.getItem(K + '_was')) { localStorage.setItem(K + '_was', '1'); if (localStorage.getItem('wsh_theme') === 'dark' || localStorage.getItem('wsh_look') === 'dark') store('dark'); } } catch (e) {}
+    function label() {
+      var d = now() === 'dark', bs = document.querySelectorAll('.ms-moon');
+      for (var i = 0; i < bs.length; i++) { bs[i].setAttribute('aria-pressed', d ? 'true' : 'false'); bs[i].title = d ? 'Dark mode is on (tap for light)' : 'Dark mode'; }
+    }
+    function apply() {
+      var t = now(), was = root.getAttribute('data-theme');
+      if (was !== t) {
+        root.setAttribute('data-theme', t);
+        if (was) { try { window.dispatchEvent(new Event('ms-theme')); } catch (e) { /* very old browser */ } }
+      }
+      label();
+    }
+    window.msTheme = {
+      now: now, isDark: function () { return now() === 'dark'; }, chosen: chosen, apply: apply, label: label,
+      // '' follows the device again
+      set: function (v) { store(v === 'dark' || v === 'light' ? v : ''); apply(); },
+      // the moon button: the other look; choosing what the device already shows means "follow the device" again
+      toggle: function () { var next = now() === 'dark' ? 'light' : 'dark'; store(next === device() ? '' : next); apply(); return next; }
+    };
+    apply();
+    if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply); }
+    window.addEventListener('storage', function (e) { if (!e.key || e.key === K) apply(); });
+    document.addEventListener('click', function (e) { var b = e.target && e.target.closest ? e.target.closest('.ms-moon') : null; if (b) { e.preventDefault(); window.msTheme.toggle(); } });
+    document.addEventListener('DOMContentLoaded', label);
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Worksheets</title>
 <?!= include_('Styles'); ?>
@@ -925,6 +962,14 @@
     if (window.google && google.script && google.script.url && google.script.url.getLocation) google.script.url.getLocation(function (loc) { go((loc && loc.parameter) || {}); });
   }
   var ticketBusy = false;
+  // My Science's look, sent to this frame (its choice: 'dark', 'light', or '' for the device's own)
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'theme' || !window.msTheme) return;
+    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    var v = m.theme === 'dark' || m.theme === 'light' ? m.theme : '';
+    if (v !== msTheme.chosen()) msTheme.set(v);
+  });
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'signin' || !m.st) return;
@@ -1704,15 +1749,16 @@
   };
   function meKey(k) { return 'wsh_' + k + '_' + S.me.cls + '_' + String(S.me.name).toLowerCase(); }
   function reducedMotion() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function lookPref() { var v = lsGet('wsh_look'); return v === 'light' || v === 'dark' ? v : 'auto'; }
-  function isNight() { var p = lookPref(); return p === 'dark' || (p === 'auto' && !!(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)); }
+  function lookPref() { return window.msTheme ? (msTheme.chosen() || 'auto') : 'auto'; }
+  function isNight() { return window.msTheme ? msTheme.isDark() : false; }
   function applyLook() {
     var root = document.documentElement;
     root.setAttribute('data-theme', isNight() ? 'dark' : 'light');
     root.setAttribute('data-skin', SKINS[S.skin] ? S.skin : 'sky');
     paintSky();
   }
-  if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', applyLook); }
+  // the device's setting changing, the moon button in My Science, or another page on this iPad
+  window.addEventListener('ms-theme', applyLook);
   // Morning, day, evening or night, from the clock on this iPad. The night look always has the night sky.
   function skyTime() {
     if (isNight()) return 'night';
@@ -2020,7 +2066,7 @@
       '<h3 class="mini">Colour theme</h3><div class="skins" id="skins">' + skins + '</div><p class="note" style="margin-top:10px">Unlock a theme once with points and keep it. You have ' + (sum.points || 0) + ' points.</p><p class="err" id="skin-err"></p>',
       [{ text: 'Done' }], 'look');
     Array.prototype.forEach.call(document.querySelectorAll('#look-seg [data-look]'), function (b) {
-      b.onclick = function () { lsSet('wsh_look', b.getAttribute('data-look')); applyLook(); $('look-seg').innerHTML = seg(); openLook(); };
+      b.onclick = function () { var v = b.getAttribute('data-look'); if (window.msTheme) msTheme.set(v === 'auto' ? '' : v); applyLook(); $('look-seg').innerHTML = seg(); openLook(); };
     });
     Array.prototype.forEach.call(document.querySelectorAll('#skins [data-skin]'), function (b) {
       b.onclick = function () {

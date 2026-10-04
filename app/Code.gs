@@ -49,7 +49,7 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
-var BUILD = '2026-10-07-one';
+var BUILD = '2026-10-08-dark';
 var BRIDGE_LATEST = 10;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
@@ -59,7 +59,8 @@ function lbDoGet_(e) {
   }
   var view = (e && e.parameter && e.parameter.view) || '';
   var page = view === 'teacher' ? 'Teacher' : 'Student';
-  return HtmlService.createHtmlOutputFromFile(page)
+  // The page comes from the lesson site when it can (it updates itself), or else the copy pasted here.
+  return (typeof pageHtml_ === 'function' ? HtmlService.createHtmlOutput(pageHtml_(page)) : HtmlService.createHtmlOutputFromFile(page))
     .setTitle(page === 'Teacher' ? 'Live Board (teacher)' : 'My Science')
     .addMetaTag('viewport', page === 'Teacher' ? 'width=device-width, initial-scale=1, viewport-fit=cover'
       : 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover')

@@ -7,11 +7,40 @@
 <title>Teacher Hub</title>
 <?!= include_('Styles'); ?>
 <script>
-  // Light, Night, or the same as the iPad, set before the page is drawn so it never flashes.
+  /* Light or dark: this device's own setting, unless the moon button chose the other look. The choice is kept on this
+     device for every My Science page on it, and pages already open change with it. */
   (function () {
-    var t = 'light'; try { t = localStorage.getItem('wsh_theme') || 'light'; } catch (e) {}
-    if (t === 'auto') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', t);
+    var K = 'ms_theme', root = document.documentElement, mem = '';
+    function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
+    function device() { return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    function now() { return chosen() || device(); }
+    function store(v) { mem = v || ''; try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) { /* kept in mem */ } }
+    // Night chosen earlier on the Teacher Hub or the homework page carries over, once.
+    try { if (!localStorage.getItem(K + '_was')) { localStorage.setItem(K + '_was', '1'); if (localStorage.getItem('wsh_theme') === 'dark' || localStorage.getItem('wsh_look') === 'dark') store('dark'); } } catch (e) {}
+    function label() {
+      var d = now() === 'dark', bs = document.querySelectorAll('.ms-moon');
+      for (var i = 0; i < bs.length; i++) { bs[i].setAttribute('aria-pressed', d ? 'true' : 'false'); bs[i].title = d ? 'Dark mode is on (tap for light)' : 'Dark mode'; }
+    }
+    function apply() {
+      var t = now(), was = root.getAttribute('data-theme');
+      if (was !== t) {
+        root.setAttribute('data-theme', t);
+        if (was) { try { window.dispatchEvent(new Event('ms-theme')); } catch (e) { /* very old browser */ } }
+      }
+      label();
+    }
+    window.msTheme = {
+      now: now, isDark: function () { return now() === 'dark'; }, chosen: chosen, apply: apply, label: label,
+      // '' follows the device again
+      set: function (v) { store(v === 'dark' || v === 'light' ? v : ''); apply(); },
+      // the moon button: the other look; choosing what the device already shows means "follow the device" again
+      toggle: function () { var next = now() === 'dark' ? 'light' : 'dark'; store(next === device() ? '' : next); apply(); return next; }
+    };
+    apply();
+    if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply); }
+    window.addEventListener('storage', function (e) { if (!e.key || e.key === K) apply(); });
+    document.addEventListener('click', function (e) { var b = e.target && e.target.closest ? e.target.closest('.ms-moon') : null; if (b) { e.preventDefault(); window.msTheme.toggle(); } });
+    document.addEventListener('DOMContentLoaded', label);
   })();
 </script>
 <style>
@@ -28,7 +57,7 @@
   .guide-link svg { width: 34px; height: 34px; flex: none; color: var(--blue); }
   .guide-link b { display: block; font-family: var(--display); font-size: 17px; color: var(--blue); }
   .guide-link span span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
-  #guide-view { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: flex; flex-direction: column; }
+  #guide-view { position: fixed; inset: 0; z-index: 90; background: var(--paper); display: flex; flex-direction: column; }
   #guide-view.hidden { display: none; }
   .gv-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top, 0px));
     background: var(--surface); border-bottom: 1px solid var(--rule); }
@@ -1125,6 +1154,15 @@
   .nview { max-width: 860px !important; }
   .nview .npages { max-height: 70vh; overflow: auto; background: #E9EDF4; border-radius: 12px; padding: 12px; display: grid; gap: 12px; justify-items: center; }
   .nview canvas { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); border-radius: 2px; max-width: 100%; }
+
+  /* The moon button (dark mode on this device) */
+  .ms-moon { width: 40px; height: 40px; border-radius: 999px; display: inline-grid; place-items: center; flex: none; padding: 0;
+    border: 1.5px solid var(--line); background: transparent; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ms-moon:hover { background: rgba(127,127,127,.12); }
+  .ms-moon svg { width: 20px; height: 20px; display: block; }
+  .ms-moon .sun, :root[data-theme="dark"] .ms-moon .moon { display: none; }
+  :root[data-theme="dark"] .ms-moon .sun { display: block; }
+  .links .ms-moon { width: 38px; height: 38px; color: var(--ink); border-color: var(--rule); }
 </style>
 </head>
 <body>
@@ -1431,7 +1469,7 @@
   }
   function showGuide() {
     var f = $('gv-frame');
-    if (!f.getAttribute('data-ok')) { f.srcdoc = guideHtml; f.setAttribute('data-ok', '1'); }
+    if (!f.getAttribute('data-ok')) { f.srcdoc = guideHtml.replace(/<html([^>]*)>/i, '<html$1 data-theme="' + (isDark() ? 'dark' : 'light') + '">'); f.setAttribute('data-ok', '1'); }
     f.classList.remove('hidden'); $('gv-msg').classList.add('hidden');
   }
   function closeGuide() {
@@ -1573,18 +1611,18 @@
   }, true);
 
   /* ---------- Light or night ---------- */
-  var THEMES = [['light', 'Light'], ['dark', 'Night'], ['auto', 'Match iPad']];
-  function themePick() { return lsGet('wsh_theme') || 'light'; }
+  // One switch for every My Science page on this device (msTheme, at the top of the page): the device's own setting,
+  // or the look chosen with the moon button or here.
+  var THEMES = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Same as this device']];
+  function themePick() { return window.msTheme ? (msTheme.chosen() || 'auto') : 'auto'; }
   function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
-  function applyTheme() {
-    var t = themePick();
-    if (t === 'auto') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    var was = document.documentElement.getAttribute('data-theme');
-    document.documentElement.setAttribute('data-theme', t);
-    if (was !== t) redraw();
-  }
-  function setTheme(t) { lsSet('wsh_theme', t); applyTheme(); }
-  if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); var onMq = function () { if (themePick() === 'auto') applyTheme(); }; if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq); }
+  function applyTheme() { if (window.msTheme) msTheme.apply(); }
+  function setTheme(t) { if (window.msTheme) msTheme.set(t === 'auto' ? '' : t); }
+  window.addEventListener('ms-theme', function () {
+    redraw();
+    try { var gd = $('gv-frame').contentDocument; if (gd && gd.documentElement) gd.documentElement.setAttribute('data-theme', isDark() ? 'dark' : 'light'); } catch (e) { /* not open */ }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-theme-pick]'), function (x) { x.setAttribute('aria-checked', String(x.getAttribute('data-theme-pick') === themePick())); });
+  });
   // Colours drawn in code (class tints) follow the theme, so the open page is drawn again.
   function redraw() {
     if (!H.token) return;
@@ -1649,6 +1687,7 @@
     h += '</div>';
     h += '<button id="claude-set" class="' + (on ? 'on' : 'off') + '" title="' + (on ? 'Claude marking is connected' : 'Claude marking is not set up') + '" aria-label="Claude marking' + (on ? ', connected' : ' (set up)') + '">' +
       '<span class="status-dot' + (on ? ' on' : '') + '"></span><span class="lbl">Claude marking' + (on ? '' : ' (set up)') + '</span></button>';
+    h += '<button type="button" class="ms-moon" aria-label="Dark mode" aria-pressed="false" title="Dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>';
     h += '<button id="me-btn" class="me" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="pop-me">T' + (unseen ? '<span class="newdot" aria-hidden="true"></span>' : '') + '</button>';
     h += '<div class="pop hidden" id="pop-me" role="menu"><div class="cap">' + esc(d.school || 'Teacher Hub') + '</div>' +
       '<button role="menuitem" id="me-week">' + ICON.sheet + 'This week</button>' +
@@ -1663,6 +1702,7 @@
       '<button role="menuitemcheckbox" id="me-fun" aria-checked="' + (lsGet('wsh_fun') === '1') + '">' + ICON.party + 'Confetti when marking is done<span class="tick" aria-hidden="true"></span></button><hr>' +
       '<button role="menuitem" id="signout">' + ICON.out + 'Sign out</button></div>';
     $('links').innerHTML = h;
+    if (window.msTheme) msTheme.label();
     $('links-btn').onclick = function (e) { e.stopPropagation(); togglePop(this, $('pop-links')); };
     $('me-btn').onclick = function (e) { e.stopPropagation(); togglePop(this, $('pop-me')); };
     Array.prototype.forEach.call($('pop-links').querySelectorAll('a'), function (a) { a.addEventListener('click', function () { closePops(); }); });
@@ -1998,11 +2038,14 @@
       tcall('api_t_updateCheck', false).then(function (r) { H.update = r; renderUpdateCard(); }).catch(function () { H.update = null; });
     }
     var u = H.update;
-    if (!u || !u.newer || lsGet('wsh_up_x') === u.latest) { box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="upcard"><span class="txt"><b>An update is ready</b>' + esc((u.notes || []).slice(0, 3).join(' · ') || ('Build ' + u.latest)) + '</span>' +
-      '<button class="btn small" id="up-open">See it</button><button class="later" id="up-x" title="Not now" aria-label="Not now">' + NICON.later + '</button></div>';
-    $('up-open').onclick = openSetup;
-    $('up-x').onclick = function () { lsSet('wsh_up_x', u.latest); renderUpdateCard(); };
+    // Pages update by themselves; the card only shows when a release changed server code, and says which files.
+    if (!u || !u.newer || lsGet('wsh_up_x') === String(u.pasteSeq)) { box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="upcard"><span class="txt"><b>Release ' + esc(u.pasteSeq) + ': paste ' + esc((u.paste || []).join(', ')) + '</b>' +
+      esc(((u.notes || []).slice(0, 3).join(' · ') + ' ').trim() + ' Only these files: the pages are already up to date.') + '</span>' +
+      (u.codePage ? '<a class="btn small" href="' + esc(u.codePage) + '" target="_blank" rel="noopener">Open the code page</a>' : '<button class="btn small" id="up-open">See it</button>') +
+      '<button class="later" id="up-x" title="Not now" aria-label="Not now">' + NICON.later + '</button></div>';
+    if ($('up-open')) $('up-open').onclick = openSetup;
+    $('up-x').onclick = function () { lsSet('wsh_up_x', String(u.pasteSeq)); renderUpdateCard(); };
   }
   /* ---------- Setup check and updates ---------- */
   var SC_MARK = { ok: '&#10003;', warn: '!', bad: '&#10005;', info: 'i' };
@@ -2015,7 +2058,7 @@
     if (!$('sc-body')) return;
     $('sc-body').innerHTML = '<ul class="sc">' + r.checks.map(function (c, i) {
       return '<li class="sc-' + c.level + '"><span class="sc-m" aria-hidden="true">' + SC_MARK[c.level] + '</span><span class="sc-t"><b>' + esc(c.title) + '</b>' + (c.detail ? '<small>' + esc(c.detail) + '</small>' : '') + '</span>' +
-        (c.link ? '<a class="btn small ghost" href="' + esc(c.link) + '" target="_blank" rel="noopener">Open</a>' : '') +
+        (c.link ? '<a class="btn small ghost" href="' + esc(c.link) + '" target="_blank" rel="noopener">' + (c.id === 'update' ? 'Code page' : 'Open') + '</a>' : '') +
         (c.fix ? '<button class="btn small' + (c.level === 'bad' || c.fix.act === 'update' ? ' yellow' : ' ghost') + '" data-sc="' + i + '">' + esc(c.fix.label) + '</button>' : '') + '</li>';
     }).join('') + '</ul><p class="muted">My Science build ' + esc(r.build) + '.</p><p class="err" id="sc-err"></p>';
     Array.prototype.forEach.call($('sc-body').querySelectorAll('[data-sc]'), function (b) {

@@ -271,17 +271,20 @@ function canSee_(a, s) {
 /* Web app                                                             */
 /* ------------------------------------------------------------------ */
 
-// Pulls one file into a page, so the Teacher Hub and the student page share Styles.html.
-function include_(name) { return HtmlService.createHtmlOutputFromFile(name).getContent(); }
+// Pulls one file into a page, so the Teacher Hub and the student page share Styles.html. From the same place as the
+// page itself: the lesson site, or the copy pasted here.
+function include_(name) { return pageHtml_(name); }
 
 function hubDoGet_(e) {
   if (e && e.parameter && e.parameter.teacher !== undefined) {
-    return HtmlService.createTemplateFromFile('HubTeacher').evaluate()
+    pagesLoad_(['HubTeacher', 'Styles', 'Ink']);
+    return HtmlService.createHtmlOutput(pageAssembled_('HubTeacher'))
       .setTitle('Teacher Hub')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
-  return HtmlService.createTemplateFromFile('Homework').evaluate()
+  pagesLoad_(['Homework', 'Styles', 'Ink']);
+  return HtmlService.createHtmlOutput(pageAssembled_('Homework'))
     .setTitle('Worksheets')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -1250,7 +1253,7 @@ function api_t_auto() {
 // The setup guide (the Guide file), for the Teacher Hub's sign-in page. It holds nothing private, so it is
 // shown before signing in, to help a teacher who is new to the Hub.
 function api_guide() {
-  try { return HtmlService.createHtmlOutputFromFile('Guide').getContent(); }
+  try { return pageHtml_('Guide'); }
   catch (e) { return ''; }      // the Guide file has not been added to the project yet
 }
 
@@ -3211,7 +3214,7 @@ function rwState_(s) {
 
 /* ---------- student calls ---------- */
 
-function api_rw_ui() { return HtmlService.createHtmlOutputFromFile('Rewards').getContent(); }
+function api_rw_ui() { return pageHtml_('Rewards'); }
 
 function api_rw_state(token) { return rwState_(funGuard_(who_(token))); }
 
