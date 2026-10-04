@@ -1,7 +1,7 @@
 {
   "build": "2026-10-09-chapters",
   "seq": 20,
-  "ref": "main",
+  "ref": "4fb6f9dc4c32959f55a3e56f6f75bc240943ec7d",
   "title": "learnwithmrcedric: chapter packages, and Show answers on the slides",
   "notes": [
     "Chapters as packages: give a class a whole chapter, its slides open at once and each part's homework is set as you teach it",
@@ -87,7 +87,7 @@
     {
       "seq": 20,
       "build": "2026-10-09-chapters",
-      "ref": "main",
+      "ref": "4fb6f9dc4c32959f55a3e56f6f75bc240943ec7d",
       "needsServer": 20,
       "files": [
         {
