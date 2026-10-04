@@ -2718,7 +2718,7 @@ window.KIT=KIT;
 })();</script>
 <script id="liveboard-bridge">(function () {
   'use strict';
-  /* Live Board bridge, version 9. Added to every deck by scripts/liveboard_connect.py.
+  /* Live Board bridge, version 10. Added to every deck by scripts/liveboard_connect.py.
      The deck's own code is not changed.
      1. Who are you? Students choose their class, then their name, from the class list
         (the Worksheet Hub Students tab, served by Live Board). The choice is locked on
@@ -2773,7 +2773,10 @@ window.KIT=KIT;
         nothing the student does is kept on the iPad or counted by Live Board, and a note says so. A lesson not opened says it is not
         open yet.
      13. Version 9: when Live Board says a newer bridge is on the site, the slides reload themselves once (not while
-        presenting, with answers waiting, or with a panel open), so nobody has to ask for an old copy to be reloaded. */
+        presenting, with answers waiting, or with a panel open), so nobody has to ask for an old copy to be reloaded.
+     14. Version 10: slides opened by the projector screen (pj=... in the address, from Teach on the phone) check in
+        every 5 seconds, and when Live Board says so they open the next lesson the phone chose, or go back to the
+        projector screen after End. A reload keeps this; slides opened by hand never move by themselves. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -2781,7 +2784,7 @@ window.KIT=KIT;
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 9;
+  var VERSION = 10;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -3404,7 +3407,18 @@ window.KIT=KIT;
   var presentTk = presentMode ? (location.hash.match(/(?:^#|&)tk=(tk_[a-f0-9]{24,})/) || [])[1] || '' : '';
   var presentPart = presentMode ? (location.hash.match(/(?:^#|&)part=(all|\d+)/) || [])[1] || '' : '';
   var presentAt = presentMode ? Math.round(Number((location.hash.match(/(?:^#|&)at=(\d+)/) || [])[1]) || 0) : 0;
-  if (presentMode && /(?:^#|&)(?:tk|part|at|cls)=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search + '#present'); } catch (e) {} }
+  // From the projector screen: the command it opened these slides for. A reload of this tab keeps it.
+  var presentPj = presentMode ? Math.round(Number((location.hash.match(/(?:^#|&)pj=(\d+)/) || [])[1]) || 0) : 0;
+  (function () {
+    if (!presentMode) return;
+    try {
+      if (presentPj) { sessionStorage.setItem('liveboard.pj', JSON.stringify({ pj: presentPj, path: location.pathname })); return; }
+      var nav = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null, kept = JSON.parse(sessionStorage.getItem('liveboard.pj') || 'null');
+      if (nav && nav.type === 'reload' && kept && kept.path === location.pathname) presentPj = Number(kept.pj) || 0;
+      else sessionStorage.removeItem('liveboard.pj');
+    } catch (e) { /* no storage: this page only */ }
+  })();
+  if (presentMode && /(?:^#|&)(?:tk|part|at|cls|pj)=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search + '#present'); } catch (e) {} }
   (function () {
     var m = location.hash.match(/(?:^#|&)lb=([^&]+)/), q = location.hash.match(/(?:^#|&)q=([^&]+)/);
     if (q) { try { handedQ = decodeURIComponent(q[1]); } catch (e) { handedQ = ''; } }
@@ -4053,7 +4067,7 @@ window.KIT=KIT;
     pendingStart = null;
     drawPresLine();
     sendLead();
-    clearInterval(leadTimer); leadTimer = setInterval(sendLead, 12000);
+    clearInterval(leadTimer); leadTimer = setInterval(sendLead, presentPj ? 5000 : 12000);
     resultsButton(true);
   }
   function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); resultsButton(false); }
@@ -4149,8 +4163,24 @@ window.KIT=KIT;
     if (!presenting || !presPin || !presCls) return;
     var sl = currentSlide();
     if (!sl) return;
-    api({ api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 })
-      .then(function (r) { if (r && r.ok === false && /PIN|sign-in/i.test(r.error || '')) presAuthLost(); }, function () {});
+    var body = { api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 };
+    if (presentPj) body.pj = presentPj;
+    api(body).then(function (r) {
+      if (r && r.ok === false && /PIN|sign-in|paired/i.test(r.error || '')) presAuthLost();
+      if (r && r.go && presentPj) goNext(r.go);
+    }, function () {});
+  }
+  /* The projector screen's next step: another lesson's slides, or the waiting screen. */
+  var going = false;
+  function goNext(url) {
+    if (going || !/^https:\/\//.test(String(url))) return;
+    going = true;
+    clearInterval(leadTimer);
+    try { sessionStorage.removeItem('liveboard.pj'); } catch (e) { /* none kept */ }
+    var a = document.createElement('a'); a.href = url;
+    var samePage = a.origin === location.origin && a.pathname === location.pathname && a.search === location.search;
+    location.href = url;
+    if (samePage) location.reload();   // only the address after # changed: load the page again for the new part
   }
   function addReveals() {
     Array.prototype.forEach.call(document.querySelectorAll('.question[data-question]'), function (q) {

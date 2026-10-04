@@ -1,0 +1,331 @@
+<script>
+/* Ink: how a student's writing is drawn, on screen and into the handed-in PDF.
+   Shared by the student page and the Teacher Hub (which draws automatic hand-ins from saved drafts),
+   so both make exactly the same PDF. Strokes are in page points, top-left origin:
+   pen {c, w, p:[x,y,...]}, highlighter {k:'hl'}, shapes {k: line|dline|arrow|rect|oval, p:[x1,y1,x2,y2], d},
+   stamps {k:'stamp', id, p}, plot crosses {k:'cross', p:[x,y]}, typed text {k:'text', t, sz, p, bw, bh}. */
+window.Ink = (function () {
+  'use strict';
+  var BLANK_W = 595.28, BLANK_H = 841.89;          // A4 in PDF points
+  var HL_ALPHA = 0.35;
+  var SHAPES = ['line', 'dline', 'arrow', 'rect', 'oval'];
+  var TEXT_FONT = '"Atkinson Hyperlegible", Arial, sans-serif';
+
+  // Smooth path through the points: quadratic curves between midpoints.
+  function tracePath(p, api) {
+    var n = p.length / 2;
+    api.move(p[0], p[1]);
+    if (n === 1) { api.line(p[0] + 0.01, p[1]); return; }
+    if (n === 2) { api.line(p[2], p[3]); return; }
+    var mx = p[0], my = p[1];
+    for (var k = 1; k < n - 1; k++) {
+      var cx = p[2 * k], cy = p[2 * k + 1];
+      var nx = (cx + p[2 * k + 2]) / 2, ny = (cy + p[2 * k + 3]) / 2;
+      api.quad(mx, my, cx, cy, nx, ny);
+      mx = nx; my = ny;
+    }
+    api.line(p[2 * n - 2], p[2 * n - 1]);
+  }
+
+  // The outline of a shape as polylines, in page points. Used for the screen, the eraser and the PDF alike.
+  function shapeLines(s) {
+    var p = s.p, x1 = p[0], y1 = p[1], x2 = p[2], y2 = p[3];
+    if (s.k === 'line' || s.k === 'dline') return [[x1, y1, x2, y2]];
+    if (s.k === 'arrow') {
+      var a = Math.atan2(y2 - y1, x2 - x1), L = Math.max(10, 4 * s.w), sp = 0.45;
+      return [[x1, y1, x2, y2], [x2 - L * Math.cos(a - sp), y2 - L * Math.sin(a - sp), x2, y2, x2 - L * Math.cos(a + sp), y2 - L * Math.sin(a + sp)]];
+    }
+    if (s.k === 'rect') return [[x1, y1, x2, y1, x2, y2, x1, y2, x1, y1]];
+    if (s.k === 'oval') {
+      var cx = (x1 + x2) / 2, cy = (y1 + y2) / 2, rx = Math.abs(x2 - x1) / 2, ry = Math.abs(y2 - y1) / 2, out = [];
+      for (var k = 0; k <= 96; k++) { var t = k / 96 * 2 * Math.PI; out.push(cx + rx * Math.cos(t), cy + ry * Math.sin(t)); }
+      return [out];
+    }
+    return [];
+  }
+  function isShape(s) { return SHAPES.indexOf(s.k) >= 0; }
+  /* ---------------- Stamps, plot crosses and dashed lines ----------------
+     Each stamp is drawn in its own frame: x runs from 0 (where the drag started) to 1 (where it ended),
+     y across it, both in units of the drag length. Circuit symbols follow the syllabus: the long thin plate
+     of a cell is positive, a lamp is a circle with a cross, meters are circles with A or V. */
+  function PL(pts, o) { var a = pts.slice(); if (o) { if (o.solid) a.solid = true; if (o.wk) a.wk = o.wk; } return a; }
+  function ring(cx, cy, r, n, o) { var a = []; for (var k = 0; k <= (n || 28); k++) { var t = k / (n || 28) * 2 * Math.PI; a.push(cx + r * Math.cos(t), cy + r * Math.sin(t)); } return PL(a, o); }
+  function head(tx, ty, bx, by, hw) { var dx = tx - bx, dy = ty - by, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L * hw, ny = dx / L * hw; return PL([tx, ty, bx + nx, by + ny, bx - nx, by - ny, tx, ty], { solid: true }); }
+  var LIQUID = [[0.289, 0.2], [0.1, 0.134], [0.492, 0.2], [0.324, 0.003], [0.133, -0.063], [0.521, -0.03], [0.834, 0.2], [0.725, 0.032], [0.812, -0.148], [0.378, -0.19]];
+  var GAS = [[0.08, -0.32], [0.5, -0.28], [0.92, -0.3], [0.28, 0.3], [0.72, 0.28]];
+  var STAMPS = {
+    cell: { name: 'Cell', g: 'Circuit', parts: function () { return [PL([0, 0, 0.42, 0]), PL([0.58, 0, 1, 0]), PL([0.42, -0.26, 0.42, 0.26]), PL([0.58, -0.13, 0.58, 0.13], { wk: 2.6 })]; } },
+    battery: { name: 'Battery', g: 'Circuit', parts: function () { return [PL([0, 0, 0.3, 0]), PL([0.38, 0, 0.56, 0]), PL([0.64, 0, 1, 0]), PL([0.3, -0.24, 0.3, 0.24]), PL([0.38, -0.12, 0.38, 0.12], { wk: 2.6 }), PL([0.56, -0.24, 0.56, 0.24]), PL([0.64, -0.12, 0.64, 0.12], { wk: 2.6 })]; } },
+    lamp: { name: 'Lamp', g: 'Circuit', parts: function () { var d = 0.17 * Math.SQRT1_2; return [PL([0, 0, 0.33, 0]), PL([0.67, 0, 1, 0]), ring(0.5, 0, 0.17), PL([0.5 - d, -d, 0.5 + d, d]), PL([0.5 - d, d, 0.5 + d, -d])]; } },
+    switch_open: { name: 'Switch (open)', g: 'Circuit', parts: function () { return [PL([0, 0, 0.3, 0]), PL([0.7, 0, 1, 0]), PL([0.3, 0, 0.66, -0.2]), ring(0.3, 0, 0.025, 10, { solid: true }), ring(0.7, 0, 0.025, 10, { solid: true })]; } },
+    switch_closed: { name: 'Switch (closed)', g: 'Circuit', parts: function () { return [PL([0, 0, 1, 0]), ring(0.3, 0, 0.025, 10, { solid: true }), ring(0.7, 0, 0.025, 10, { solid: true })]; } },
+    resistor: { name: 'Resistor', g: 'Circuit', parts: function () { return [PL([0, 0, 0.3, 0]), PL([0.7, 0, 1, 0]), PL([0.3, -0.1, 0.7, -0.1, 0.7, 0.1, 0.3, 0.1, 0.3, -0.1])]; } },
+    rheostat: { name: 'Variable resistor', g: 'Circuit', parts: function () { return [PL([0, 0, 0.3, 0]), PL([0.7, 0, 1, 0]), PL([0.3, -0.1, 0.7, -0.1, 0.7, 0.1, 0.3, 0.1, 0.3, -0.1]), PL([0.33, 0.22, 0.64, -0.17]), head(0.7, -0.24, 0.62, -0.14, 0.04)]; } },
+    ammeter: { name: 'Ammeter', g: 'Circuit', parts: function () { return [PL([0, 0, 0.32, 0]), PL([0.68, 0, 1, 0]), ring(0.5, 0, 0.18), PL([0.44, 0.09, 0.5, -0.09, 0.56, 0.09]), PL([0.465, 0.03, 0.535, 0.03])]; } },
+    voltmeter: { name: 'Voltmeter', g: 'Circuit', parts: function () { return [PL([0, 0, 0.32, 0]), PL([0.68, 0, 1, 0]), ring(0.5, 0, 0.18), PL([0.44, -0.09, 0.5, 0.09, 0.56, -0.09])]; } },
+    fuse: { name: 'Fuse', g: 'Circuit', parts: function () { return [PL([0, 0, 1, 0]), PL([0.3, -0.08, 0.7, -0.08, 0.7, 0.08, 0.3, 0.08, 0.3, -0.08])]; } },
+    junction: { name: 'Junction dot', g: 'Circuit', fixed: 6, parts: function () { return [ring(0.5, 0, 0.5, 16, { solid: true })]; } },
+    ray: { name: 'Ray arrow', g: 'Light', len: 16, parts: function () { return [head(0.8, 0, 0.2, 0, 0.26)]; } },
+    convex: { name: 'Convex lens', g: 'Light', parts: function () { return [PL([0.02, 0, 0.98, 0]), head(0, 0, 0.1, 0, 0.06), head(1, 0, 0.9, 0, 0.06)]; } },
+    concave: { name: 'Concave lens', g: 'Light', parts: function () { return [PL([0, 0, 1, 0]), head(0.9, 0, 1, 0, 0.06), head(0.1, 0, 0, 0, 0.06)]; } },
+    mirror: { name: 'Plane mirror', g: 'Light', parts: function () { var a = [PL([0, 0, 1, 0], { wk: 1.6 })]; for (var x = 0.06; x <= 1.001; x += 0.08) a.push(PL([x, 0, x - 0.05, 0.07])); return a; } },
+    solid: { name: 'Solid', g: 'Particles', parts: function () { var a = []; for (var j = -1; j <= 1; j++) for (var i = 0; i < 5; i++) a.push(ring(0.1 + i * 0.2, j * 0.2, 0.1)); return a; } },
+    liquid: { name: 'Liquid', g: 'Particles', parts: function () { return LIQUID.map(function (c) { return ring(c[0], c[1], 0.1); }); } },
+    gas: { name: 'Gas', g: 'Particles', parts: function () { return GAS.map(function (c) { return ring(c[0], c[1], 0.1); }); } }
+  };
+  var STAMP_ORDER = ['cell', 'battery', 'lamp', 'switch_open', 'switch_closed', 'resistor', 'rheostat', 'ammeter', 'voltmeter', 'fuse', 'junction', 'ray', 'convex', 'concave', 'mirror', 'solid', 'liquid', 'gas'];
+  // The stamp's parts in page points.
+  function stampLines(s) {
+    var d = STAMPS[s.id]; if (!d) return [];
+    var p = s.p, x1 = p[0], y1 = p[1], dx = p[2] - x1, dy = p[3] - y1;
+    return d.parts().map(function (ln) {
+      var out = []; for (var k = 0; k < ln.length; k += 2) out.push(x1 + ln[k] * dx - ln[k + 1] * dy, y1 + ln[k] * dy + ln[k + 1] * dx);
+      if (ln.solid) out.solid = true; if (ln.wk) out.wk = ln.wk;
+      return out;
+    });
+  }
+  function isGeom(s) { return SHAPES.indexOf(s.k) >= 0 || s.k === 'stamp' || s.k === 'cross'; }
+  function geomLines(s) {
+    if (s.k === 'stamp') return stampLines(s);
+    if (s.k === 'cross') { var x = s.p[0], y = s.p[1], h = 3.5; return [[x - h, y - h, x + h, y + h], [x - h, y + h, x + h, y - h]]; }
+    return shapeLines(s);
+  }
+  // A small picture of a stamp for the menu.
+  function stampIcon(id) {
+    var ln = stampLines({ id: id, p: STAMPS[id].fixed ? [8, 16, 16, 16] : [4, 16, 44, 16] });
+    return '<svg viewBox="0 0 48 32" aria-hidden="true">' + ln.map(function (l) {
+      var d = 'M' + l.slice(0, 2).join(' ') + 'L' + l.slice(2).join(' ');
+      return l.solid ? '<path d="' + d + 'Z" fill="currentColor"/>' : '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="' + (l.wk ? 2.6 : 1.3) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+    }).join('') + '</svg>';
+  }
+
+
+  function textLines(s) { return String(s.t).split('\n'); }
+  function textFont(sz) { return sz + 'px ' + TEXT_FONT; }
+
+  function drawStroke(ctx, s) {
+    if (s.k === 'text') {
+      ctx.save();
+      ctx.fillStyle = s.c; ctx.font = textFont(s.sz); ctx.textBaseline = 'top';
+      textLines(s).forEach(function (ln, j) { ctx.fillText(ln, s.p[0], s.p[1] + j * s.sz * 1.25); });
+      ctx.restore();
+      return;
+    }
+    ctx.save();
+    ctx.strokeStyle = s.c; ctx.lineWidth = s.w;
+    if (s.k === 'hl') { ctx.globalAlpha = HL_ALPHA; ctx.globalCompositeOperation = 'multiply'; ctx.lineCap = 'butt'; }
+    if (isGeom(s)) {
+      // shapes, stamps and crosses: straight pieces; some are filled, some thicker; dashed lines have gaps
+      ctx.fillStyle = s.c;
+      ctx.setLineDash(s.d ? [6, 4] : []);
+      geomLines(s).forEach(function (ln) {
+        ctx.beginPath(); ctx.moveTo(ln[0], ln[1]);
+        for (var k = 2; k < ln.length; k += 2) ctx.lineTo(ln[k], ln[k + 1]);
+        if (ln.solid) { ctx.closePath(); ctx.fill(); } else { ctx.lineWidth = s.w * (ln.wk || 1); ctx.stroke(); }
+      });
+      ctx.restore();
+      return;
+    }
+    ctx.beginPath();
+    {
+      tracePath(s.p, {
+        move: function (x, y) { ctx.moveTo(x, y); },
+        line: function (x, y) { ctx.lineTo(x, y); },
+        quad: function (x0, y0, cx, cy, x, y) { ctx.quadraticCurveTo(cx, cy, x, y); }
+      });
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function hexRgb(h) {
+    var n = parseInt(h.slice(1), 16);
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+
+  function b64ToBytes(b64) {
+    var bin = atob(b64), n = bin.length, out = new Uint8Array(n);
+    for (var i = 0; i < n; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  // Typed text goes into the PDF as a sharp picture of the text, so any character the iPad can type works.
+  function textPng(s) {
+    var k = 4, c = document.createElement('canvas');
+    c.width = Math.max(1, Math.ceil(s.bw * k)); c.height = Math.max(1, Math.ceil(s.bh * k));
+    var ctx = c.getContext('2d');
+    ctx.scale(k, k);
+    drawStroke(ctx, { k: 'text', c: s.c, sz: s.sz, p: [0, 0], t: s.t });
+    return b64ToBytes(c.toDataURL('image/png').split(',')[1]);
+  }
+
+  // The page sizes as pdf.js sees them (scale 1), for a PDF that is not open on screen.
+  function viewports(pdfBytes) {
+    return pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise.then(function (pdf) {
+      var jobs = [];
+      for (var i = 1; i <= pdf.numPages; i++) jobs.push(pdf.getPage(i));
+      return Promise.all(jobs).then(function (pages) {
+        var vps = pages.map(function (p) { return p.getViewport({ scale: 1 }); });
+        if (pdf.destroy) pdf.destroy();
+        return vps;
+      });
+    });
+  }
+
+  // The handed-in PDF: the worksheet with the writing drawn on it, extra blank pages at the end, and the
+  // student's name in small grey letters at the top of each page.
+  // o: { pdfBytes, strokes: [[stroke]] one list per page, vps (pdf.js viewports of the worksheet pages; worked
+  //      out when left out), label, corr (corrections: no label, the marked copy has one) }
+  function buildPdf(o) {
+    var L = PDFLib;
+    return (o.vps ? Promise.resolve(o.vps) : viewports(o.pdfBytes)).then(function (vps) {
+      return L.PDFDocument.load(o.pdfBytes, { ignoreEncryption: true }).then(function (doc) { return draw(L, doc, vps, o); });
+    });
+  }
+
+  function draw(L, doc, vps, o) {
+    var texts = [], strokes = o.strokes || [];
+    strokes.forEach(function (list) { (list || []).forEach(function (s) { if (s.k === 'text') texts.push(s); }); });
+    return Promise.all([doc.embedFont(L.StandardFonts.Helvetica)].concat(texts.map(function (s) { return doc.embedPng(textPng(s)); })))
+      .then(function (res) {
+      var font = res[0], imgs = new Map();
+      texts.forEach(function (s, j) { imgs.set(s, res[j + 1]); });
+      var nOrig = vps.length;
+      strokes.forEach(function (list, i) {
+        list = list || [];
+        var page, conv;
+        if (i < nOrig) {
+          if (i >= doc.getPageCount()) return;
+          page = doc.getPage(i);
+          var vp = vps[i];
+          conv = function (x, y) { return vp.convertToPdfPoint(x, y); };
+        } else {
+          page = doc.addPage([BLANK_W, BLANK_H]);
+          conv = function (x, y) { return [x, BLANK_H - y]; };
+        }
+        var ops = [], hlState = null;
+        list.forEach(function (s) {
+          if (s.k === 'text') return;
+          var c = hexRgb(s.c);
+          ops.push(L.pushGraphicsState());
+          if (s.k === 'hl') {
+            // See-through highlighter that darkens what is under it, like a real one.
+            if (!hlState) hlState = page.node.newExtGState('GS', doc.context.obj({ Type: 'ExtGState', CA: HL_ALPHA, ca: HL_ALPHA, BM: 'Multiply' }));
+            ops.push(L.setGraphicsState(hlState));
+          }
+          ops.push(L.setStrokingRgbColor(c[0], c[1], c[2]), L.setLineWidth(s.w),
+            L.setLineCap(s.k === 'hl' ? L.LineCapStyle.Butt : L.LineCapStyle.Round), L.setLineJoin(L.LineJoinStyle.Round));
+          if (isGeom(s)) {
+            // each piece is stroked (or filled) on its own, so thick plates and filled heads keep their look
+            if (s.d) ops.push(L.setDashPattern([6, 4], 0));
+            ops.push(L.setFillingRgbColor(c[0], c[1], c[2]));
+            geomLines(s).forEach(function (ln) {
+              var q = conv(ln[0], ln[1]); ops.push(L.moveTo(q[0], q[1]));
+              for (var k = 2; k < ln.length; k += 2) { q = conv(ln[k], ln[k + 1]); ops.push(L.lineTo(q[0], q[1])); }
+              if (ln.solid) ops.push(L.closePath(), L.fill());
+              else ops.push(L.setLineWidth(s.w * (ln.wk || 1)), L.stroke());
+            });
+            ops.push(L.popGraphicsState());
+            return;
+          }
+          tracePath(s.p, {
+            move: function (x, y) { var q = conv(x, y); ops.push(L.moveTo(q[0], q[1])); },
+            line: function (x, y) { var q = conv(x, y); ops.push(L.lineTo(q[0], q[1])); },
+            quad: function (x0, y0, cx, cy, x, y) {
+              // quadratic to cubic
+              var a = conv(x0 + 2 / 3 * (cx - x0), y0 + 2 / 3 * (cy - y0));
+              var b = conv(x + 2 / 3 * (cx - x), y + 2 / 3 * (cy - y));
+              var e = conv(x, y);
+              ops.push(L.appendBezierCurve(a[0], a[1], b[0], b[1], e[0], e[1]));
+            }
+          });
+          ops.push(L.stroke(), L.popGraphicsState());
+        });
+        if (ops.length) page.pushOperators.apply(page, ops);
+        list.forEach(function (s) {
+          if (s.k !== 'text') return;
+          // Anchor at the bottom-left of the text box, turned the way the page is turned.
+          var o0 = conv(s.p[0], s.p[1]), u = conv(s.p[0] + 1, s.p[1]), at = conv(s.p[0], s.p[1] + s.bh);
+          var ang = Math.atan2(u[1] - o0[1], u[0] - o0[0]) * 180 / Math.PI;
+          page.drawImage(imgs.get(s), { x: at[0], y: at[1], width: s.bw, height: s.bh, rotate: L.degrees(ang) });
+        });
+        var rot = ((page.getRotation().angle % 360) + 360) % 360;
+        // The marked copy already carries the name label, so corrections do not add another.
+        if (rot === 0 && !o.corr && o.label) {
+          var box = page.getCropBox();
+          page.drawText(o.label + (i >= nOrig ? '   (extra page ' + (i - nOrig + 1) + ')' : ''), {
+            x: box.x + 14, y: box.y + box.height - 11, size: 7, font: font, color: L.rgb(0.45, 0.45, 0.45)
+          });
+        }
+      });
+      return doc.save();
+    });
+  }
+
+  // The small grey name at the top of each page.
+  function label(cls, reg, name) { return cls + '  ' + (reg ? (String(reg).length < 2 ? '0' : '') + reg + '  ' : '') + name; }
+
+  // A saved draft as the per-page stroke lists for a worksheet of nOrig pages.
+  function draftPages(draft, nOrig) {
+    var extra = draft && draft.extra ? draft.extra : 0, out = [];
+    for (var i = 0; i < nOrig + extra; i++) out.push(draft && draft.pages && draft.pages[i] ? draft.pages[i] : []);
+    return out;
+  }
+
+  /* ---------------- Note paper: blank, lined, grid (5 mm squares) and graph paper (1 mm, 5 mm and 1 cm) ----------------
+     The same lines are drawn on screen and into the note's PDF, in page points (1 mm = 2.8346 pt). */
+  var MM = 72 / 25.4;
+  function paperLines(paper, w, h) {
+    var out = [], x, y, k;
+    function L(x1, y1, x2, y2, c, lw) { out.push([x1, y1, x2, y2, c, lw]); }
+    if (paper === 'lined') {
+      for (y = 34 * MM; y < h - 12 * MM; y += 8 * MM) L(14 * MM, y, w - 10 * MM, y, '#BFD0EA', 0.7);
+      L(24 * MM, 10 * MM, 24 * MM, h - 10 * MM, '#EFB3B3', 0.8);
+    } else if (paper === 'grid') {
+      var g = 5 * MM, x0 = (w - Math.floor((w - 20 * MM) / g) * g) / 2, y0 = (h - Math.floor((h - 20 * MM) / g) * g) / 2;
+      for (x = x0; x <= w - x0 + 0.1; x += g) L(x, y0, x, h - y0, '#D3DCEC', 0.5);
+      for (y = y0; y <= h - y0 + 0.1; y += g) L(x0, y, w - x0, y, '#D3DCEC', 0.5);
+    } else if (paper === 'graph') {
+      var cw = Math.floor((w - 20 * MM) / (10 * MM)) * 10, ch = Math.floor((h - 20 * MM) / (10 * MM)) * 10;
+      var gx = (w - cw * MM) / 2, gy = (h - ch * MM) / 2;
+      for (k = 0; k <= cw; k++) L(gx + k * MM, gy, gx + k * MM, gy + ch * MM, k % 10 === 0 ? '#9DB7DE' : k % 5 === 0 ? '#BFD0EA' : '#E1E9F5', k % 10 === 0 ? 0.7 : k % 5 === 0 ? 0.45 : 0.25);
+      for (k = 0; k <= ch; k++) L(gx, gy + k * MM, gx + cw * MM, gy + k * MM, k % 10 === 0 ? '#9DB7DE' : k % 5 === 0 ? '#BFD0EA' : '#E1E9F5', k % 10 === 0 ? 0.7 : k % 5 === 0 ? 0.45 : 0.25);
+    }
+    return out;
+  }
+  // On a canvas whose transform is already in page points.
+  function drawPaper(ctx, paper, w, h) {
+    paperLines(paper, w, h).forEach(function (l) {
+      ctx.beginPath(); ctx.strokeStyle = l[4]; ctx.lineWidth = l[5]; ctx.moveTo(l[0], l[1]); ctx.lineTo(l[2], l[3]); ctx.stroke();
+    });
+  }
+  // A note as a PDF: one A4 page per page of the note, with its paper and the writing on it.
+  // o: { paper, strokes: [[stroke]] one list per page, label }
+  function notePdf(o) {
+    var L = PDFLib, pages = Math.max(1, (o.strokes || []).length);
+    return L.PDFDocument.create().then(function (doc) {
+      for (var i = 0; i < pages; i++) {
+        var page = doc.addPage([BLANK_W, BLANK_H]);
+        paperLines(o.paper, BLANK_W, BLANK_H).forEach(function (l) {
+          var c = hexRgb(l[4]);
+          page.drawLine({ start: { x: l[0], y: BLANK_H - l[1] }, end: { x: l[2], y: BLANK_H - l[3] }, thickness: l[5], color: L.rgb(c[0], c[1], c[2]) });
+        });
+      }
+      return doc.save();
+    }).then(function (bytes) {
+      var vps = [];
+      for (var i = 0; i < pages; i++) vps.push({ convertToPdfPoint: function (x, y) { return [x, BLANK_H - y]; } });
+      return buildPdf({ pdfBytes: bytes, strokes: o.strokes, vps: vps, label: o.label });
+    });
+  }
+
+  return {
+    paperLines: paperLines, drawPaper: drawPaper, notePdf: notePdf,
+    BLANK_W: BLANK_W, BLANK_H: BLANK_H, HL_ALPHA: HL_ALPHA, SHAPES: SHAPES, TEXT_FONT: TEXT_FONT,
+    STAMPS: STAMPS, STAMP_ORDER: STAMP_ORDER,
+    tracePath: tracePath, shapeLines: shapeLines, isShape: isShape, stampLines: stampLines, isGeom: isGeom, geomLines: geomLines,
+    stampIcon: stampIcon, textLines: textLines, textFont: textFont, drawStroke: drawStroke, hexRgb: hexRgb, textPng: textPng,
+    viewports: viewports, buildPdf: buildPdf, label: label, draftPages: draftPages
+  };
+})();
+</script>

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Projector screen</title>
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ :root{--bg:#141833;--panel:#1E2348;--line:#2E3566;--ink:#F4F5FB;--soft:#B9C0DE;--mute:#8B93BA;--yellow:#FFE45C;--green:#5BD39A;--red:#FF7A70}
+ html,body{height:100%}
+ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100vh;padding:clamp(16px,3vw,40px)}
+ button,input,select{font:inherit}
+ .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+ .top h1{font-size:clamp(18px,2vw,24px);font-weight:800;letter-spacing:.02em;color:var(--soft)}
+ .top .sp{flex:1}
+ .clock{font-size:clamp(28px,4vw,52px);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+ .dot{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--mute)}
+ .dot i{width:10px;height:10px;border-radius:50%;background:var(--mute)}
+ .dot.on i{background:var(--green)} .dot.off i{background:var(--red)}
+ main{flex:1;display:flex;flex-direction:column;justify-content:center;gap:clamp(18px,3vh,36px);padding:clamp(20px,4vh,48px) 0}
+ .now{background:var(--panel);border-radius:24px;padding:clamp(20px,3vw,40px);box-shadow:inset 0 0 0 2px var(--line);display:grid;gap:10px;max-width:1100px;width:100%;margin:0 auto;border-left:10px solid var(--c,var(--yellow))}
+ .kick{font-size:clamp(13px,1.2vw,16px);font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow)}
+ .cls{font-size:clamp(40px,7vw,96px);font-weight:900;line-height:1}
+ .what{font-size:clamp(22px,3vw,40px);font-weight:800;line-height:1.15;text-wrap:balance}
+ .sub{font-size:clamp(16px,1.6vw,22px);color:var(--soft)}
+ .acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+ .btn{background:var(--yellow);color:#1B1F3B;border:0;border-radius:14px;padding:14px 22px;font-weight:800;font-size:18px;cursor:pointer;min-height:52px}
+ .btn:hover{background:#fff}
+ .btn.q{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+ .btn.q:hover{box-shadow:inset 0 0 0 2px var(--soft)}
+ .btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:3px}
+ .others{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px;max-width:1100px;width:100%;margin:0 auto}
+ .o{background:var(--panel);border-radius:16px;padding:14px 16px;box-shadow:inset 0 0 0 1.5px var(--line);display:grid;gap:4px;text-align:left;color:var(--ink);border:0;cursor:pointer;border-left:6px solid var(--c,var(--line))}
+ .o:hover{box-shadow:inset 0 0 0 2px var(--soft)}
+ .o b{font-size:20px;font-weight:900} .o span{color:var(--soft);font-size:15px} .o small{color:var(--mute);font-size:13px}
+ .hint{text-align:center;color:var(--mute);font-size:clamp(15px,1.4vw,19px)}
+ .hint b{color:var(--soft)}
+ .box{max-width:520px;margin:0 auto;background:var(--panel);border-radius:22px;padding:28px;box-shadow:inset 0 0 0 2px var(--line);display:grid;gap:14px}
+ .box h2{font-size:26px} .box p{color:var(--soft);line-height:1.5}
+ .box input{background:#0F1230;color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:14px;font-size:22px;letter-spacing:.2em;width:100%}
+ .err{color:var(--red);min-height:1.3em}
+ .pick{position:fixed;inset:0;background:rgba(10,12,30,.82);display:grid;place-items:center;padding:20px}
+ .pick[hidden]{display:none}
+ .pick .box{max-width:640px;width:100%;max-height:90vh;overflow:auto}
+ .pick label{font-weight:700;color:var(--soft);font-size:15px}
+ .pick select{background:#0F1230;color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:12px;width:100%}
+ footer{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--mute);font-size:13px}
+ footer .sp{flex:1}
+ footer button{background:none;border:0;color:var(--mute);text-decoration:underline;cursor:pointer}
+ [hidden]{display:none!important}
+</style></head>
+<body>
+<div class="top"><h1>Science</h1><span class="sp"></span><span class="dot" id="dot"><i></i><span id="dot-t">Connecting…</span></span><span class="clock" id="clock"></span></div>
+<main id="main"></main>
+<footer><span id="foot">Choose a lesson on your phone: Teach on the projector. This screen opens the slides.</span><span class="sp"></span><button id="fs" type="button">Full screen</button><button id="unpair" type="button">Unpair this laptop</button></footer>
+<div class="pick" id="pick" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="pk-h">
+  <h2 id="pk-h">Teach a lesson</h2>
+  <label for="pk-cls">Class</label><select id="pk-cls"></select>
+  <label for="pk-deck">Lesson</label><select id="pk-deck"></select>
+  <label for="pk-part">Part</label><select id="pk-part"></select>
+  <p class="err" id="pk-err"></p>
+  <div class="acts"><button class="btn" id="pk-go" type="button">Teach</button><button class="btn q" id="pk-x" type="button">Cancel</button></div>
+</div></div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var set = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private window */ } };
+  // From the Teacher Hub: #app=<web address>&tk=<sign-in>. Kept here, then taken out of the address bar.
+  var hash = location.hash || '', app = '', tk0 = '';
+  var m = /(?:^#|&)app=([^&]+)/.exec(hash); if (m) { try { app = decodeURIComponent(m[1]); } catch (e) { app = ''; } }
+  m = /(?:^#|&)tk=(tk_[a-f0-9]{24,})/.exec(hash); if (m) tk0 = m[1];
+  // Only this lesson site's own My Science (set when the page is put on the site) is used, so a link cannot send the
+  // laptop's key somewhere else. A different address means pairing again.
+  var KNOWN = 'https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec';
+  var okApp = function (u) {
+    if (/^__/.test(KNOWN)) return /^https:\/\/script\.google\.com\/(?:a\/macros\/[^\/]+|macros)\/s\/[A-Za-z0-9_-]+\/exec$/.test(u) || /^http:\/\/localhost:\d+\//.test(u);
+    return u === KNOWN;
+  };
+  if (app && okApp(app) && app !== get('pj_app')) { set('pj_app', app); set('pj_tk', null); set('pj_seq', null); }
+  if (hash) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* old browser */ } }
+  app = get('pj_app') || (!/^__/.test(KNOWN) ? KNOWN : '');
+  if (app && !okApp(app)) { app = ''; set('pj_app', null); set('pj_tk', null); }
+  var TK = get('pj_tk') || '', seq = Number(get('pj_seq') || -1), list = null, decks = [], fails = 0, busy = false, lastList = 0, timer = null;
+
+  function api(body) {
+    return fetch(app, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function clock() { $('clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  setInterval(clock, 5000); clock();
+  function status(on, text) { var d = $('dot'); d.className = 'dot ' + (on ? 'on' : 'off'); $('dot-t').textContent = text; }
+  function at(t) { return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  function day(t) { var d = new Date(t), n = new Date(); return d.toDateString() === n.toDateString() ? 'today' : d.toLocaleDateString([], { weekday: 'short' }); }
+
+  /* ---------- pairing ---------- */
+  function showPair(note) {
+    var main = $('main'); main.innerHTML = '';
+    var box = el('div', 'box');
+    if (!app) {
+      box.appendChild(el('h2', '', 'Open this from the Teacher Hub'));
+      box.appendChild(el('p', '', 'In the Teacher Hub, Teach next, press Projector screen on this laptop. It opens this page linked to your My Science, and pairs it for a year.'));
+      main.appendChild(box); status(false, 'Not linked'); return;
+    }
+    box.appendChild(el('h2', '', 'Pair this laptop'));
+    box.appendChild(el('p', '', note || 'Type your teacher PIN once. This laptop then stays paired for a year (until you change the PIN).'));
+    var inp = el('input'); inp.type = 'password'; inp.inputMode = 'numeric'; inp.autocomplete = 'off'; inp.setAttribute('aria-label', 'Teacher PIN');
+    var err = el('p', 'err'), go = el('button', 'btn', 'Pair'); go.type = 'button';
+    var send = function () {
+      if (!inp.value.trim()) { err.textContent = 'Type your teacher PIN.'; return; }
+      go.disabled = true; err.textContent = '';
+      pair(inp.value.trim()).catch(function (e) { err.textContent = e.message; go.disabled = false; });
+    };
+    go.onclick = send; inp.onkeydown = function (e) { if (e.key === 'Enter') send(); };
+    box.appendChild(inp); box.appendChild(err); var a = el('div', 'acts'); a.appendChild(go); box.appendChild(a);
+    main.appendChild(box); status(false, 'Not paired'); setTimeout(function () { inp.focus(); }, 50);
+  }
+  function pair(pin) {
+    return api({ api: 'pjpair', pin: pin, name: 'Projector screen' }).then(function (r) {
+      if (!r || !r.ok || !r.tk) throw new Error((r && r.error) || 'That did not work.');
+      TK = r.tk; set('pj_tk', TK); start();
+    });
+  }
+
+  /* ---------- waiting ---------- */
+  function poll() {
+    if (busy || !TK) return;
+    busy = true;
+    var wantList = Date.now() - lastList > 30000;
+    api({ api: 'pj', tk: TK, seq: seq, list: wantList ? 1 : 0, decks: wantList && !decks.length ? 1 : 0 }).then(function (r) {
+      busy = false;
+      if (!r || r.ok === false) {
+        if (r && /PIN|paired|sign-in/i.test(r.error || '')) { TK = ''; set('pj_tk', null); showPair('This laptop is not paired any more. Type your teacher PIN to pair it again.'); return; }
+        throw new Error((r && r.error) || 'No answer');
+      }
+      fails = 0; status(true, 'Ready');
+      if (r.seq != null) { seq = r.seq; set('pj_seq', String(seq)); }
+      if (r.cmd && r.cmd.act === 'teach' && r.cmd.url) { openSlides(r.cmd); return; }
+      if (r.list) { list = r.list; lastList = Date.now(); if (r.decks) decks = r.decks; draw(); }
+    }).catch(function () {
+      busy = false;
+      if (++fails >= 3) status(false, 'Cannot reach My Science');
+    });
+  }
+  function openSlides(cmd) {
+    clearInterval(timer);
+    seq = cmd.seq; set('pj_seq', String(seq));
+    // If the slides do not open (no connection), this screen starts waiting again.
+    setTimeout(function () { if (document.visibilityState === 'visible' && TK) start(); }, 20000);
+    var main = $('main'); main.innerHTML = '';
+    var box = el('div', 'now'); box.appendChild(el('div', 'kick', 'Opening the slides')); box.appendChild(el('div', 'cls', cmd.cls)); box.appendChild(el('div', 'what', cmd.title || ''));
+    main.appendChild(box);
+    location.href = cmd.url;
+  }
+  function nextText(x) {
+    if (x.running) return [x.running.title, x.running.lesson + ' · running'];
+    if (x.next) return [x.next.title, x.next.t];
+    if (x.last) return [x.last.title, 'Last time: ' + x.last.t];
+    return ['No lesson taught yet', 'Choose the first one'];
+  }
+  function draw() {
+    if (!list) return;
+    var main = $('main'); main.innerHTML = '';
+    var cs = list.classes || [], first = cs[0];
+    if (!cs.length) { main.appendChild(el('p', 'hint', 'No classes yet.')); return; }
+    var lead = first && (first.onNow || first.running) ? first : null;
+    if (lead) {
+      var t = nextText(lead), box = el('div', 'now');
+      if (lead.next && lead.next.color) box.style.setProperty('--c', lead.next.color);
+      box.appendChild(el('div', 'kick', lead.running ? 'Lesson running' : 'On now' + (lead.slot ? ' · until ' + at(lead.slot.end) : '')));
+      box.appendChild(el('div', 'cls', lead.cls));
+      box.appendChild(el('div', 'what', t[0]));
+      box.appendChild(el('div', 'sub', t[1]));
+      var acts = el('div', 'acts');
+      if (lead.running || lead.next) {
+        var go = el('button', 'btn', lead.running ? 'Open the slides' : 'Teach'); go.type = 'button';
+        go.onclick = function () { teach(lead.cls, lead.running ? lead.running.id : lead.next.id, lead.running ? 'keep' : lead.next.part, lead.next && lead.next.carry); };
+        acts.appendChild(go);
+      }
+      var other = el('button', 'btn q', 'Another lesson'); other.type = 'button'; other.onclick = function () { openPick(lead.cls); };
+      acts.appendChild(other);
+      box.appendChild(acts);
+      main.appendChild(box);
+    } else {
+      var hello = el('div', 'now'); hello.appendChild(el('div', 'kick', 'Waiting'));
+      hello.appendChild(el('div', 'what', 'Choose a lesson on your phone'));
+      hello.appendChild(el('div', 'sub', 'Or tap a class below to teach from this laptop.'));
+      main.appendChild(hello);
+    }
+    var rest = cs.filter(function (x) { return x !== lead; });
+    if (rest.length) {
+      var grid = el('div', 'others');
+      rest.forEach(function (x) {
+        var t2 = nextText(x), b = el('button', 'o'); b.type = 'button';
+        if (x.next && x.next.color) b.style.setProperty('--c', x.next.color);
+        b.appendChild(el('b', '', x.cls)); b.appendChild(el('span', '', t2[0] + ' · ' + t2[1]));
+        if (x.nextAt) b.appendChild(el('small', '', 'Next lesson ' + day(x.nextAt) + ' ' + at(x.nextAt)));
+        b.onclick = function () { openPick(x.cls); };
+        grid.appendChild(b);
+      });
+      main.appendChild(grid);
+    }
+    main.appendChild(el('p', 'hint', 'On your phone: Teach on the projector. This screen opens the slides by itself.'));
+  }
+  function teach(cls, deck, part, carry) {
+    status(true, 'Opening…');
+    return api({ api: 'pjteach', tk: TK, cls: cls, deck: deck, part: part === 'keep' ? 'keep' : part == null || part < 0 ? 'all' : part, at: carry || 0 }).then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || 'That did not work.');
+      openSlides(r.cmd);
+    });
+  }
+
+  /* ---------- choosing another lesson on the laptop ---------- */
+  function openPick(cls) {
+    var cs = (list && list.classes) || [];
+    $('pk-cls').innerHTML = ''; cs.forEach(function (x) { var o = el('option', '', x.cls); o.value = x.cls; if (x.cls === cls) o.selected = true; $('pk-cls').appendChild(o); });
+    var x = cs.filter(function (y) { return y.cls === cls; })[0] || {}, want = (x.next && x.next.id) || (x.last && x.last.id) || '';
+    $('pk-deck').innerHTML = '';
+    decks.forEach(function (d) { var o = el('option', '', d.title); o.value = d.id; if (d.id === want) o.selected = true; $('pk-deck').appendChild(o); });
+    $('pk-err').textContent = '';
+    $('pick').hidden = false;
+    loadParts(x);
+    $('pk-deck').focus();
+  }
+  function loadParts(x) {
+    var id = $('pk-deck').value, sel = $('pk-part');
+    sel.innerHTML = '<option value="all">The whole lesson</option>';
+    if (!id) return;
+    var fill = function (parts) {
+      parts.forEach(function (p, i) { var o = el('option', '', p.t); o.value = String(i); sel.appendChild(o); });
+      if (x && x.next && x.next.id === id && x.next.part >= 0) sel.value = String(x.next.part);
+    };
+    if (list && list.parts && list.parts[id]) { fill(list.parts[id]); return; }
+    api({ api: 'pjparts', tk: TK, deck: id }).then(function (r) { if (r && r.ok && $('pk-deck').value === id) fill(r.parts || []); }).catch(function () { /* the whole lesson only */ });
+  }
+  $('pk-deck').onchange = function () { var cs = (list && list.classes) || [], x = cs.filter(function (y) { return y.cls === $('pk-cls').value; })[0]; loadParts(x); };
+  $('pk-x').onclick = function () { $('pick').hidden = true; };
+  $('pk-go').onclick = function () {
+    var b = this; b.disabled = true;
+    teach($('pk-cls').value, $('pk-deck').value, $('pk-part').value).catch(function (e) { $('pk-err').textContent = e.message; b.disabled = false; });
+  };
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') $('pick').hidden = true; });
+
+  /* ---------- the laptop stays awake while waiting ---------- */
+  var lock = null;
+  function wake() { try { if (navigator.wakeLock && document.visibilityState === 'visible') navigator.wakeLock.request('screen').then(function (l) { lock = l; }).catch(function () { lock = null; }); } catch (e) { lock = null; } }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { wake(); poll(); } });
+  // Back to this page from the slides (the browser's Back button keeps the page as it was): wait again.
+  window.addEventListener('pageshow', function (e) { if (e.persisted && TK) start(); });
+  $('fs').onclick = function () { try { (document.documentElement.requestFullscreen || function () {}).call(document.documentElement); } catch (e) { /* press F11 */ } };
+  $('unpair').onclick = function () { TK = ''; set('pj_tk', null); set('pj_seq', null); seq = -1; clearInterval(timer); showPair(); };
+
+  function start() {
+    $('main').innerHTML = ''; $('main').appendChild(el('p', 'hint', 'Connecting to My Science…'));
+    lastList = 0; poll(); clearInterval(timer); timer = setInterval(poll, 3000); wake();
+  }
+  if (!app) showPair();
+  else if (TK) start();
+  else if (tk0) pair(tk0).catch(function (e) { showPair(e.message + ' Type your teacher PIN instead.'); });
+  else showPair();
+})();
+</script>
+</body></html>

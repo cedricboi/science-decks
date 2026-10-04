@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B1F3B; --ink-2: #474D6B; --muted: #6B7190; --line: #DCE2EE; --canvas: #EEF2F8;
+    --blue: #2F5BFF; --blue-ink: #1E3FD0; --hl: #FFE45C; --hl-soft: #FFF5B8;
+    --ok: #12A36A; --ok-soft: #DDF5EA; --bad: #E5484D; --bad-soft: #FDE6E7;
+    --display: 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --card-shadow: 0 1px 0 rgba(27,31,59,.06), 0 12px 26px -16px rgba(27,31,59,.55);
+    --lift: 0 24px 48px -20px rgba(15,18,40,.55);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { font-family: var(--body); color: var(--ink); background: var(--canvas); -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; }
+  button, select, textarea, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .hidden { display: none !important; }
+  h1, h2, h3 { font-family: var(--display); letter-spacing: -.01em; }
+
+  .wp-graph { background-color: #F6F9FF;
+    background-image: linear-gradient(rgba(47,91,255,.11) 1px, transparent 1px), linear-gradient(90deg, rgba(47,91,255,.11) 1px, transparent 1px),
+      linear-gradient(rgba(47,91,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(47,91,255,.05) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; }
+  .wp-notebook { background-color: #FFFEFA;
+    background-image: linear-gradient(90deg, transparent 47px, rgba(229,72,77,.42) 47px, rgba(229,72,77,.42) 49px, transparent 49px),
+      linear-gradient(rgba(47,91,255,.16) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 34px; }
+  .wp-daylight { background: linear-gradient(160deg, #FFF3C4 0%, #FFE1D6 48%, #DCE8FF 100%); }
+  .wp-blueprint { background-color: #173A7A;
+    background-image: linear-gradient(rgba(255,255,255,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.10) 1px, transparent 1px),
+      linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; }
+  .wp-chalk { background-color: #22493B;
+    background-image: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.6px), radial-gradient(rgba(255,255,255,.045) 1px, transparent 1.6px);
+    background-size: 7px 7px, 13px 13px; background-position: 0 0, 3px 5px; }
+  .wp-bench { background-color: #262C38; background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.028) 0 2px, transparent 2px 10px); }
+  .dark .on-wall { color: #F4F6FB; }
+  .dark .on-wall .muted, .dark .head .prompt { color: #CDD4EA; }
+
+  .page { min-height: 100vh; padding: 24px 16px 60px; }
+  .narrow { max-width: 600px; margin: 0 auto; }
+  .mark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -.02em; margin: 6px 0 24px; }
+  .mark svg { width: 32px; height: 32px; }
+
+  .panel { background: #fff; border-radius: 18px; box-shadow: var(--lift); padding: 24px; }
+  .panel h1 { margin: 0 0 6px; font-size: 30px; font-weight: 800; }
+  .panel .lead { margin: 0 0 22px; color: var(--ink-2); }
+  label.f { display: block; font-size: 15px; font-weight: 700; margin: 0 0 7px; }
+  select, textarea, input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 14px; background: #fff; font-size: 18px; }
+  select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47,91,255,.15); }
+  .field { margin-bottom: 18px; }
+
+  .btn { border: 1.5px solid var(--line); border-radius: 999px; padding: 12px 20px; font-weight: 700; font-size: 16px; background: #fff;
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center; color: var(--ink); }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.primary:disabled { opacity: .45; cursor: default; }
+  .btn.ghost { background: transparent; border-color: transparent; }
+  .btn.danger { color: var(--bad); }
+  .btn.small { padding: 8px 14px; font-size: 15px; }
+  .btn.block { width: 100%; }
+  .btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .link { background: none; border: 0; padding: 0; color: var(--blue); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  .msg { border-radius: 12px; padding: 12px 14px; font-size: 16px; margin: 12px 0 0; }
+  .msg.err { background: var(--bad-soft); color: #A1262A; }
+  .msg.info { background: #E8EEFF; color: #22348F; }
+
+  /* Right now: what is live */
+  .blist { display: grid; gap: 10px; }
+  .bitem { display: grid; grid-template-columns: 46px 1fr auto; gap: 14px; align-items: center; text-align: left; width: 100%; padding: 12px 14px;
+    background: #fff; border: 1px solid var(--line); border-radius: 16px; color: inherit; text-decoration: none; }
+  .bitem .ic { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: #EEF2FF; color: var(--blue); }
+  .bitem .ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .bitem .tx { display: flex; flex-direction: column; min-width: 0; }
+  .bitem .t { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 1.25; }
+  .bitem .s { font-size: 14px; color: var(--muted); margin-top: 3px; }
+  .bitem .go { font-size: 22px; color: var(--muted); }
+  .bitem.ask { border: 2px solid #F2C200; background: #FFFBEA; }
+  .bitem.ask .ic { background: var(--hl); color: var(--ink); }
+  .empty { text-align: center; color: var(--ink-2); padding: 34px 18px; }
+  .live { color: var(--ok); font-weight: 700; }
+  .pulse { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ok); margin-right: 8px; vertical-align: 1px; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(18,163,106,.6); } 70% { box-shadow: 0 0 0 10px rgba(18,163,106,0); } 100% { box-shadow: 0 0 0 0 rgba(18,163,106,0); } }
+
+  /* Board */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+  .dark .topbar .btn { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.24); color: #fff; }
+  .tag { font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .tag.open::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 7px; vertical-align: 1px; }
+  .tag.locked { background: var(--hl); }
+  .head h1 { font-size: 30px; line-height: 1.12; margin: 0 0 10px; font-weight: 800; }
+  .head .prompt { font-size: 19px; line-height: 1.45; margin: 0 0 20px; white-space: pre-wrap; color: var(--ink-2); }
+
+  .compose { background: #fff; border-radius: 16px; box-shadow: var(--lift); padding: 18px; margin-bottom: 20px; border-top: 6px solid var(--blue); }
+  .compose h2 { margin: 0 0 12px; font-size: 19px; font-weight: 700; }
+  .compose textarea { min-height: 130px; resize: vertical; line-height: 1.45; }
+  .count { text-align: right; font-size: 13px; color: var(--muted); margin-top: 5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chip { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 10px 16px; font-size: 16px; font-weight: 700; }
+  .chip.on { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .tools .spacer { flex: 1; }
+  .preview { position: relative; margin-top: 12px; display: inline-block; }
+  .preview img { max-width: 100%; max-height: 260px; border-radius: 10px; display: block; border: 1px solid var(--line); }
+  .preview .x { position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; font-size: 18px; line-height: 1; }
+
+  .sec { font-family: var(--display); font-size: 17px; font-weight: 700; margin: 26px 0 10px; }
+  .sectiontitle { font-family: var(--display); font-size: 19px; font-weight: 700; margin: 26px 0 12px; }
+
+  /* My Science home: one column, one thing at a time */
+  .plain { background: #F4F6FA; }
+  .home { max-width: 680px; margin: 0 auto; }
+  .homebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 22px; }
+  .homebar .mark { margin: 0; font-size: 20px; }
+  .homebar .mark svg { width: 28px; height: 28px; }
+  .hello h1 { margin: 0; font-size: 28px; font-weight: 800; line-height: 1.15; }
+  .hello p { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; }
+  .wallet { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px 5px 5px; color: var(--ink); }
+  .wallet .coin { width: 32px; height: 32px; border-radius: 50%; background: var(--hl); display: grid; place-items: center; font-size: 15px; }
+  .wallet b { font-family: var(--display); font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .wallet small { font-size: 13px; color: var(--muted); }
+  .wallet .chev { font-size: 20px; color: var(--muted); margin-left: 2px; line-height: 1; }
+  .wallet.bump .coin { animation: bump .7s ease; }
+  @keyframes bump { 30% { transform: scale(1.25) rotate(-12deg); } 60% { transform: scale(.95); } }
+  .sec .pulse { margin-right: 10px; }
+  .sechead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .more { font-weight: 700; color: var(--blue); text-decoration: none; font-size: 15px; }
+
+  .cont { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    padding: 14px 16px; color: inherit; text-decoration: none; border-left: 6px solid var(--blue); }
+  .cont .t { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 1.25; }
+  .cont .s { color: var(--muted); font-size: 14px; margin-top: 3px; }
+  .cont .go { background: var(--blue); color: #fff; border-radius: 999px; padding: 10px 18px; font-weight: 700; white-space: nowrap; }
+  .cont.warn { border-left-color: var(--bad); } .cont.warn .go { background: var(--bad); }
+  .cont.now { border-left-color: var(--ok); } .cont.now .go { background: var(--ok); } .cont.now .ico { background: #DDF5EA; color: #0B6B45; }
+  .cont.check { border-left-color: #F5B400; } .cont.check .go { background: var(--ink); }
+  .cont .ico { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 18px; background: #EEF2FF; color: var(--blue); }
+  .cont.warn .ico { background: var(--bad-soft); color: var(--bad); } .cont.check .ico { background: var(--hl-soft); color: #6B5200; font-size: 14px; }
+  @media (max-width: 520px) { .cont { grid-template-columns: auto 1fr; } .cont .go { grid-column: 1 / -1; text-align: center; } }
+
+  /* Lists that sit in one card, a line per item */
+  .group { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .group > * + * { border-top: 1px solid var(--line); }
+  .hw { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 16px; color: inherit; text-decoration: none; }
+  .hw .t { font-weight: 700; font-size: 16px; line-height: 1.3; }
+  .hw .s { font-size: 13px; color: var(--muted); margin-top: 1px; }
+  .hw.done .t { font-weight: 400; color: var(--ink-2); }
+  .hwnote { padding: 11px 16px; color: #0B6B45; background: #F3FBF7; font-size: 15px; font-weight: 700; }
+  .hwnote.more { color: var(--ink-2); background: #fff; font-weight: 400; }
+  .st { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 8px; white-space: nowrap; text-align: center; }
+  .st.overdue { background: var(--bad-soft); color: #A1262A; } .st.todo { background: var(--hl-soft); color: #6B5200; }
+  .st.submitted { background: #EEF0F6; color: var(--ink-2); } .st.marked { background: var(--ok-soft); color: #0B6B45; } .st.missed { background: #EEF0F6; color: var(--muted); }
+
+  .lcard { display: grid; grid-template-columns: 38px 1fr auto; gap: 14px; align-items: center; padding: 13px 16px; color: inherit; text-decoration: none; }
+  .lcard .n { width: 38px; height: 38px; border-radius: 10px; background: var(--ink); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 16px; }
+  .lcard .bd { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .lcard .t { font-family: var(--display); font-weight: 700; font-size: 16px; line-height: 1.25; }
+  .lcard .ln { display: flex; align-items: center; gap: 10px; }
+  .lcard .s { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .lcard .go { font-size: 22px; color: var(--muted); }
+  .lcard .n.sm { font-size: 12.5px; }
+  .chapters .group .lcard .n { background: var(--sc, var(--ink)); }
+  .lcard.plain .s { white-space: normal; }
+  /* A lesson with mistakes to put right: its own link to Revise in the deck */
+  .lrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .lrow .lcard .go { display: none; }
+  .revlink { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-right: 14px; padding: 7px 11px; border-radius: 12px;
+    background: var(--hl-soft); color: #6B5200; text-decoration: none; font-size: 11.5px; font-weight: 700; line-height: 1.15; text-align: center; max-width: 92px; }
+  .revlink b { font-family: var(--display); font-size: 19px; font-variant-numeric: tabular-nums; }
+  .revlink:hover { background: var(--hl); }
+  .subchips { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+  .subchips:empty { display: none; }
+  .subchip { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 15px; font-weight: 700; font-size: 15px; color: var(--ink-2); }
+  .subchip.on { background: var(--sc, var(--ink)); border-color: var(--sc, var(--ink)); color: #fff; }
+  .chapters .chap { font-size: 15px; margin: 16px 0 8px; color: var(--ink-2); }
+  .chapters .chap:first-child { margin-top: 0; }
+  .bar { height: 6px; border-radius: 999px; background: #E6EAF3; overflow: hidden; flex: 1; max-width: 180px; }
+  .bar i { display: block; height: 100%; background: var(--blue); border-radius: 999px; }
+  .chk { align-self: flex-start; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 8px; background: #F1F3F8; color: var(--ink-2); }
+  .chk.pass { background: var(--ok-soft); color: #0B6B45; }
+  .chk.todo { background: var(--hl-soft); color: #6B5200; }
+
+  /* Points: tap the badge */
+  .sheet { max-width: 440px; }
+  .sheet .sh { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .sheet h2 { margin: 0; font-size: 22px; }
+  .sheet .close { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 20px; line-height: 1; }
+  .sheet .big { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; margin: 10px 0 2px; font-variant-numeric: tabular-nums; }
+  .sheet .big small { font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+  .sheet h3 { font-size: 15px; margin: 18px 0 8px; color: var(--ink-2); }
+  .pt { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 14px; font-size: 15px; }
+  .pt .w { font-size: 12px; color: var(--muted); }
+  .pt b { font-family: var(--display); font-size: 17px; color: var(--ok); font-variant-numeric: tabular-nums; }
+  .pt b.neg { color: var(--bad); }
+  .sheet .btn.block { margin-top: 16px; text-decoration: none; }
+
+  .card { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); padding: 14px 16px 12px 18px; break-inside: avoid;
+    margin: 0 0 14px; border-left: 6px solid var(--stripe, #C9D3EE); }
+  .card.new { animation: drop .45s cubic-bezier(.2,1.3,.4,1); }
+  @keyframes drop { from { transform: translateY(-10px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+  .card .colname { display: inline-block; font-size: 13px; font-weight: 700; color: #fff; background: var(--ink); border-radius: 6px; padding: 2px 8px; margin-bottom: 8px; }
+  .card .txt { font-size: 18px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .card .img { margin-top: 10px; border-radius: 8px; overflow: hidden; background: #F1F3F8; min-height: 60px; border: 1px solid var(--line); }
+  .card .img img { width: 100%; display: block; }
+  .card .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); gap: 8px; }
+  .badge { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .badge.pending { background: var(--hl-soft); color: #6B5200; }
+  .badge.hidden { background: #EEF0F6; color: var(--muted); }
+  .card.starred { box-shadow: 0 0 0 3px var(--hl), var(--card-shadow); }
+
+  .wall { columns: 2 260px; column-gap: 14px; }
+  .cols { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(240px, 1fr); gap: 14px; overflow-x: auto; padding-bottom: 6px; }
+  .col h3 { font-size: 16px; margin: 0 0 10px; padding: 8px 12px; background: var(--ink); color: #fff; border-radius: 10px; }
+  .stream { max-width: 640px; }
+
+  /* Sketch pad */
+  .sketch { position: fixed; inset: 0; background: #2A2F48; z-index: 50; display: flex; flex-direction: column; }
+  .sketch .bar { display: flex; gap: 8px; align-items: center; padding: 10px 12px; background: var(--ink); color: #fff; flex-wrap: wrap; }
+  .sketch .bar .btn { background: rgba(255,255,255,.1); border-color: transparent; color: #fff; }
+  .sketch .bar .btn.on { background: #fff; color: var(--ink); }
+  .sketch .bar .btn.primary { background: var(--hl); color: var(--ink); }
+  .sketch .sw { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; padding: 0; }
+  .sketch .sw.on { border-color: #fff; box-shadow: 0 0 0 2px var(--ink); }
+  .sketch .stage { flex: 1; display: grid; place-items: center; padding: 12px; min-height: 0; }
+  .sketch canvas { background: #fff; border-radius: 8px; touch-action: none; max-width: 100%; max-height: 100%; }
+  .sep { width: 1px; height: 26px; background: rgba(255,255,255,.2); margin: 0 4px; }
+
+  .confirm { position: fixed; inset: 0; background: rgba(17,20,42,.55); display: grid; place-items: center; z-index: 60; padding: 16px; }
+  .confirm .panel { max-width: 380px; width: 100%; }
+  .confirm .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: #fff;
+    padding: 13px 20px; border-radius: 999px; font-size: 16px; font-weight: 700; z-index: 70; box-shadow: var(--lift); display: flex; align-items: center; gap: 9px; }
+  .toast.ok::before { content: ''; width: 20px; height: 20px; border-radius: 50%; flex: none;
+    background: var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/13px no-repeat; }
+
+  /* Sign in: one card, one step at a time */
+  .si-step h1 { margin: 0 0 6px; font-size: 30px; font-weight: 800; }
+  .si-step .lead { margin: 0 0 22px; color: var(--ink-2); }
+  .si-who { display: inline-flex; align-items: center; gap: 10px; background: #EEF2FF; color: var(--blue-ink); border-radius: 999px; padding: 6px 14px 6px 6px; font-weight: 700; margin: 0 0 16px; }
+  .si-who .av { width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 14px; }
+  input.pin { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; background: #fff; font-size: 30px; letter-spacing: .5em; text-align: center; font-variant-numeric: tabular-nums; font-family: var(--display); font-weight: 800; }
+  input.pin:focus, input.txt:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47,91,255,.15); }
+  input.txt { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 14px; background: #fff; font-size: 18px; }
+  .si-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .si-links { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; font-size: 15px; }
+  .si-note { font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+  .si-wait { display: flex; align-items: center; gap: 12px; background: #FFFBEA; border: 1.5px solid #F2C200; border-radius: 14px; padding: 14px 16px; margin: 0 0 18px; font-size: 16px; }
+  .si-wait .dot { width: 12px; height: 12px; border-radius: 50%; background: #F2C200; flex: none; animation: pulse 1.6s infinite; }
+  .si-sec { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 22px 0 10px; padding-top: 18px; border-top: 1px solid var(--line); }
+  @media (max-width: 420px) { .si-two { grid-template-columns: 1fr; } }
+
+  /* Lessons and Homework, in one place */
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #E3E8F2; border-radius: 16px; padding: 5px; margin: 20px 0 4px; }
+  .tabs button { border: 0; background: transparent; border-radius: 12px; padding: 12px 10px; font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink-2);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .tabs button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(27,31,59,.12), 0 6px 14px -8px rgba(27,31,59,.45); }
+  .tabs .cnt { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; background: var(--bad); color: #fff; font: 700 13px/24px var(--body); font-variant-numeric: tabular-nums; }
+  .tabs .cnt.soft { background: var(--hl); color: var(--ink); }
+  .revnote { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 1px dashed #B9C3DA; border-radius: 14px; padding: 12px 14px; font-size: 15px; color: var(--ink-2); margin: 0 0 12px; }
+  .revnote b { color: var(--ink); }
+  .hwline { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-left: 6px solid var(--bad);
+    border-radius: 16px; padding: 13px 16px; margin-top: 12px; font-size: 16px; }
+  .hwline.soft { border-left-color: #F5B400; }
+  .hwline b { font-family: var(--display); font-size: 17px; }
+  .hwline .go { color: var(--blue); font-weight: 700; white-space: nowrap; }
+  .hwmode .hello { display: none; }
+  .hwmode { padding-bottom: 0; }
+  #pane-hw { position: fixed; left: 0; right: 0; bottom: 0; background: #F4F6FA; padding: 0 0 env(safe-area-inset-bottom, 0px); }
+  #pane-hw iframe { display: block; width: 100%; height: 100%; border: 0; background: #F4F6FA; }
+  #hw-wait { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-2); font-size: 16px; pointer-events: none; }
+  #hw-wait.gone { display: none; }
+  #hw-msg { max-width: 640px; margin: 24px auto; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Sign in -->
+<section id="v-signin" class="page plain hidden">
+  <div class="narrow" style="max-width: 480px; padding-top: 5vh">
+    <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>My Science</div>
+    <div class="panel">
+      <div id="si-who" class="si-step">
+        <h1>Who are you?</h1>
+        <p class="lead">Choose your class and your name. Then you sign in with your own PIN.</p>
+        <div class="field">
+          <label class="f" for="in-class">Your class</label>
+          <select id="in-class"><option value="">Loading…</option></select>
+        </div>
+        <div class="field">
+          <label class="f" for="in-name">Your name</label>
+          <select id="in-name" disabled><option value="">Choose your class first</option></select>
+        </div>
+        <button id="btn-signin" class="btn primary block" disabled>Continue</button>
+      </div>
+      <div id="si-step" class="si-step hidden"></div>
+      <div id="signin-msg" class="msg err hidden"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Home: My Science, with Lessons and Homework -->
+<section id="v-boards" class="page plain hidden">
+  <div class="home">
+    <div class="homebar">
+      <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>My Science</div>
+      <button id="wallet" class="wallet hidden" title="Your points">
+        <span class="coin" aria-hidden="true">★</span><b id="w-points">0</b><small>points</small>
+        <span id="w-tokwrap" class="hidden"><small>·</small> <b id="w-tokens">0</b> <small>tokens</small></span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+    </div>
+    <div class="hello">
+      <h1>Hi, <span id="who-name"></span></h1>
+      <p><span id="who-class"></span> · <button class="link" id="btn-notme">Not you?</button></p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="My Science">
+      <button id="tab-lessons" role="tab" aria-selected="true" aria-controls="pane-lessons">Lessons</button>
+      <button id="tab-hw" role="tab" aria-selected="false" aria-controls="pane-hw">Homework <span id="hw-count" class="cnt hidden"></span></button>
+    </div>
+
+    <div id="pane-lessons" role="tabpanel" aria-labelledby="tab-lessons">
+      <div id="sec-next" class="hidden">
+        <h2 class="sec" id="next-head"><span class="pulse"></span>In class now</h2>
+        <a id="donext" class="cont now" target="_blank" rel="noopener"></a>
+      </div>
+
+      <div id="sec-now" class="hidden">
+        <h2 class="sec"><span class="pulse"></span>Right now</h2>
+        <div id="board-list" class="blist"></div>
+      </div>
+
+      <button id="hw-line" class="hwline hidden" type="button"></button>
+
+      <div id="sec-lessons">
+        <h2 class="sec">Revise</h2>
+        <p class="revnote"><span aria-hidden="true">📖</span><span>Go over these lessons any time. <b>Your answers here are not saved and do not count.</b> They count only in class, when your teacher is teaching the lesson.</span></p>
+        <div id="lesson-subs" class="subchips"></div>
+        <div id="lesson-list" class="group"></div>
+        <div id="lesson-none" class="empty hidden">Your teacher has not opened any lessons for revision yet.</div>
+      </div>
+      <div id="boards-msg" class="msg err hidden"></div>
+    </div>
+  </div>
+  <div id="pane-hw" role="tabpanel" aria-labelledby="tab-hw" class="hidden">
+    <div id="hw-wait">Opening your homework…</div>
+    <div id="hw-msg" class="msg info hidden"></div>
+  </div>
+</section>
+
+<!-- Points: opens from the badge at the top -->
+<div id="ptsheet" class="confirm hidden">
+  <div class="panel sheet">
+    <div class="sh"><h2>Your points</h2><button class="close" id="pt-close" aria-label="Close">×</button></div>
+    <div class="big"><span id="ps-points">0</span><small>points</small></div>
+    <div id="ps-latest" class="hidden">
+      <h3>Latest</h3>
+      <div id="pt-list" class="group"></div>
+    </div>
+    <button id="pt-hub" class="btn primary block" type="button">All my points in Homework</button>
+  </div>
+</div>
+
+<!-- Board -->
+<section id="v-board" class="page hidden">
+  <div class="narrow" style="max-width: 1100px">
+    <div class="topbar">
+      <button class="btn small back" id="btn-back">‹ My Science</button>
+      <span id="b-state" class="tag"></span>
+    </div>
+    <div class="head on-wall">
+      <h1 id="b-title"></h1>
+      <p class="prompt" id="b-prompt"></p>
+    </div>
+
+    <div style="max-width: 640px">
+      <div id="compose" class="compose">
+        <h2>Your answer</h2>
+        <div id="col-pick" class="hidden">
+          <label class="f">Choose one</label>
+          <div class="chips" id="col-chips"></div>
+        </div>
+        <textarea id="in-text" maxlength="1000" placeholder="Type your answer here" aria-label="Your answer"></textarea>
+        <div class="count"><span id="text-count">0</span> / 1000</div>
+        <div id="img-preview" class="preview hidden"><img alt="Your picture"><button class="x" id="btn-rmimg" aria-label="Remove picture">×</button></div>
+        <div class="tools">
+          <label id="btn-photo" class="btn small"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Photo<input id="in-photo" type="file" accept="image/*" class="hidden"></label>
+          <button id="btn-draw" class="btn small"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Draw</button>
+          <span class="spacer"></span>
+          <button id="btn-post" class="btn primary">Post</button>
+        </div>
+        <div id="post-msg" class="msg err hidden"></div>
+      </div>
+      <div id="compose-off" class="msg info hidden"></div>
+
+      <div id="mine-wrap" class="hidden">
+        <div class="sectiontitle on-wall">Your posts</div>
+        <div id="mine"></div>
+      </div>
+    </div>
+
+    <div id="others-wrap" class="hidden">
+      <div class="sectiontitle on-wall">Your class's answers</div>
+      <div id="others"></div>
+    </div>
+    <div id="reveal-wait" class="msg info hidden" style="max-width:640px">Your teacher will show everyone's answers soon.</div>
+  </div>
+</section>
+
+<!-- Sketch pad -->
+<div id="sketch" class="sketch hidden">
+  <div class="bar">
+    <button class="btn small" id="sk-cancel">Cancel</button>
+    <span class="sep"></span>
+    <button class="sw" data-c="#1a1a1a" style="background:#1a1a1a" aria-label="Black"></button>
+    <button class="sw" data-c="#1d4ed8" style="background:#1d4ed8" aria-label="Blue"></button>
+    <button class="sw" data-c="#dc2626" style="background:#dc2626" aria-label="Red"></button>
+    <button class="sw" data-c="#16a34a" style="background:#16a34a" aria-label="Green"></button>
+    <span class="sep"></span>
+    <button class="btn small" id="sk-thin">Thin</button>
+    <button class="btn small" id="sk-thick">Thick</button>
+    <button class="btn small" id="sk-eraser">Eraser</button>
+    <span class="sep"></span>
+    <button class="btn small" id="sk-undo">Undo</button>
+    <button class="btn small" id="sk-clear">Clear</button>
+    <span style="flex:1"></span>
+    <button class="btn small primary" id="sk-done">Use drawing</button>
+  </div>
+  <div class="stage"><canvas id="sk-canvas"></canvas></div>
+</div>
+
+<div id="confirm" class="confirm hidden">
+  <div class="panel">
+    <div id="confirm-text" style="font-size:18px"></div>
+    <div class="row">
+      <button class="btn" id="confirm-no">Cancel</button>
+      <button class="btn primary" id="confirm-yes">Delete</button>
+    </div>
+  </div>
+</div>
+<div id="pinbox" class="confirm hidden">
+  <div class="panel">
+    <h2 style="margin:0 0 6px; font-size:24px">Not you?</h2>
+    <p style="margin:0 0 14px; color: var(--ink-2)">Only your teacher can change the name on this iPad. Ask your teacher to type their PIN.</p>
+    <input id="pin-in" type="password" inputmode="numeric" autocomplete="off" aria-label="Teacher PIN" style="width:100%; border:1.5px solid var(--line); border-radius:12px; padding:13px 14px; font-size:18px">
+    <div id="pin-msg" class="msg err hidden"></div>
+    <div class="row">
+      <button class="btn" id="pin-no">Cancel</button>
+      <button class="btn primary" id="pin-yes">Sign out this iPad</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var WALL = ['graph', 'notebook', 'daylight', 'blueprint', 'chalk', 'bench'];
+  var WALL_ALIAS = { sky: 'graph', paper: 'notebook', sunset: 'daylight', grape: 'blueprint', mint: 'chalk', slate: 'bench' };
+  var DARK = { blueprint: true, chalk: true, bench: true };
+  var AV = ['#2F5BFF', '#0E9F9A', '#12A36A', '#C88A04', '#E5484D', '#8B5CF6', '#D9468F', '#EA6A12', '#3D7BD9', '#6E56CF'];
+  var drawnIds = {};
+  var ICON = {
+    ask: '<svg viewBox="0 0 24 24"><path d="M9.1 9a3 3 0 015.8 1c0 2-3 2.5-3 4.5"/><path d="M12 18h.01"/><circle cx="12" cy="12" r="10"/></svg>',
+    board: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/></svg>'
+  };
+  function ic(name) { var s = el('span', 'ic'); s.innerHTML = ICON[name]; return s; }
+  var me = null;            // {cls, name}
+  var roster = [];
+  var current = null;       // board id
+  var boardData = null;     // last full response
+  var version = 0;
+  var pollTimer = null;
+  var listTimer = null;
+  var chosenCol = '';
+  var imageData = '';
+  var imgCache = {};
+  var busy = false;
+  var autoOpened = false;
+
+  /* ---------- server ---------- */
+  function call(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) {
+        reject(new Error((e && e.message) ? e.message.replace(/^Error:\s*/, '') : 'Something went wrong. Try again.'));
+      });
+      r[fn].apply(r, args);
+    });
+  }
+
+  /* ---------- small helpers ---------- */
+  function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function show(id) { ['v-signin', 'v-boards', 'v-board'].forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); window.scrollTo(0, 0); }
+  function msg(id, text) { var el = $(id); el.textContent = text || ''; el.classList.toggle('hidden', !text); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function setWall(node, wp) {
+    var k = WALL_ALIAS[wp] || wp; if (WALL.indexOf(k) < 0) k = 'graph';
+    WALL.forEach(function (w) { node.classList.remove('wp-' + w); });
+    node.classList.add('wp-' + k); node.classList.toggle('dark', !!DARK[k]);
+  }
+  function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+  function toast(t, ok) { var n = $('toast'); n.textContent = t; n.classList.toggle('ok', !!ok); n.classList.remove('hidden'); clearTimeout(toast._t); toast._t = setTimeout(function () { n.classList.add('hidden'); }, 2200); }
+  function ago(t) {
+    var s = Math.max(0, Math.round((Date.now() - t) / 1000));
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.round(s / 60) + ' min ago';
+    return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  function askConfirm(text) {
+    return new Promise(function (resolve) {
+      $('confirm-text').textContent = text;
+      $('confirm').classList.remove('hidden');
+      $('confirm-yes').onclick = function () { $('confirm').classList.add('hidden'); resolve(true); };
+      $('confirm-no').onclick = function () { $('confirm').classList.add('hidden'); resolve(false); };
+    });
+  }
+
+  /* ---------- sign in ----------
+     Choose your class and name, then your own 4-digit PIN. The first time, the register number (or the teacher
+     letting you in from the phone) proves who you are, and you choose your PIN and a security question.
+     Forgot my PIN asks the question. Once signed in, the name stays on this iPad: only the teacher's PIN changes it. */
+  var DEV = load('lb_dev');
+  if (!DEV) { DEV = 'm' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store('lb_dev', DEV); }
+  var siTimer = null;
+  function startSignin(note) {
+    stopPolling(); clearTimeout(siTimer);
+    show('v-signin');
+    $('si-who').classList.remove('hidden'); $('si-step').classList.add('hidden');
+    msg('signin-msg', note || '');
+    $('signin-msg').className = 'msg ' + (note ? 'info' : 'err') + (note ? '' : ' hidden');
+    call('apiRoster').then(function (r) {
+      roster = r;
+      var sel = $('in-class'), keep = sel.value;
+      sel.innerHTML = '';
+      sel.appendChild(new Option('Choose your class', ''));
+      r.filter(function (c) { return c.cls !== 'TEST'; }).concat(r.filter(function (c) { return c.cls === 'TEST'; }))
+        .forEach(function (c) { sel.appendChild(new Option(c.cls, c.cls)); });
+      if (keep) { sel.value = keep; }
+    }).catch(function (e) { siErr(e.message); });
+  }
+  function siErr(t) { $('signin-msg').className = 'msg err'; msg('signin-msg', t); }
+  $('in-class').addEventListener('change', function () {
+    var c = this.value, nm = $('in-name');
+    nm.innerHTML = '';
+    var entry = roster.filter(function (x) { return x.cls === c; })[0];
+    if (!entry) { nm.appendChild(new Option('Choose your class first', '')); nm.disabled = true; $('btn-signin').disabled = true; return; }
+    nm.appendChild(new Option('Choose your name', ''));
+    entry.names.forEach(function (n) { nm.appendChild(new Option(n, n)); });
+    nm.disabled = false;
+    $('btn-signin').disabled = true;
+  });
+  $('in-name').addEventListener('change', function () { $('btn-signin').disabled = !this.value; });
+  $('btn-signin').addEventListener('click', function () {
+    var cls = $('in-class').value, name = $('in-name').value;
+    if (!cls || !name) return;
+    var b = this; b.disabled = true; b.textContent = 'One moment…'; msg('signin-msg', '');
+    call('apiStStart', cls, name).then(function (r) {
+      if (r.set) siPin(r); else siSetup(r);
+    }).catch(function (e) { siErr(e.message); })
+      .then(function () { b.disabled = false; b.textContent = 'Continue'; });
+  });
+
+  function siOpen(build) {
+    clearTimeout(siTimer);
+    msg('signin-msg', '');
+    $('si-who').classList.add('hidden');
+    var box = $('si-step'); box.innerHTML = ''; box.classList.remove('hidden');
+    build(box);
+    var first = box.querySelector('input, select');
+    if (first) setTimeout(function () { first.focus(); }, 60);
+  }
+  function siBadge(box, r) {
+    var w = el('div', 'si-who'), parts = r.name.split(/\s+/);
+    w.appendChild(el('span', 'av', ((parts[0] || '')[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')));
+    w.appendChild(document.createTextNode(r.name + ' · ' + r.cls));
+    box.appendChild(w);
+  }
+  function siField(box, label, input, note) {
+    var f = el('div', 'field'), id = 'si-' + Math.random().toString(36).slice(2, 8);
+    var l = el('label', 'f', label); l.htmlFor = id; input.id = id;
+    f.appendChild(l); f.appendChild(input);
+    if (note) f.appendChild(el('p', 'si-note', note));
+    box.appendChild(f);
+    return input;
+  }
+  function pinInput() {
+    var i = el('input', 'pin'); i.type = 'password'; i.inputMode = 'numeric'; i.maxLength = 4; i.autocomplete = 'off'; i.setAttribute('pattern', '[0-9]*');
+    i.addEventListener('input', function () { i.value = i.value.replace(/\D/g, '').slice(0, 4); });
+    return i;
+  }
+  function textInput(ph) { var i = el('input', 'txt'); i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph; return i; }
+  function linkBtn(text, fn) { var b = el('button', 'link', text); b.type = 'button'; b.addEventListener('click', fn); return b; }
+  function goBack() { startSignin(); }
+  function busyBtn(b, text) { var was = b.textContent; b.disabled = true; b.textContent = text; return function () { b.disabled = false; b.textContent = was; }; }
+
+  /* Sign in with the PIN. */
+  function siPin(r) {
+    siOpen(function (box) {
+      box.appendChild(el('h1', '', 'Type your PIN'));
+      siBadge(box, r);
+      var pin = siField(box, 'Your PIN (4 numbers)', pinInput());
+      var go = el('button', 'btn primary block', 'Sign in'); go.type = 'button'; box.appendChild(go);
+      var links = el('div', 'si-links');
+      links.appendChild(linkBtn('Forgot my PIN?', function () { siForgot(r); }));
+      links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack));
+      box.appendChild(links);
+      if (r.locked) siErr('Too many wrong tries. Wait 15 minutes, or ask your teacher.');
+      var send = function () {
+        if (pin.value.length !== 4) { siErr('Your PIN is 4 numbers.'); return; }
+        var done = busyBtn(go, 'Signing in…');
+        call('apiStLogin', r.cls, r.name, pin.value).then(signedIn).catch(function (e) { pin.value = ''; pin.focus(); siErr(e.message); }).then(done);
+      };
+      go.addEventListener('click', send);
+      pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+      pin.addEventListener('input', function () { if (pin.value.length === 4) send(); });
+    });
+  }
+
+  /* Forgot my PIN: the security question, then a new PIN. */
+  function siForgot(r) {
+    siOpen(function (box) {
+      box.appendChild(el('h1', '', 'Forgot your PIN?'));
+      siBadge(box, r);
+      box.appendChild(el('p', 'lead', 'Answer your security question, then choose a new PIN.'));
+      var ans = siField(box, r.question || 'Your security question', textInput('Your answer'));
+      var two = el('div', 'si-two'); box.appendChild(two);
+      var p1 = siField(two, 'New PIN', pinInput()), p2 = siField(two, 'New PIN again', pinInput());
+      var go = el('button', 'btn primary block', 'Set my new PIN'); go.type = 'button'; box.appendChild(go);
+      var links = el('div', 'si-links');
+      links.appendChild(linkBtn('I remember my PIN', function () { siPin(r); }));
+      links.appendChild(el('span', 'si-note', 'Forgot the answer too? Ask your teacher to reset your PIN.'));
+      box.appendChild(links);
+      go.addEventListener('click', function () {
+        if (!ans.value.trim()) { siErr('Type the answer to your question.'); return; }
+        if (p1.value.length !== 4) { siErr('Your new PIN is 4 numbers.'); return; }
+        if (p1.value !== p2.value) { siErr('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        var done = busyBtn(go, 'Saving…');
+        call('apiStForgot', r.cls, r.name, ans.value, p1.value).then(function (x) { toast('Your new PIN is set', true); signedIn(x); })
+          .catch(function (e) { siErr(e.message); }).then(done);
+      });
+    });
+  }
+
+  /* The first time: prove who you are, then choose a PIN and a security question. */
+  function siSetup(r, key) {
+    siOpen(function (box) {
+      box.appendChild(el('h1', '', 'Set up your PIN'));
+      siBadge(box, r);
+      var reg = null;
+      if (key) {
+        var okNote = el('div', 'si-wait'); okNote.style.borderColor = 'var(--ok)'; okNote.style.background = 'var(--ok-soft)';
+        okNote.appendChild(el('span', '', '✓ Your teacher let you in. Now choose your PIN.'));
+        box.appendChild(okNote);
+      } else if (r.inLesson) {
+        // In the class's own lesson the teacher is in the room: no register number.
+        box.appendChild(el('p', 'lead', 'This is your first time. Your class is in its Science lesson, so just choose your PIN.'));
+      } else if (r.reg) {
+        box.appendChild(el('p', 'lead', 'This is your first time. Type your register number to show it is you.'));
+        reg = siField(box, 'Your register number', textInput()); reg.inputMode = 'numeric';
+      } else {
+        siLetIn(box, r);
+        return;
+      }
+      box.appendChild(el('div', 'si-sec', 'Choose your PIN'));
+      var two = el('div', 'si-two'); box.appendChild(two);
+      var p1 = siField(two, 'PIN (4 numbers)', pinInput()), p2 = siField(two, 'PIN again', pinInput());
+      box.appendChild(el('p', 'si-note', 'Remember it, and keep it to yourself. You type it each time you sign in on a new iPad.'));
+      box.appendChild(el('div', 'si-sec', 'Choose a security question'));
+      box.appendChild(el('p', 'si-note', 'If you forget your PIN, you answer this question to set a new one.'));
+      var q = el('select'); q.appendChild(new Option('Choose a question', ''));
+      (r.questions || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); });
+      siField(box, 'Question', q);
+      var ans = siField(box, 'Your answer', textInput('An answer you will remember'));
+      var go = el('button', 'btn primary block', 'Save and sign in'); go.type = 'button'; box.appendChild(go);
+      var links = el('div', 'si-links');
+      links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack));
+      if (!key) links.appendChild(linkBtn('Ask my teacher to let me in', function () { siLetIn(null, r); }));
+      box.appendChild(links);
+      go.addEventListener('click', function () {
+        if (reg && !reg.value.trim()) { siErr('Type your register number.'); return; }
+        if (p1.value.length !== 4) { siErr('Your PIN is 4 numbers.'); return; }
+        if (p1.value !== p2.value) { siErr('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        if (q.value === '') { siErr('Choose a security question.'); return; }
+        if (ans.value.trim().length < 2) { siErr('Type an answer to your question.'); return; }
+        var done = busyBtn(go, 'Saving…');
+        call('apiStSetup', r.cls, r.name, key ? { key: key } : { reg: reg ? reg.value : '' }, p1.value, Number(q.value), ans.value)
+          .then(function (x) { toast('Your PIN is set', true); signedIn(x); })
+          .catch(function (e) {
+            siErr(e.message);
+            if (/let you in/.test(e.message)) { r.reg = false; siTimer = setTimeout(function () { siLetIn(null, r); }, 1800); }
+            if (/already has a PIN/.test(e.message)) { siTimer = setTimeout(function () { call('apiStStart', r.cls, r.name).then(siPin); }, 1800); }
+            // The lesson ended while the form was open: ask again, with the register number this time.
+            if (!reg && !key && /register number/.test(e.message) && !/let you in/.test(e.message)) { siTimer = setTimeout(function () { call('apiStStart', r.cls, r.name).then(function (r2) { siSetup(r2); siErr('Your lesson has ended, so type your register number too.'); }); }, 1200); }
+          }).then(done);
+      });
+    });
+  }
+  /* No register number (or too many wrong ones): the teacher's phone shows the name with Let in. */
+  function siLetIn(box0, r) {
+    var build = function (box) {
+      if (!box0) { box.appendChild(el('h1', '', 'Set up your PIN')); siBadge(box, r); }
+      box.appendChild(el('p', 'lead', 'Your teacher needs to let you in the first time.'));
+      var wait = el('div', 'si-wait hidden'); wait.appendChild(el('span', 'dot')); var wt = el('span', '', 'Your teacher sees your name on their phone. Wait here.'); wait.appendChild(wt);
+      box.appendChild(wait);
+      var go = el('button', 'btn primary block', 'Ask my teacher'); go.type = 'button'; box.appendChild(go);
+      var links = el('div', 'si-links'); links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack)); box.appendChild(links);
+      go.addEventListener('click', function () {
+        go.disabled = true; msg('signin-msg', '');
+        call('apiGateHelp', r.cls, r.name, DEV).then(function (g) {
+          if (!g || !g.ok || !g.key) { go.disabled = false; siErr((g && g.error) || 'That did not work. Try again.'); return; }
+          go.classList.add('hidden'); wait.classList.remove('hidden');
+          (function check() {
+            siTimer = setTimeout(function () {
+              if ($('v-signin').classList.contains('hidden')) return;
+              call('apiGateHelpState', g.key).then(function (s) {
+                if (s.state === 'ok') { siSetup(r, g.key); return; }
+                if (s.state === 'no') { wait.classList.add('hidden'); go.classList.remove('hidden'); go.disabled = false; siErr('Your teacher did not let you in. Check that you chose your own name.'); return; }
+                if (s.state === 'gone') { wait.classList.add('hidden'); go.classList.remove('hidden'); go.disabled = false; siErr('Nobody answered in time. Ask again.'); return; }
+                check();
+              }).catch(function () { check(); });
+            }, 3000);
+          })();
+        }).catch(function (e) { go.disabled = false; siErr(e.message); });
+      });
+    };
+    if (box0) build(box0); else siOpen(build);
+  }
+  function signedIn(r) {
+    me = { cls: r.cls, name: r.name, st: r.st };
+    store('lb_me', me);
+    hwSigned = false;
+    openList();
+  }
+  /* The teacher signed this student out (or reset the PIN): back to the start. */
+  function signedOutNow() {
+    store('lb_me', null); me = null; hwReset();
+    startSignin('You have been signed out. Choose your name and sign in again.');
+  }
+  function isSignedOut(e) { return /SIGNED_OUT/.test((e && e.message) || ''); }
+
+  $('btn-notme').addEventListener('click', function () {
+    $('pin-in').value = ''; msg('pin-msg', ''); $('pinbox').classList.remove('hidden');
+    setTimeout(function () { $('pin-in').focus(); }, 50);
+  });
+  $('pin-no').addEventListener('click', function () { $('pinbox').classList.add('hidden'); });
+  $('pin-yes').addEventListener('click', function () {
+    var v = $('pin-in').value.trim();
+    if (!v) return;
+    call('apiUnlock', v).then(function (ok) {
+      if (!ok) { msg('pin-msg', 'That PIN is not right.'); return; }
+      $('pinbox').classList.add('hidden');
+      signOut();
+    }).catch(function (e) { msg('pin-msg', e.message); });
+  });
+  function signOut() {
+    stopPolling(); store('lb_me', null); me = null; hwReset(); startSignin();
+  }
+
+  /* ---------- Lessons and Homework ---------- */
+  var overTimer = null, lastPoints = null, overview = null, tab = 'lessons';
+  function openList() {
+    stopPolling();
+    current = null;
+    show('v-boards');
+    $('who-name').textContent = me.name;
+    $('who-class').textContent = me.cls;
+    setTab('lessons');
+    refreshList();
+    refreshOverview();
+    listTimer = setInterval(refreshList, 12000);
+    overTimer = setInterval(refreshOverview, 120000);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && me && !$('v-boards').classList.contains('hidden')) { refreshList(); refreshOverview(); }
+  });
+  /* The slides get this student's sign-in in the link (taken out of the address bar at once), so they do not ask again. */
+  function lbParam() { return encodeURIComponent(me.cls + '|' + me.name) + '&st=' + encodeURIComponent(me.st); }
+  function deckUrl(url, taskId, revise) { return url.replace(/#.*$/, '') + '#lb=' + lbParam() + (taskId ? '&q=' + encodeURIComponent(taskId) : '') + (revise ? '&revise' : ''); }
+
+  function setTab(t) {
+    tab = t;
+    var hw = t === 'hw';
+    $('tab-lessons').setAttribute('aria-selected', String(!hw));
+    $('tab-hw').setAttribute('aria-selected', String(hw));
+    $('pane-lessons').classList.toggle('hidden', hw);
+    $('pane-hw').classList.toggle('hidden', !hw);
+    $('v-boards').classList.toggle('hwmode', hw);
+    document.body.style.overflow = hw ? 'hidden' : '';
+    if (hw) { window.scrollTo(0, 0); hwOpen(); placeHw(); }
+  }
+  $('tab-lessons').addEventListener('click', function () { setTab('lessons'); });
+  $('tab-hw').addEventListener('click', function () { setTab('hw'); });
+  function placeHw() {
+    if (tab !== 'hw') return;
+    var top = $('tab-hw').closest('.tabs').getBoundingClientRect().bottom + 10;
+    $('pane-hw').style.top = Math.max(0, Math.round(top)) + 'px';
+  }
+  window.addEventListener('resize', placeHw);
+
+  /* The homework space (the Worksheet Hub's student page) inside this page. It is signed in with this
+     student's sign-in, passed to it by message once it says it is ready, so no second sign-in is asked. */
+  var hwFrame = null, hwSigned = false, hwLink = '';
+  function hwReset() { if (hwFrame) { hwFrame.remove(); hwFrame = null; } hwSigned = false; $('hw-wait').classList.remove('gone'); }
+  function hwOpen() {
+    if (!hwLink) { $('hw-wait').classList.add('gone'); msg('hw-msg', 'Homework is not linked yet. Tell your teacher.'); return; }
+    msg('hw-msg', '');
+    if (hwFrame) return;
+    hwFrame = document.createElement('iframe');
+    hwFrame.title = 'Homework';
+    hwFrame.setAttribute('allow', 'fullscreen; clipboard-write');
+    hwFrame.src = hwLink + (hwLink.indexOf('?') >= 0 ? '&' : '?') + 'embed=ms';
+    $('pane-hw').insertBefore(hwFrame, $('pane-hw').firstChild);
+    setTimeout(function () { if (!hwSigned && tab === 'hw') $('hw-wait').textContent = 'Still opening your homework… If it does not open, check the internet.'; }, 12000);
+  }
+  function inHw(src) {
+    var look = function (w, depth) {
+      if (!w) return false;
+      if (w === src) return true;
+      if (depth <= 0) return false;
+      try { for (var i = 0; i < w.frames.length; i++) if (look(w.frames[i], depth - 1)) return true; } catch (e) { /* not reachable */ }
+      return false;
+    };
+    return !!(hwFrame && src && look(hwFrame.contentWindow, 3));
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!m || m.from !== 'wsh' || !hwFrame || !me) return;
+    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (!inHw(e.source)) return;   // only the homework frame (or a frame inside it) is answered
+    if (m.type === 'ready') { try { e.source.postMessage({ to: 'wsh', type: 'signin', st: me.st }, e.origin); } catch (x) { /* gone */ } }
+    else if (m.type === 'in') { hwSigned = true; $('hw-wait').classList.add('gone'); }
+    else if (m.type === 'signedout') {
+      call('apiStMe', me.st).then(function (r) { if (!r.ok) signedOutNow(); else { $('hw-wait').classList.add('gone'); msg('hw-msg', m.error || 'Homework could not open. Try again in a moment.'); } });
+    }
+    else if (m.type === 'points') refreshOverview();
+  });
+
+  /* Right now and In class now: checked every 12 seconds. */
+  function refreshList() {
+    if (!me) return;
+    call('apiStudentHome', me.st).then(function (home) {
+      var boards = home.boards;
+      if (home.hub && home.hub !== hwLink) { hwLink = home.hub; if (tab === 'hw') hwOpen(); }
+      if (overview) {
+        var key = function (n) { return n ? n.id + '|' + (n.at || '') + '|' + (n.lesson || '') : ''; };
+        if (key(home.now) !== key(overview.now)) { overview.now = home.now; drawNext(overview); refreshOverview(); }
+      } else drawNext({ now: home.now });
+      msg('boards-msg', '');
+      var box = $('board-list');
+      box.innerHTML = '';
+      $('sec-now').classList.toggle('hidden', !home.ask && !boards.length);
+      if (home.ask) box.appendChild(askItem(home.ask));
+      boards.forEach(function (b) {
+        var btn = el('button', 'bitem');
+        btn.appendChild(ic('board'));
+        var tx = el('span', 'tx'); tx.appendChild(el('span', 't', b.title));
+        var st = el('span', 's');
+        if (b.state === 'open') { st.appendChild(el('span', 'live', 'Open')); st.appendChild(document.createTextNode(' · tap to post your answer')); }
+        else st.appendChild(document.createTextNode('Locked. You can still read it.'));
+        tx.appendChild(st);
+        btn.appendChild(tx);
+        btn.appendChild(el('span', 'go', '›'));
+        btn.addEventListener('click', function () { openBoard(b.id); });
+        box.appendChild(btn);
+      });
+    }).catch(function (e) {
+      if (isSignedOut(e)) { signedOutNow(); return; }
+      msg('boards-msg', e.message);
+    });
+  }
+
+  /* The lessons open for revision, homework and points: checked every 2 minutes. */
+  function refreshOverview() {
+    if (!me) return;
+    call('apiStudentOverview', me.st).then(function (o) {
+      overview = o;
+      if (o.hubLink && !hwLink) hwLink = o.hubLink;
+      drawWallet(o);
+      drawNext(o);
+      drawHomework(o);
+      drawPoints(o);
+      drawLessons(o.lessons, o.rule, o.catalog);
+    }).catch(function (e) { if (isSignedOut(e)) signedOutNow(); /* otherwise the rest of the page still works */ });
+  }
+
+  function drawWallet(o) {
+    var w = $('wallet'), h = o.hub;
+    var ok = !!(h && !h.error);
+    w.classList.toggle('hidden', !ok);
+    if (!ok) return;
+    $('w-points').textContent = h.points; $('ps-points').textContent = h.points;
+    $('w-tokens').textContent = h.tokens;
+    $('w-tokwrap').classList.toggle('hidden', !h.tokens);
+    if (lastPoints !== null && h.points > lastPoints) { w.classList.remove('bump'); void w.offsetWidth; w.classList.add('bump'); toast('+' + (h.points - lastPoints) + ' points', true); }
+    lastPoints = h.points;
+  }
+  $('wallet').addEventListener('click', function () { $('ptsheet').classList.remove('hidden'); });
+  $('pt-close').addEventListener('click', function () { $('ptsheet').classList.add('hidden'); });
+  $('ptsheet').addEventListener('click', function (e) { if (e.target === this) this.classList.add('hidden'); });
+  $('pt-hub').addEventListener('click', function () { $('ptsheet').classList.add('hidden'); setTab('hw'); });
+
+  function pct(a, b) { return b ? Math.min(100, Math.round(100 * a / b)) : 0; }
+
+  /* In class now: the lesson the teacher is teaching this class. Answers there count. */
+  function drawNext(o) {
+    var n = o.now && o.now.url ? o.now : null;
+    $('sec-next').classList.toggle('hidden', !n);
+    if (!n) return;
+    var a = $('donext'); a.innerHTML = ''; a.className = 'cont now'; a.href = deckUrl(n.url);
+    a.appendChild(el('span', 'ico', '▶'));
+    var tx = el('div'); tx.appendChild(el('div', 't', n.title));
+    tx.appendChild(el('div', 's', 'Your class is on ' + n.lesson + (n.from && n.to ? ' (slides ' + n.from + ' to ' + n.to + ')' : '') + ' now. Your answers count.'));
+    a.appendChild(tx);
+    a.appendChild(el('span', 'go', 'Open the lesson'));
+  }
+
+  /* Homework still to do shows on the Homework tab, and as one line on Lessons. */
+  function drawHomework(o) {
+    var h = o.hub, okHub = !!(h && !h.error);
+    var hw = okHub ? h.homework : [];
+    var over = hw.filter(function (x) { return x.status === 'overdue'; }), todo = hw.filter(function (x) { return x.status === 'todo'; });
+    var n = over.length + todo.length, cnt = $('hw-count');
+    cnt.textContent = String(n); cnt.classList.toggle('hidden', !n); cnt.classList.toggle('soft', !over.length);
+    var line = $('hw-line'); line.innerHTML = '';
+    line.classList.toggle('hidden', !n);
+    if (!n) return;
+    line.className = 'hwline' + (over.length ? '' : ' soft');
+    var first = (over[0] || todo.slice().sort(function (a, b) { return (a.dueTs || 9e15) - (b.dueTs || 9e15); })[0]);
+    var tx = el('span'); tx.appendChild(el('b', '', first.title));
+    tx.appendChild(el('div', 's', over.length ? 'Overdue. It was due ' + first.due + '.' + (n > 1 ? ' ' + (n - 1) + ' more to do.' : '') : (first.due ? 'Due ' + first.due + '.' : 'Homework to do.') + (n > 1 ? ' ' + (n - 1) + ' more.' : '')));
+    line.appendChild(tx); line.appendChild(el('span', 'go', 'Homework ›'));
+  }
+  $('hw-line').addEventListener('click', function () { setTab('hw'); });
+
+  function drawPoints(o) {
+    var h = o.hub, okP = !!(h && !h.error && h.recent && h.recent.length);
+    $('ps-latest').classList.toggle('hidden', !okP);
+    var list = $('pt-list'); list.innerHTML = '';
+    if (!okP) return;
+    h.recent.slice(0, 5).forEach(function (e) {
+      var r = el('div', 'pt');
+      var tx = el('div'); tx.appendChild(el('div', '', e.text)); tx.appendChild(el('div', 'w', e.when));
+      r.appendChild(tx);
+      r.appendChild(el('b', e.points < 0 ? 'neg' : '', (e.points > 0 ? '+' : '') + e.points));
+      list.appendChild(r);
+    });
+  }
+
+  /* The question the teacher is asking right now. It opens the lesson at that question. */
+  function askItem(ask) {
+    var a = el('a', 'bitem ask');
+    a.href = deckUrl(ask.url, ask.taskId);
+    a.target = '_blank'; a.rel = 'noopener';
+    a.appendChild(ic('ask'));
+    var tx = el('span', 'tx');
+    tx.appendChild(el('span', 't', ask.question.length > 140 ? ask.question.slice(0, 137) + '…' : ask.question));
+    var st = el('span', 's');
+    st.appendChild(el('span', 'live', 'Your teacher is asking'));
+    st.appendChild(document.createTextNode(' · tap to answer'));
+    tx.appendChild(st);
+    a.appendChild(tx);
+    a.appendChild(el('span', 'go', '›'));
+    return a;
+  }
+
+  /* Revise: the lessons the teacher has opened to this class, one subject at a time, by chapter. */
+  var tappedSubject = '';
+  function pickSubject(cat, lessons) {
+    var saved = load('lb_subject'), ids = cat.subjects.map(function (s) { return s.id; });
+    if (tappedSubject && ids.indexOf(tappedSubject) >= 0) return tappedSubject;
+    var withId = function (id) { var hit = ''; cat.subjects.forEach(function (s) { s.groups.forEach(function (g) { g.items.forEach(function (it) { if (!hit && it.id && it.id === id) hit = s.id; }); }); }); return hit; };
+    if (overview && overview.now) { var n = withId(overview.now.id); if (n) return n; }
+    if (saved && ids.indexOf(saved) >= 0) return saved;
+    var recent = lessons.filter(function (l) { return l.last; }).sort(function (a, b) { return b.last - a.last; })[0];
+    return (recent && withId(recent.id)) || ids[0];
+  }
+  function drawLessons(lessons, rule, cat) {
+    var mine = lessons.filter(function (l) { return l.open !== false; });
+    var hasCat = !!(cat && cat.subjects && cat.subjects.length);
+    var any = hasCat ? cat.subjects.some(function (s) { return s.groups.some(function (g) { return g.items.some(function (it) { return it.kind !== 'tool'; }); }); }) : mine.length > 0;
+    $('lesson-none').classList.toggle('hidden', any);
+    if (hasCat) { drawCatalog(mine, rule, cat); return; }
+    $('lesson-subs').innerHTML = '';
+    drawLessonCards($('lesson-list'), mine, rule);
+  }
+  function drawCatalog(lessons, rule, cat) {
+    var byId = {}; lessons.forEach(function (l) { byId[l.id] = l; });
+    var sub = pickSubject(cat, lessons);
+    var subs = $('lesson-subs'); subs.innerHTML = '';
+    if (cat.subjects.length > 1) cat.subjects.forEach(function (s) {
+      var b = el('button', 'subchip' + (s.id === sub ? ' on' : ''), s.name);
+      b.style.setProperty('--sc', s.color || 'var(--ink)');
+      b.addEventListener('click', function () { tappedSubject = s.id; store('lb_subject', s.id); drawLessons(lessons, rule, cat); });
+      subs.appendChild(b);
+    });
+    var s = cat.subjects.filter(function (x) { return x.id === sub; })[0] || cat.subjects[0], box = $('lesson-list');
+    box.innerHTML = ''; box.className = 'chapters';
+    s.groups.forEach(function (g) {
+      if (!g.items.length) return;
+      box.appendChild(el('h3', 'chap', g.name));
+      var grp = el('div', 'group'); grp.style.setProperty('--sc', s.color || 'var(--ink)');
+      g.items.forEach(function (it) {
+        var mine = it.id && byId[it.id];
+        if (mine) { drawLessonCards(grp, [Object.assign({}, mine, { title: it.title, num: it.num, url: it.url })], rule, true); return; }
+        var a = el('a', 'lcard plain'); a.href = it.live ? deckUrl(it.url) : it.url; a.target = '_blank'; a.rel = 'noopener';
+        a.appendChild(el('span', 'n' + (String(it.num).length > 3 ? ' sm' : ''), it.kind === 'tool' ? '★' : it.num));
+        var bd = el('span', 'bd'); bd.appendChild(el('span', 't', it.title));
+        bd.appendChild(el('span', 's', it.kind === 'tool' ? 'Revise and practise on your own' : 'Slides and questions'));
+        a.appendChild(bd); a.appendChild(el('span', 'go', '›'));
+        grp.appendChild(a);
+      });
+      box.appendChild(grp);
+    });
+  }
+  function drawLessonCards(box, lessons, rule, keep) {
+    if (!keep) {
+      box.innerHTML = ''; box.className = 'group';
+      lessons = lessons.slice().sort(function (a, b) { return a.title.localeCompare(b.title, undefined, { numeric: true }); });
+    }
+    lessons.forEach(function (l, i) {
+      var a = el('a', 'lcard');
+      a.href = deckUrl(l.url);
+      a.target = '_blank'; a.rel = 'noopener';
+      var num = l.num || (l.title.match(/(?:chapter|ch\.?)\s*(\d+)/i) || [])[1];
+      a.appendChild(el('span', 'n' + (String(num || '').length > 3 ? ' sm' : ''), num || String(i + 1)));
+      var bd = el('span', 'bd');
+      bd.appendChild(el('span', 't', l.title));
+      var ln = el('span', 'ln');
+      var bar = el('span', 'bar'), fill = el('i'); fill.style.width = pct(l.seen, l.slides) + '%'; bar.appendChild(fill); ln.appendChild(bar);
+      ln.appendChild(el('span', 's', !l.last ? 'Not done in class yet' : l.slides && l.seen >= l.slides ? 'Every slide done in class' : l.seen + (l.slides ? ' of ' + l.slides : '') + ' slides done in class'));
+      bd.appendChild(ln);
+      if (l.check && l.check.points != null) bd.appendChild(el('span', 'chk pass', 'Chapter check ✓ ' + (l.check.first != null ? l.check.first : l.check.best) + '% · +' + l.check.points + ' points'));
+      else if (l.check && l.check.tries) bd.appendChild(el('span', 'chk', 'Chapter check: ' + (l.check.first != null ? l.check.first + '% on the first try' : 'best ' + l.check.best + '%')));
+      a.appendChild(bd);
+      a.appendChild(el('span', 'go', '›'));
+      if (l.fix > 0) {
+        var row = el('div', 'lrow'); row.appendChild(a);
+        var rv = el('a', 'revlink'); rv.href = deckUrl(l.url, '', true); rv.target = '_blank'; rv.rel = 'noopener';
+        rv.title = 'Revise: the questions you got wrong the first time';
+        rv.appendChild(el('b', '', String(l.fix))); rv.appendChild(el('span', '', 'to put right'));
+        row.appendChild(rv); box.appendChild(row);
+      } else box.appendChild(a);
+    });
+  }
+
+  /* ---------- board ---------- */
+  function openBoard(id) {
+    stopPolling();
+    current = id; version = 0; boardData = null;
+    chosenCol = ''; clearImage(); $('in-text').value = ''; $('text-count').textContent = '0'; msg('post-msg', '');
+    show('v-board');
+    $('b-title').textContent = 'Loading…'; $('b-prompt').textContent = '';
+    refreshBoard();
+    pollTimer = setInterval(refreshBoard, 9000);
+  }
+
+  function stopPolling() { clearInterval(pollTimer); clearInterval(listTimer); clearInterval(overTimer); pollTimer = listTimer = overTimer = null; }
+
+  $('btn-back').addEventListener('click', function () { autoOpened = true; openList(); });
+
+  function refreshBoard() {
+    var id = current;
+    if (!id) return;
+    call('apiStudentBoard', id, me.st, version).then(function (r) {
+      if (id !== current) return;
+      if (r.gone) { toast('That board has been closed.'); openList(); return; }
+      if (r.same) return;
+      version = r.version;
+      boardData = r;
+      renderBoard();
+    }).catch(function (e) { if (isSignedOut(e)) { signedOutNow(); return; } msg('post-msg', e.message); });
+  }
+
+  function renderBoard() {
+    var b = boardData.board;
+    setWall($('v-board'), b.wallpaper);
+    $('b-title').textContent = b.title;
+    $('b-prompt').textContent = b.prompt;
+    $('b-prompt').classList.toggle('hidden', !b.prompt);
+    var st = $('b-state');
+    st.textContent = b.state === 'locked' ? 'Locked' : 'Open';
+    st.className = 'tag ' + (b.state === 'locked' ? 'locked' : 'open');
+
+    // Column chips
+    var useCols = b.layout === 'columns' && b.columns.length;
+    $('col-pick').classList.toggle('hidden', !useCols);
+    if (useCols) {
+      if (b.columns.indexOf(chosenCol) < 0) chosenCol = '';
+      var chips = $('col-chips'); chips.innerHTML = '';
+      b.columns.forEach(function (c) {
+        var ch = el('button', 'chip' + (c === chosenCol ? ' on' : ''), c);
+        ch.addEventListener('click', function () { chosenCol = c; msg('post-msg', ''); renderBoard(); });
+        chips.appendChild(ch);
+      });
+    }
+    $('btn-photo').classList.toggle('hidden', !b.allowImages);
+    $('btn-draw').classList.toggle('hidden', !b.allowImages);
+    if (!b.allowImages) clearImage();
+
+    // Can this student post?
+    var limitHit = b.postsPerStudent > 0 && boardData.mine.length >= b.postsPerStudent;
+    var off = '';
+    if (b.state === 'locked') off = 'Your teacher has locked this board. No new posts can be added.';
+    else if (limitHit) off = b.postsPerStudent === 1 ? 'You have posted. To change your answer, delete your post below and post again.'
+      : 'You have used all ' + b.postsPerStudent + ' posts for this board.';
+    $('compose').classList.toggle('hidden', !!off);
+    msg('compose-off', off);
+
+    // My posts
+    var mine = boardData.mine.slice().sort(function (a, c) { return c.time - a.time; });
+    $('mine-wrap').classList.toggle('hidden', !mine.length);
+    var mbox = $('mine'); mbox.innerHTML = '';
+    mine.forEach(function (p) { mbox.appendChild(card(p, true, b)); });
+
+    // Others
+    $('reveal-wait').classList.toggle('hidden', !b.waitingForReveal);
+    $('others-wrap').classList.toggle('hidden', !b.studentsSee);
+    if (b.studentsSee) renderOthers(b);
+  }
+
+  function renderOthers(b) {
+    var box = $('others'); box.innerHTML = '';
+    var posts = boardData.others.slice().sort(function (a, c) {
+      if (a.pinned !== c.pinned) return a.pinned ? -1 : 1;
+      return c.time - a.time;
+    });
+    if (!posts.length) { box.className = ''; box.appendChild(el('div', 'msg info', 'No posts from classmates yet.')); return; }
+    if (b.layout === 'columns' && b.columns.length) {
+      box.className = 'cols';
+      b.columns.forEach(function (c) {
+        var col = el('div', 'col'); col.appendChild(el('h3', '', c));
+        posts.filter(function (p) { return p.column === c; }).forEach(function (p) { col.appendChild(card(p, false, b)); });
+        box.appendChild(col);
+      });
+    } else {
+      box.className = b.layout === 'stream' ? 'stream' : 'wall';
+      posts.forEach(function (p) { box.appendChild(card(p, false, b)); });
+    }
+  }
+
+  function card(p, own, b) {
+    var c = el('div', 'card' + (p.starred ? ' starred' : '') + (drawnIds[p.id] ? '' : ' new'));
+    drawnIds[p.id] = true;
+    c.style.setProperty('--stripe', own ? 'var(--blue)' : AV[hash(p.id) % AV.length]);
+    if (p.column && !(b.layout === 'columns' && !own)) c.appendChild(el('div', 'colname', p.column));
+    if (p.text) c.appendChild(el('div', 'txt', p.text));
+    if (p.image) {
+      var holder = el('div', 'img');
+      c.appendChild(holder);
+      loadImage(p.id, holder);
+    }
+    var meta = el('div', 'meta');
+    meta.appendChild(el('span', '', (p.pinned ? '📌 ' : '') + (p.starred ? '⭐ ' : '') + ago(p.time)));
+    if (own) {
+      var right = el('span');
+      if (p.status === 'pending') right.appendChild(el('span', 'badge pending', 'Waiting for teacher'));
+      if (p.status === 'hidden') right.appendChild(el('span', 'badge hidden', 'Hidden by teacher'));
+      if (b.state === 'open') {
+        var del = el('button', 'btn ghost small danger', 'Delete');
+        del.addEventListener('click', function () { deleteOwn(p.id); });
+        right.appendChild(del);
+      }
+      meta.appendChild(right);
+    }
+    c.appendChild(meta);
+    return c;
+  }
+
+  function loadImage(postId, holder) {
+    function put(src) { holder.innerHTML = ''; var i = new Image(); i.alt = 'Picture'; i.src = src; holder.appendChild(i); }
+    if (imgCache[postId]) { put(imgCache[postId]); return; }
+    call('apiImage', postId, { st: me.st }).then(function (src) {
+      if (!src) return; imgCache[postId] = src; put(src);
+    }).catch(function () { holder.textContent = ''; });
+  }
+
+  function deleteOwn(id) {
+    askConfirm('Delete this post?').then(function (yes) {
+      if (!yes) return;
+      call('apiDeleteOwnPost', id, me.st).then(function () {
+        toast('Post deleted'); version = 0; refreshBoard();
+      }).catch(function (e) { toast(e.message); });
+    });
+  }
+
+  /* ---------- compose ---------- */
+  $('in-text').addEventListener('input', function () { $('text-count').textContent = this.value.length; msg('post-msg', ''); });
+
+  $('btn-post').addEventListener('click', function () {
+    if (busy || !boardData) return;
+    var b = boardData.board;
+    var text = $('in-text').value.trim();
+    msg('post-msg', '');
+    if (b.layout === 'columns' && b.columns.length && !chosenCol) { msg('post-msg', 'Choose a column first.'); return; }
+    if (!text && !imageData) { msg('post-msg', 'Write something or add a picture first.'); return; }
+    busy = true;
+    var btn = $('btn-post'); btn.disabled = true; btn.textContent = 'Posting…';
+    call('apiSubmitPost', current, me.st, { text: text, column: chosenCol, image: imageData })
+      .then(function (r) {
+        $('in-text').value = ''; $('text-count').textContent = '0'; clearImage();
+        toast(r.status === 'pending' ? 'Posted. Your teacher will check it first.' : 'Posted', true);
+        version = 0; refreshBoard();
+      })
+      .catch(function (e) { msg('post-msg', e.message); })
+      .then(function () { busy = false; btn.disabled = false; btn.textContent = 'Post'; });
+  });
+
+  function setImage(dataUrl) {
+    imageData = dataUrl;
+    var pv = $('img-preview');
+    pv.querySelector('img').src = dataUrl;
+    pv.classList.remove('hidden');
+  }
+  function clearImage() { imageData = ''; $('img-preview').classList.add('hidden'); $('in-photo').value = ''; }
+  $('btn-rmimg').addEventListener('click', clearImage);
+
+  $('in-photo').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var url = URL.createObjectURL(f);
+    var img = new Image();
+    img.onload = function () {
+      var max = 1400, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+      var cv = document.createElement('canvas');
+      cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      var ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      setImage(cv.toDataURL('image/jpeg', 0.78));
+    };
+    img.onerror = function () { msg('post-msg', 'That picture could not be opened. Try another one.'); };
+    img.src = url;
+  });
+
+  /* ---------- sketch pad ---------- */
+  var sk = { strokes: [], cur: null, color: '#1a1a1a', size: 4, eraser: false, penSeen: false, W: 1200, H: 900 };
+  var cv = $('sk-canvas'), ctx = cv.getContext('2d');
+
+  function fitCanvas() {
+    var stage = cv.parentNode.getBoundingClientRect();
+    var availW = stage.width - 24, availH = stage.height - 24;
+    var k = Math.min(availW / sk.W, availH / sk.H);
+    cv.style.width = Math.floor(sk.W * k) + 'px';
+    cv.style.height = Math.floor(sk.H * k) + 'px';
+  }
+  function redraw() {
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, sk.W, sk.H);
+    sk.strokes.forEach(drawStroke);
+    if (sk.cur) drawStroke(sk.cur);
+  }
+  function drawStroke(s) {
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    s.pts.forEach(function (p, i) { if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); });
+    if (s.pts.length === 1) ctx.lineTo(s.pts[0][0] + 0.1, s.pts[0][1]);
+    ctx.stroke();
+  }
+  function pos(e) {
+    var r = cv.getBoundingClientRect();
+    return [(e.clientX - r.left) * sk.W / r.width, (e.clientY - r.top) * sk.H / r.height];
+  }
+  function syncTools() {
+    document.querySelectorAll('.sketch .sw').forEach(function (b) { b.classList.toggle('on', !sk.eraser && b.dataset.c === sk.color); });
+    $('sk-thin').classList.toggle('on', !sk.eraser && sk.size === 4);
+    $('sk-thick').classList.toggle('on', !sk.eraser && sk.size === 10);
+    $('sk-eraser').classList.toggle('on', sk.eraser);
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'pen') sk.penSeen = true;
+    if (sk.penSeen && e.pointerType === 'touch') return; // palm resting on the screen
+    e.preventDefault();
+    cv.setPointerCapture(e.pointerId);
+    sk.cur = { id: e.pointerId, color: sk.eraser ? '#ffffff' : sk.color, size: sk.eraser ? 34 : sk.size, pts: [pos(e)] };
+    redraw();
+  });
+  cv.addEventListener('pointermove', function (e) {
+    if (!sk.cur || e.pointerId !== sk.cur.id) return;
+    e.preventDefault();
+    var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    evs.forEach(function (ev) { sk.cur.pts.push(pos(ev)); });
+    redraw();
+  });
+  function endStroke(e) {
+    if (!sk.cur || e.pointerId !== sk.cur.id) return;
+    sk.strokes.push(sk.cur); sk.cur = null; redraw();
+  }
+  cv.addEventListener('pointerup', endStroke);
+  cv.addEventListener('pointercancel', endStroke);
+
+  document.querySelectorAll('.sketch .sw').forEach(function (b) {
+    b.addEventListener('click', function () { sk.color = b.dataset.c; sk.eraser = false; syncTools(); });
+  });
+  $('sk-thin').addEventListener('click', function () { sk.size = 4; sk.eraser = false; syncTools(); });
+  $('sk-thick').addEventListener('click', function () { sk.size = 10; sk.eraser = false; syncTools(); });
+  $('sk-eraser').addEventListener('click', function () { sk.eraser = true; syncTools(); });
+  $('sk-undo').addEventListener('click', function () { sk.strokes.pop(); redraw(); });
+  $('sk-clear').addEventListener('click', function () { sk.strokes = []; redraw(); });
+  $('sk-cancel').addEventListener('click', function () { $('sketch').classList.add('hidden'); document.body.style.overflow = ''; });
+  $('sk-done').addEventListener('click', function () {
+    if (!sk.strokes.length) { $('sketch').classList.add('hidden'); document.body.style.overflow = ''; return; }
+    setImage(cv.toDataURL('image/jpeg', 0.85));
+    $('sketch').classList.add('hidden'); document.body.style.overflow = '';
+  });
+  $('btn-draw').addEventListener('click', function () {
+    var portrait = window.innerHeight > window.innerWidth;
+    sk.W = portrait ? 900 : 1200; sk.H = portrait ? 1200 : 900;
+    cv.width = sk.W; cv.height = sk.H;
+    sk.strokes = []; sk.cur = null;
+    $('sketch').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    fitCanvas(); redraw(); syncTools();
+  });
+  window.addEventListener('resize', function () { if (!$('sketch').classList.contains('hidden')) fitCanvas(); });
+
+  /* ---------- start ---------- */
+  /* A student signed in on this iPad goes straight in (the sign-in is checked first). Someone from before
+     PINs (a name and no sign-in) chooses their name and signs in with a PIN once. */
+  me = load('lb_me');
+  if (me && me.cls && me.name && me.st) {
+    openList();
+    call('apiStMe', me.st).then(function (r) { if (!r.ok) signedOutNow(); }).catch(function () { /* checked again on the next call */ });
+  } else { store('lb_me', null); me = null; startSignin(); }
+})();
+</script>
+</body>
+</html>

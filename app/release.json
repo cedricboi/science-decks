@@ -1,0 +1,88 @@
+{
+  "build": "2026-10-07-one",
+  "seq": 18,
+  "ref": "main",
+  "title": "My Science: one app",
+  "notes": [
+    "Live Board and the Teacher Hub in one app, with one teacher PIN",
+    "Your phone runs the lesson: Teach on the projector, End brings the projector back",
+    "Worksheets named with a sub-chapter number link themselves",
+    "Needs you shows only what needs doing, on the Hub and on your phone",
+    "Claude marks a worksheet it has marked before all at once",
+    "Setup check, with a fix for each thing, and one-click updates"
+  ],
+  "files": [
+    {
+      "name": "App",
+      "type": "SERVER_JS",
+      "path": "App.gs",
+      "sha256": "8012ed0d5d02ff91443ee6399cb42da3ba36055a381f4514b769cc11b95ac288"
+    },
+    {
+      "name": "Code",
+      "type": "SERVER_JS",
+      "path": "Code.gs",
+      "sha256": "f64e35fe88304fee4a9821adadb14000b705ba623b7f37fe0c2dbe65e5888768"
+    },
+    {
+      "name": "Guide",
+      "type": "HTML",
+      "path": "Guide.html",
+      "sha256": "a32600acb484c8bd8cee3438f9750acbba54f22ada53dfa466afd4ad0b30b62a"
+    },
+    {
+      "name": "Homework",
+      "type": "HTML",
+      "path": "Homework.html",
+      "sha256": "abb06a11a548e886c7a1fb910c8548a7a6eb6ab7745e77d1fbba365ac741c4ae"
+    },
+    {
+      "name": "Hub",
+      "type": "SERVER_JS",
+      "path": "Hub.gs",
+      "sha256": "9cd1c25109f9033e4616acf3dcf72d6d7dfe7a1c8fdbdf10e4fb752ae196cc06"
+    },
+    {
+      "name": "HubTeacher",
+      "type": "HTML",
+      "path": "HubTeacher.html",
+      "sha256": "6ef5fff8d514df20305297359affbccf3c7ac61eb17c909916cdf4a474ebba46"
+    },
+    {
+      "name": "Ink",
+      "type": "HTML",
+      "path": "Ink.html",
+      "sha256": "b37a79c8f5199b5a5de98adfddbc1c27ff5f7de38788946e1e5060ff4b996787"
+    },
+    {
+      "name": "Rewards",
+      "type": "HTML",
+      "path": "Rewards.html",
+      "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+    },
+    {
+      "name": "Student",
+      "type": "HTML",
+      "path": "Student.html",
+      "sha256": "118b36d4028bdb1355b7c062131bfb3ae23c5f629d938066bb19ad1b1debe3b1"
+    },
+    {
+      "name": "Styles",
+      "type": "HTML",
+      "path": "Styles.html",
+      "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+    },
+    {
+      "name": "Teacher",
+      "type": "HTML",
+      "path": "Teacher.html",
+      "sha256": "08ce54ea8e80c9d9e2a0de27ab2cb82fa448b8b55f6904a67849e5a227c37d0f"
+    },
+    {
+      "name": "appsscript",
+      "type": "JSON",
+      "path": "appsscript.json",
+      "sha256": "44e905499992507cc0397bec7814476d613654379011aebba34aac87e0b97a21"
+    }
+  ]
+}
