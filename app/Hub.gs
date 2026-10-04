@@ -14,7 +14,7 @@ var APP_SCHOOL = 'Assumption English School';
 
 // Your class website, shown as a link in the Teacher Hub. Leave '' to hide it.
 var SITE_URL = 'https://sites.google.com/moe.edu.sg/learnwithmrcedric';
-// Live Board (My Science for students, the teacher page for you). Same link as in your slides. If you ever
+// Live Board (learnwithmrcedric for students, the teacher page for you). Same link as in your slides. If you ever
 // make a new Live Board deployment, put its link in Script Properties as LIVEBOARD_URL instead of editing this.
 var LIVEBOARD_URL = 'https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec';
 // The lesson site (GitHub Pages) whose lessons.json lists every lesson. The Teach tab opens its slides.
@@ -35,7 +35,7 @@ var TABS = {
   },
   assignments: {
     name: 'Assignments',
-    headers: ['ID', 'Title', 'Classes (blank = all)', 'Worksheet PDF link', 'Open', 'Show marked work', 'Due (optional)', 'Check', 'Class report', 'Answer key', 'Show answers', 'Corrections closed', 'Marked solution', 'Close at due time', 'Corrections days', 'Answers after corrections', 'Marking released at']
+    headers: ['ID', 'Title', 'Classes (blank = all)', 'Worksheet PDF link', 'Open', 'Show marked work', 'Due (optional)', 'Check', 'Class report', 'Answer key', 'Show answers', 'Corrections closed', 'Marked solution', 'Close at due time', 'Corrections days', 'Answers after corrections', 'Marking released at', 'Chapter']
   },
   submissions: {
     name: 'Submissions',
@@ -82,7 +82,7 @@ function hubOnOpen_() {
 function setupHub() {
   needOwner_('setupHub');
   var props = PropertiesService.getScriptProperties(), hid = hubSheetId_();
-  var ss = hid ? SpreadsheetApp.openById(hid) : SpreadsheetApp.create('My Science homework');
+  var ss = hid ? SpreadsheetApp.openById(hid) : SpreadsheetApp.create('learnwithmrcedric homework');
   var asg = ss.getSheetByName(TABS.assignments.name);
   if (!hubReady_() && asg && asg.getLastRow() > 1) throw new Error('This Teacher Hub sheet already has worksheets. Move the old Hub\'s settings in first (setupMyScience).');
   props.setProperty('SS_ID', ss.getId());
@@ -214,7 +214,7 @@ function getAssignments_() {
   var sh = hubSheet_(TABS.assignments.name);
   var last = sh.getLastRow();
   if (last < 2) return [];
-  var width = Math.max(7, Math.min(17, sh.getLastColumn ? sh.getLastColumn() : 17));
+  var width = Math.max(7, Math.min(18, sh.getLastColumn ? sh.getLastColumn() : 18));
   var now = new Date(), DAY = 86400000, autos = wsAuto_();
   return sh.getRange(2, 1, last - 1, width).getValues().map(function (r, i) {
     var au = autos[String(r[0]).trim()] || {};
@@ -248,6 +248,7 @@ function getAssignments_() {
       row: i + 2,
       id: String(r[0]).trim(),
       title: String(r[1]).trim(),
+      chapter: String(r[17] == null ? '' : r[17]).trim(),
       classes: String(r[2]).split(',').map(function (c) { return hubNormClass_(c); }).filter(String),
       fileId: fileIdFromLink_(r[3]),
       open: r[4] === true && !(autoClose && dueAt && now > dueAt),
@@ -301,11 +302,11 @@ function issueStudent_(s, secs) {
   CacheService.getScriptCache().put('stok_' + token, JSON.stringify({ cls: s.cls, name: s.name }), secs || 21600);
   return { token: token, name: s.name, cls: s.cls, reg: s.reg };
 }
-/* Students sign in once, in My Science (Live Board), with their own PIN. Their homework opens there, on the
-   Homework tab, and this page is signed in with My Science's sign-in, which Live Board checks. There is no
+/* Students sign in once, in learnwithmrcedric (Live Board), with their own PIN. Their homework opens there, on the
+   Homework tab, and this page is signed in with learnwithmrcedric's sign-in, which Live Board checks. There is no
    choosing a name here any more. */
 function api_login(cls, name) {
-  throw new Error('Open My Science and sign in with your PIN. Your homework is on its Homework tab.');
+  throw new Error('Open learnwithmrcedric and sign in with your PIN. Your homework is on its Homework tab.');
 }
 function api_ticketLogin(st) {
   st = String(st || '');
@@ -321,7 +322,7 @@ function api_ticketLogin(st) {
   }
   var s = hubFindStudent_(hubNormClass_(who.cls), who.name);
   if (!s) throw new Error('SIGNED_OUT');
-  // Short: when it runs out the page renews it with My Science's sign-in, so a student the teacher signs out is out soon.
+  // Short: when it runs out the page renews it with learnwithmrcedric's sign-in, so a student the teacher signs out is out soon.
   return issueStudent_(s, 1800);
 }
 
@@ -329,6 +330,7 @@ function api_ticketLogin(st) {
 // Status: new, started, submitted (waiting for marking), marked, missed (closed, not handed in).
 function api_list(token) {
   var s = who_(token);
+  CH_MEMO_ = {};
   var subs = submissionIndex_();
   var out = [];
   var rules = rwRules_(), icons = wsIcons_();
@@ -362,6 +364,7 @@ function api_list(token) {
       late: !!(sub && a.dueAt && sub.first instanceof Date && sub.first > a.dueAt),
       handedTs: sub && sub.first instanceof Date ? sub.first.getTime() : null,
       auto: !!(sub && sub.auto), autoHandIn: !!(a.autoHandIn && a.dueAt),
+      chapter: (function () { var ci = chapterInfo_(chapterOfWs_(a)); return ci ? { key: ci.key, name: chapterShort_(ci), subject: ci.subjectName, color: ci.color } : null; })(),
       v: a.fileId, draftTs: draftTs
     });
   });
@@ -1303,7 +1306,7 @@ function summarise_(a, subs, now, help) {
     } else pc.notHanded.push(s.name);
   });
   return {
-    id: a.id, title: a.title, classes: a.classes, classText: a.classes.length ? a.classes.join(', ') : 'All classes',
+    id: a.id, title: a.title, chapter: chapterOfWs_(a), chapterSet: a.chapter, classes: a.classes, classText: a.classes.length ? a.classes.join(', ') : 'All classes',
     due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open, showMarked: a.showMarked, isDue: isDue,
     fileUrl: fileUrl_(a.fileId), reportUrl: a.reportLink,
     answerUrl: a.answerLink, hasAnswerKey: !!a.answerLink, showAnswers: a.showAnswers && !!a.answerLink,
@@ -1388,6 +1391,7 @@ function attention_(list, now, followCount, redCount, extra) {
 
 function api_t_dashboard(token) {
   teacher_(token);
+  CH_MEMO_ = {};
   // Anything due to happen at a due time that has passed is done now, in case the timer has not run yet.
   try { if (Object.keys(wsAuto_()).length) hubTickDue_(); } catch (e) { /* the timer will try again */ }
   // Let in requests and the homework set by itself come from Live Board (one request, kept 20 seconds).
@@ -1413,6 +1417,7 @@ function api_t_dashboard(token) {
     classes: Object.keys(byClass).sort(),
     links: { student: (hubUrl_() || '').replace(/\?teacher$/, ''), site: SITE_URL, sheet: ss.getUrl ? ss.getUrl() : '', folder: folder_('ROOT').getUrl(), liveboard: liveBoardUrl_() + '?view=teacher', lessons: lessonSiteUrl_() },
     worksheets: list,
+    chapters: (function () { try { var c = api_t_chapters(token); return { list: c.chapters, given: c.given }; } catch (e) { return { list: [], given: {} }; } })(),
     attention: attention_(list, now, follow.length, red, extraNeeds_(now, live)),
     claude: { connected: !!(PropertiesService.getScriptProperties().getProperty('CLAUDE_FIRE_URL') && PropertiesService.getScriptProperties().getProperty('CLAUDE_FIRE_TOKEN')) },
     updated: Utilities.formatDate(now, TZ, 'h:mm a')
@@ -1449,7 +1454,7 @@ function api_t_teachnext(token, fresh) {
   try { cache.put('lb_teachnext', JSON.stringify(out), 45); } catch (e) { /* too big to keep: ask each time */ }
   return out;
 }
-/* Open a lesson to a class for revision (or close it). Students in the class see it in My Science and can go
+/* Open a lesson to a class for revision (or close it). Students in the class see it in learnwithmrcedric and can go
    through it after school; nothing they do outside the class's lesson is saved. Kept by Live Board. */
 function api_t_alloc(token, cls, deckId, on) {
   teacher_(token);
@@ -1933,6 +1938,8 @@ function newWorksheet_(meta, bytes, solBytes) {
       sol ? sol.getUrl() : '', !!meta.autoClose, corrDays || '', meta.answersAfter !== false, '']]);
     sh.getRange(row, 5, 1, 2).insertCheckboxes();
     sh.getRange(row, 5, 1, 2).setValues([[meta.open !== false, false]]);
+    var chap = String(meta.chapter || '');
+    if (chap === '-' || (chap && chapterByKey_(chap))) sh.getRange(row, 18).setValue(chap);
     sh.getRange(row, 11, 1, 2).insertCheckboxes();
     sh.getRange(row, 11, 1, 2).setValues([[false, false]]);
     sh.getRange(row, 14).insertCheckboxes(); sh.getRange(row, 14).setValue(!!meta.autoClose);
@@ -2142,6 +2149,11 @@ function api_t_update(token, id, patch) {
   }
   if (patch.classes !== undefined) sh.getRange(a.row, 3).setValue(cleanClasses_(patch.classes).join(', '));
   ensureAssignmentCols_();
+  if (patch.chapter !== undefined) {
+    var ck = String(patch.chapter || '');
+    if (ck && ck !== '-' && !chapterByKey_(ck)) throw new Error('That chapter is not on the lesson site.');
+    sh.getRange(a.row, 18).setValue(ck);
+  }
   if (patch.open !== undefined) {
     sh.getRange(a.row, 5).setValue(!!patch.open);
     if (patch.open && a.autoClose && patch.autoClose === undefined) sh.getRange(a.row, 14).setValue(false);
@@ -2217,7 +2229,8 @@ function api_t_copyWorksheet(token, id, meta, copies) {
     var r = newWorksheet_({ title: meta.title || a.title, classes: c.classes, dueDate: c.dueDate || '', dueTime: c.dueTime || '',
       open: meta.open !== false, autoClose: meta.autoClose !== undefined ? !!meta.autoClose : a.autoClose,
       corrDays: meta.corrDays !== undefined ? meta.corrDays : a.corrDays, answersAfter: meta.answersAfter !== undefined ? meta.answersAfter !== false : a.answersAfter,
-      autoHandIn: meta.autoHandIn !== undefined ? !!meta.autoHandIn : a.autoHandIn, autoMark: meta.autoMark !== undefined ? !!meta.autoMark : a.autoMark }, bytes, solBytes);
+      autoHandIn: meta.autoHandIn !== undefined ? !!meta.autoHandIn : a.autoHandIn, autoMark: meta.autoMark !== undefined ? !!meta.autoMark : a.autoMark,
+      chapter: meta.chapter !== undefined ? meta.chapter : a.chapter === '-' ? '-' : chapterOfWs_(a) }, bytes, solBytes);
     var b = findAssignment_(r.id);
     if (a.answerLink) hubSheet_(TABS.assignments.name).getRange(b.row, 10).setValue(a.answerLink);
     var y = JSON.parse(JSON.stringify(x));
@@ -4366,7 +4379,7 @@ function setFromTaught_(links, starts) {
         if (!L || L.file === 'none') return;             // No homework for this sub-chapter
         if (!p.num && L.t && p.t && L.t !== p.t) return;   // linked by its place, but the lesson's parts have changed since
         if (!(Number(s.at) >= (L.at || 0)) || linkDone_((L.done || {})[cls])) return;
-        if (!todo.some(function (x) { return x.k === k && x.cls === cls; })) todo.push({ k: k, cls: cls, next: Number(s.next) || 0, t: p.t || L.t || '', L: L });
+        if (!todo.some(function (x) { return x.k === k && x.cls === cls; })) todo.push({ k: k, cls: cls, next: Number(s.next) || 0, t: p.t || L.t || '', L: L, deck: s.deck });
       });
     });
   });
@@ -4406,7 +4419,8 @@ function setFromTaught_(links, starts) {
         while (due < Date.now() + 3 * 3600000) due += 7 * DAY;   // the class's next lesson, never minutes away
         var due0 = new Date(due);
         var out = newFromLibrary_({ classes: [x.cls], dueDate: Utilities.formatDate(due0, TZ, 'yyyy-MM-dd'), dueTime: Utilities.formatDate(due0, TZ, 'HH:mm'),
-          open: true, autoHandIn: true, autoClose: true, autoMark: on, corrDays: 7, answersAfter: true, draftSolution: on && first }, x.L.file);
+          open: true, autoHandIn: true, autoClose: true, autoMark: on, corrDays: 7, answersAfter: true, draftSolution: on && first,
+          chapter: (chapterOfDeck_(x.deck) || {}).key || '' }, x.L.file);
         res = { id: out.id, at: Date.now() };
       }
       made.push({ id: res.id, cls: x.cls, part: x.t });

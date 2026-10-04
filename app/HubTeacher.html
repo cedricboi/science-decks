@@ -8,7 +8,7 @@
 <?!= include_('Styles'); ?>
 <script>
   /* Light or dark: this device's own setting, unless the moon button chose the other look. The choice is kept on this
-     device for every My Science page on it, and pages already open change with it. */
+     device for every learnwithmrcedric page on it, and pages already open change with it. */
   (function () {
     var K = 'ms_theme', root = document.documentElement, mem = '';
     function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
@@ -388,6 +388,30 @@
   .te-subj { border: 1.5px solid var(--rule, #e3dccd); background: var(--surface, #fff); color: var(--ink); font: 700 15px var(--display); padding: 9px 14px; border-radius: 999px; min-height: 42px; cursor: pointer; }
   .te-subj[aria-selected="true"] { background: var(--c, var(--ink)); border-color: var(--c, var(--ink)); color: #fff; }
   .te-ch h3 { font: 700 16px var(--display); margin: 6px 0 8px; color: var(--ink); }
+  /* chapter packages: Give to, and worksheets grouped by chapter */
+  .te-chh { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; margin: 6px 0 8px; }
+  .te-chh h3 { margin: 0; }
+  .chgive { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .chgive > span { font: 700 12px var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .chg { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 3px 12px; border-radius: 999px; border: 1.5px dashed var(--rule); background: var(--surface); color: var(--muted); font: 700 14px var(--display); cursor: pointer; }
+  .chg i { width: 10px; height: 10px; border-radius: 50%; background: var(--cc, var(--muted)); flex: none; }
+  .chg svg { width: 14px; height: 14px; flex: none; }
+  .chg.on { border-style: solid; border-color: var(--green); background: var(--green-soft); color: var(--green-ink); }
+  .chg.wait, .chg:disabled { opacity: .6; cursor: progress; }
+  .chg:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  @media (pointer: coarse) { .chg { min-height: 40px; } }
+  .chgrp { margin: 22px 0 0; padding: 14px 16px 16px; border-radius: var(--r-card); background: var(--surface-2); border: 1px solid var(--line); border-left: 6px solid var(--chc, var(--rule)); }
+  .chgrp-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
+  .chgrp-t { min-width: 0; }
+  .chgrp-s { display: block; font: 700 12px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .chgrp-h h3 { margin: 2px 0; font: 800 20px var(--display); color: var(--ink); text-wrap: balance; }
+  .chgrp-n { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chgrp-x, .chgrp-e { margin: 10px 0 0; color: var(--muted); font-size: 14px; max-width: 70ch; }
+  .chgrp .cards { margin-top: 12px; }
+  .chgrp details.earlier { margin-top: 12px; }
+  .chgrp details.earlier summary { font-size: 15px; }
+  .tag.chap { background: var(--soft); color: var(--ink); box-shadow: inset 4px 0 0 var(--chc, var(--rule)); padding-left: 12px; }
+  .viewsw.grp button { width: auto; padding: 0 12px; font: 700 14px var(--display); }
   .te-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .te-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; border-radius: 14px; background: var(--surface, #fff); box-shadow: inset 0 0 0 1.5px var(--rule, #e3dccd); border-left: 5px solid var(--c, var(--blue)); min-width: 0; }
   .te-num { font: 800 16px var(--display); min-width: 42px; color: var(--c, var(--ink)); font-variant-numeric: tabular-nums; }
@@ -1256,7 +1280,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'home', cls: '' };
-  var NEWS_VERSION = '2026-10-simple';
+  var NEWS_VERSION = '2026-10-chapters';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -1611,7 +1635,7 @@
   }, true);
 
   /* ---------- Light or night ---------- */
-  // One switch for every My Science page on this device (msTheme, at the top of the page): the device's own setting,
+  // One switch for every learnwithmrcedric page on this device (msTheme, at the top of the page): the device's own setting,
   // or the look chosen with the moon button or here.
   var THEMES = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Same as this device']];
   function themePick() { return window.msTheme ? (msTheme.chosen() || 'auto') : 'auto'; }
@@ -1817,14 +1841,12 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Less to keep track of</b><ul>' +
-      '<li>Three tabs: Home (Today and Lessons), Homework (Worksheets and Tracker) and Students (Progress and Classes). Points and This week are in the menu (T).</li>' +
-      '<li>Needs you on Home is the one list: students asking to be let in, marking to check, marking to release, questions 3 or more students are stuck on, prizes to hand out.</li>' +
-      '<li>Homework for each sub-chapter: on Lessons, press Homework beside a lesson and link a worksheet from your library to each sub-chapter. Once you have shown a class that sub-chapter, the worksheet is set for them, due at their next lesson, and runs hands-off.</li>' +
-      '<li>Hands-off is the usual way a worksheet runs: work hands itself in at the due time, Claude marks it (when connected), you check and release once. The rest is under Advanced.</li>' +
-      '<li>Revision opens by itself once you teach a lesson. A lesson ends by itself 10 minutes after the slides close. Answers show by themselves when you move on, or when everyone has answered.</li>' +
-      '<li>This week (Monday onwards, on Home): last week\'s homework, who has not handed in, students with no PIN yet and chapter checks under the pass mark.</li>' +
-      '<li>No more Finish by, absent marking, read time or iPad warnings to watch. During a class\'s lesson, a student\'s first sign-in needs no register number, and the Fun tab is hidden.</li></ul></div>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters as packages</b><ul>' +
+      '<li><b>Give to</b>: on Lessons, press a class beside a chapter. All its slides open to that class for revision at once, and each part\'s homework is still set by itself once you teach that part.</li>' +
+      '<li>Homework is grouped <b>by chapter</b> (By status gives the old view). New worksheet and Edit details have a Chapter choice; a worksheet titled with its sub-chapter number, such as 3.2, finds its chapter by itself.</li>' +
+      '<li>Students see the chapter on each worksheet, and each chapter gets a folder of its own in their My folders.</li>' +
+      '<li><b>Show answers</b>: when you present, a button at the bottom of a slide with a question shows the whole question full size, with bars for multiple choice and a wall of answers for written questions. No names.</li>' +
+      '<li>learnwithmrcedric is now <b>learnwithmrcedric</b>. The links stay the same.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
@@ -1989,7 +2011,7 @@
     if (off.length) h += '<p class="snz">' + plural(off.length, 'item', 'items') + ' put away until tomorrow. <button id="snz-t">' + (H.showSnoozed ? 'Hide' : 'Show') + '</button></p>';
     return h + '</div>';
   }
-  // Let in (or not) a student asking from My Science to set up their PIN with no register number.
+  // Let in (or not) a student asking from learnwithmrcedric to set up their PIN with no register number.
   function letIn(n, yes, b) {
     if (b) b.disabled = true;
     tcall('api_t_letin', n.cls, n.gkey, !!yes).then(function () {
@@ -2060,7 +2082,7 @@
       return '<li class="sc-' + c.level + '"><span class="sc-m" aria-hidden="true">' + SC_MARK[c.level] + '</span><span class="sc-t"><b>' + esc(c.title) + '</b>' + (c.detail ? '<small>' + esc(c.detail) + '</small>' : '') + '</span>' +
         (c.link ? '<a class="btn small ghost" href="' + esc(c.link) + '" target="_blank" rel="noopener">' + (c.id === 'update' ? 'Code page' : 'Open') + '</a>' : '') +
         (c.fix ? '<button class="btn small' + (c.level === 'bad' || c.fix.act === 'update' ? ' yellow' : ' ghost') + '" data-sc="' + i + '">' + esc(c.fix.label) + '</button>' : '') + '</li>';
-    }).join('') + '</ul><p class="muted">My Science build ' + esc(r.build) + '.</p><p class="err" id="sc-err"></p>';
+    }).join('') + '</ul><p class="muted">learnwithmrcedric build ' + esc(r.build) + '.</p><p class="err" id="sc-err"></p>';
     Array.prototype.forEach.call($('sc-body').querySelectorAll('[data-sc]'), function (b) {
       b.onclick = function () { setupFix(r.checks[Number(b.getAttribute('data-sc'))].fix.act, b); };
     });
@@ -2069,7 +2091,7 @@
     if (act === 'claude') { closeModal(); claudeSettings(); return; }
     if (act === 'update') { runUpdate(b); return; }
     b.disabled = true;
-    var p = act === 'undo' ? tcall('api_t_updateUndo').then(function (r) { updated('Back on ' + (r.build || 'the version before'), 'My Science is back on the version before the update.'); return null; })
+    var p = act === 'undo' ? tcall('api_t_updateUndo').then(function (r) { updated('Back on ' + (r.build || 'the version before'), 'learnwithmrcedric is back on the version before the update.'); return null; })
       : tcall('api_t_setupFix', act).then(function (r) { toast(r.done || 'Done'); return tcall('api_t_setupCheck', true); });
     p.then(function (r) { if (r) drawSetup(r); }).catch(function (e) { b.disabled = false; if ($('sc-err')) $('sc-err').textContent = msg(e).replace(/^(UPDATE_[A-Z_]+|OWNER_ONLY): /, ''); });
   }
@@ -2077,7 +2099,7 @@
     b.disabled = true; b.textContent = 'Updating… (a minute)';
     tcall('api_t_updateRun').then(function (r) {
       if (!r.live) { alertBox('Almost there', r.message); return; }
-      updated('Updated to ' + r.build, 'My Science is on the new version now. Open the Hub again to use it. If anything is wrong, Setup check has Undo the update.');
+      updated('Updated to ' + r.build, 'learnwithmrcedric is on the new version now. Open the Hub again to use it. If anything is wrong, Setup check has Undo the update.');
     }).catch(function (e) { b.disabled = false; b.textContent = 'Update'; var m = msg(e).replace(/^(UPDATE_[A-Z_]+|OWNER_ONLY): /, ''); if ($('sc-err')) $('sc-err').textContent = m; else alertBox('Not updated', m); });
   }
   // The new version serves new pages: this one is the old one, so it offers to open the Hub again.
@@ -2101,6 +2123,119 @@
     tcall('api_t_snooze', n.key, !!on).then(function () {
       if (on) toast('Put away until tomorrow', { undo: function () { snooze(n, false); } });
     }).catch(function (e) { n.snoozed = !on; renderDash(H.dash); if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
+  }
+
+  /* ---------- chapter packages ----------
+     A chapter of a subject on the lesson site, with its slides and its homework. Giving it to a class opens all its
+     slides to them for revision at once; each part's homework is set by itself once that part is taught, and goes
+     into the chapter's folder on their learnwithmrcedric. */
+  function chList() { return (H.dash && H.dash.chapters && H.dash.chapters.list) || []; }
+  function chGiven() { return (H.dash && H.dash.chapters && H.dash.chapters.given) || {}; }
+  function chByKey(k) { return chList().filter(function (c) { return c.key === k; })[0] || null; }
+  // the same key as the server's chapterKey_
+  function chKey(subjectId, groupName) {
+    var m = /\bchapter\s+(\d+[a-z]?)\b/i.exec(String(groupName || ''));
+    var tail = m ? m[1].toLowerCase() : String(groupName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return String(subjectId || '') + ':' + tail;
+  }
+  function chShort(c) { return c ? (String(c.name || '').replace(/\s*[—–-]\s*/, ' · ') || c.key) : ''; }
+  function chNorm(c) { return String(c || '').toUpperCase().replace(/[\s\-_.]+/g, ''); }
+  function chHas(cls, k) {
+    var g = chGiven(), n = chNorm(cls);
+    return Object.keys(g).some(function (c) { return chNorm(c) === n && g[c] && g[c][k]; });
+  }
+  function chClassesWith(k) { return teClasses().filter(function (c) { return chHas(c, k); }); }
+  function byChapter() { return H.group === 'chapter' && chList().length > 0; }
+  // The chapter choice for New worksheet and Edit details. '' = by itself, '-' = not in a chapter.
+  function chOptions(cur, worked) {
+    var subs = {}, order = [], w = worked ? chByKey(worked) : null;
+    chList().forEach(function (c) {
+      if (!subs[c.subject]) { subs[c.subject] = { name: c.subjectName || c.subject, list: [] }; order.push(c.subject); }
+      subs[c.subject].list.push(c);
+    });
+    return '<option value=""' + (!cur ? ' selected' : '') + '>' + esc(w ? 'By itself: ' + chShort(w) + (w.subjectName ? ' (' + w.subjectName + ')' : '') : 'By itself, from the lesson or the title') + '</option>' +
+      '<option value="-"' + (cur === '-' ? ' selected' : '') + '>Not in a chapter</option>' +
+      order.map(function (s) {
+        return '<optgroup label="' + esc(subs[s].name) + '">' + subs[s].list.map(function (c) {
+          return '<option value="' + esc(c.key) + '"' + (cur === c.key ? ' selected' : '') + '>' + esc(chShort(c)) + '</option>';
+        }).join('') + '</optgroup>';
+      }).join('');
+  }
+  function chTag(w) {
+    var c = w.chapter ? chByKey(w.chapter) : null;
+    if (!c || byChapter()) return '';
+    return '<span class="tag chap"' + (c.color ? ' style="--chc:' + esc(c.color) + '"' : '') + '>' + esc(chShort(c)) + '</span>';
+  }
+  // Give to: one chip for each class, ticked when the class has the chapter.
+  function chGiveChips(k) {
+    var cl = teClasses();
+    if (!cl.length || !chByKey(k)) return '';
+    return '<div class="chgive" role="group" aria-label="Give this chapter to a class"><span>Give to</span>' + cl.map(function (c) {
+      var on = chHas(c, k);
+      return '<button type="button" class="chg' + (on ? ' on' : '') + '" data-chg="' + esc(k) + '" data-cls="' + esc(c) + '" aria-pressed="' + on + '" style="--cc:' + ccOf(c) + '"' +
+        ' title="' + esc(on ? 'Take it back from ' + c : 'Give it to ' + c) + '">' + (on ? ICON.tick : '<i></i>') + esc(c) + '</button>';
+    }).join('') + '</div>';
+  }
+  function giveChapter(k, cls, on, after) {
+    var c = chByKey(k);
+    if (!c) { if (after) after(); return; }
+    var go = function () {
+      tcall('api_t_chapterGive', k, cls, on).then(function (r) {
+        if (H.dash && H.dash.chapters) H.dash.chapters.given = r.given || {};
+        if (H.tn && r.alloc) H.tn.alloc = r.alloc;
+        toast(on ? chShort(c) + ' given to ' + cls + ': ' + plural(r.lessons || c.lessons, 'lesson is', 'lessons are') + ' open for revision, and each part\'s homework is set as you teach it.'
+          : chShort(c) + ' taken back from ' + cls + '. Its slides are closed to them; homework already set stays.');
+        if (after) after();
+      }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); if (after) after(); });
+    };
+    if (on) { go(); return; }
+    modal('<h2>Take ' + esc(chShort(c)) + ' back from ' + esc(cls) + '?</h2><p>Its ' + plural(c.lessons, 'lesson closes', 'lessons close') + ' to ' + esc(cls) + ' for revision. Homework already set stays, in their folder for the chapter, and a part you teach them later still sets its homework.</p>' +
+      '<div class="foot"><button class="btn ghost" id="cg-no">Keep it</button><button class="btn" id="cg-yes">Take it back</button></div>');
+    $('cg-no').onclick = closeModal;
+    $('cg-yes').onclick = function () { closeModal(); busyChips(); go(); };
+  }
+  // One give at a time: every chip waits until the answer is back (and the page is drawn again).
+  function busyChips() { Array.prototype.forEach.call(document.querySelectorAll('[data-chg]'), function (x) { x.disabled = true; x.classList.add('wait'); }); }
+  function bindGive(root, after) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-chg]'), function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        var on = b.getAttribute('aria-pressed') !== 'true';
+        if (on) busyChips();
+        giveChapter(b.getAttribute('data-chg'), b.getAttribute('data-cls'), on, after);
+      };
+    });
+  }
+  function groupSwitch() {
+    if (!chList().length) return '';
+    return '<div class="viewsw grp" role="group" aria-label="Group worksheets"><button data-group="chapter" aria-pressed="' + (H.group === 'chapter') + '">By chapter</button>' +
+      '<button data-group="status" aria-pressed="' + (H.group !== 'chapter') + '">By status</button></div>';
+  }
+  H.group = lsGet('wsh_group') || 'chapter';
+  // Worksheets as chapter packages: the busy chapters first, then the rest in the lesson site's order, and the
+  // worksheets in no chapter last. Chapters given to these classes show even before their first homework.
+  function chapterGroups(list, draw) {
+    var groups = {}, order = [], chs = chList(), rank = { open: 0, marking: 1, done: 2 };
+    list.forEach(function (w) { var k = w.chapter && chByKey(w.chapter) ? w.chapter : ''; if (!groups[k]) { groups[k] = []; order.push(k); } groups[k].push(w); });
+    if (H.filter === 'all') chs.forEach(function (c) {
+      if (groups[c.key]) return;
+      if ((H.cls ? [H.cls] : teClasses()).some(function (cl) { return chHas(cl, c.key); })) { groups[c.key] = []; order.push(c.key); }
+    });
+    var busyOf = function (k) { return groups[k].some(function (w) { return wsGroup(w) !== 'done'; }) ? 0 : groups[k].length ? 2 : 1; };
+    var idx = function (k) { for (var i = 0; i < chs.length; i++) if (chs[i].key === k) return i; return 1e6; };
+    order.sort(function (a, b) { if (!a !== !b) return a ? -1 : 1; return busyOf(a) - busyOf(b) || idx(a) - idx(b); });
+    return order.map(function (k) {
+      var c = k ? chByKey(k) : null, ws = groups[k].slice().sort(function (x, y) { return rank[wsGroup(x)] - rank[wsGroup(y)]; });
+      var early = ws.filter(isEarlier), now = ws.filter(function (w) { return !isEarlier(w); });
+      var open = ws.filter(function (w) { return w.open; }).length, who = c ? chClassesWith(k) : [];
+      var head = '<div class="chgrp-h"><div class="chgrp-t">' + (c ? '<span class="chgrp-s">' + esc(c.subjectName || c.subject) + '</span>' : '') +
+        '<h3>' + esc(c ? chShort(c) : 'Not in a chapter') + '</h3><span class="chgrp-n">' + (c ? plural(c.lessons, 'lesson', 'lessons') + ' · ' : '') +
+        plural(ws.length, 'worksheet', 'worksheets') + (open ? ' · ' + open + ' open' : '') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div>';
+      var body = now.length ? draw(now) : ws.length ? '' : '<p class="chgrp-e">No homework yet. Each part\'s worksheet is set by itself once you teach that part' + (who.length ? ' to ' + esc(who.join(', ')) : '') + ', and it lands here.</p>';
+      if (!c && ws.length) body = '<p class="chgrp-x">Edit details on a worksheet to put it in a chapter.</p>' + body;
+      if (early.length) body += '<details class="earlier"><summary>Earlier (' + early.length + ')</summary>' + draw(early) + '</details>';
+      return '<section class="chgrp"' + (c && c.color ? ' style="--chc:' + esc(c.color) + '"' : '') + ' aria-label="' + esc(c ? chShort(c) : 'Not in a chapter') + '">' + head + body + '</section>';
+    }).join('');
   }
 
   /* ---------- worksheet cards ---------- */
@@ -2130,13 +2265,18 @@
     h += '<div class="row"><h2 class="h">Worksheets' + (H.cls ? ' for ' + esc(H.cls) : '') + '</h2><span class="spacer"></span>' +
       '<button class="btn yellow" id="new-ws">' + ICON.plus + 'New worksheet</button></div>';
     h += '<div class="ws-bar"><div class="fchips" role="group" aria-label="Show">' + FILTERS.map(function (f) {
-      return '<button data-filter="' + f[0] + '" aria-pressed="' + (H.filter === f[0]) + '">' + f[1] + '<span>' + count(f[0]) + '</span></button>'; }).join('') + '</div><span class="spacer"></span>' +
+      return '<button data-filter="' + f[0] + '" aria-pressed="' + (H.filter === f[0]) + '">' + f[1] + '<span>' + count(f[0]) + '</span></button>'; }).join('') + '</div><span class="spacer"></span>' + groupSwitch() +
       '<div class="viewsw" role="group" aria-label="Layout"><button data-layout="cards" aria-pressed="' + (H.layout === 'cards') + '" aria-label="Cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></button>' +
       '<button data-layout="list" aria-pressed="' + (H.layout === 'list') + '" aria-label="List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button></div></div>';
     if (!d.worksheets.length) h += '<div class="sheet" style="margin-top:14px">' + emptyState('No worksheets yet', 'Tap New worksheet to set the first one.') + '</div>';
     else if (!mine.length) h += '<div class="sheet" style="margin-top:14px">' + emptyState('Nothing for ' + H.cls + ' yet', 'Choose All at the top to see every class.') + '</div>';
     var draw = function (list) { return H.layout === 'list' ? '<div class="wslist">' + list.map(listRow).join('') + '</div>' : '<div class="cards">' + list.map(card).join('') + '</div>'; };
     var sections = H.filter === 'all' ? [['open', 'Open'], ['marking', 'Marking'], ['done', 'Done']] : FILTERS.filter(function (f) { return f[0] === H.filter; });
+    if (byChapter() && mine.length) {
+      var shown = mine.filter(function (w) { return H.filter === 'all' || wsGroup(w) === H.filter; });
+      h += shown.length || H.filter === 'all' ? chapterGroups(shown, draw) : '<div class="sheet" style="margin-top:14px">' + emptyState('Nothing here', 'No worksheets are ' + H.filter + ' right now.') + '</div>';
+      sections = [];
+    }
     var earlier = [];
     sections.forEach(function (sec) {
       var list = mine.filter(function (w) { return wsGroup(w) === sec[0]; });
@@ -2169,6 +2309,8 @@
     if ($('snz-t')) $('snz-t').onclick = function () { H.showSnoozed = !H.showSnoozed; renderDash(H.dash); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-filter]'), function (b) { b.onclick = function () { H.filter = b.getAttribute('data-filter'); lsSet('wsh_filter', H.filter); renderDash(H.dash); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-layout]'), function (b) { b.onclick = function () { H.layout = b.getAttribute('data-layout'); lsSet('wsh_layout', H.layout); renderDash(H.dash); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-group]'), function (b) { b.onclick = function () { H.group = b.getAttribute('data-group'); lsSet('wsh_group', H.group); renderDash(H.dash); }; });
+    bindGive($('view-ws'), function () { if (H.dash) renderDash(H.dash); });
     bindActs($('view-ws'));
     // the whole card (or row) opens the worksheet
     Array.prototype.forEach.call(document.querySelectorAll('.card[data-open], .wsrow[data-open]'), function (c) {
@@ -2262,7 +2404,7 @@
   function card(w) {
     var tags = '<span class="tag ' + (w.open ? 'open' : 'closed') + '">' + (w.open ? 'Open' : 'Closed') + '</span>' +
       (w.showMarked ? '<span class="tag released">Marking released</span>' : '') +
-      (w.showAnswers ? '<span class="tag answers">Answers released</span>' : '');
+      (w.showAnswers ? '<span class="tag answers">Answers released</span>' : '') + chTag(w);
     var marking = w.markedFiles || w.scored ? '<p class="meta">' + plural(w.markedFiles, 'marked file', 'marked files') + ' and ' + plural(w.scored, 'score', 'scores') + ' uploaded.</p>' : '';
     marking += jobLine(w);
     if (w.showMarked && w.corrDue) {
@@ -2401,6 +2543,7 @@
       '<input type="text" id="nw-newtopic" class="hidden" placeholder="New topic, for example Heat" aria-label="New topic name"></div></div>' +
       '<div id="nw-lib" class="hidden"></div></div>' +
       '<div class="field"><label for="nw-title">Title students see</label><input type="text" id="nw-title" placeholder="For example, Worksheet 3: Refraction"></div>' +
+      (chList().length ? '<div class="field"><label for="nw-chap">Chapter</label><select id="nw-chap">' + chOptions('', '') + '</select><div class="hint">Students find it in the chapter\'s folder. By itself uses a sub-chapter number at the start of the title, such as 3.2.</div></div>' : '') +
       '<div class="field"><span class="lbl">Classes</span>' + classTicks([]) + '</div>' +
       '<div class="two"><div class="field"><label for="nw-date">Due date</label><input type="date" id="nw-date" value="' + isoDate(Date.now() + 7 * 864e5) + '"></div>' +
       '<div class="field"><label for="nw-time">Due time (optional)</label><input type="time" id="nw-time"><div class="hint">No time means the end of the day.</div></div></div>' +
@@ -2598,6 +2741,7 @@
       if (!title) { $('nw-err').textContent = 'Give the worksheet a title.'; return; }
       if ($('nw-time').value && !$('nw-date').value) { $('nw-err').textContent = 'Choose a due date to go with the time.'; return; }
       var meta = { title: title, classes: tickedClasses(), dueDate: $('nw-date').value, dueTime: $('nw-time').value, open: $('nw-open').checked };
+      if ($('nw-chap') && $('nw-chap').value) meta.chapter = $('nw-chap').value;
       var sc = scheduleValues(); meta.autoClose = sc.autoClose; meta.corrDays = sc.corrDays; meta.answersAfter = sc.answersAfter;
       meta.autoHandIn = sc.autoHandIn; meta.autoMark = sc.autoMark; meta.draftSolution = !sol && !!($('nw-draft') && $('nw-draft').checked);
       if (meta.autoHandIn && !meta.dueDate) { $('nw-err').textContent = 'Choose a due date, so the saved work can be handed in then.'; return; }
@@ -2658,15 +2802,18 @@
     modal('<h2>Edit ' + esc(w.id) + '</h2>' +
       '<div class="field"><label for="ed-title">Title</label><input type="text" id="ed-title" value="' + esc(w.title) + '"></div>' +
       '<div class="field"><span class="lbl">Classes</span>' + classTicks(w.classes || []) + '</div>' +
+      (chList().length ? '<div class="field"><label for="ed-chap">Chapter</label><select id="ed-chap">' + chOptions(w.chapterSet || '', w.chapterSet ? '' : w.chapter) + '</select><div class="hint">Students find it in the chapter\'s folder.</div></div>' : '') +
       '<div class="two"><div class="field"><label for="ed-date">Due date</label><input type="date" id="ed-date" value="' + isoDate(w.dueTs) + '"></div>' +
       '<div class="field"><label for="ed-time">Due time (optional)</label><input type="time" id="ed-time" value="' + (w.dueTs && !/^\w{3} \d+ \w{3}$/.test(w.due) ? isoTime(w.dueTs) : '') + '"></div></div>' +
       scheduleFields(w) +
       '<div class="err" id="ed-err"></div>' +
       '<div class="foot"><button class="btn ghost" id="ed-cancel">Cancel</button><button class="btn" id="ed-go">Save</button></div>', 'wide');
     bindSchedule();
+    if ($('ed-chap')) $('ed-chap').onchange = function () { this.setAttribute('data-touched', '1'); };
     $('ed-cancel').onclick = closeModal;
     $('ed-go').onclick = function () {
       var patch = { title: $('ed-title').value.trim(), classes: tickedClasses() };
+      if ($('ed-chap') && $('ed-chap').getAttribute('data-touched')) patch.chapter = $('ed-chap').value;
       if (!patch.title) { $('ed-err').textContent = 'The title cannot be empty.'; return; }
       if ($('ed-date').value) { patch.dueDate = $('ed-date').value; patch.dueTime = $('ed-time').value; } else patch.clearDue = true;
       var sc = scheduleValues(); patch.autoClose = sc.autoClose; patch.corrDays = sc.corrDays; patch.answersAfter = sc.answersAfter;
@@ -4779,7 +4926,7 @@
   /* ---------- Teach: every lesson on the lesson site, one tap to its slides ---------- */
   // Teach opens the slides for the projector (#present), signed in from here (a key from Live Board that lasts
   // 12 hours) for the class chosen at the top and the part chosen, so the slides ask nothing: the lesson starts
-  // for that class, shows on their My Science, and their iPads follow. If Live Board cannot be reached, the
+  // for that class, shows on their learnwithmrcedric, and their iPads follow. If Live Board cannot be reached, the
   // slides ask for the teacher PIN and the class as before. Study tools open as they are.
   function loadTeach() {
     var site = H.links && H.links.lessons;
@@ -4809,8 +4956,9 @@
       '<a class="btn quiet small" id="te-pj" href="#" target="_blank" rel="noopener" title="Open on the laptop you take to class">' + ICON.tabTe + 'Projector screen</a>' +
       '<button class="btn quiet small" id="te-pair">' + ICON.phone + 'Pair my phone</button>' +
       '<label class="btn ghost small" id="te-add">' + ICON.plus + 'Add or update a lesson<input type="file" id="te-file" accept=".html,.htm,text/html" hidden></label></div></div>' +
-      '<p class="te-sub">Teach opens the slides for the projector, already signed in, for the class you choose here. The lesson starts for them, it shows on their My Science, and their iPads follow your slides. Your phone is the remote. Answers count only while you teach.</p>' +
-      '<p class="te-sub"><b>Revision</b> opens by itself once you teach a lesson to the class, so they can go over it in My Science after school (nothing they do there is saved). Untick it to close a lesson. <b>Homework</b> links a worksheet from your library to each sub-chapter: it is set for a class by itself once you have shown them that sub-chapter (most of its slides, including the last, over one lesson or more).</p></div>';
+      '<p class="te-sub">Teach opens the slides for the projector, already signed in, for the class you choose here. The lesson starts for them, it shows on their learnwithmrcedric, and their iPads follow your slides. Your phone is the remote. Answers count only while you teach.</p>' +
+      '<p class="te-sub"><b>Revision</b> opens by itself once you teach a lesson to the class, so they can go over it in learnwithmrcedric after school (nothing they do there is saved). Untick it to close a lesson. <b>Homework</b> links a worksheet from your library to each sub-chapter: it is set for a class by itself once you have shown them that sub-chapter (most of its slides, including the last, over one lesson or more).</p>' +
+      (chList().length ? '<p class="te-sub"><b>Give to</b>, beside a chapter, sends the class the whole chapter as one package: all its slides open for revision at once, each part\'s homework is still set by itself once you teach that part, and their learnwithmrcedric keeps the chapter\'s homework in a folder of its own.</p>' : '') + '</div>';
     h += '<div class="te-cls" role="group" aria-label="Class to teach"><span>Class</span>' + teClasses().map(function (c) {
       return '<button data-tc="' + esc(c) + '" aria-pressed="' + (c === cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
     }).join('') + '</div>';
@@ -4822,7 +4970,8 @@
     var rows = [];
     (sub.groups || []).forEach(function (g) {
       if (!(g.items || []).length) return;
-      h += '<section class="te-ch"><h3>' + esc(g.name) + '</h3><ul class="te-list">';
+      var gk = chKey(sub.id, g.name);
+      h += '<section class="te-ch"><div class="te-chh"><h3>' + esc(g.name) + '</h3>' + (chByKey(gk) ? chGiveChips(gk) : '') + '</div><ul class="te-list">';
       g.items.forEach(function (it) {
         var url = site + encodeURI(it.file), tool = it.kind === 'tool', i = rows.length;
         rows.push({ it: it, url: url });
@@ -4839,7 +4988,7 @@
           if (known) { var nl = linkCount(it.topicId); acts += '<button class="btn quiet small te-hw" data-hw="' + i + '" title="Homework set by itself for each sub-chapter">Homework' + (nl ? '<span class="hwn">' + nl + '</span>' : '') + '</button>'; }
           if (it.topicId) {
             var on = revOpen(cls, it.topicId);
-            acts += '<label class="te-rev' + (on ? ' on' : '') + (H.tn ? '' : ' wait') + '" title="Open to ' + esc(cls) + ' in My Science for revision"><input type="checkbox" data-rev="' + esc(it.topicId) + '"' + (on ? ' checked' : '') + (H.tn ? '' : ' disabled') + '>Revision</label>';
+            acts += '<label class="te-rev' + (on ? ' on' : '') + (H.tn ? '' : ' wait') + '" title="Open to ' + esc(cls) + ' in learnwithmrcedric for revision"><input type="checkbox" data-rev="' + esc(it.topicId) + '"' + (on ? ' checked' : '') + (H.tn ? '' : ' disabled') + '>Revision</label>';
           }
         }
         h += '<li class="te-row' + (tool ? ' tool' : '') + '"' + (sub.color ? ' style="--c:' + esc(sub.color) + '"' : '') + '><span class="te-num">' + esc(it.num || '') + '</span>' +
@@ -4848,7 +4997,7 @@
       });
       h += '</ul></section>';
     });
-    h += '<p class="te-foot">Students open the same lessons in My Science. <a href="' + esc(site) + '" target="_blank" rel="noopener">See the lesson site</a></p>';
+    h += '<p class="te-foot">Students open the same lessons in learnwithmrcedric. <a href="' + esc(site) + '" target="_blank" rel="noopener">See the lesson site</a></p>';
     $('view-te').innerHTML = h;
     Array.prototype.forEach.call($('view-te').querySelectorAll('.te-subj'), function (b) {
       b.onclick = function () { lsSet('wsh_te_sub', b.getAttribute('data-s')); renderTeach(); };
@@ -4875,6 +5024,7 @@
       };
     });
     bindGo($('view-te'));
+    bindGive($('view-te'), function () { if (H.view === 'te') renderTeach(); });
     $('te-pair').onclick = pairPhone;
     bindProjector($('te-pj'));
     $('te-file').onchange = function () { var f = this.files && this.files[0]; this.value = ''; if (f) addLesson(f); };

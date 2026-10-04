@@ -4,13 +4,13 @@ Lower Secondary Science and Physics lesson decks, served as a website from this 
 
 **Live site:** https://cedricboi.github.io/science-decks/
 
-Students open lessons from **My Science** (Live Board) on the Google Site. This site's own index page is a backup that lists the same lessons.
+Students open lessons from **learnwithmrcedric** (Live Board) on the Google Site. This site's own index page is a backup that lists the same lessons.
 
 ## What is in here
 
 | File | What it is |
 |---|---|
-| `lessons.json` | the list of lessons: subject tabs, chapters, numbers and titles. The index page, Live Board and My Science all read it |
+| `lessons.json` | the list of lessons: subject tabs, chapters, numbers and titles. The index page, Live Board and learnwithmrcedric all read it |
 | `index.html` | the backup lesson page. It builds itself from `lessons.json`, so it never needs editing |
 | `Ch….html`, `Phy….html` | one deck per file |
 | `…StudyBuddy.html` | study tools |
@@ -20,7 +20,7 @@ Every deck is one self-contained file. Fonts, images and diagrams are embedded, 
 
 ## Adding or updating a lesson
 
-Use **one** of these. Both put the deck online, connect it to Live Board, and add it to `lessons.json`, so it appears on the index page, in My Science and in Live Board's Start lesson list.
+Use **one** of these. Both put the deck online, connect it to Live Board, and add it to `lessons.json`, so it appears on the index page, in learnwithmrcedric and in Live Board's Start lesson list.
 
 1. **Live Board > Lessons > Add or update a lesson.** Choose the HTML file on your laptop, check the subject, chapter and title, press **Put it online**.
 2. **Ask Claude.** Decks built with deckforge are published by Claude at the end of the build.

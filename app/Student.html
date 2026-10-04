@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <script>
   /* Light or dark: this device's own setting, unless the moon button chose the other look. The choice is kept on this
-     device for every My Science page on it, and pages already open change with it. */
+     device for every learnwithmrcedric page on it, and pages already open change with it. */
   (function () {
     var K = 'ms_theme', root = document.documentElement, mem = '';
     function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
@@ -152,7 +152,7 @@
   .sec { font-family: var(--display); font-size: 17px; font-weight: 700; margin: 26px 0 10px; }
   .sectiontitle { font-family: var(--display); font-size: 19px; font-weight: 700; margin: 26px 0 12px; }
 
-  /* My Science home: one column, one thing at a time */
+  /* learnwithmrcedric home: one column, one thing at a time */
   .plain { background: var(--dk-bg-f4f6fa, #F4F6FA); }
   .home { max-width: 680px; margin: 0 auto; }
   .homebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 22px; }
@@ -369,7 +369,7 @@
 <section id="v-signin" class="page plain hidden">
   <button type="button" class="ms-moon" aria-label="Dark mode" aria-pressed="false" title="Dark mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   <div class="narrow" style="max-width: 480px; padding-top: 5vh">
-    <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>My Science</div>
+    <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>learnwithmrcedric</div>
     <div class="panel">
       <div id="si-who" class="si-step">
         <h1>Who are you?</h1>
@@ -390,11 +390,11 @@
   </div>
 </section>
 
-<!-- Home: My Science, with Lessons and Homework -->
+<!-- Home: learnwithmrcedric, with Lessons and Homework -->
 <section id="v-boards" class="page plain hidden">
   <div class="home">
     <div class="homebar">
-      <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>My Science</div>
+      <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>learnwithmrcedric</div>
       <span class="hb-r">
       <button id="wallet" class="wallet hidden" title="Your points">
         <span class="coin" aria-hidden="true">★</span><b id="w-points">0</b><small>points</small>
@@ -408,7 +408,7 @@
       <h1>Hi, <span id="who-name"></span></h1>
       <p><span id="who-class"></span> · <button class="link" id="btn-notme">Not you?</button></p>
     </div>
-    <div class="tabs" role="tablist" aria-label="My Science">
+    <div class="tabs" role="tablist" aria-label="learnwithmrcedric">
       <button id="tab-lessons" role="tab" aria-selected="true" aria-controls="pane-lessons">Lessons</button>
       <button id="tab-hw" role="tab" aria-selected="false" aria-controls="pane-hw">Homework <span id="hw-count" class="cnt hidden"></span></button>
     </div>
@@ -459,7 +459,7 @@
 <section id="v-board" class="page hidden">
   <div class="narrow" style="max-width: 1100px">
     <div class="topbar">
-      <button class="btn small back" id="btn-back">‹ My Science</button>
+      <button class="btn small back" id="btn-back">‹ learnwithmrcedric</button>
       <span id="b-state" class="tag"></span>
     </div>
     <div class="head on-wall">

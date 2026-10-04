@@ -70,7 +70,7 @@
   var hash = location.hash || '', app = '', tk0 = '';
   var m = /(?:^#|&)app=([^&]+)/.exec(hash); if (m) { try { app = decodeURIComponent(m[1]); } catch (e) { app = ''; } }
   m = /(?:^#|&)tk=(tk_[a-f0-9]{24,})/.exec(hash); if (m) tk0 = m[1];
-  // Only this lesson site's own My Science (set when the page is put on the site) is used, so a link cannot send the
+  // Only this lesson site's own learnwithmrcedric (set when the page is put on the site) is used, so a link cannot send the
   // laptop's key somewhere else. A different address means pairing again.
   var KNOWN = 'https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec';
   var okApp = function (u) {
@@ -100,7 +100,7 @@
     var box = el('div', 'box');
     if (!app) {
       box.appendChild(el('h2', '', 'Open this from the Teacher Hub'));
-      box.appendChild(el('p', '', 'In the Teacher Hub, Teach next, press Projector screen on this laptop. It opens this page linked to your My Science, and pairs it for a year.'));
+      box.appendChild(el('p', '', 'In the Teacher Hub, Teach next, press Projector screen on this laptop. It opens this page linked to your learnwithmrcedric, and pairs it for a year.'));
       main.appendChild(box); status(false, 'Not linked'); return;
     }
     box.appendChild(el('h2', '', 'Pair this laptop'));
@@ -140,7 +140,7 @@
       if (r.list) { list = r.list; lastList = Date.now(); if (r.decks) decks = r.decks; draw(); }
     }).catch(function () {
       busy = false;
-      if (++fails >= 3) status(false, 'Cannot reach My Science');
+      if (++fails >= 3) status(false, 'Cannot reach learnwithmrcedric');
     });
   }
   function openSlides(cmd) {
@@ -252,7 +252,7 @@
   $('unpair').onclick = function () { TK = ''; set('pj_tk', null); set('pj_seq', null); seq = -1; clearInterval(timer); showPair(); };
 
   function start() {
-    $('main').innerHTML = ''; $('main').appendChild(el('p', 'hint', 'Connecting to My Science…'));
+    $('main').innerHTML = ''; $('main').appendChild(el('p', 'hint', 'Connecting to learnwithmrcedric…'));
     lastList = 0; poll(); clearInterval(timer); timer = setInterval(poll, 3000); wake();
   }
   if (!app) showPair();

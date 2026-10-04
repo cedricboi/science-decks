@@ -1,24 +1,24 @@
 /* ================================================================== */
-/* My Science: Live Board and the Teacher Hub in one app               */
+/* learnwithmrcedric: Live Board and the Teacher Hub in one app        */
 /* ================================================================== */
 //
-// This project holds three code files: Code (Live Board: My Science, the slides, the phone and the boards),
+// This project holds three code files: Code (Live Board: learnwithmrcedric, the slides, the phone and the boards),
 // Hub (the Teacher Hub: homework, marking, the tracker and points) and App (this file: the one web address,
 // the move from two apps to one, the setup check and updates). The two sheets stay as they were: this script
 // belongs to the Live Board sheet, and opens the Teacher Hub sheet by its ID (Settings: Class list sheet ID).
 //
 // One web address for everything:
-//   /exec                 My Science (students)
+//   /exec                 learnwithmrcedric (students)
 //   /exec?view=teacher    Live Board's teacher page (the phone, boards and the projector)
 //   /exec?teacher         the Teacher Hub
-//   /exec?embed=ms        homework, inside My Science (also ?hw, and ?preview=CODE for See it as a student)
+//   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-08-dark';
+var APP_BUILD = '2026-10-09-chapters';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
-  PAGE_MEMO_ = {};
+  PAGE_MEMO_ = {}; CH_MEMO_ = {};
   if (p.api === 'build') {
     return ContentService.createTextOutput(JSON.stringify({ app: 'liveboard', build: BUILD, one: APP_BUILD }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -53,7 +53,7 @@ function appJson_(o) { return ContentService.createTextOutput(JSON.stringify(o))
 
 /* The sheet's menu: Live Board's and the Teacher Hub's together. */
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('My Science')
+  SpreadsheetApp.getUi().createMenu('learnwithmrcedric')
     .addItem('Setup check', 'menuSetupCheck')
     .addItem('Show my links', 'showLinks')
     .addSeparator()
@@ -75,14 +75,14 @@ function selfUrl_() {
   if (u) return plainExecUrl_(u);
   try { return hubPlainExecUrl_(ScriptApp.getService().getUrl() || ''); } catch (err) { return ''; }
 }
-/* Run by the owner of My Science (from the script editor, or the owner signed in to Google): setup and updates. */
+/* Run by the owner of learnwithmrcedric (from the script editor, or the owner signed in to Google): setup and updates. */
 function isOwner_() {
   var me = '', owner = '';
   try { me = Session.getActiveUser().getEmail() || ''; owner = Session.getEffectiveUser().getEmail() || ''; } catch (err) { return false; }
   return !!me && me.toLowerCase() === owner.toLowerCase();
 }
 function needOwner_(what) {
-  if (!isOwner_()) throw new Error('OWNER_ONLY: ' + (what || 'This') + ' works only for the owner of My Science: run it from the script editor, or open the Teacher Hub signed in to Google with the account that owns it.');
+  if (!isOwner_()) throw new Error('OWNER_ONLY: ' + (what || 'This') + ' works only for the owner of learnwithmrcedric: run it from the script editor, or open the Teacher Hub signed in to Google with the account that owns it.');
 }
 /* The Teacher Hub's own lock (the Live Board sheet's document lock), so its long jobs (handing in, marking, the
    tracker) never hold up Live Board's script lock, which students' answers and sign-ins wait on for at most 20
@@ -103,7 +103,7 @@ function hubSheetId_() {
    it does may make new Drive folders or write to the sheet. */
 function hubReady_() { return PropertiesService.getScriptProperties().getProperty('HUB_READY') === '1'; }
 function needHub_() {
-  if (!hubReady_()) throw new Error('HUB_NOT_MOVED: The Teacher Hub has not been moved into My Science yet. In the script editor, run setupMyScience (see the code page).');
+  if (!hubReady_()) throw new Error('HUB_NOT_MOVED: The Teacher Hub has not been moved into learnwithmrcedric yet. In the script editor, run setupMyScience (see the code page).');
 }
 
 /* ---------- the move from two apps to one ---------- */
@@ -141,7 +141,7 @@ function moveHubSettingsIn_() {
   ss.deleteSheet(sh);      // it holds the Claude and Anthropic keys
   return { ok: true, moved: n, triggers: triggers };
 }
-/* Links this app to itself: homework in My Science, the Teacher Hub's links and Claude's marking all use this web
+/* Links this app to itself: homework in learnwithmrcedric, the Teacher Hub's links and Claude's marking all use this web
    address now. */
 function linkSelf_() {
   var url = selfUrl_();
@@ -168,7 +168,7 @@ function setupMyScience() {
   try { ensureTick_(tickWanted_()); out.push('Timers checked.'); } catch (err) { out.push('Timers: ' + err.message); }
   if (url) {
     out.push('Teacher Hub: ' + url + '?teacher');
-    out.push('My Science (students): ' + url);
+    out.push('learnwithmrcedric (students): ' + url);
     out.push('Projector screen (laptop): ' + url + '?projector');
   }
   out.push('Now deploy a new version: Deploy > Manage deployments, the pencil, Version: New version, Deploy.');
@@ -687,9 +687,10 @@ function autoLinks_(links, starts) {
   (starts || []).forEach(function (s) {
     if (!(Number(s.at) >= since)) return;
     (s.parts || []).forEach(function (p) {
-      if (!p.num) return;
-      var k = linkKey_(s.deck, p.num);
-      if (!links[k] && !want[k]) want[k] = { deck: s.deck, num: p.num, t: p.t || '' };
+      var num = p.num || (Number(p.i) < 0 ? wholeNum_(s.deck) : '');
+      if (!num) return;
+      var k = linkKey_(s.deck, p.num ? p.num : '#all');
+      if (!links[k] && !want[k]) want[k] = { deck: s.deck, num: num, t: p.t || '' };
     });
   });
   // Sub-chapters with no numbered worksheet are not looked for again for 6 hours (or until the library changes).
@@ -723,6 +724,12 @@ function api_t_autoLinks(token) {
       var m = autoMatch_(lib.items, deck, num, l.t, dinfo);
       if (m) (out[deck] = out[deck] || {})[num] = { file: m.id, name: libBase_(m.name), path: m.path || '' };
     });
+    // a lesson that is one sub-chapter as a whole (7.1): its worksheet by that number
+    var wn = (parts[deck].lessons || []).length ? '' : wholeNum_(deck);
+    if (wn && !links[linkKey_(deck, '#all')]) {
+      var mw = autoMatch_(lib.items, deck, wn, '', dinfo);
+      if (mw) (out[deck] = out[deck] || {})[wn] = { file: mw.id, name: libBase_(mw.name), path: mw.path || '' };
+    }
   });
   return { on: true, links: out };
 }
@@ -864,7 +871,7 @@ function usageUnused_() {
   return out;
 }
 
-/* ---------- Setup check: everything My Science needs, with a fix for each ---------- */
+/* ---------- Setup check: everything learnwithmrcedric needs, with a fix for each ---------- */
 //
 // Each check: { id, level: 'ok' | 'warn' | 'bad' | 'info', title, detail, fix: { act, label } | null, link }
 // The Teacher Hub shows them (menu: Setup check) with their Fix buttons; the sheet's menu shows the same list.
@@ -873,8 +880,8 @@ function setupChecks_() {
   var add = function (id, level, title, detail, fix, link) { out.push({ id: id, level: level, title: title, detail: detail || '', fix: fix || null, link: link || '' }); };
   // The web address
   var url = selfUrl_();
-  if (!url) add('url', 'bad', 'The web address is not known', 'Deploy the web app, then in the sheet: My Science > Change the web app link.');
-  else if (/\/dev$/.test(url)) add('url', 'bad', 'The web address is the test link (/dev)', 'Use the /exec link: My Science > Change the web app link.');
+  if (!url) add('url', 'bad', 'The web address is not known', 'Deploy the web app, then in the sheet: learnwithmrcedric > Change the web app link.');
+  else if (/\/dev$/.test(url)) add('url', 'bad', 'The web address is the test link (/dev)', 'Use the /exec link: learnwithmrcedric > Change the web app link.');
   else add('url', 'ok', 'Web address', url);
   // The Teacher Hub's settings, sheet and folders
   var hid = hubSheetId_();
@@ -979,21 +986,21 @@ function menuSetupCheck() {
 /* Show my links (sheet menu): the addresses of everything. */
 function showLinks() {
   var url = selfUrl_();
-  var rows = url ? [['Teacher Hub (bookmark this)', url + '?teacher'], ['My Science, for students', url], ['Live Board teacher page', url + '?view=teacher'], ['Projector screen (on the laptop)', projectorUrl_() + '#app=' + encodeURIComponent(url)]] : [];
+  var rows = url ? [['Teacher Hub (bookmark this)', url + '?teacher'], ['learnwithmrcedric, for students', url], ['Live Board teacher page', url + '?view=teacher'], ['Projector screen (on the laptop)', projectorUrl_() + '#app=' + encodeURIComponent(url)]] : [];
   var html = '<div style="font:14px Arial,sans-serif;line-height:1.5">' + (rows.length ? rows.map(function (r) {
     return '<p style="margin:0 0 10px"><b>' + esc_(r[0]) + '</b><br><a href="' + esc_(r[1]) + '" target="_blank">' + esc_(r[1]) + '</a></p>';
-  }).join('') : '<p>The web address is not known yet. Deploy, then My Science > Change the web app link.</p>') + '</div>';
+  }).join('') : '<p>The web address is not known yet. Deploy, then learnwithmrcedric > Change the web app link.</p>') + '</div>';
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(560).setHeight(320), 'My links');
 }
 
 /* ---------- updates: pages by themselves, server code from the code page ---------- */
 //
-// New versions of My Science are put in the app folder of the lesson repository (cedricboi/science-decks). Its
+// New versions of learnwithmrcedric are put in the app folder of the lesson repository (cedricboi/science-decks). Its
 // release.json lists the page sets (see the pages above: they reach everyone by themselves) and, for each release
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 19;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 20;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1150,4 +1157,165 @@ function pagesState_() {
   var set = pagesSet_();
   if (!set) return { from: 'pasted', why: rel.pages.length ? 'the newest pages need newer server code' : 'the lesson site has no pages yet', rel: rel };
   return { from: 'site', seq: Number(set.seq) || 0, build: String(set.build || ''), rel: rel };
+}
+
+/* ---------- chapter packages ---------- */
+//
+// A chapter is one chapter of a subject on the lesson site (lessons.json: a subject's group, such as "Chapter 3 —
+// Heat"), with its lessons (slides) and the homework that goes with them. Its key is the subject's id and the
+// chapter's number ("g3physics:1"), or the chapter's name when it has no number.
+// Giving a class a chapter opens all of its slides to that class for revision at once; each sub-chapter's homework is
+// still set by itself once that part is taught (as before). Every worksheet carries its chapter (the Assignments tab's
+// Chapter column): set by itself for homework from a lesson, chosen when a worksheet is made, or worked out from what
+// set it. The Teacher Hub groups worksheets by chapter, and students find each chapter's homework in a folder of its
+// own.
+//   CHG_<CLASS>   { chapterKey: givenAt }   the chapters given to a class
+var CH_MAX_GIVEN = 60;
+function chapterKey_(subjectId, groupName) {
+  var m = /\bchapter\s+(\d+[a-z]?)\b/i.exec(String(groupName || ''));
+  var tail = m ? m[1].toLowerCase() : String(groupName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  return String(subjectId || '') + ':' + tail;
+}
+/* Every chapter on the lesson site that has slides: [{ key, subject, subjectName, color, name, num, decks: [{id, title, num}] }]. */
+function chaptersAll_() {
+  if (CH_MEMO_.all) return CH_MEMO_.all;
+  var out = [], cat = null;
+  try { cat = catalog_(); } catch (err) { cat = null; }
+  ((cat && cat.subjects) || []).forEach(function (s) {
+    (s.groups || []).forEach(function (g) {
+      var decks = (g.items || []).filter(function (it) { return (it.kind || 'deck') === 'deck' && it.topicId; })
+        .map(function (it) { return { id: String(it.topicId), title: String(it.title || ''), num: String(it.num || '') }; });
+      if (!decks.length) return;
+      var m = /\bchapter\s+(\d+[a-z]?)\b/i.exec(String(g.name || ''));
+      out.push({ key: chapterKey_(s.id, g.name), subject: String(s.id || ''), subjectName: String(s.name || ''), color: String(s.color || ''),
+        name: String(g.name || ''), num: m ? m[1] : '', decks: decks });
+    });
+  });
+  CH_MEMO_.all = out;
+  return out;
+}
+var CH_MEMO_ = {};
+function chapterByKey_(key) { return chaptersAll_().filter(function (c) { return c.key === key; })[0] || null; }
+function chapterOfDeck_(deckId) {
+  return chaptersAll_().filter(function (c) { return c.decks.some(function (d) { return d.id === deckId; }); })[0] || null;
+}
+/* The chapter of a worksheet titled with a sub-chapter number ("3.2 Heat capacity"), when only one chapter has it. */
+function chapterOfTitle_(title) {
+  var m = /^\s*(?:(?:ch(?:apter)?|ws|worksheet)\.?\s*)?(\d+)\.(\d+)[a-z]?(?![0-9])/i.exec(String(title || ''));
+  if (!m) return null;
+  // a lesson with that number (3.2, or 3.2a), or a lesson that is the whole chapter (1, for 1.2)
+  var num = m[1] + '.' + m[2], hits = chaptersAll_().filter(function (c) {
+    return c.decks.some(function (d) { return d.num === num || d.num === m[1] || (d.num.indexOf(num) === 0 && /^[a-z]$/i.test(d.num.slice(num.length))); });
+  });
+  return hits.length === 1 ? hits[0] : null;
+}
+/* Worksheets set by themselves from a lesson: worksheet id -> its lesson's chapter key (from WSD|deck|part|CLASS). */
+function chapterBySet_() {
+  if (CH_MEMO_.bySet) return CH_MEMO_.bySet;
+  var out = {}, props = PropertiesService.getScriptProperties().getProperties();
+  Object.keys(props).forEach(function (k) {
+    if (k.indexOf('WSD|') !== 0) return;
+    var v = parseJson_(props[k]), deck = k.split('|')[1];
+    if (!v || !v.id || !deck) return;
+    var ch = chapterOfDeck_(deck);
+    if (ch) out[v.id] = ch.key;
+  });
+  CH_MEMO_.bySet = out;
+  return out;
+}
+/* A worksheet's chapter key: the one saved with it, or worked out ('' when none). */
+function chapterOfWs_(a) {
+  if (a.chapter === '-') return '';                        // the teacher said: no chapter
+  if (a.chapter && chapterByKey_(a.chapter)) return a.chapter;
+  var set = chapterBySet_()[a.id];
+  if (set) return set;
+  var t = chapterOfTitle_(a.title);
+  return t ? t.key : (a.chapter || '');
+}
+function chapterInfo_(key) {
+  var c = key ? chapterByKey_(key) : null;
+  return c ? { key: c.key, name: c.name, num: c.num, subject: c.subject, subjectName: c.subjectName, color: c.color } : null;
+}
+/* The short name students see on a worksheet and its folder: "Chapter 3 · Heat" (the subject when it helps). */
+function chapterShort_(c) {
+  var name = String(c.name || '').replace(/\s*[—–-]\s*/, ' · ');
+  return name || c.key;
+}
+
+/* ---- giving a class a chapter ---- */
+function chGiven_(cls) { return parseJson_(PropertiesService.getScriptProperties().getProperty('CHG_' + normClass_(cls))) || {}; }
+function chGivenAll_() {
+  var out = {};
+  Object.keys(readRoster_()).forEach(function (c) { if (c !== 'TEST') { var g = chGiven_(c); if (Object.keys(g).length) out[c] = g; } });
+  return out;
+}
+/* Opens (or closes) a set of lessons to a class for revision, in one go. */
+function setAllocMany_(cls, deckIds, on) {
+  return withLock_(function () { return allocManyRaw_(cls, deckIds, on); }, 10000);
+}
+/* The same, for a caller that holds the lock already. */
+function allocManyRaw_(cls, deckIds, on) {
+  cls = normClass_(cls);
+  return (function () {
+    var props = PropertiesService.getScriptProperties(), list = parseJson_(props.getProperty('alloc_' + cls)) || [];
+    var off = allocOff_(cls);
+    deckIds.forEach(function (id) {
+      list = list.filter(function (x) { return x !== id; });
+      off = off.filter(function (x) { return x !== id; });
+      if (on) list.push(id); else off.push(id);
+    });
+    if (list.length) props.setProperty('alloc_' + cls, JSON.stringify(list.slice(-150))); else props.deleteProperty('alloc_' + cls);
+    props.setProperty('alloc_off_' + cls, JSON.stringify(off.slice(-150)));
+    CacheService.getScriptCache().remove('alloc');
+    return allocAll_();
+  })();
+}
+/* The Hub: every chapter, which classes have it, and how many worksheets each class has in it. */
+function api_t_chapters(token) {
+  teacher_(token);
+  var given = chGivenAll_(), counts = {};
+  try {
+    getAssignments_().forEach(function (a) {
+      var k = chapterOfWs_(a);
+      if (!k) return;
+      counts[k] = (counts[k] || 0) + 1;
+    });
+  } catch (err) { counts = {}; }
+  return { chapters: chaptersAll_().map(function (c) { return { key: c.key, subject: c.subject, subjectName: c.subjectName, color: c.color, name: c.name, num: c.num, lessons: c.decks.length, worksheets: counts[c.key] || 0 }; }), given: given };
+}
+/* Give a chapter to a class (all its slides open for revision now; its homework comes as each part is taught), or
+   take it back (its slides close; homework already set stays). */
+function api_t_chapterGive(token, key, cls, on) {
+  teacher_(token);
+  var ch = chapterByKey_(String(key || '')), c = normClass_(cls);
+  if (!ch) throw new Error('That chapter is not on the lesson site.');
+  // the class as the class list writes it ("1 E4" and "1E4" are the same class)
+  if (!c || !Object.keys(readRoster_()).some(function (r) { return normClass_(r) === c; })) throw new Error('Choose a class.');
+  var alloc = withLock_(function () {
+    var props = PropertiesService.getScriptProperties(), k = 'CHG_' + c, g = chGiven_(cls);
+    if (on) g[ch.key] = Date.now(); else delete g[ch.key];
+    var keys = Object.keys(g).sort(function (a, b) { return g[a] - g[b]; });
+    while (keys.length > CH_MAX_GIVEN) delete g[keys.shift()];
+    if (Object.keys(g).length) props.setProperty(k, JSON.stringify(g)); else props.deleteProperty(k);
+    return allocManyRaw_(cls, ch.decks.map(function (d) { return d.id; }), !!on);
+  }, 10000);
+  try { CacheService.getScriptCache().remove('lb_teachnext'); } catch (err) { /* refreshed in a minute */ }
+  return { ok: true, given: chGivenAll_(), alloc: alloc, lessons: ch.decks.length };
+}
+/* Set (or clear) a worksheet's chapter by hand. '-' means: not in any chapter. */
+function api_t_setChapter(token, id, key) {
+  teacher_(token);
+  var a = findAssignment_(id);
+  if (!a) throw new Error('That worksheet was not found.');
+  key = String(key || '');
+  if (key && key !== '-' && !chapterByKey_(key)) throw new Error('That chapter is not on the lesson site.');
+  ensureAssignmentCols_();
+  hubSheet_(TABS.assignments.name).getRange(a.row, 18).setValue(key);
+  return { ok: true, chapter: chapterInfo_(key === '-' ? '' : key) };
+}
+/* A lesson that is one sub-chapter as a whole (the Lower Secondary decks: 7.1, 7.2, ...): its number, for linking its
+   homework by number like the numbered parts of longer decks. '' for other lessons. */
+function wholeNum_(deckId) {
+  var ch = chapterOfDeck_(deckId), d = ch ? ch.decks.filter(function (x) { return x.id === deckId; })[0] : null;
+  return d && /^\d+\.\d+[a-z]?$/i.test(d.num) ? d.num : '';
 }

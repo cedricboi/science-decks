@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <script>
   /* Light or dark: this device's own setting, unless the moon button chose the other look. The choice is kept on this
-     device for every My Science page on it, and pages already open change with it. */
+     device for every learnwithmrcedric page on it, and pages already open change with it. */
   (function () {
     var K = 'ms_theme', root = document.documentElement, mem = '';
     function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
@@ -599,6 +599,12 @@
   .fv-f.on { background: var(--hl); }
   .fv-f i { width: 14px; height: 14px; border-radius: 4px; background: var(--c); flex: none; }
   .fv-f span { margin-left: auto; color: var(--muted); font-size: 13px; }
+  /* chapter packages: the chapter on each worksheet, and a folder for each chapter */
+  .chchip { display: inline-flex; align-items: center; gap: 6px; margin: 0 6px 8px 0; padding: 3px 11px 3px 8px; border-radius: 999px; background: var(--soft); color: var(--ink); font: 700 13px var(--display); max-width: 100%; }
+  .chchip i { width: 10px; height: 10px; border-radius: 3px; background: var(--chc, var(--muted)); flex: none; }
+  .chchip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .fv-f.chf i { border-radius: 50%; }
+  .fv-sub { margin: -4px 0 12px; color: var(--muted); font-size: 14px; }
   .fv-new { width: 100%; margin-top: 8px; border: 2px dashed var(--rule); background: none; border-radius: 12px; padding: 10px; font: 700 14px var(--display); color: var(--muted); min-height: 42px; }
   .fv-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .fv-bar h2 { margin: 0; font: 800 22px var(--display); display: flex; align-items: center; gap: 10px; }
@@ -645,15 +651,15 @@
       <p class="school" id="app-school"></p>
       <div class="label">
         <h1 id="app-title">Science homework</h1>
-        <p class="ms-note" id="ms-note">Your homework is in <b>My Science</b>. Open My Science, sign in with your PIN, then tap <b>Homework</b>.</p>
+        <p class="ms-note" id="ms-note">Your homework is in <b>learnwithmrcedric</b>. Open learnwithmrcedric, sign in with your PIN, then tap <b>Homework</b>.</p>
         <div id="login-err" class="err"></div>
       </div>
-      <a id="ms-open" class="btn open-book hidden" href="#" target="_top">Open My Science</a>
+      <a id="ms-open" class="btn open-book hidden" href="#" target="_top">Open learnwithmrcedric</a>
     </div>
     <div class="steps">
       <h2>How it works</h2>
       <ol>
-        <li>Open <b>My Science</b>, sign in with your own PIN, and tap <b>Homework</b>.</li>
+        <li>Open <b>learnwithmrcedric</b>, sign in with your own PIN, and tap <b>Homework</b>.</li>
         <li>Tap <b>Start</b> to open a worksheet. Write your answers on it with the Apple Pencil.</li>
         <li>When you have finished, tap <b>Hand in</b>. After your teacher marks it, tap <b>See marked work</b> to see the marking.</li>
         <li>When your teacher gives out the answers, tap <b>See answers</b> and check your corrections against them.</li>
@@ -668,7 +674,7 @@
     <div class="preview-bar hidden" id="preview-bar">Preview: this is what Test Student sees</div>
     <div class="hero" id="hero"><div class="sky-art" id="sky-art" aria-hidden="true"></div><div class="hero-in">
       <div class="hero-tools">
-        <a class="msback hidden" id="btn-ms" href="#">‹ My Science</a>
+        <a class="msback hidden" id="btn-ms" href="#">‹ learnwithmrcedric</a>
         <span class="sp"></span>
         <button class="linkbtn" id="btn-signout">Sign out</button>
       </div>
@@ -928,9 +934,9 @@
     if (pick && list.indexOf(pick) >= 0) sel.value = pick;
   }
 
-  /* Students sign in once, in My Science, with their own PIN. Homework opens there (?embed=ms), and My Science
+  /* Students sign in once, in learnwithmrcedric, with their own PIN. Homework opens there (?embed=ms), and learnwithmrcedric
      passes its sign-in to this page by message, so nothing is asked here. Opened on its own, the page says to open
-     My Science. "See it as a student" from the Teacher Hub still signs in as Test Student. */
+     learnwithmrcedric. "See it as a student" from the Teacher Hub still signs in as Test Student. */
   var EMBED = false;
   function initLogin() {
     call('api_roster').then(function (r) {
@@ -962,7 +968,7 @@
     if (window.google && google.script && google.script.url && google.script.url.getLocation) google.script.url.getLocation(function (loc) { go((loc && loc.parameter) || {}); });
   }
   var ticketBusy = false;
-  // My Science's look, sent to this frame (its choice: 'dark', 'light', or '' for the device's own)
+  // learnwithmrcedric's look, sent to this frame (its choice: 'dark', 'light', or '' for the device's own)
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'theme' || !window.msTheme) return;
@@ -981,16 +987,16 @@
       tellMs('in'); openList();
     }).catch(function (err) {
       $('ms-note').textContent = '';
-      $('login-err').textContent = /SIGNED_OUT/.test(err.message) ? 'Sign in again in My Science.' : cleanMsg(err);
+      $('login-err').textContent = /SIGNED_OUT/.test(err.message) ? 'Sign in again in learnwithmrcedric.' : cleanMsg(err);
       tellMs('signedout', { error: /SIGNED_OUT/.test(err.message) ? '' : cleanMsg(err) });
     }).then(function () { ticketBusy = false; });
   });
 
-  // Sessions last 6 hours. If one runs out, it is renewed quietly with My Science's sign-in.
+  // Sessions last 6 hours. If one runs out, it is renewed quietly with learnwithmrcedric's sign-in.
   function renew() {
-    if (!S.st) return Promise.reject(new Error('Open My Science and sign in again.'));
+    if (!S.st) return Promise.reject(new Error('Open learnwithmrcedric and sign in again.'));
     return call('api_ticketLogin', S.st).then(function (me) { S.token = me.token; return me; }, function (e) {
-      if (/SIGNED_OUT/.test(e.message)) { tellMs('signedout'); throw new Error('Sign in again in My Science.'); }
+      if (/SIGNED_OUT/.test(e.message)) { tellMs('signedout'); throw new Error('Sign in again in learnwithmrcedric.'); }
       throw e;
     });
   }
@@ -1146,7 +1152,7 @@
     var isNew = fresh[a.id + ':m'], ansNew = fresh[a.id + ':a'];
     if (a.status === 'missed') {
       var own0 = orgItem(a.id);
-      return '<div class="card sheet missed"><div class="card-head">' + WSH.topicHtml(a.title, a.icon) + '<div class="grow"><p class="card-title">' + esc(own0.n || a.title) + (own0.n ? '<span class="real">' + esc(a.title) + '</span>' : '') + '</p>' +
+      return '<div class="card sheet missed"><div class="card-head">' + WSH.topicHtml(a.title, a.icon) + '<div class="grow"><p class="card-title">' + esc(own0.n || a.title) + (own0.n ? '<span class="real">' + esc(a.title) + '</span>' : '') + '</p>' + chChip(a) +
         '<p class="kind">This worksheet closed before you handed it in. If you still want to do it, ask your teacher.</p></div></div></div>';
     }
     if (a.status === 'new' || a.status === 'started') {
@@ -1175,7 +1181,7 @@
     var comment = a.comment ? '<div class="comment"><b>Teacher\'s comment</b>' + esc(a.comment) + '</div>' : '';
     var own = orgItem(a.id), tint = itemColour(a);
     return '<div class="card sheet ' + a.status + (v === 'corr' ? ' corr' : '') + (tint ? ' tinted' : '') + '"' + (tint ? ' style="--fc:' + tint + '"' : '') + '><div class="card-head">' + WSH.topicHtml(a.title, a.icon) + '<div class="grow">' +
-      '<p class="card-title">' + esc(own.n || a.title) + (isNew || ansNew ? '<span class="newtag">New</span>' : '') + (own.n ? '<span class="real">' + esc(a.title) + '</span>' : '') + '</p>' + head +
+      '<p class="card-title">' + esc(own.n || a.title) + (isNew || ansNew ? '<span class="newtag">New</span>' : '') + (own.n ? '<span class="real">' + esc(a.title) + '</span>' : '') + '</p>' + chChip(a) + head +
       (meta.length ? '<p class="card-meta">' + meta.join(' ') + '</p>' : '') + '</div>' + score + '</div>' +
       comment + (acts ? '<div class="card-actions">' + acts + '</div>' : '') + '</div>';
   }
@@ -1286,39 +1292,66 @@
   }
   function kindLine(a) { return 'Worksheet · ' + ({ new: 'to do', started: 'started', submitted: 'handed in', marked: 'marked', missed: 'closed' }[a.status] || ''); }
 
+  /* Chapter folders: a worksheet in one of the teacher's chapters goes into that chapter's folder by itself, unless
+     the student moved it into a folder of their own. */
+  function chChip(a) {
+    var c = a.chapter;
+    return c && c.name ? '<span class="chchip"' + (c.color ? ' style="--chc:' + esc(c.color) + '"' : '') + '><i></i><span>' + esc(c.name) + '</span></span>' : '';
+  }
+  function wsPlace(a) {
+    var o = orgItem(a.id);
+    if (o.f && folderOf(o.f)) return o.f;
+    return a.chapter && a.chapter.key ? 'ch:' + a.chapter.key : '';
+  }
+  // the chapters of the worksheets, the one with the newest homework first
+  function chFolders() {
+    var out = [], seen = {};
+    S.list.forEach(function (a) {
+      var c = a.chapter;
+      if (!c || !c.key || seen[c.key]) return;
+      seen[c.key] = 1;
+      out.push({ id: 'ch:' + c.key, name: c.name || c.key, color: c.color || '', subject: c.subject || '' });
+    });
+    return out;
+  }
+
   function renderFolders() {
     var org = S.org || { folders: [], items: {}, notes: [] };
-    if (S.fsel !== 'all' && S.fsel !== 'none' && !folderOf(S.fsel)) S.fsel = 'all';
+    var chs = chFolders(), chOf = function (id) { return chs.filter(function (c) { return c.id === id; })[0] || null; };
+    if (S.fsel !== 'all' && S.fsel !== 'none' && !folderOf(S.fsel) && !chOf(S.fsel)) S.fsel = 'all';
+    var inW = function (a) { var p = wsPlace(a); return S.fsel === 'all' ? true : S.fsel === 'none' ? !p : p === S.fsel; };
     var q = S.q.trim().toLowerCase();
     var inF = function (fid) { return S.fsel === 'all' ? true : S.fsel === 'none' ? !fid || !folderOf(fid) : fid === S.fsel; };
     var count = function (fid) {
       var n = 0;
-      S.list.forEach(function (a) { var o = orgItem(a.id); if (fid === 'all' || (fid === 'none' ? !o.f || !folderOf(o.f) : o.f === fid)) n++; });
+      S.list.forEach(function (a) { var p = wsPlace(a); if (fid === 'all' || (fid === 'none' ? !p : p === fid)) n++; });
       org.notes.forEach(function (x) { if (fid === 'all' || (fid === 'none' ? !x.f || !folderOf(x.f) : x.f === fid)) n++; });
       return n;
     };
     var side = '<input class="fv-find" id="fv-find" type="search" placeholder="Find a worksheet or note" aria-label="Find a worksheet or note" value="' + esc(S.q) + '">' +
       '<h3>Folders</h3>' +
       '<button class="fv-f' + (S.fsel === 'all' ? ' on' : '') + '" data-f="all"><i style="--c:#CBD2DE"></i>Everything<span>' + count('all') + '</span></button>' +
+      (chs.length ? '<h3>Chapters</h3>' + chs.map(function (c) { return '<button class="fv-f chf' + (S.fsel === c.id ? ' on' : '') + '" data-f="' + esc(c.id) + '"><i style="--c:' + esc(c.color || '#8FA3C7') + '"></i>' + esc(c.name) + '<span>' + count(c.id) + '</span></button>'; }).join('') + '<h3>My folders</h3>' : '') +
       org.folders.map(function (f) { return '<button class="fv-f' + (S.fsel === f.id ? ' on' : '') + '" data-f="' + f.id + '"><i style="--c:' + COLS[f.color] + '"></i>' + esc(f.name) + '<span>' + count(f.id) + '</span></button>'; }).join('') +
       '<button class="fv-f' + (S.fsel === 'none' ? ' on' : '') + '" data-f="none"><i style="--c:#E6E1D8"></i>Not in a folder<span>' + count('none') + '</span></button>' +
       '<button class="fv-new" id="fv-newf">+ New folder</button>';
-    var cur = folderOf(S.fsel);
-    var title = S.fsel === 'all' ? 'Everything' : S.fsel === 'none' ? 'Not in a folder' : cur.name;
-    var col = cur ? COLS[cur.color] : '#CBD2DE';
+    var cur = folderOf(S.fsel), chc = chOf(S.fsel);
+    var title = S.fsel === 'all' ? 'Everything' : S.fsel === 'none' ? 'Not in a folder' : chc ? chc.name : cur.name;
+    var col = cur ? COLS[cur.color] : chc ? esc(chc.color || '#8FA3C7') : '#CBD2DE';
     var left = NOTE_MAX - org.notes.length;
     var bar = '<div class="fv-bar"><h2><i style="--c:' + col + '"></i>' + esc(title) + '</h2>' +
       (cur ? '<button class="btn small ghost" id="fv-editf">Rename or colour</button>' : '') + '<span class="sp"></span>' +
       '<span class="note-left">' + (left > 0 ? left + ' of ' + NOTE_MAX + ' notes left' : 'You have ' + NOTE_MAX + ' notes. Delete one to make another.') + '</span>' +
       '<button class="btn small" id="fv-newnote"' + (left > 0 ? '' : ' disabled') + '>+ New note</button></div>';
+    if (chc) bar += '<p class="fv-sub">' + (chc.subject ? esc(chc.subject) + '. ' : '') + 'Your teacher\'s homework for this chapter comes here by itself.</p>';
     var cards = [];
     S.list.forEach(function (a, i) {
       var o = orgItem(a.id);
-      if (!inF(o.f)) return;
+      if (!inW(a)) return;
       if (q && (a.title + ' ' + (o.n || '')).toLowerCase().indexOf(q) < 0) return;
-      cards.push('<div class="fv-it" role="button" tabindex="0" data-w="' + i + '" style="--c:' + (itemColour(a) || '#CBD2DE') + '"><button class="fv-more" data-wm="' + i + '" aria-label="Rename, move or colour">⋯</button>' +
+      cards.push('<div class="fv-it" role="button" tabindex="0" data-w="' + i + '" style="--c:' + esc(itemColour(a) || (a.chapter && a.chapter.color) || '#CBD2DE') + '"><button class="fv-more" data-wm="' + i + '" aria-label="Rename, move or colour">⋯</button>' +
         '<div class="k">' + kindLine(a) + '</div><div class="t">' + esc(o.n || a.title) + '</div>' + (o.n ? '<div class="r">' + esc(a.title) + '</div>' : '') +
-        '<div class="tags">' + statusTag(a) + (a.status !== 'marked' && a.status !== 'submitted' && a.status !== 'missed' ? dueChip(a).replace('duechip', 'duechip small') : '') + '</div></div>');
+        (a.chapter && a.chapter.name && S.fsel !== 'ch:' + a.chapter.key ? '<div class="r">' + esc(a.chapter.name) + '</div>' : '') + '<div class="tags">' + statusTag(a) + (a.status !== 'marked' && a.status !== 'submitted' && a.status !== 'missed' ? dueChip(a).replace('duechip', 'duechip small') : '') + '</div></div>');
     });
     org.notes.forEach(function (x, j) {
       if (!inF(x.f)) return;
@@ -1329,7 +1362,7 @@
         '<div class="paper paper-' + esc(x.paper || 'blank') + '"></div></div>');
     });
     var grid = cards.length ? '<div class="fv-grid">' + cards.join('') + '</div>'
-      : '<p class="fv-empty">' + (q ? 'Nothing here matches "' + esc(S.q) + '".' : S.fsel === 'all' ? 'No worksheets or notes yet.' : 'Nothing in this folder yet. Tap ⋯ on a worksheet or note to move it here.') + '</p>';
+      : '<p class="fv-empty">' + (q ? 'Nothing here matches "' + esc(S.q) + '".' : S.fsel === 'all' ? 'No worksheets or notes yet.' : chc ? 'Nothing in this chapter yet. Its homework comes here by itself.' : 'Nothing in this folder yet. Tap ⋯ on a worksheet or note to move it here.') + '</p>';
     drawNav();
     $('list-body').innerHTML = '<div class="fv"><div class="fv-side">' + side + '</div><div class="fv-main">' + bar + grid + '</div></div>';
     wireFind();
@@ -1371,8 +1404,8 @@
       };
     });
   }
-  function folderChips(id, cur) {
-    return '<div class="pick-row" id="' + id + '"><button data-f=""' + (!cur ? ' class="on"' : '') + '>No folder</button>' +
+  function folderChips(id, cur, none) {
+    return '<div class="pick-row" id="' + id + '"><button data-f=""' + (!cur ? ' class="on"' : '') + '>' + esc(none || 'No folder') + '</button>' +
       S.org.folders.map(function (f) { return '<button data-f="' + f.id + '"' + (cur === f.id ? ' class="on"' : '') + '><i style="width:12px;height:12px;border-radius:4px;background:' + COLS[f.color] + '"></i>' + esc(f.name) + '</button>'; }).join('') + '</div>';
   }
 
@@ -1421,7 +1454,7 @@
     modal('<h2>' + esc(a ? (o.n || a.title) : note.title) + '</h2>' +
       '<label class="fld-label" for="ib-name">' + (a ? 'Your name for it' : 'Name') + '</label><input class="fld-in" id="ib-name" maxlength="60" value="' + esc(name) + '" placeholder="' + esc(a ? a.title : 'My note') + '">' +
       (a ? '<p class="note" style="margin:6px 0 0">Your teacher still sees "' + esc(a.title) + '". Leave it empty to use the real name.</p>' : '') +
-      '<label class="fld-label">Folder</label>' + folderChips('ib-f', folder) +
+      '<label class="fld-label">Folder</label>' + folderChips('ib-f', folder, a && a.chapter && a.chapter.name ? 'Its chapter: ' + a.chapter.name : '') +
       '<label class="fld-label">Colour</label>' + swatches('ib-c', color, true), btns);
     pickOne('ib-f', 'data-f', function (f) { folder = f; });
     pickOne('ib-c', 'data-c', function (c) { color = c; });
@@ -1757,7 +1790,7 @@
     root.setAttribute('data-skin', SKINS[S.skin] ? S.skin : 'sky');
     paintSky();
   }
-  // the device's setting changing, the moon button in My Science, or another page on this iPad
+  // the device's setting changing, the moon button in learnwithmrcedric, or another page on this iPad
   window.addEventListener('ms-theme', applyLook);
   // Morning, day, evening or night, from the clock on this iPad. The night look always has the night sky.
   function skyTime() {

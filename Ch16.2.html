@@ -3895,7 +3895,7 @@ else init();
 })();</script>
 <script id="liveboard-bridge">(function () {
   'use strict';
-  /* Live Board bridge, version 10. Added to every deck by scripts/liveboard_connect.py.
+  /* Live Board bridge, version 11. Added to every deck by scripts/liveboard_connect.py.
      The deck's own code is not changed.
      1. Who are you? Students choose their class, then their name, from the class list
         (the Worksheet Hub Students tab, served by Live Board). The choice is locked on
@@ -3936,14 +3936,14 @@ else init();
      10. Revise: My mistakes (the questions answered wrong the first time, from any iPad, each with
         its slide, ticked off once put right) and Practise (the chapter check, or the deck's questions,
         in a new order with new numbers; no points, nothing sent). On the last slide, by the name, and
-        from My Science (#revise). Closed while the class's answers are held.
+        from learnwithmrcedric (#revise). Closed while the class's answers are held.
      11. One home: the slides opened from the Teacher Hub (#present&cls=..&part=..&at=..&tk=..) are signed
         in and know the class and the part, so nothing is asked. While presenting, Results (on every slide)
         shows how the class answered the questions on the slide, with no names. A student cannot change
         their own name (the teacher resets it from the phone), and a student whose register number does not
         match asks the teacher's phone to be let in, so no PIN is typed on a student's iPad.
-     12. Version 8: each student signs in with their own 4-digit PIN (set up in My Science, with a security question
-        for a forgotten PIN), or comes already signed in from My Science. The sign-in goes with every answer and check,
+     12. Version 8: each student signs in with their own 4-digit PIN (set up in learnwithmrcedric, with a security question
+        for a forgotten PIN), or comes already signed in from learnwithmrcedric. The sign-in goes with every answer and check,
         and Live Board takes the name from it. Once signed in, the name stays on the iPad until the teacher changes it
         (their PIN on the iPad, or Sign out on the phone). Work counts only while the teacher is teaching this lesson to
         the student's class. At other times the lesson is for revision if the teacher has opened it to the class:
@@ -3953,7 +3953,10 @@ else init();
         presenting, with answers waiting, or with a panel open), so nobody has to ask for an old copy to be reloaded.
      14. Version 10: slides opened by the projector screen (pj=... in the address, from Teach on the phone) check in
         every 5 seconds, and when Live Board says so they open the next lesson the phone chose, or go back to the
-        projector screen after End. A reload keeps this; slides opened by hand never move by themselves. */
+        projector screen after End. A reload keeps this; slides opened by hand never move by themselves.
+     15. Version 11: on the projector, Show answers (at the bottom of a slide with a question, and in the Presenting
+        line) puts the class's answers up full size: the whole question, then a bar chart of the choices, or a wall
+        of the answers the class wrote (no names). It follows the slide and fills in as answers come. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3961,7 +3964,7 @@ else init();
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 10;
+  var VERSION = 11;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -4031,7 +4034,7 @@ else init();
     } else mode = m;
     try { drawMode(); } catch (e) { /* before the page is ready */ }
   }
-  /* My Science (the student page): signing in for the first time, and Forgot my PIN, are there. */
+  /* learnwithmrcedric (the student page): signing in for the first time, and Forgot my PIN, are there. */
   var MS_URL = String(cfg.endpoint || '').replace(/[?#].*$/, '');
   function stNow() { var me = readJ(ID_KEY); return me && me.st ? me.st : ''; }
 
@@ -4254,6 +4257,39 @@ else init();
     '.lbres-bar.ok .t i{background:#12a05c}' +
     '.lbres-pct{font:900 30px Arial,sans-serif;color:#0b7a45}' +
     '.lbres-wait{color:#3a3740;font-size:20px;margin:6px 0}' +
+    '.lbres-btn.lbb-go{left:50%;transform:translateX(-50%);bottom:16px;font-size:18px;padding:12px 22px;opacity:1}' +
+    '.lbres-btn.lbb-go:hover{transform:translateX(-50%)}' +
+    '.lbres.lbb{padding:2vh 2vw;z-index:2147482900}' +
+    '.lbb .lbres-panel{width:min(1500px,100%);max-height:96vh;display:flex;flex-direction:column;padding:22px 28px;background:#fffdf8;background-image:linear-gradient(rgba(16,16,20,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(16,16,20,.05) 1px,transparent 1px);background-size:28px 28px}' +
+    '.lbb-tabs{display:flex;gap:8px;flex-wrap:wrap}' +
+    '.lbb .lbb-tabs button{font-size:15px!important;padding:6px 12px!important}' +
+    '.lbb .lbb-tabs button.on{background:#101014!important;color:#fff!important}' +
+    '.lbb-q{font:900 clamp(24px,3.1vw,44px)/1.2 Arial,sans-serif;color:#101014;margin:6px 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}' +
+    '.lbb-n{font-size:clamp(16px,1.5vw,22px);color:#3a3740;margin:0 0 14px}' +
+    '.lbb-n b{color:#101014}' +
+    '.lbb-body{overflow:auto;flex:1;min-height:0}' +
+    '.lbb-bars{display:grid;gap:14px}' +
+    '.lbb-bar{display:grid;grid-template-columns:3.2em minmax(0,1fr);gap:14px;align-items:center;font-size:clamp(18px,1.9vw,28px)}' +
+    '.lbb-bar .k{font:900 1.2em Arial,sans-serif;width:2.2em;height:2.2em;display:grid;place-items:center;border:3px solid #101014;background:#fff}' +
+    '.lbb-bar .w{display:grid;gap:6px;min-width:0}' +
+    '.lbb-bar .l{overflow-wrap:anywhere;font-weight:700}' +
+    '.lbb-bar .r{display:grid;grid-template-columns:minmax(0,1fr) 6.5em;gap:12px;align-items:center}' +
+    '.lbb-bar .t{height:clamp(26px,3.4vh,44px);background:#efece6;border:2px solid #101014;position:relative}' +
+    '.lbb-bar .t i{position:absolute;left:0;top:0;bottom:0;background:#101014;transition:width .5s}' +
+    '.lbb-bar b{font:900 1em Arial,sans-serif;text-align:right;white-space:nowrap}' +
+    '.lbb-bar b small{font-weight:700;color:#3a3740;font-size:.7em}' +
+    '.lbb-bar.ok .k{background:#12a05c;color:#fff;border-color:#0b7a45}' +
+    '.lbb-bar.ok .l{color:#0b7a45}' +
+    '.lbb-bar.ok .t i{background:#12a05c}' +
+    '.lbb-wall{columns:4 260px;column-gap:16px}' +
+    '.lbb-card{break-inside:avoid;margin:0 0 16px;padding:14px 16px;border:2px solid #101014;box-shadow:5px 5px 0 #101014;font:700 clamp(17px,1.5vw,22px)/1.35 Arial,sans-serif;color:#101014;white-space:pre-wrap;overflow-wrap:anywhere;animation:lbbIn .4s ease-out both}' +
+    '.lbb-card.c0{background:#fff6b8}.lbb-card.c1{background:#d9f0ff}.lbb-card.c2{background:#ffe0e6}.lbb-card.c3{background:#dff7e6}.lbb-card.c4{background:#efe4ff}.lbb-card.c5{background:#ffe8d1}' +
+    '.lbb-card.ok{box-shadow:5px 5px 0 #12a05c;border-color:#0b7a45}' +
+    '.lbb-card.no{opacity:.55}' +
+    '@keyframes lbbIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}' +
+    '@media (prefers-reduced-motion:reduce){.lbb-card{animation:none}.lbb-bar .t i{transition:none}}' +
+    '.lbb-empty{font-size:clamp(18px,1.8vw,26px);color:#3a3740;padding:30px 0}' +
+    '.lbb-pct{font:900 clamp(22px,2.4vw,34px) Arial,sans-serif;color:#0b7a45;margin:0 0 12px}' +
     '@media (max-width:700px){.lbres-bar{grid-template-columns:1fr 3em}.lbres-bar .t{grid-column:1/-1;grid-row:2}}' +
     '.lbrev{display:block;margin-top:8px;font:900 14px Arial,sans-serif!important;padding:8px 14px!important;border:2px solid #101014!important;border-radius:0!important;background:#f5c400!important;color:#101014!important;cursor:pointer;box-shadow:none!important;transform:none!important;text-transform:none!important}' +
     '.lbrev-box{margin-top:8px;padding:12px;border-left:5px solid #12804f;background:#fff;font:16px/1.45 Arial,sans-serif;white-space:pre-wrap}' +
@@ -4439,7 +4475,7 @@ else init();
     });
   }
 
-  /* The student's own PIN. A student who has not set one up yet (or has forgotten it) does that in My Science.
+  /* The student's own PIN. A student who has not set one up yet (or has forgotten it) does that in learnwithmrcedric.
      legacy: the name was locked on this iPad before PINs, so only the teacher can choose another name. */
   function confirmGate(id, legacy) {
     var p = panel();
@@ -4458,15 +4494,15 @@ else init();
       if (r && r.ok === false && /Unknown request/.test(r.error || '')) { writeJ(OLD_KEY, Date.now()); lockIn({ cls: id.cls, name: id.name }); return; }
       if (!r || !r.ok) { info.textContent = (r && r.error) || 'That did not work. Go back and try again.'; return; }
       if (!r.set) {
-        info.textContent = 'You have not set up your PIN yet. Open My Science, set up your PIN, then open this lesson from My Science.';
-        body.appendChild(msLink('Open My Science'));
+        info.textContent = 'You have not set up your PIN yet. Open learnwithmrcedric, set up your PIN, then open this lesson from learnwithmrcedric.';
+        body.appendChild(msLink('Open learnwithmrcedric'));
         return;
       }
       info.textContent = 'Your own 4-digit PIN.';
       var l = el('label', '', 'PIN'), inp = el('input', 'lbx-pin'); inp.type = 'password'; inp.inputMode = 'numeric'; inp.maxLength = 4; inp.autocomplete = 'off';
       l.appendChild(inp); body.appendChild(l);
       var row = el('div', 'lbx-row'), go = el('button', 'lbx-go', 'Sign in'); go.type = 'button'; row.appendChild(go); body.appendChild(row);
-      var forgot = el('a', '', 'Forgot your PIN? Open My Science'); forgot.href = MS_URL; forgot.target = '_blank'; forgot.rel = 'noopener';
+      var forgot = el('a', '', 'Forgot your PIN? Open learnwithmrcedric'); forgot.href = MS_URL; forgot.target = '_blank'; forgot.rel = 'noopener';
       links.appendChild(forgot);
       if (r.locked) msg.textContent = 'Too many wrong tries. Wait 15 minutes, or ask your teacher.';
       var send = function () {
@@ -4485,7 +4521,7 @@ else init();
       setTimeout(function () { inp.focus(); }, 50);
     }).catch(function (err) { if (overlay && overlay.contains(p)) { info.textContent = ''; failNote(msg, err, 'Signing in'); } });
   }
-  /* My Science opened the lesson for a different student from the one signed in here: only the teacher changes it. */
+  /* learnwithmrcedric opened the lesson for a different student from the one signed in here: only the teacher changes it. */
   function otherName(id, handed) {
     var p = panel();
     p.appendChild(el('h2', '', 'Someone else is signed in'));
@@ -4826,7 +4862,7 @@ else init();
       applyLook(); enforce();
       if (!mineAsked && me && me.cls) askMine(me);
       var a = r && r.ok && r.ask && byId[r.ask.taskId] ? r.ask : null;
-      if (handedQ) {   // opened from My Science: show the asked question, or go to the slide if it is no longer asked
+      if (handedQ) {   // opened from learnwithmrcedric: show the asked question, or go to the slide if it is no longer asked
         var hq = handedQ; handedQ = '';
         if (!a || a.taskId !== hq) goToTask(hq);
       }
@@ -5048,7 +5084,7 @@ else init();
       var p = el('div', 'lbx-panel'); closedBox.appendChild(p);
       p.appendChild(el('h2', '', 'Not open yet'));
       p.appendChild(el('p', '', 'Your teacher has not opened this lesson for revision. It opens in class, or when your teacher opens it for your class.'));
-      var a = el('a', 'lbx-ms', 'Back to My Science'); a.href = MS_URL; p.appendChild(a);
+      var a = el('a', 'lbx-ms', 'Back to learnwithmrcedric'); a.href = MS_URL; p.appendChild(a);
       document.body.appendChild(closedBox);
     } else if (!closed && closedBox) { closedBox.remove(); closedBox = null; }
   }
@@ -5105,7 +5141,7 @@ else init();
   /* ---------------- presenter mode ---------------- */
   /* The teacher's copy on the projector. After the teacher PIN it asks which class is being taught.
      Choosing one starts the lesson for that class in Live Board, as Start lesson does: the lesson shows
-     on those students' My Science as the lesson in class now, and their iPads follow this slide. Opened
+     on those students' learnwithmrcedric as the lesson in class now, and their iPads follow this slide. Opened
      from the Teacher Hub (#present&cls=...&part=...&tk=...), it is signed in and the class and part are
      known, so nothing is asked.
      Pause, Follow and who is where are on the teacher's phone, so the slides show only one small line,
@@ -5171,7 +5207,7 @@ else init();
   function askClass(err) {
     var p = panel();
     p.appendChild(el('h2', '', 'Which class are you teaching?'));
-    p.appendChild(el('p', '', 'Their iPads follow your slides, and the lesson shows on their My Science.'));
+    p.appendChild(el('p', '', 'Their iPads follow your slides, and the lesson shows on their learnwithmrcedric.'));
     var top = el('div'), box = el('div', 'lbx-classes'), msg = el('p', 'lbx-msg');
     p.appendChild(top); p.appendChild(box);
     box.appendChild(el('p', 'lbx-wait', 'Loading the classes…'));
@@ -5248,17 +5284,18 @@ else init();
     resultsButton(true);
   }
   function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); resultsButton(false); }
-  /* Results: how the class answered the questions on the slide being shown, for the projector. No names. The
-     right answer shows only when the teacher asks for it. It follows the slide, and asks again every 3 seconds. */
-  // Results sits by Presenting to (when that line is on screen, as in the top bar of older decks), and otherwise
-  // as a small button at the bottom, beside the deck's Back button.
+  /* Show answers: how the class answered the question on the slide being shown, full size for the projector. No
+     names. The whole question, then the choices as bars, or the class's written answers as a wall of cards. The right
+     answer shows only when the teacher asks for it. It follows the slide, and asks again every 3 seconds. */
+  // The button sits at the bottom of a slide that has a question (and in the Presenting line, when that is on screen).
   var resBtn = null, resBox = null, resTimer = null, resPlace = null;
+  function tasksOn(n) { return n ? list.filter(function (t) { return slideOf(t).n === n; }) : []; }
   function resultsButton(on) {
     clearInterval(resPlace);
     if (!on) { if (resBtn) { resBtn.remove(); resBtn = null; } closeResults(); return; }
     if (!resBtn) {
-      resBtn = el('button', 'lbres-btn', 'Results'); resBtn.type = 'button';
-      resBtn.title = 'How the class answered the questions on this slide. No names.';
+      resBtn = el('button', 'lbres-btn lbb-go', 'Show answers'); resBtn.type = 'button';
+      resBtn.title = 'The class\'s answers to the question on this slide, full size. No names.';
       resBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openResults(); });
       document.body.appendChild(resBtn);
     }
@@ -5266,59 +5303,106 @@ else init();
   }
   function placeResults() {
     if (!resBtn) return;
-    var r = whoLine.getBoundingClientRect();
-    resBtn.hidden = whoLine.offsetParent !== null && r.width > 0 && r.bottom > 0 && r.top < window.innerHeight && !!whoLine.querySelector('.lbres-in');
+    resBtn.hidden = !!resBox || !tasksOn(slideNow()).length;
+    if (resBtn.hidden) return;
+    // Just above the deck's own bar at the bottom of the screen (Previous, the slide dots, Next), when it has one.
+    var lift = 16, H = window.innerHeight, barTop = 0;
+    try {
+      resBtn.style.visibility = 'hidden';
+      var e = document.elementFromPoint(window.innerWidth / 2, H - 3);
+      resBtn.style.visibility = '';
+      for (; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+        var r = e.getBoundingClientRect();
+        if (r.bottom >= H - 2 && r.height > 0 && r.height < H * 0.25) barTop = r.top; else if (barTop) break;
+      }
+    } catch (err) { resBtn.style.visibility = ''; }
+    if (barTop) lift = Math.round(H - barTop + 12);
+    resBtn.style.bottom = lift + 'px';
   }
-  function closeResults() { clearInterval(resTimer); resTimer = null; if (resBox) { resBox.remove(); resBox = null; } }
+  function closeResults() { clearTimeout(resTimer); resTimer = null; if (resBox) { resBox.remove(); resBox = null; } placeResults(); }
+  var LETTERS = 'ABCDEFGHIJ';
   function openResults() {
     closeResults();
-    var showRight = false, last = null;
-    resBox = el('div', 'lbres'); resBox.setAttribute('role', 'dialog'); resBox.setAttribute('aria-modal', 'true'); resBox.setAttribute('aria-label', 'Results');
+    var showRight = false, last = null, pick = 0, seenTexts = {};
+    resBox = el('div', 'lbres lbb'); resBox.setAttribute('role', 'dialog'); resBox.setAttribute('aria-modal', 'true'); resBox.setAttribute('aria-label', 'The class\'s answers');
     var p = el('div', 'lbres-panel'), top = el('div', 'lbres-top');
-    top.appendChild(el('h2', '', 'Results'));
+    var tabs = el('div', 'lbb-tabs'); top.appendChild(tabs);
     var sub = el('span', 'lbres-sub', presCls); top.appendChild(sub);
     var right = el('button', 'lbres-right', 'Show the right answer'); right.type = 'button'; right.hidden = true;
     right.addEventListener('click', function () { showRight = !showRight; right.textContent = showRight ? 'Hide the right answer' : 'Show the right answer'; draw(last); });
     var x = el('button', 'lbres-x', 'Close'); x.type = 'button'; x.addEventListener('click', closeResults);
     top.appendChild(right); top.appendChild(x); p.appendChild(top);
-    var body = el('div', 'lbres-body'); body.appendChild(el('p', 'lbres-wait', 'Loading…')); p.appendChild(body);
+    var qline = el('div', 'lbb-q'), nline = el('p', 'lbb-n'), body = el('div', 'lbb-body');
+    body.appendChild(el('p', 'lbres-wait', 'Loading…'));
+    p.appendChild(qline); p.appendChild(nline); p.appendChild(body);
     resBox.appendChild(p); document.body.appendChild(resBox);
     resBox.addEventListener('click', function (e) { if (e.target === resBox) closeResults(); });
+    placeResults();
+    function local(q) { return byId[q.taskId] || null; }
     function draw(r) {
       if (!r || !resBox) return;
-      body.innerHTML = '';
       var qs = r.questions || [];
       sub.textContent = (r.n ? 'Slide ' + r.n + ' · ' : '') + presCls;
-      right.hidden = !qs.some(function (q) { return q.pct != null || (q.choices && q.choices.some(function (o) { return o.ok; })); });
-      if (!qs.length) { body.appendChild(el('p', 'lbres-wait', 'No questions on this slide. Results follow the slide you are showing.')); return; }
-      qs.forEach(function (q) {
-        var card = el('section', 'lbres-q');
-        card.appendChild(el('h3', '', q.title));
-        card.appendChild(el('div', 'lbres-n', q.answered + ' of ' + q.size + ' answered' + (q.choices ? ' · first tries' : '')));
-        if (q.choices && q.choices.length) {
-          var most = 1;
-          q.choices.forEach(function (o) { if (o.n > most) most = o.n; });
-          q.choices.forEach(function (o) {
-            var row = el('div', 'lbres-bar' + (showRight && o.ok ? ' ok' : ''));
-            row.appendChild(el('span', 'l', o.t));
-            var tr = el('span', 't'), fill = el('i'); fill.style.width = Math.round(100 * o.n / most) + '%'; tr.appendChild(fill);
-            row.appendChild(tr); row.appendChild(el('b', '', String(o.n)));
-            card.appendChild(row);
-          });
-        } else if (q.pct != null && showRight) card.appendChild(el('div', 'lbres-pct', q.pct + '% right on the first try'));
-        else if (q.kind === 'written') card.appendChild(el('p', 'lbres-wait', 'Written answers show on your phone and in Live Board.'));
-        body.appendChild(card);
+      tabs.innerHTML = '';
+      if (!qs.length) { qline.textContent = ''; nline.textContent = ''; right.hidden = true; body.innerHTML = ''; body.appendChild(el('p', 'lbb-empty', 'No question on this slide. Show answers follows the slide you are showing.')); return; }
+      if (pick >= qs.length) pick = 0;
+      if (qs.length > 1) qs.forEach(function (q, k) {
+        var b = el('button', k === pick ? 'on' : '', 'Question ' + (k + 1)); b.type = 'button';
+        b.addEventListener('click', function () { pick = k; draw(last); });
+        tabs.appendChild(b);
       });
+      var q = qs[pick], t = local(q) || {};
+      var hasRight = q.pct != null || (!q.choices && !!(t.model || t.correct)) || (q.choices && q.choices.some(function (o) { return o.ok; }));
+      right.hidden = !hasRight;
+      qline.textContent = t.question || q.title || '';
+      nline.innerHTML = '';
+      nline.appendChild(el('b', '', String(q.answered))); nline.appendChild(document.createTextNode(' of ' + q.size + ' answered' + (q.choices ? ' · first tries' : '')));
+      body.innerHTML = '';
+      if (q.choices && q.choices.length) {
+        var total = 0; q.choices.forEach(function (o) { total += o.n; });
+        var most = 1; q.choices.forEach(function (o) { if (o.n > most) most = o.n; });
+        var bars = el('div', 'lbb-bars');
+        q.choices.forEach(function (o, k) {
+          var row = el('div', 'lbb-bar' + (showRight && o.ok ? ' ok' : ''));
+          row.appendChild(el('span', 'k', LETTERS.charAt(k) || String(k + 1)));
+          var w = el('div', 'w'); w.appendChild(el('span', 'l', o.t));
+          var rr = el('div', 'r'), tr = el('span', 't'), fill = el('i'); fill.style.width = Math.round(100 * o.n / most) + '%'; tr.appendChild(fill);
+          var cnt = el('b', '', String(o.n)); cnt.appendChild(el('small', '', '  ' + (total ? Math.round(100 * o.n / total) : 0) + '%'));
+          rr.appendChild(tr); rr.appendChild(cnt); w.appendChild(rr); row.appendChild(w);
+          bars.appendChild(row);
+        });
+        body.appendChild(bars);
+        return;
+      }
+      if (showRight && (q.pct != null || t.correct)) body.appendChild(el('p', 'lbb-pct', (q.pct != null ? q.pct + '% right on the first try' + (t.correct ? ' · ' : '') : '') + (t.correct ? 'the answer: ' + t.correct + (t.unit ? ' ' + t.unit : '') : '')));
+      if (showRight && !q.choices && t.model) body.appendChild(el('p', 'lbb-pct', 'A good answer: ' + t.model));
+      if (q.texts === undefined) { body.appendChild(el('p', 'lbb-empty', 'Written answers show here once Live Board has its newest server code (release 20). Its Setup check says what to paste.')); return; }
+      var texts = q.texts || [];
+      if (!texts.length) { body.appendChild(el('p', 'lbb-empty', q.answered ? 'The answers show here as they come in.' : 'No answers yet. They show here as the class answers.')); return; }
+      var wall = el('div', 'lbb-wall');
+      texts.forEach(function (a, k) {
+        var key = q.taskId + '|' + k + '|' + a.x;
+        var c = el('div', 'lbb-card c' + (k % 6) + (showRight && a.ok === true ? ' ok' : '') + (showRight && a.ok === false ? ' no' : ''), a.x + (q.kind === 'number' && t.unit && !/[a-z]$/i.test(a.x) ? ' ' + t.unit : ''));
+        if (seenTexts[key]) c.style.animation = 'none';
+        seenTexts[key] = 1;
+        wall.appendChild(c);
+      });
+      body.appendChild(wall);
     }
+    // One question to Live Board at a time: the next goes 3 seconds after the answer, so a slow answer about the slide
+    // before never comes in after a newer one. A board that was closed (or opened again) drops what comes back.
+    var mine = resBox;
+    function again() { if (resBox === mine) resTimer = setTimeout(poll, 3000); }
     function poll() {
-      if (!resBox) return;
-      api({ api: 'results', pin: presPin, topicId: cfg.topicId, cls: presCls, n: slideNow() }).then(function (r) {
-        if (!resBox) return;
-        if (!r || r.ok === false) { body.innerHTML = ''; body.appendChild(el('p', 'lbres-wait', r && r.error && !/Unknown request/.test(r.error) ? r.error : 'Results need the new version of Live Board: update its deployment (Deploy > Manage deployments > New version).')); return; }
-        last = r; draw(r);
-      }).catch(function (err) { if (resBox && !last) { body.innerHTML = ''; var m = el('p', 'lbres-wait'); failNote(m, err, 'Results'); body.appendChild(m); } });
+      if (resBox !== mine) return;
+      api({ api: 'results', pin: presPin, topicId: cfg.topicId, cls: presCls, n: slideNow(), texts: 1 }).then(function (r) {
+        if (resBox !== mine) return;
+        if (!r || r.ok === false) { body.innerHTML = ''; body.appendChild(el('p', 'lbb-empty', r && r.error && !/Unknown request/.test(r.error) ? r.error : 'Show answers needs the new version of Live Board: update its deployment (Deploy > Manage deployments > New version).')); again(); return; }
+        if (last && last.n !== r.n) { pick = 0; seenTexts = {}; }
+        last = r; draw(r); again();
+      }).catch(function (err) { if (resBox !== mine) return; if (!last) { body.innerHTML = ''; var m = el('p', 'lbb-empty'); failNote(m, err, 'Show answers'); body.appendChild(m); } again(); });
     }
-    poll(); resTimer = setInterval(poll, 3000);
+    poll();
   }
   document.addEventListener('keydown', function (e) { if (resBox && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeResults(); } }, true);
   function drawPresLine() {
@@ -5329,8 +5413,8 @@ else init();
     ch.addEventListener('click', function (e) { if (e) e.preventDefault(); askClass(); });
     whoLine.appendChild(ch);
     if (presCls) {
-      var rs = el('button', 'lbres-in', 'Results'); rs.type = 'button';
-      rs.title = 'How the class answered the questions on this slide. No names.';
+      var rs = el('button', 'lbres-in', 'Show answers'); rs.type = 'button';
+      rs.title = 'The class\'s answers to the question on this slide, full size. No names.';
       rs.addEventListener('click', function (e) { if (e) e.preventDefault(); openResults(); });
       whoLine.appendChild(rs);
     }
@@ -5377,7 +5461,7 @@ else init();
 
   /* ---------------- revise: My mistakes and Practise ---------------- */
   /* After the lesson, students revise in the deck itself (the Revise card on the last slide, the Revise button
-     by their name, or the deck opened from My Science with #revise).
+     by their name, or the deck opened from learnwithmrcedric with #revise).
      My mistakes: the questions they got wrong on the first try, from any iPad (kept by Live Board) and from
      this iPad's own record, each with its slide. A later right answer, in the deck or in Practise, puts it right.
      Practise: the chapter check again (a deck without one: its questions), in a new order, the choices
@@ -5422,7 +5506,7 @@ else init();
         var left = pfixList().filter(function (id) { return send.indexOf(id) < 0; });
         writeJ(PFIX_KEY, left.length ? { who: whoKey(), ids: left } : null);
       }
-      // Mistakes on questions this deck no longer has (or no longer marks) are retired, so My Science
+      // Mistakes on questions this deck no longer has (or no longer marks) are retired, so learnwithmrcedric
       // does not count them for ever.
       var gone = (r.wrong || []).filter(function (id) { return (!byId[id] || byId[id].kind === 'written') && (r.fixed || []).indexOf(id) < 0; });
       if (gone.length && !retiring) { retiring = true; gone.forEach(addPfix); setTimeout(function () { loadReview(true).then(null, function () {}); }, 50); }
@@ -5908,7 +5992,7 @@ else init();
     if (handed && handed.st) {
       if (id && id.st && (id.cls !== handed.cls || id.name !== handed.name)) { otherName(id, handed); return; }
       if (!id || !id.st || id.st !== handed.st) {
-        // A sign-in from My Science: checked, then kept.
+        // A sign-in from learnwithmrcedric: checked, then kept.
         api({ api: 'st', op: 'me', st: handed.st }).then(function (r) {
           if (r && r.ok) { lockIn({ cls: r.cls, name: r.name, st: handed.st }); return; }
           if (id && id.st) go(id);

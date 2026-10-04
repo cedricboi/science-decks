@@ -37,7 +37,7 @@
  .note{margin-top:22px;font-size:.84rem;color:#8a94a3;line-height:1.5}
  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
  .msg{background:#fff;border:2px solid #E4DED4;border-radius:14px;padding:16px 18px;color:#6b7686}
- /* students: My Science is where to start */
+ /* students: learnwithmrcedric is where to start */
  .mysci{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#1B1F3B;color:#fff;border-radius:16px;padding:16px 18px;margin:0 0 22px}
  .mysci[hidden]{display:none}
  .mysci .tx{flex:1 1 260px;min-width:0}
@@ -52,8 +52,8 @@
   <p class="sub">Choose a subject, then click a lesson to open it full screen</p>
 
   <div class="mysci" id="mysci" hidden>
-    <div class="tx"><b>Students: open My Science</b><span>Your lessons, the lesson your class is on now, homework and points, in one place. Your answers go to your teacher from there.</span></div>
-    <a id="mysci-go" target="_blank" rel="noopener">Open My Science</a>
+    <div class="tx"><b>Students: open learnwithmrcedric</b><span>Your lessons, the lesson your class is on now, homework and points, in one place. Your answers go to your teacher from there.</span></div>
+    <a id="mysci-go" target="_blank" rel="noopener">Open learnwithmrcedric</a>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Subject" id="tabs"></div>
@@ -73,7 +73,7 @@
 
   function build(cat){
     panelsBox.innerHTML = "";
-    // My Science is Live Board's student page: its link is in lessons.json.
+    // learnwithmrcedric is Live Board's student page: its link is in lessons.json.
     if (/^https:\/\/script\.google\.com\//.test(cat.liveboard || "")) {
       document.getElementById("mysci-go").href = cat.liveboard;
       document.getElementById("mysci").hidden = false;

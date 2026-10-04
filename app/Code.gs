@@ -49,8 +49,8 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
-var BUILD = '2026-10-08-dark';
-var BRIDGE_LATEST = 10;   // slides with an older bridge reload themselves once a newer copy is on the site
+var BUILD = '2026-10-09-chapters';
+var BRIDGE_LATEST = 11;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
   if (e && e.parameter && e.parameter.api === 'build') {
@@ -61,7 +61,7 @@ function lbDoGet_(e) {
   var page = view === 'teacher' ? 'Teacher' : 'Student';
   // The page comes from the lesson site when it can (it updates itself), or else the copy pasted here.
   return (typeof pageHtml_ === 'function' ? HtmlService.createHtmlOutput(pageHtml_(page)) : HtmlService.createHtmlOutputFromFile(page))
-    .setTitle(page === 'Teacher' ? 'Live Board (teacher)' : 'My Science')
+    .setTitle(page === 'Teacher' ? 'Live Board (teacher)' : 'learnwithmrcedric')
     .addMetaTag('viewport', page === 'Teacher' ? 'width=device-width, initial-scale=1, viewport-fit=cover'
       : 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -1216,7 +1216,7 @@ function receiveDeckBatch_(d) {
 }
 
 function receiveSingle_(d) {
-  return { ok: false, error: 'This lesson is out of date. Open it again from My Science.' };
+  return { ok: false, error: 'This lesson is out of date. Open it again from learnwithmrcedric.' };
 }
 function receiveSingleOld_(d) {
   var deckId = clean_(d.deck || 'deck', 120);
@@ -1673,7 +1673,7 @@ function writeDeckLink_(deckId, url) {
 /* The lesson site (GitHub Pages) and its list of lessons              */
 /* ------------------------------------------------------------------ */
 /* lessons.json on the lesson site lists every lesson: subject tabs, chapters, numbers and titles. The
-   site's index page, My Science and the Lessons tab all read it. Lessons > Add or update a lesson puts a
+   site's index page, learnwithmrcedric and the Lessons tab all read it. Lessons > Add or update a lesson puts a
    deck online and updates the list in one step, straight from the teacher's browser to GitHub, using a
    GitHub key saved once in Script Properties. */
 var DEFAULT_REPO = 'cedricboi/science-decks';
@@ -1754,7 +1754,7 @@ function apiCatalogSet(pin, cat) {
   cachePut_('catalog', JSON.stringify(cat), 600);
   return { ok: true };
 }
-/* My Science: every lesson on the site by subject and chapter. Lessons connected to Live Board carry this
+/* learnwithmrcedric: every lesson on the site by subject and chapter. Lessons connected to Live Board carry this
    student's progress; older decks are plain links. */
 function studentCatalog_(lessons) {
   var cat = catalog_();
@@ -1827,7 +1827,7 @@ function hubToken_() {
 function hubRequest_(d) {
   var id = getSetting_('Class list sheet ID');
   if (!id || String(d.key || '') !== String(id)) return { ok: false, error: 'Wrong key.' };
-  // The homework space opens inside My Science with the student's sign-in, and the Hub checks it here.
+  // The homework space opens inside learnwithmrcedric with the student's sign-in, and the Hub checks it here.
   if (d.op === 'student') {
     var who = stCheck_(d.st);
     return who ? { ok: true, cls: who.cls, name: who.name } : { ok: true, signedOut: true };
@@ -1872,7 +1872,7 @@ function runningFor_(classes) {
       if (!out[c] || ctl.lesson.at > out[c].at) out[c] = { id: d.id, title: d.title, url: d.link, lesson: ctl.lesson.t, from: ctl.from || 0, to: ctl.to || 0, at: ctl.lesson.at || 0 };
     });
   });
-  // What was read from the properties goes back in the cache, so the next check (every 12 seconds from My Science) reads none.
+  // What was read from the properties goes back in the cache, so the next check (every 12 seconds from learnwithmrcedric) reads none.
   if (props) { try { cache.putAll(missed, 21600); } catch (err) { /* read again next time */ } }
   // A lesson whose projector slides have gone ends by itself (one more cache read, for the lessons running now).
   var live = Object.keys(out);
@@ -2367,7 +2367,7 @@ function hubClass_(cls, fresh, map) {
     if (j && j.ok) { putBig_(key, JSON.stringify(j), 120); cache.remove(key + '_busy'); return j; }
     msg = 'The Teacher Hub did not answer as expected.';
   } catch (err) {
-    msg = /HUB_NOT_MOVED/.test(err.message) ? 'Homework and points are being moved into My Science. They will be back soon.' : 'The Teacher Hub could not be read: ' + err.message;
+    msg = /HUB_NOT_MOVED/.test(err.message) ? 'Homework and points are being moved into learnwithmrcedric. They will be back soon.' : 'The Teacher Hub could not be read: ' + err.message;
   }
   cache.remove(key + '_busy');
   cachePut_(key + '_err', msg, 60);
@@ -3028,7 +3028,7 @@ function dueKey_(deckId, cls) { return 'due_' + String(deckId).slice(0, 80) + '_
 function readDue_(deckId, cls) {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty(dueKey_(deckId, cls)) || '[]'); } catch (err) { return []; }
 }
-/* Finish by: these students finish slides from to to of this lesson by a date. It shows on their My Science. */
+/* Finish by: these students finish slides from to to of this lesson by a date. It shows on their learnwithmrcedric. */
 function apiSetDue(pin, deckId, cls, names, by, from, to) {
   checkPin_(pin);
   var who = (names || []).map(normName_).filter(String);
@@ -3113,7 +3113,7 @@ function slideResults_(d) {
   var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase();
   if (!deckId || !cls) return { ok: false, error: 'No lesson or class.' };
   var n = questionSlideFor_(deckId, Math.round(Number(d.n) || 0));
-  var r = n ? apiSlideNow(d.pin, deckId, cls, n) : { n: 0, questions: [] };
+  var r = n ? apiSlideNow(d.pin, deckId, cls, n, !!d.texts) : { n: 0, questions: [] };
   r.questions.forEach(function (q) { delete q.missing; q.wrong = null; });
   r.ok = true;
   return r;
@@ -3460,7 +3460,7 @@ function apiStartLesson(pin, deckId, cls, from, to, title) {
   return apiGetControl(pin, deckId, cls, c);
 }
 /* A class has one lesson at a time: starting one ends any other lesson still running for that class, so
-   My Science shows the right lesson in class now. */
+   learnwithmrcedric shows the right lesson in class now. */
 function endOtherLessons_(deckId, cls) {
   readDecks_().forEach(function (d) {
     if (d.id === deckId) return;
@@ -3557,7 +3557,7 @@ function apiPhoneJoin(k, device) {
 
 /* The phone during a lesson: the questions on one slide (normally the presenter's), with who has not
    answered them, in one call. */
-function apiSlideNow(pin, deckId, cls, n) {
+function apiSlideNow(pin, deckId, cls, n, withTexts) {
   checkPin_(pin);
   n = Math.round(Number(n) || 0);
   var qs = readDeckBoardsFor_(deckId).filter(function (b) { return b.slideNo === n; })
@@ -3591,8 +3591,14 @@ function apiSlideNow(pin, deckId, cls, n) {
       firsts.forEach(function (f) { cnt[f.text] = (cnt[f.text] || 0) + 1; });
       choices = b.columns.map(function (o) { return { t: String(o), n: cnt[String(o)] || 0, ok: !!b.correct && String(o) === b.correct }; });
     }
+    // For Show answers on the projector: what the class wrote (first tries, in the order they came, no names).
+    var texts = null;
+    if (withTexts && b.kind !== 'choice') {
+      texts = firsts.slice().sort(function (x, y) { return (x.t || 0) - (y.t || 0); })
+        .map(function (f) { return { x: String(f.text || '').slice(0, 300), ok: f.ok }; }).filter(function (f) { return f.x.trim(); }).slice(0, 150);
+    }
     return { id: b.id, taskId: b.taskId, title: b.title, kind: b.kind, answered: Object.keys(q.any).length, size: roster.length,
-      firsts: firsts.length, right: right, choices: choices,
+      firsts: firsts.length, right: right, choices: choices, texts: texts,
       pct: marked.length ? Math.round(100 * right / marked.length) : null, wrong: top ? [top, wrong[top]] : null,
       released: c.relAll || c.rel.indexOf(b.taskId) >= 0,
       missing: roster.filter(function (s) { return !q.any[normName_(s.name)]; }).map(function (s) { return s.name; }) };
@@ -3606,7 +3612,7 @@ function apiSlideNow(pin, deckId, cls, n) {
    their own answer. The first time, they prove who they are with their register number (or their teacher lets
    them in from the phone), then set the PIN and the question. After that they sign in with the PIN, and Forgot
    my PIN asks the question and sets a new PIN. Only a salted hash of the PIN and of the answer is kept, in this
-   script's properties (never on a sheet). A sign-in is a signed ticket kept on the iPad (My Science and the
+   script's properties (never on a sheet). A sign-in is a signed ticket kept on the iPad (learnwithmrcedric and the
    slides); it names the student and lasts 200 days. The teacher can sign a student out everywhere (Sign out on
    the phone or in Classes), or reset their PIN so they set it up again. Changing the PIN signs them out
    everywhere else too. */
@@ -3800,7 +3806,7 @@ function apiStForgot(cls, name, answer, pin) {
     return { ok: true, st: stIssue_(who, b.v), cls: who.cls, name: who.name };
   }, 10000);
 }
-/* Is this sign-in still good? (My Science and the slides check when they open.) */
+/* Is this sign-in still good? (learnwithmrcedric and the slides check when they open.) */
 function apiStMe(st) {
   var who = stCheck_(st);
   return who ? { ok: true, cls: who.cls, name: who.name } : { ok: false };
@@ -3847,7 +3853,7 @@ function stRequest_(d) {
 /* Revision: the lessons each class may open after school              */
 /* ------------------------------------------------------------------ */
 /* The teacher opens lessons to a class for revision (the Teacher Hub's Teach tab). Students in that class see
-   them in My Science and can go through them any time, but outside the class's lesson nothing they do is saved
+   them in learnwithmrcedric and can go through them any time, but outside the class's lesson nothing they do is saved
    and nothing counts: answers and pages count only while the teacher is teaching that lesson to their class. */
 function allocAll_() {
   var cache = CacheService.getScriptCache(), hit = cache.get('alloc');
@@ -3904,7 +3910,7 @@ function classState_(cls) {
   return { live: true, fun: !!c.fun, title: run.title, lesson: run.lesson };
 }
 
-/* My Science asks the teacher's phone to let a student in (no register number, or too many wrong ones). */
+/* learnwithmrcedric asks the teacher's phone to let a student in (no register number, or too many wrong ones). */
 function apiGateHelp(cls, name, dev) { return gateHelp_({ cls: cls, name: name, dev: dev }); }
 function apiGateHelpState(key) { return gateHelp_({ key: key }); }
 
