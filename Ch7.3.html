@@ -3843,6 +3843,9 @@ window.KIT=KIT;
     '.lbres-wait{color:#3a3740;font-size:20px;margin:6px 0}' +
     '.lbres-btn.lbb-go{left:50%;transform:translateX(-50%);bottom:16px;font-size:18px;padding:12px 22px;opacity:1}' +
     '.lbres-btn.lbb-go:hover{transform:translateX(-50%)}' +
+    '.lbb-nav{white-space:nowrap;flex:none}' +
+    '.lbb-nav:hover:not(:disabled){filter:brightness(1.12)}' +
+    '.lbb-nav:disabled{opacity:.38!important;cursor:default!important;box-shadow:none!important;filter:none!important}' +
     '.lbres.lbb{padding:2vh 2vw;z-index:2147482900}' +
     '.lbb .lbres-panel{width:min(1500px,100%);max-height:96vh;display:flex;flex-direction:column;padding:22px 28px;background:#fffdf8;background-image:linear-gradient(rgba(16,16,20,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(16,16,20,.05) 1px,transparent 1px);background-size:28px 28px}' +
     '.lbb-tabs{display:flex;gap:8px;flex-wrap:wrap}' +
@@ -4871,25 +4874,62 @@ window.KIT=KIT;
   /* Show answers: how the class answered the question on the slide being shown, full size for the projector. No
      names. The whole question, then the choices as bars, or the class's written answers as a wall of cards. The right
      answer shows only when the teacher asks for it. It follows the slide, and asks again every 3 seconds. */
-  // The button sits at the bottom of a slide that has a question (and in the Presenting line, when that is on screen).
-  var resBtn = null, resBox = null, resTimer = null, resPlace = null;
+  // The button sits in the deck's own bar at the bottom, beside Previous (or Back), looking like the deck's buttons. It is
+  // there all the time you present, and greyed out on a slide with no question. A deck with no Previous or Back on screen
+  // gets a button of its own at the bottom of the slide instead.
+  var resBtn = null, resBox = null, resTimer = null, resPlace = null, resNav = null, resDressed = false;
   function tasksOn(n) { return n ? list.filter(function (t) { return slideOf(t).n === n; }) : []; }
+  var RES_TIP = 'The class\'s answers to the question on this slide, full size. No names.';
   function resultsButton(on) {
     clearInterval(resPlace);
-    if (!on) { if (resBtn) { resBtn.remove(); resBtn = null; } closeResults(); return; }
+    if (!on) { if (resBtn) { resBtn.remove(); resBtn = null; } resNav = null; closeResults(); return; }
     if (!resBtn) {
-      resBtn = el('button', 'lbres-btn lbb-go', 'Show answers'); resBtn.type = 'button';
-      resBtn.title = 'The class\'s answers to the question on this slide, full size. No names.';
-      resBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openResults(); });
-      document.body.appendChild(resBtn);
+      resBtn = el('button', '', 'Show answers'); resBtn.type = 'button'; resBtn.title = RES_TIP;
+      resBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (!resBtn.disabled) openResults(); });
     }
     placeResults(); resPlace = setInterval(placeResults, 800);
   }
+  // The deck's Previous (or Back) button in its bar at the bottom of the screen.
+  function navPrev() {
+    var H = window.innerHeight, b = document.getElementById('prevBtn');
+    var ok = function (x) { if (!x || x === resBtn) return false; var r = x.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.top > H * 0.6; };
+    if (ok(b)) return b;
+    var xs = document.querySelectorAll('footer > button, nav > button, footer > a, nav > a');
+    for (var i = 0; i < xs.length; i++) {
+      if (/^\W*\s*(previous|prev|back)\s*\W*$/i.test(String(xs[i].textContent || '').trim()) && ok(xs[i])) return xs[i];
+    }
+    return null;
+  }
+  var NAV_LOOK = ['font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-transform', 'line-height', 'color', 'background-color',
+    'background-image', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-radius', 'padding-top', 'padding-right', 'padding-bottom',
+    'padding-left', 'min-height', 'height', 'box-shadow', 'transform', 'cursor'];
+  function dressLike(btn, src) {
+    var cs = getComputedStyle(src), par = getComputedStyle(src.parentElement);
+    NAV_LOOK.forEach(function (k) { btn.style.setProperty(k, cs.getPropertyValue(k)); });
+    btn.style.setProperty('margin-left', (parseFloat(par.columnGap) || 0) > 0 ? '0' : '10px');
+    btn.style.setProperty('margin-right', '0');
+  }
   function placeResults() {
     if (!resBtn) return;
-    resBtn.hidden = !!resBox || !tasksOn(slideNow()).length;
+    var has = tasksOn(slideNow()).length > 0, prev = navPrev();
+    if (prev) {
+      if (resNav !== prev || resBtn.previousElementSibling !== prev || !resBtn.isConnected) {
+        resBtn.className = 'lbb-nav'; resBtn.removeAttribute('style'); resBtn.hidden = false;
+        prev.insertAdjacentElement('afterend', resBtn); resNav = prev; resDressed = false;
+      }
+      // dressed like Previous, and again once Previous is not greyed out itself (on the first slide it may be)
+      if (!resDressed) { dressLike(resBtn, prev); resDressed = !prev.disabled; }
+      resBtn.disabled = !has;
+      resBtn.title = has ? RES_TIP : 'No question on this slide';
+      return;
+    }
+    if (resNav || resBtn.className !== 'lbres-btn lbb-go' || !resBtn.isConnected) {
+      resBtn.className = 'lbres-btn lbb-go'; resBtn.removeAttribute('style'); resBtn.disabled = false; resBtn.title = RES_TIP;
+      resNav = null; document.body.appendChild(resBtn);
+    }
+    resBtn.hidden = !!resBox || !has;
     if (resBtn.hidden) return;
-    // Just above the deck's own bar at the bottom of the screen (Previous, the slide dots, Next), when it has one.
+    // Just above the deck's own bar at the bottom of the screen, when it has one.
     var lift = 16, H = window.innerHeight, barTop = 0;
     try {
       resBtn.style.visibility = 'hidden';
@@ -4925,7 +4965,16 @@ window.KIT=KIT;
     function local(q) { return byId[q.taskId] || null; }
     function draw(r) {
       if (!r || !resBox) return;
-      var qs = r.questions || [];
+      // The questions on the slide from Live Board, and any it has no answers for yet from the slide itself, so the
+      // question shows on the board before anyone has answered.
+      var qs = (r.questions || []).slice(), seen = {};
+      qs.forEach(function (q) { seen[q.taskId] = 1; });
+      tasksOn(r.n || slideNow()).forEach(function (t) {
+        if (seen[t.id]) return;
+        qs.push({ taskId: t.id, title: t.question, kind: t.kind, answered: 0, size: 0, pct: null,
+          choices: t.kind === 'choice' ? (t.options || []).map(function (o) { return { t: String(o), n: 0, ok: t.correct !== '' && String(o) === String(t.correct) }; }) : null,
+          texts: t.kind === 'choice' ? null : [] });
+      });
       sub.textContent = (r.n ? 'Slide ' + r.n + ' · ' : '') + presCls;
       tabs.innerHTML = '';
       if (!qs.length) { qline.textContent = ''; nline.textContent = ''; right.hidden = true; body.innerHTML = ''; body.appendChild(el('p', 'lbb-empty', 'No question on this slide. Show answers follows the slide you are showing.')); return; }
@@ -4940,7 +4989,7 @@ window.KIT=KIT;
       right.hidden = !hasRight;
       qline.textContent = t.question || q.title || '';
       nline.innerHTML = '';
-      nline.appendChild(el('b', '', String(q.answered))); nline.appendChild(document.createTextNode(' of ' + q.size + ' answered' + (q.choices ? ' · first tries' : '')));
+      nline.appendChild(el('b', '', String(q.answered))); nline.appendChild(document.createTextNode((q.size ? ' of ' + q.size : '') + ' answered' + (q.choices && q.answered ? ' · first tries' : '')));
       body.innerHTML = '';
       if (q.choices && q.choices.length) {
         var total = 0; q.choices.forEach(function (o) { total += o.n; });
@@ -4996,12 +5045,6 @@ window.KIT=KIT;
     var ch = el('button', '', presCls ? 'Change class' : 'Choose a class'); ch.type = 'button';
     ch.addEventListener('click', function (e) { if (e) e.preventDefault(); askClass(); });
     whoLine.appendChild(ch);
-    if (presCls) {
-      var rs = el('button', 'lbres-in', 'Show answers'); rs.type = 'button';
-      rs.title = 'The class\'s answers to the question on this slide, full size. No names.';
-      rs.addEventListener('click', function (e) { if (e) e.preventDefault(); openResults(); });
-      whoLine.appendChild(rs);
-    }
     if (typeof placeResults === 'function') placeResults();
   }
   function sendLead() {
