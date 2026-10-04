@@ -3385,7 +3385,7 @@ window.KIT=KIT;
 })();</script>
 <script id="liveboard-bridge">(function () {
   'use strict';
-  /* Live Board bridge, version 8. Added to every deck by scripts/liveboard_connect.py.
+  /* Live Board bridge, version 9. Added to every deck by scripts/liveboard_connect.py.
      The deck's own code is not changed.
      1. Who are you? Students choose their class, then their name, from the class list
         (the Worksheet Hub Students tab, served by Live Board). The choice is locked on
@@ -3438,7 +3438,9 @@ window.KIT=KIT;
         (their PIN on the iPad, or Sign out on the phone). Work counts only while the teacher is teaching this lesson to
         the student's class. At other times the lesson is for revision if the teacher has opened it to the class:
         nothing the student does is kept on the iPad or counted by Live Board, and a note says so. A lesson not opened says it is not
-        open yet. */
+        open yet.
+     13. Version 9: when Live Board says a newer bridge is on the site, the slides reload themselves once (not while
+        presenting, with answers waiting, or with a panel open), so nobody has to ask for an old copy to be reloaded. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3446,7 +3448,7 @@ window.KIT=KIT;
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 8;
+  var VERSION = 9;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -4289,6 +4291,7 @@ window.KIT=KIT;
       if (r && r.readSecs) readSecs = r.readSecs;
       if (r && r.reset) { resetHere(); return; }
       if (r && r.signedOut) { signedOutHere(); return; }
+      if (r && r.bv && r.bv > VERSION) reloadForNewer();
       if (r && r.ok && r.ctl && r.live === undefined && me && !me.st) setMode('live');   // Live Board not updated yet
       if (r && r.who && me && me.st) {
         setMode(r.live ? 'live' : r.open ? 'revise' : 'closed');
@@ -4489,6 +4492,16 @@ window.KIT=KIT;
     } else { writeJ(RESET_KEY, null); showWho(null); openGate('Your teacher has reset the name on this iPad. Choose your name.'); }
   }
   setInterval(function () { if (readJ(RESET_KEY) && readJ(ID_KEY) && !pendingCount()) resetHere(); }, 3000);
+
+  /* ---------------- a newer copy on the site ---------------- */
+  function reloadForNewer() {
+    if (presenting || presentEarly || overlay || pendingCount()) return;
+    var last = 0;
+    try { last = Number(sessionStorage.getItem('liveboard.reloadAt')) || 0; } catch (e) { return; }
+    if (Date.now() - last < 30 * 60000) return;   // the site may still serve the old copy for a few minutes
+    try { sessionStorage.setItem('liveboard.reloadAt', String(Date.now())); } catch (e) { return; }
+    location.reload();
+  }
 
   /* ---------------- revision and not open ---------------- */
   var modeBar = null, closedBox = null;
