@@ -183,10 +183,11 @@ function checkAssignments() {
     var m = String(r[0]).match(/^WS(\d+)$/i);
     if (m) maxNum = Math.max(maxNum, Number(m[1]));
   });
-  var ok = 0, bad = 0;
+  var ok = 0, bad = 0, props = PropertiesService.getScriptProperties();
+  maxNum = Math.max(maxNum, Number(props.getProperty('WS_LAST_N')) || 0);   // numbers are never used twice (release 24)
   rows.forEach(function (r) {
     if (!String(r[1]).trim()) return;
-    if (!String(r[0]).trim()) { maxNum++; r[0] = 'WS' + (maxNum < 10 ? '0' : '') + maxNum; }
+    if (!String(r[0]).trim()) { maxNum++; r[0] = 'WS' + (maxNum < 10 ? '0' : '') + maxNum; props.setProperty('WS_LAST_N', String(maxNum)); }
     var id = fileIdFromLink_(r[3]);
     if (!id) { r[7] = 'No PDF link'; bad++; return; }
     try {
@@ -1451,7 +1452,7 @@ function api_t_teachnext(token, fresh) {
   }
   var r = lbAsk_('teachnext');
   var out = { token: r.token, until: r.until, build: r.build || '', site: r.site || lessonSiteUrl_(), lb: liveBoardUrl_(),
-    classes: r.classes || [], parts: r.parts || {}, alloc: r.alloc || {}, at: Date.now() };
+    classes: r.classes || [], parts: r.parts || {}, alloc: r.alloc || {}, taught: r.taught || {}, at: Date.now() };
   try { cache.put('lb_teachnext', JSON.stringify(out), 45); } catch (e) { /* too big to keep: ask each time */ }
   return out;
 }
@@ -1489,9 +1490,12 @@ function dueFrom_(date, time) {
 }
 
 function nextId_() {
-  var max = 0;
+  var max = 0, props = PropertiesService.getScriptProperties();
   getAssignments_().forEach(function (a) { var m = a.id.match(/^WS(\d+)$/i); if (m) max = Math.max(max, Number(m[1])); });
+  // A number once used is never used again (Undo after Deploy empties a worksheet's row).
+  max = Math.max(max, Number(props.getProperty('WS_LAST_N')) || 0);
   max++;
+  props.setProperty('WS_LAST_N', String(max));
   return 'WS' + (max < 10 ? '0' : '') + max;
 }
 
@@ -4644,4 +4648,68 @@ function api_t_deployPart(token, deck, part, cls, meta, file) {
   }
   var L2 = wsLinksAll_()[k] || L;
   return { id: id, cls: hubCls, already: !!d, link: linkView_(L2, k) };
+}
+
+
+/* ---------- Release 24: Undo, straight after Deploy ----------
+   The Undo on the note after Deploy. Only for a worksheet made in the last 15 minutes that nobody has handed in:
+   its row in Assignments is emptied (the Hub skips empty rows, and worksheet numbers are never used twice), its
+   files go to the bin, and the part shows as not deployed again (and taught and ready, if it was).
+   back: { deck, part, cls, ready: { at, next } } for a part's homework; nothing for a topical worksheet. */
+function api_t_undeploy(token, id, back) {
+  teacher_(token);
+  id = String(id || '').trim();
+  var a = findAssignment_(id);
+  if (!a) return { gone: true };
+  var f = driveFile_(a.fileId);
+  if (!f || !f.getDateCreated || Date.now() - f.getDateCreated().getTime() > 15 * 60000) throw new Error('That was deployed too long ago to undo here. Open the worksheet to close it or change it.');
+  var props = PropertiesService.getScriptProperties(), lock = hubLock_(), keep = {};
+  lock.waitLock(20000);
+  try {
+    var b = findAssignment_(id);
+    if (!b) return { gone: true };
+    var subs = submissionIndex_(), pre = b.id + '|';
+    if (Object.keys(subs).some(function (k) { return k.indexOf(pre) === 0; })) throw new Error('Someone has handed it in already, so it stays. Open the worksheet to close it.');
+    // files another worksheet also points at are not put in the bin
+    getAssignments_().forEach(function (o) { if (o.id !== id) [o.fileId, fileIdFromLink_(o.solutionLink), fileIdFromLink_(o.answerLink)].forEach(function (x) { if (x) keep[x] = 1; }); });
+    var sh = hubSheet_(TABS.assignments.name), width = Math.max(18, sh.getLastColumn ? sh.getLastColumn() : 18), blank = [];
+    for (var i = 0; i < width; i++) blank.push('');
+    var rg = sh.getRange(b.row, 1, 1, width);
+    if (rg.clearDataValidations) rg.clearDataValidations();
+    rg.setValues([blank]);
+    // Its part is not deployed to the class any more.
+    var all = props.getProperties();
+    Object.keys(all).forEach(function (k) {
+      if (k.indexOf(DONE_PREFIX) !== 0) return;
+      var d = parseJson_(all[k]);
+      if (d && d.id === id) props.deleteProperty(k);
+    });
+  } finally { lock.releaseLock(); }
+  if (back && back.deck && back.cls && back.ready) {
+    try { noteReady_([{ k: linkKey_(back.deck, back.part), cls: hubClassFor_(back.cls) || String(back.cls), next: Number(back.ready.next) || 0 }]); } catch (e) { /* it shows as not taught */ }
+  }
+  // Its files, and what was kept for it.
+  [a.fileId, fileIdFromLink_(a.solutionLink), fileIdFromLink_(a.answerLink)].forEach(function (fid) {
+    var x = fid && !keep[fid] ? driveFile_(fid) : null;
+    if (x) { try { x.setTrashed(true); } catch (e) { /* left in Drive */ } }
+  });
+  [stateName_(a), solName_(a)].forEach(function (nm) {
+    try { var st = folder_('DRAFTS').getFilesByName(nm); while (st.hasNext()) st.next().setTrashed(true); } catch (e) { /* none */ }
+  });
+  try { props.deleteProperty('WSX_' + id); } catch (e) { /* none */ }
+  try { setAuto_(id, { handIn: false, mark: false }); } catch (e) { /* none */ }
+  try { setPractice_(id, false); } catch (e) { /* none */ }
+  try { props.deleteProperty('JOB_' + id); } catch (e) { /* none */ }
+  try { var ic = wsIcons_(); if (ic[id]) { delete ic[id]; props.setProperty('WS_ICONS', JSON.stringify(ic)); } } catch (e) { /* none */ }
+  try { var ll = libLinks_(); if (ll[id]) { delete ll[id]; libSaveLinks_(ll); } } catch (e) { /* none */ }
+  try {
+    var src = parseJson_(props.getProperty('LIB_SRC')) || {}, changed = false;
+    Object.keys(src).forEach(function (k) {
+      var v = (src[k] || []).filter(function (w) { return w !== id; });
+      if (v.length !== (src[k] || []).length) { changed = true; if (v.length) src[k] = v; else delete src[k]; }
+    });
+    if (changed) props.setProperty('LIB_SRC', JSON.stringify(src));
+  } catch (e) { /* none */ }
+  try { libDrop_(); } catch (e) { /* none */ }
+  return { ok: true };
 }

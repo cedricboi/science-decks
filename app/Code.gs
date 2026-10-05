@@ -1856,6 +1856,7 @@ function hubRequest_(d) {
     out.classes = teachNext_(known);
     out.parts = known;   // every lesson's parts, for the part picker on the Hub's Teach tab
     out.alloc = allocAll_();   // the lessons open to each class for revision
+    out.taught = taughtAll_();   // when each part was taught to each class (release 24)
   }
   return out;
 }
@@ -1906,6 +1907,7 @@ function lastTaught_(cls) {
 function noteTaught_(deckId, cls, from, to, title) {
   PropertiesService.getScriptProperties().setProperty(lastTaughtKey_(cls),
     JSON.stringify({ deckId: deckId, t: clean_(title, 80), from: from || 0, to: to || 0, n: from || 1, at: Date.now() }));
+  try { noteTaughtLog_(deckId, cls, from, to); } catch (err) { /* only for the Hub's chapter pages */ }
 }
 function noteReached_(deckId, cls, n) {
   var cache = CacheService.getScriptCache(), k = 'ltw_' + normClass_(cls);
@@ -4210,3 +4212,25 @@ function newPins_(cls) {
 }
 
 function classLive_(cls) { try { return !!runningLessonFor_(String(cls || '').toUpperCase()); } catch (err) { return false; } }
+
+
+/* Release 24: when each part of a lesson was taught to each class (a lesson started), for the Teacher Hub's chapter
+   pages: TAUGHT_<class> = { 'deckId|from-to': time }. The newest 150 are kept. */
+function taughtKey_(cls) { return 'TAUGHT_' + normClass_(cls); }
+function noteTaughtLog_(deckId, cls, from, to) {
+  if (!deckId || !cls || normClass_(cls) === 'TEST') return;
+  var p = PropertiesService.getScriptProperties(), k = taughtKey_(cls), log = {};
+  try { log = JSON.parse(p.getProperty(k) || '{}') || {}; } catch (err) { log = {}; }
+  log[deckId + '|' + (from || 0) + '-' + (to || 0)] = Date.now();
+  var keys = Object.keys(log).sort(function (a, b) { return log[a] - log[b]; });
+  while (keys.length && (keys.length > 150 || JSON.stringify(log).length > 8000)) delete log[keys.shift()];
+  p.setProperty(k, JSON.stringify(log));
+}
+function taughtAll_() {
+  var all = PropertiesService.getScriptProperties().getProperties(), out = {};
+  Object.keys(all).forEach(function (k) {
+    if (k.indexOf('TAUGHT_') !== 0) return;
+    try { out[k.slice(7)] = JSON.parse(all[k]) || {}; } catch (err) { /* skipped */ }
+  });
+  return out;
+}
