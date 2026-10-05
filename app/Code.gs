@@ -50,7 +50,7 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
 var BUILD = '2026-10-10-packages';
-var BRIDGE_LATEST = 11;   // slides with an older bridge reload themselves once a newer copy is on the site
+var BRIDGE_LATEST = 12;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
   if (e && e.parameter && e.parameter.api === 'build') {
@@ -1408,18 +1408,22 @@ function apiPhoneRoom(pin, deckId, cls) {
   try { wrong = wrongTries_(deckId, cls); } catch (err) { wrong = {}; }
   var absent = readAbsent_(cls);
   var mins = function (ms) { var m = Math.floor(ms / 60000); return m < 1 ? 'just now' : m + ' min'; };
-  var out = { now: now, lead: lead ? lead.n : 0, follow: !!c.follow, total: 0, withYou: 0, behind: 0, off: 0,
-    notIn: [], absent: [], flags: [], slides: {} };
+  var out = { now: now, lead: lead ? lead.n : 0, follow: !!c.follow, total: 0, withYou: 0, behind: 0, ahead: 0, off: 0,
+    notIn: [], absent: [], flags: [], slides: {}, who: [] };
+  // who: each student in the class list's order, for the names in colour on the phone. s is with (on your slide,
+  // or one behind), behind, ahead, off (left the slides, or the iPad went quiet), out (not in yet), absent, or in
+  // (on the slides while you are not presenting). at is the slide they are on.
   roster.forEach(function (s, i) {
     var k = normName_(s.name);
-    if (absent.indexOf(k) >= 0) { out.absent.push(s.name); return; }
+    if (absent.indexOf(k) >= 0) { out.absent.push(s.name); out.who.push({ n: s.name, s: 'absent' }); return; }
     out.total++;
     var x = null;
     try { x = got[keys[i]] ? JSON.parse(got[keys[i]]) : null; } catch (err) { x = null; }
-    if (!x || now - x.at > 30 * 60000) { out.notIn.push(s.name); return; }
+    if (!x || now - x.at > 30 * 60000) { out.notIn.push(s.name); out.who.push({ n: s.name, s: 'out' }); return; }
     var here = Number(x.slide) || 0;
     if (x.away || now - x.at > gone) {
       out.off++;
+      out.who.push({ n: s.name, s: 'off', at: here });
       out.flags.push({ name: s.name, k: 'off', slide: here,
         t: x.away ? 'Left the slides · ' + mins(now - (x.awayAt || now)) : 'Screen off or closed · ' + mins(now - x.at) });
       return;
@@ -1427,8 +1431,15 @@ function apiPhoneRoom(pin, deckId, cls) {
     if (here) out.slides[here] = (out.slides[here] || 0) + 1;
     if (lead && here && here < lead.n - 1) {
       out.behind++;
+      out.who.push({ n: s.name, s: 'behind', at: here });
       out.flags.push({ name: s.name, k: 'behind', slide: here, t: 'On slide ' + here + ' · you are on ' + lead.n });
-    } else out.withYou++;
+    } else if (lead && here > lead.n) {
+      out.ahead++;
+      out.who.push({ n: s.name, s: 'ahead', at: here });
+    } else {
+      out.withYou++;
+      out.who.push({ n: s.name, s: lead ? 'with' : 'in', at: here });
+    }
     var w = wrong[k] || {};
     Object.keys(w).forEach(function (t) {
       if (w[t] < set.wrongTries) return;
@@ -2640,7 +2651,7 @@ function apiGetControl(pin, deckId, cls, c) {
 function ctlForIpad_(c, leadRaw) {
   var lead = liveLead_(leadRaw);
   return { follow: c.follow, pause: c.pause, msg: c.msg, to: c.to, check: c.check, hold: c.hold, rel: c.rel, relAll: c.relAll,
-    vid: c.vid, hooks: c.hooks, lead: lead ? { id: lead.id, n: lead.n, at: lead.at } : null };
+    vid: c.vid, hooks: c.hooks, lead: lead ? { id: lead.id, n: lead.n, at: lead.at, fresh: Date.now() - (lead.alive || lead.at) < 45000 } : null };
 }
 /* The presenter (the deck opened with #present) says which slide it is on. */
 function presenterLead_(d) {

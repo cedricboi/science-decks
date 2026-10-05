@@ -3158,7 +3158,7 @@ function rwLedger_(s, assigns, subs, log, rules, items) {
       daily.push({ key: d[0], day: d[1], choice: d[2] || '', right: right });
       if (right) rights.push(e.time);
       if (d[0] === 'q') qDays[d[1]] = true;
-      if (e.points) ev.push({ t: e.time, text: (RW_DAILY_NAMES[d[0]] || 'Daily puzzle') + ': right', points: e.points, tokens: 0, spend: false });
+      if (e.points) ev.push({ t: e.time, text: d[0] === 'r' ? 'Revision rush: ' + (Number(d[2]) || 0) + ' right' : (RW_DAILY_NAMES[d[0]] || 'Daily puzzle') + ': right', points: e.points, tokens: 0, spend: false });
       return;
     }
     var text = e.what === 'Shop' ? 'Bought ' + (names[e.item] || e.note || e.item)
@@ -3533,7 +3533,7 @@ function api_t_rwCollected(token, row, done) {
 // is filled with examples the first time. The teacher can add rows, change them or untick On.
 // A right question of the day gives 2 points; a right myth or fact or zoom puzzle gives 1.
 
-var RW_DAILY_NAMES = { q: 'Question of the day', m: 'Myth or fact', z: 'Zoom puzzle' };
+var RW_DAILY_NAMES = { q: 'Question of the day', m: 'Myth or fact', z: 'Zoom puzzle', r: 'Revision rush' };
 var DAILY_TAB = { name: 'Daily science', headers: ['On', 'Type', 'Chapter', 'Question or statement', 'A', 'B', 'C', 'D', 'Answer', 'Why', 'Picture'] };
 var DAILY_KIND = { 'question': 'q', 'question of the day': 'q', 'myth or fact': 'm', 'myth': 'm', 'zoom': 'z', 'zoom puzzle': 'z' };
 // Pictures the zoom puzzle can draw (the Picture column).
@@ -3694,7 +3694,7 @@ function api_daily(token) {
     if (e.what === 'Daily' && e.cls === s.cls && hubNormName_(e.name) === hubNormName_(s.name) && e.item.charAt(0) === 'q') qDays[e.item.split(':')[1]] = true;
   });
   return {
-    day: day, streak: rwDailyStreak_(qDays, now),
+    day: day, streak: rwDailyStreak_(qDays, now), rush: (function () { try { return rushState_(s, log); } catch (e) { return null; } })(),
     items: ['q', 'm', 'z'].filter(function (k) { return today[k]; }).map(function (k) {
       var x = today[k], m = mine[k];
       return { key: k, name: RW_DAILY_NAMES[k], chapter: x.chapter, text: x.text, options: x.options, picture: x.picture,
@@ -4306,13 +4306,19 @@ function hubClassFor_(lbCls, byClass) {
 // Every link, by lesson: { deckId: { part: { name, t, num, at, file, done: { CLASS: 'WS12' } } } }.
 function api_t_links(token) {
   teacher_(token);
-  var all = wsLinksAll_(), out = {};
+  var all = wsLinksAll_(), ready = readyAll_(), out = {};
   Object.keys(all).forEach(function (k) {
-    var i = k.lastIndexOf('|'), deck = k.slice(0, i), part = k.slice(i + 1), L = all[k], done = {};
-    Object.keys(L.done || {}).forEach(function (c) { var d = L.done[c]; if (d && d.id) done[c] = d.id; });
-    (out[deck] = out[deck] || {})[part] = { file: L.file, name: L.name, t: L.t || '', num: L.num || '', at: L.at || 0, done: done, auto: !!L.auto };
+    var i = k.lastIndexOf('|'), deck = k.slice(0, i), part = k.slice(i + 1);
+    (out[deck] = out[deck] || {})[part] = linkView_(all[k], k, ready);
   });
   return out;
+}
+// One link as the Hub shows it: the worksheet, the classes it is deployed to (their worksheet ids), and the classes
+// that have been taught the part since (ready to deploy, with their next lesson).
+function linkView_(L, k, ready) {
+  var done = {};
+  Object.keys(L.done || {}).forEach(function (c) { var d = L.done[c]; if (d && d.id) done[c] = d.id; });
+  return { file: L.file, name: L.name, t: L.t || '', num: L.num || '', at: L.at || 0, done: done, auto: !!L.auto, ready: readyFor_(k, ready) };
 }
 // Link a library worksheet to a sub-chapter (fileId '' removes the link). back: hours to look back, so a class
 // that has just finished the sub-chapter gets it too (0 = only lessons from now on).
@@ -4370,7 +4376,8 @@ function linkDone_(d) {
   return true;
 }
 function wsNum_(id) { var m = /^WS(\d+)$/i.exec(String(id || '')); return m ? Number(m[1]) : 0; }
-// Sets the linked worksheets for the sub-chapters Live Board says were taught. starts: [{ cls, deck, parts: [{ i, num, t }], at, next }].
+// Notes the sub-chapters Live Board says were taught, for each class, as ready to deploy (nothing is set by itself).
+// starts: [{ cls, deck, parts: [{ i, num, t }], at, next }].
 function setFromTaught_(links, starts) {
   try { links = autoLinks_(links, starts); } catch (e) { /* linked by hand only, this time */ }
   var todo = [], known = studentsByClass_();
@@ -4384,57 +4391,17 @@ function setFromTaught_(links, starts) {
         if (!L || L.file === 'none') return;             // No homework for this sub-chapter
         if (!p.num && L.t && p.t && L.t !== p.t) return;   // linked by its place, but the lesson's parts have changed since
         if (!(Number(s.at) >= (L.at || 0)) || linkDone_((L.done || {})[cls])) return;
-        if (!todo.some(function (x) { return x.k === k && x.cls === cls; })) todo.push({ k: k, cls: cls, next: Number(s.next) || 0, t: p.t || L.t || '', L: L, deck: s.deck });
+        var had = todo.filter(function (x) { return x.k === k && x.cls === cls; })[0];
+        if (had) had.next = Math.max(had.next, Number(s.next) || 0);   // taught again: due at the lesson after the latest
+        else todo.push({ k: k, cls: cls, next: Number(s.next) || 0, t: p.t || L.t || '', L: L, deck: s.deck });
       });
     });
   });
   if (!todo.length) return [];
-  var props = PropertiesService.getScriptProperties(), claimed = [], lock = hubLock_();
-  // Claimed first, so two runs at once cannot set the same worksheet twice.
-  if (lock.tryLock && !lock.tryLock(5000)) return [];
-  try {
-    var maxWs = 0;
-    getAssignments_().forEach(function (a) { maxWs = Math.max(maxWs, wsNum_(a.id)); });
-    todo.forEach(function (x) {
-      var dk = doneKey_(x.k, x.cls), d = parseJson_(props.getProperty(dk));
-      if (linkDone_(d)) return;
-      x.prev = d;
-      props.setProperty(dk, JSON.stringify({ wait: Date.now(), after: maxWs, n: d && d.err ? d.n || 1 : 0 }));
-      claimed.push(x);
-    });
-  } finally { if (lock.releaseLock) lock.releaseLock(); }
-  var made = [], DAY = 86400000;
-  claimed.forEach(function (x) {
-    var res, dk = doneKey_(x.k, x.cls);
-    try {
-      // A claim that never finished (the run stopped): if its worksheet was made after all, it is kept.
-      var found = null;
-      if (x.prev && x.prev.wait) {
-        var names = [x.L.name];
-        try { names.push(libBase_(libFile_(x.L.file).getName())); } catch (e) { /* the file is gone: its name as linked */ }
-        getAssignments_().forEach(function (a) {
-          if (!found && wsNum_(a.id) > (x.prev.after || 0) && names.indexOf(a.title) >= 0 && a.classes.length === 1 && a.classes[0] === x.cls) found = a;
-        });
-      }
-      if (found) res = { id: found.id, at: Date.now() };
-      else {
-        // Claude drafts a marked solution once, for the first class to get it; the others take the saved one.
-        var first = !Object.keys(x.L.done || {}).some(function (c) { return c !== x.cls && x.L.done[c] && x.L.done[c].id; });
-        var on = claudeOn_(), due = x.next || Date.now() + 7 * DAY;
-        while (due < Date.now() + 3 * 3600000) due += 7 * DAY;   // the class's next lesson, never minutes away
-        var due0 = new Date(due);
-        var out = newFromLibrary_({ classes: [x.cls], dueDate: Utilities.formatDate(due0, TZ, 'yyyy-MM-dd'), dueTime: Utilities.formatDate(due0, TZ, 'HH:mm'),
-          open: true, autoHandIn: true, autoClose: true, autoMark: on, corrDays: 7, answersAfter: true, draftSolution: on && first,
-          chapter: (chapterOfDeck_(x.deck) || {}).key || '' }, x.L.file);
-        res = { id: out.id, at: Date.now() };
-      }
-      made.push({ id: res.id, cls: x.cls, part: x.t });
-    } catch (e) {
-      res = { err: String(e && e.message || e).replace(/^Error:\s*/, '').slice(0, 160), at: Date.now(), n: ((x.prev && x.prev.n) || 0) + 1 };
-    }
-    props.setProperty(dk, JSON.stringify(res));   // this run's own key: no lock needed
-  });
-  return made;
+  // Release 22: homework waits in the chapter's package until the teacher deploys it. What was taught is kept, so the
+  // package shows the part as ready, due at the class's next lesson.
+  noteReady_(todo);
+  return [];
 }
 // From the timer: what was taught since the oldest link, at most every 10 minutes.
 function syncTaught_(force) {
@@ -4504,7 +4471,7 @@ function extraNeeds_(now, live) {
     var L = links[k];
     Object.keys(L.done || {}).forEach(function (c) {
       var d = L.done[c];
-      if (d.id && titles[d.id] && now.getTime() - (d.at || 0) < 86400000) {
+      if (d.id && d.by !== 't' && titles[d.id] && now.getTime() - (d.at || 0) < 86400000) {
         items.push({ level: 'info', action: 'open', kind: 'autoset', id: d.id, classes: [c], part: L.t || '',
           text: titles[d.id].title + ' was set for ' + c + ' by itself (' + (L.t || 'sub-chapter taught') + '), due ' + titles[d.id].due + '.' });
       } else if (d.err && (d.n || 1) >= LINK_TRIES) {
@@ -4578,4 +4545,103 @@ function api_t_summary(token) {
   var s = summary_();
   try { weekExtras_(s); } catch (e) { /* the week without the extras */ }
   return { week: s.week, label: s.label, lb: s.lb, html: summaryHtml_(s) + weekExtrasHtml_(s), classes: s.classes, unused: s.unused || null };
+}
+
+/* ------------------------------------------------------------------ */
+/* Release 22: homework is deployed by the teacher                     */
+/* ------------------------------------------------------------------ */
+// The parts taught to each class, not deployed yet: { 'deck|part|CLASS': { at, next } } (one property).
+var READY_KEY = 'HW_READY';
+function readyAll_() { return parseJson_(PropertiesService.getScriptProperties().getProperty(READY_KEY)) || {}; }
+function readyFor_(k, all) {
+  var out = {};
+  all = all || readyAll_();
+  Object.keys(all).forEach(function (id) {
+    var i = id.lastIndexOf('|');
+    if (id.slice(0, i) === k) out[id.slice(i + 1)] = { at: all[id].at || 0, next: all[id].next || 0 };
+  });
+  return out;
+}
+function noteReady_(todo) {
+  var lock = hubLock_();
+  if (lock.tryLock && !lock.tryLock(5000)) return;
+  try {
+    var props = PropertiesService.getScriptProperties(), all = parseJson_(props.getProperty(READY_KEY)) || {}, changed = false, now = Date.now();
+    todo.forEach(function (x) {
+      var id = x.k + '|' + x.cls, old = all[id], next = Number(x.next) || 0;
+      if (old && (old.next || 0) >= next) return;
+      all[id] = { at: now, next: next };
+      changed = true;
+    });
+    // Kept 60 days (and not once deployed); the oldest go first if it grows too big.
+    var links = null;
+    try { links = wsLinksAll_(); } catch (e) { links = null; }
+    Object.keys(all).forEach(function (id) {
+      var i = id.lastIndexOf('|'), L = links ? links[id.slice(0, i)] : null, d = L && L.done ? L.done[id.slice(i + 1)] : null;
+      if (now - (all[id].at || 0) > 60 * 86400000 || (d && d.id)) { delete all[id]; changed = true; }
+    });
+    if (!changed) return;
+    var keys = Object.keys(all).sort(function (a, b) { return (all[a].at || 0) - (all[b].at || 0); });
+    while (JSON.stringify(all).length > 8000 && keys.length) delete all[keys.shift()];
+    props.setProperty(READY_KEY, JSON.stringify(all));
+  } finally { if (lock.releaseLock) lock.releaseLock(); }
+}
+// A part deployed to a class is not waiting any more.
+function readyDrop_(k, cls) {
+  var lock = hubLock_();
+  if (lock.tryLock && !lock.tryLock(5000)) return;
+  try {
+    var props = PropertiesService.getScriptProperties(), all = parseJson_(props.getProperty(READY_KEY)) || {};
+    if (!all[k + '|' + cls]) return;
+    delete all[k + '|' + cls];
+    props.setProperty(READY_KEY, JSON.stringify(all));
+  } finally { if (lock.releaseLock) lock.releaseLock(); }
+}
+// Deploy a part's homework to a class (from the chapter's package in Lessons). meta: the due date and time and how it
+// runs, as for any worksheet; t and num name the part. file: the library worksheet with the part's number, when no
+// link was made by hand (it is kept as the part's link). Deploying twice gives the worksheet already deployed.
+function api_t_deployPart(token, deck, part, cls, meta, file) {
+  teacher_(token);
+  meta = meta || {};
+  deck = String(deck || '').slice(0, 120); part = String(part == null ? '' : part).slice(0, 20);
+  if (!deck || !part) throw new Error('No part of a lesson was chosen.');
+  var hubCls = hubClassFor_(cls) || String(cls || '').trim().slice(0, 40);
+  if (!hubCls) throw new Error('Choose a class.');
+  if (meta.autoHandIn && !meta.dueDate) throw new Error('Choose a due date, so the saved work can be handed in then.');
+  var props = PropertiesService.getScriptProperties(), k = linkKey_(deck, part), L = parseJson_(props.getProperty(LINK_PREFIX + k));
+  if (L && L.file === 'none') throw new Error('This part is set to No homework. Press Homework beside the lesson to link a worksheet.');
+  if (!L || !L.file) {
+    if (!file) throw new Error('No worksheet is linked to this part. Press Homework beside the lesson to link one.');
+    var f = libFile_(String(file));
+    L = { file: f.getId(), name: libBase_(f.getName()).slice(0, 80), t: String(meta.t || '').slice(0, 80), num: String(meta.num || '').slice(0, 12), at: autoLinkSince_() || Date.now(), auto: true };
+    props.setProperty(LINK_PREFIX + k, JSON.stringify(L));
+    ensureTick_(true);
+  }
+  var dk = doneKey_(k, hubCls), lock = hubLock_(), d = null;
+  lock.waitLock(20000);
+  try {
+    d = parseJson_(props.getProperty(dk));
+    if (d && d.wait && Date.now() - d.wait < 180000) throw new Error('It is being deployed already. Give it a moment.');
+    if (!(d && d.id && findAssignment_(d.id))) { d = null; props.setProperty(dk, JSON.stringify({ wait: Date.now() })); }
+  } finally { lock.releaseLock(); }
+  var id = d ? d.id : '';
+  if (!id) {
+    try {
+      var all = wsLinksAll_(), others = (all[k] || {}).done || {};
+      // Claude drafts a marked solution once, for the first class to get it; the others take the saved one.
+      var first = !Object.keys(others).some(function (c) { return c !== hubCls && others[c] && others[c].id; });
+      var on = claudeOn_(), mark = !!meta.autoMark && on;
+      var out = newFromLibrary_({ classes: [hubCls], dueDate: String(meta.dueDate || ''), dueTime: String(meta.dueTime || ''), open: true,
+        autoHandIn: !!meta.autoHandIn, autoClose: !!(meta.autoClose || meta.autoHandIn), autoMark: mark, corrDays: Math.max(0, Math.min(60, Number(meta.corrDays) || 0)),
+        answersAfter: !!meta.answersAfter, draftSolution: mark && first, chapter: (chapterOfDeck_(deck) || {}).key || '' }, L.file);
+      id = out.id;
+      props.setProperty(dk, JSON.stringify({ id: id, at: Date.now(), by: 't' }));   // deployed by the teacher (not "set by itself")
+      readyDrop_(k, hubCls);
+    } catch (e) {
+      props.deleteProperty(dk);
+      throw e;
+    }
+  }
+  var L2 = wsLinksAll_()[k] || L;
+  return { id: id, cls: hubCls, already: !!d, link: linkView_(L2, k) };
 }

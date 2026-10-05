@@ -14,7 +14,7 @@
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-10-packages';
+var APP_BUILD = '2026-10-12-deploy';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -810,7 +810,7 @@ function weekExtrasHtml_(s) {
 }
 function weekClassHtml_(c) {
   var e = esc_, h = '';
-  if (c.autoset && c.autoset.length) h += '<p class="wk-l">Set by itself</p><ul>' + c.autoset.map(function (x) { return '<li>' + e(x.title) + (x.part ? ' <small>' + e(x.part) + '</small>' : '') + (x.due ? ' <small>due ' + e(x.due) + '</small>' : '') + '</li>'; }).join('') + '</ul>';
+  if (c.autoset && c.autoset.length) h += '<p class="wk-l">Homework set</p><ul>' + c.autoset.map(function (x) { return '<li>' + e(x.title) + (x.part ? ' <small>' + e(x.part) + '</small>' : '') + (x.due ? ' <small>due ' + e(x.due) + '</small>' : '') + '</li>'; }).join('') + '</ul>';
   if (c.corr && c.corr.length) h += '<p class="wk-l">Corrections</p><ul>' + c.corr.map(function (x) { return '<li>' + e(x.title) + ' <small>' + x.done + ' of ' + x.due + ' in</small></li>'; }).join('') + '</ul>';
   if (c.follow && c.follow.length) h += '<p class="wk-l">Keep an eye on</p><p class="wk-n">' + c.follow.map(function (f) { return e(f.name); }).join(', ') + '</p>';
   return h;
@@ -913,7 +913,7 @@ function setupChecks_() {
     var want = false;
     try { want = hubReady_() && tickWanted_(); } catch (e) { want = false; }
     var tickOn = trig.some(function (h) { return /tick/i.test(h); });
-    if (want && !tickOn) add('timers', 'bad', 'The 15-minute timer is off', 'Homework hands itself in, Claude marks and sub-chapter homework is set only while it runs.', { act: 'timers', label: 'Turn it on' });
+    if (want && !tickOn) add('timers', 'bad', 'The 15-minute timer is off', 'Homework hands itself in, Claude marks and taught sub-chapters show as ready to deploy only while it runs.', { act: 'timers', label: 'Turn it on' });
     else add('timers', 'ok', 'Timers', tickOn ? 'Running every 15 minutes.' : 'Not needed yet (nothing runs by itself).');
   } catch (e) { add('timers', 'warn', 'The timers could not be read', String(e.message || e)); }
   // Claude marking
@@ -929,7 +929,7 @@ function setupChecks_() {
       var n = 0;
       try { var items = (autoLib_().items || []).filter(function (it) { return it.ok && /^\s*(?:(?:ch(?:apter)?|ws|worksheet)\.?\s*)?\d+\.\d+[a-z]?(?![0-9.])/i.test(it.name + ' ' + (it.path || '').split(' / ').pop()); }); n = items.length; } catch (e) { n = -1; }
       add('autolink', 'ok', 'Worksheets link themselves by their number', n >= 0 ? n + ' numbered worksheets in your library (such as "3.2 Heat capacity.pdf").' : 'Your library could not be read.', { act: 'autolink_off', label: 'Switch off' });
-    } else add('autolink', 'info', 'Worksheets link themselves: off', 'Name library worksheets with the sub-chapter number ("3.2 Heat capacity.pdf") and they are set by themselves once taught.', { act: 'autolink_on', label: 'Switch on' });
+    } else add('autolink', 'info', 'Worksheets link themselves: off', 'Name library worksheets with the sub-chapter number ("3.2 Heat capacity.pdf") and they link themselves to that part, ready to deploy.', { act: 'autolink_on', label: 'Switch on' });
   }
   // Room for settings: Google keeps at most 500 KB of them for the whole app.
   try {
@@ -1000,7 +1000,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 21;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 22;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1386,4 +1386,144 @@ function studentPackages_(cls, lessons, hub) {
       decks: c.decks.map(function (d) { return d.id; }),
       items: c.decks.map(function (d) { return { id: d.id, num: d.num, title: d.title, url: d.file ? site + d.file : '', open: !!open[d.id] }; }) };
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Release 22: Revision rush, and the Arcade on learnwithmrcedric      */
+/* ------------------------------------------------------------------ */
+// Revision rush: 5 choice questions from the lessons open to the class (never the chapter check), in 60 seconds, once
+// a day for points: 1 for each right answer (the fun puzzles' points) and 2 more for all 5. A student gets the same
+// questions all day, and the clock starts at the first Start, so starting again does not give more time.
+var RUSH_N = 5, RUSH_SECS = 60;
+function rushSeed_(str) {
+  var h = 2166136261;
+  for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function rushRand_(seed) {
+  var a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    var t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// The choice questions in the lessons open to a class: [{ id, text, options, answer, why, from }].
+function rushPool_(cls) {
+  var out = [], seen = {};
+  allocFor_(cls).forEach(function (deckId) {
+    var d = null;
+    try { d = findDeck_(deckId); } catch (e) { d = null; }
+    var check = {};
+    ((d && d.check) || []).forEach(function (id) { check[id] = 1; });
+    var from = d ? String(d.title || '') : '';
+    var boards = [];
+    try { boards = readDeckBoardsFor_(deckId); } catch (e) { boards = []; }
+    boards.forEach(function (b) {
+      if (b.kind !== 'choice' || check[b.taskId]) return;
+      var opts = (b.columns || []).map(function (x) { return String(x == null ? '' : x).trim(); }).filter(String);
+      var c = String(b.correct || '').trim(), ans = opts.indexOf(c);
+      if (ans < 0 && /^[A-F]$/i.test(c)) ans = 'ABCDEF'.indexOf(c.toUpperCase());
+      var text = String(b.title || '').trim();
+      if (opts.length < 2 || opts.length > 6 || ans < 0 || ans >= opts.length || !text || text.length > 240) return;
+      var k = text.toLowerCase() + '|' + opts.join('|').toLowerCase();
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push({ id: deckId + '|' + b.taskId, text: text, options: opts, answer: ans, why: String(b.model || '').slice(0, 300), from: from.slice(0, 80) });
+    });
+  });
+  return out;
+}
+function rushToday_(s, log) {
+  var day = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), done = null, best = 0;
+  (log || rwLog_()).forEach(function (e) {
+    if (e.what !== 'Daily' || e.cls !== s.cls || hubNormName_(e.name) !== hubNormName_(s.name)) return;
+    var d = e.item.split(':');
+    if (d[0] !== 'r') return;
+    var sc = Number(d[2]) || 0;
+    if (sc > best) best = sc;
+    if (d[1] === day) done = { score: sc, points: e.points };
+  });
+  return { day: day, done: !!done, score: done ? done.score : 0, points: done ? done.points : 0, best: best, n: RUSH_N, secs: RUSH_SECS };
+}
+function rushState_(s, log) {
+  var r = rushToday_(s, log), n = 0;
+  try { n = rushPool_(s.cls).length; } catch (e) { n = 0; }
+  r.ready = n >= RUSH_N;
+  r.each = Number(rwRules_().dailyFun) || 1;
+  return r;
+}
+// The day's first Start for each student, kept with the cache (the cache can lose it): { day, at: { key: ms } }.
+function rushStarted_(s, day, at) {
+  var props = PropertiesService.getScriptProperties(), all = parseJson_(props.getProperty('RUSH_START')) || {}, k = studentKey_(s);
+  if (all.day !== day) all = { day: day, at: {} };
+  if (!at) return all.at[k] || 0;
+  if (all.at[k]) return all.at[k];
+  var lock = hubLock_();
+  if (lock.tryLock && !lock.tryLock(5000)) return at;
+  try {
+    all = parseJson_(props.getProperty('RUSH_START')) || {};
+    if (all.day !== day) all = { day: day, at: {} };
+    if (!all.at[k]) { all.at[k] = at; props.setProperty('RUSH_START', JSON.stringify(all)); }
+    return all.at[k];
+  } finally { if (lock.releaseLock) lock.releaseLock(); }
+}
+function rushKey_(s, day) { return 'rush_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, studentKey_(s))).slice(0, 24) + '_' + day; }
+function api_rush_start(token) {
+  var s = funGuard_(who_(token)), today = rushToday_(s);
+  if (today.done) throw new Error('You have done today\'s Revision rush. A new one comes tomorrow.');
+  var pool = rushPool_(s.cls);
+  if (pool.length < RUSH_N) throw new Error('Revision rush opens when your teacher has opened lessons with more questions.');
+  var rnd = rushRand_(rushSeed_(today.day + '|' + s.cls + '|' + hubNormName_(s.name)));
+  var mix = function (list) { for (var i = list.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), t = list[i]; list[i] = list[j]; list[j] = t; } return list; };
+  var picked = mix(pool).slice(0, RUSH_N).map(function (q) {
+    var order = mix(q.options.map(function (o, k) { return k; }));
+    return { text: q.text, options: order.map(function (k) { return q.options[k]; }), answer: order.indexOf(q.answer), why: q.why, from: q.from };
+  });
+  var cache = CacheService.getScriptCache(), key = rushKey_(s, today.day), old = parseJson_(cache.get(key));
+  var at = (old && old.at) || rushStarted_(s, today.day, 0) || 0, again = !!at;
+  if (!at) at = rushStarted_(s, today.day, Date.now());
+  cache.put(key, JSON.stringify({ at: at, a: picked.map(function (q) { return q.answer; }), why: picked.map(function (q) { return q.why; }) }), 21600);
+  var left = Math.max(0, RUSH_SECS - Math.round((Date.now() - at) / 1000));
+  return { n: RUSH_N, secs: left, again: again, qs: picked.map(function (q) { return { text: q.text, options: q.options, from: q.from }; }) };
+}
+function api_rush_finish(token, answers) {
+  var s = who_(token), day = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var cache = CacheService.getScriptCache(), key = rushKey_(s, day), g = parseJson_(cache.get(key));
+  if (!g) throw new Error('This rush ran out. Start it again.');
+  var a = Array.isArray(answers) ? answers : [], score = 0, each = Number(rwRules_().dailyFun) || 1;
+  var results = g.a.map(function (right, i) {
+    var c = Math.round(Number(a[i]));
+    if (!(c >= 0)) c = -1;
+    if (c === right) score++;
+    return { right: c === right, answer: right, choice: c, why: g.why[i] || '' };
+  });
+  var late = Date.now() - g.at > (RUSH_SECS + 20) * 1000;
+  var pts = late ? 0 : score * each + (score === RUSH_N ? 2 : 0);
+  var lock = hubLock_();
+  lock.waitLock(30000);
+  try {
+    // Once: the rush is taken from the cache here, under the lock, so two answers sent at once cannot both count.
+    if (!cache.get(key)) throw new Error('This rush has been answered already.');
+    if (rushToday_(s).done) throw new Error('You have done today\'s Revision rush. A new one comes tomorrow.');
+    cache.remove(key);
+    rwSheet_('log').appendRow([new Date(), s.cls, s.reg, s.name, 'Daily', 'r:' + day + ':' + score, pts, 0, '', '', 'rush']);
+    SpreadsheetApp.flush();
+  } finally { lock.releaseLock(); }
+  var r = rushToday_(s);
+  r.done = true; r.score = score; r.points = pts; r.best = Math.max(r.best || 0, score); r.ready = true; r.each = each;
+  return { score: score, n: RUSH_N, points: pts, late: late, results: results, rush: r };
+}
+// For learnwithmrcedric's Lessons page: today's puzzles and Revision rush, with the student's streak. Nothing while the
+// class is in its Science lesson (as Homework's Arcade).
+function api_st_arcade(st) {
+  var t = api_ticketLogin(st), s = who_(t.token);
+  var fun = s.cls === 'TEST' ? { open: true, live: false } : funState_(s);
+  if (!fun.open) return { open: false };
+  var d = api_daily(t.token);
+  return { open: true, day: d.day, streak: d.streak,
+    items: d.items.map(function (it) { return { key: it.key, name: it.name, points: it.points, done: it.done, right: it.right }; }),
+    rush: d.rush || null };
 }

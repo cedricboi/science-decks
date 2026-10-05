@@ -3385,7 +3385,7 @@ window.KIT=KIT;
 })();</script>
 <script id="liveboard-bridge">(function () {
   'use strict';
-  /* Live Board bridge, version 11. Added to every deck by scripts/liveboard_connect.py.
+  /* Live Board bridge, version 12. Added to every deck by scripts/liveboard_connect.py.
      The deck's own code is not changed.
      1. Who are you? Students choose their class, then their name, from the class list
         (the Worksheet Hub Students tab, served by Live Board). The choice is locked on
@@ -3412,7 +3412,7 @@ window.KIT=KIT;
         whole-class slides (hooks) done together, and videos played on the board.
      7. Presenter mode: the deck opened with #present at the end of its address, after the
         teacher PIN and the class being taught (which starts the lesson for that class). No name
-        is asked, nothing is saved, every question gets Reveal answer, and the slide shown is the
+        is asked, nothing is saved, and the slide shown is the
         slide the class follows. Pause and Follow are on the teacher's phone.
      8. Time on each slide (a page counts as read after the teacher's read time), an ID for
         each iPad, the number of answers waiting to send, and where the student is, so Live
@@ -3446,7 +3446,11 @@ window.KIT=KIT;
         projector screen after End. A reload keeps this; slides opened by hand never move by themselves.
      15. Version 11: on the projector, Show answers (at the bottom of a slide with a question, and in the Presenting
         line) puts the class's answers up full size: the whole question, then a bar chart of the choices, or a wall
-        of the answers the class wrote (no names). It follows the slide and fills in as answers come. */
+        of the answers the class wrote (no names). It follows the slide and fills in as answers come.
+     16. Version 12: no Reveal answer on the projector (Show answers does that). A student who goes past the teacher's
+        slide sees "You are ahead of your teacher" on any slide: a stop with Follow on, a note at the bottom with
+        Follow off. Following is quicker: the projector tells Live Board the moment its slide changes, and a student's
+        iPad checks in every 3 seconds all through a lesson, and straight after the student changes slide. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3454,7 +3458,7 @@ window.KIT=KIT;
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 11;
+  var VERSION = 12;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -3653,6 +3657,14 @@ window.KIT=KIT;
     '.lbx input.lbx-pin{font:900 28px Arial,sans-serif;letter-spacing:.5em;text-align:center}' +
     '.lbrev{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 86px);z-index:2147482800;background:#FFE45C;color:#101014;border:2px solid #101014;box-shadow:3px 3px 0 #101014;padding:7px 14px;font:700 14px/1.3 Arial,sans-serif;max-width:min(560px,92vw);text-align:center;cursor:pointer}' +
     '.lbrev.small span{display:none}.lbrev[hidden]{display:none!important}' +
+    '.lbahead{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 78px);z-index:2147480990;display:flex;align-items:center;gap:14px;background:#101014;color:#fff;border:2px solid #101014;box-shadow:4px 4px 0 #FFE45C;padding:9px 9px 9px 16px;font:700 16px/1.3 Arial,Helvetica,sans-serif;width:max-content;max-width:min(620px,94vw);text-align:left;animation:lbAheadIn .25s ease-out}' +
+    '.lbahead b{color:#FFE45C;font-weight:900;display:block}' +
+    '.lbahead span{display:block;font-weight:400;font-size:14px;color:#e6e4dd}' +
+    '.lbahead button{flex:none;font:900 15px Arial,sans-serif!important;background:#FFE45C!important;color:#101014!important;border:0!important;border-radius:0!important;padding:10px 14px!important;min-height:44px;cursor:pointer;white-space:nowrap;box-shadow:none!important;transform:none!important;text-transform:none!important}' +
+    '.lbahead[hidden]{display:none!important}' +
+    '.lbahead .lbahead-x{background:transparent!important;color:#fff!important;font-size:22px!important;padding:6px 8px!important;min-height:44px;min-width:40px}' +
+    '@keyframes lbAheadIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translateX(-50%)}}' +
+    '@media (prefers-reduced-motion:reduce){.lbahead{animation:none}}' +
     '.lbx .lbx-testhint{display:block;margin-top:6px;font-weight:400;font-size:13px;color:#3a3740}' +
     '.lbx-who .lbx-testhint{display:none}' +
     '.lbx button.lbx-skip{border:0!important;background:none!important;color:#3a3740!important;padding:6px 0!important;margin-top:14px;font-weight:400!important;font-size:14px!important;text-decoration:underline;min-height:0}' +
@@ -3784,8 +3796,6 @@ window.KIT=KIT;
     '.lbb-empty{font-size:clamp(18px,1.8vw,26px);color:#3a3740;padding:30px 0}' +
     '.lbb-pct{font:900 clamp(22px,2.4vw,34px) Arial,sans-serif;color:#0b7a45;margin:0 0 12px}' +
     '@media (max-width:700px){.lbres-bar{grid-template-columns:1fr 3em}.lbres-bar .t{grid-column:1/-1;grid-row:2}}' +
-    '.lbrev{display:block;margin-top:8px;font:900 14px Arial,sans-serif!important;padding:8px 14px!important;border:2px solid #101014!important;border-radius:0!important;background:#f5c400!important;color:#101014!important;cursor:pointer;box-shadow:none!important;transform:none!important;text-transform:none!important}' +
-    '.lbrev-box{margin-top:8px;padding:12px;border-left:5px solid #12804f;background:#fff;font:16px/1.45 Arial,sans-serif;white-space:pre-wrap}' +
     '.lbx-who button{font:700 13px Arial,sans-serif!important;padding:6px 12px!important;min-height:0!important;border:2px solid #fff!important;background:transparent!important;color:#fff!important;box-shadow:none!important;transform:none!important;cursor:pointer;text-transform:none!important}' +
     '.lbx-panel.lbv-wide{width:min(680px,100%);padding:20px 22px 22px}' +
     '.lbv-head,.lbp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}' +
@@ -4332,15 +4342,27 @@ window.KIT=KIT;
   var ctl = null, ctlKnown = false, fails = 0, followedAt = 0, readSecs = 15;
   function pendingCount() { try { return window.ScienceSync && typeof window.ScienceSync.pending === 'function' ? window.ScienceSync.pending().length : 0; } catch (e) { return 0; } }
   function checkAsk() {
-    clearTimeout(askTimer);
+    clearTimeout(askTimer); clearTimeout(quickTimer);
     askTimer = setTimeout(checkAsk, 8000 + Math.floor(Math.random() * 4000));   // replaced by Live Board's own timing below
     if (document.hidden) return;
+    // One check at a time, so answers never arrive out of order (a check out for 10 s is given up).
+    if (checkBusy && Date.now() - checkBusy < 10000) { checkAgain = true; return; }
+    checkBusy = Date.now(); checkAgain = false;
+    var myCheck = checkBusy;
+    var checkDone = function () {
+      if (checkBusy !== myCheck) return false;
+      checkBusy = 0;
+      if (checkAgain) { checkAgain = false; clearTimeout(quickTimer); quickTimer = setTimeout(checkAsk, 400); }
+      return true;
+    };
+    lastCheckAt = Date.now();
     var me = readJ(ID_KEY), cur = currentSlide();
     var rd = readIds().map(slideNo).filter(Boolean).join(',');
     api({ api: 'live', topicId: cfg.topicId, who: me && me.cls ? { cls: me.cls, name: me.name } : null, st: me && me.st ? me.st : '', slide: slideNow(), total: slideCount(),
       dev: DEV, v: VERSION, on: Math.round((Date.now() - curSince) / 1000), rd: rd, pend: pendingCount(), sid: cur ? cur.id : '' }).then(function (r) {
+      if (!checkDone()) return;   // an older check, answered after a newer one
       fails = 0; offlineNote();
-      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, pollSecs(r) * 1000 * (0.85 + Math.random() * 0.3)); }
+      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, pollSecs(r) * 1000 * (0.9 + Math.random() * 0.2)); }
       if (r && r.readSecs) readSecs = r.readSecs;
       if (r && r.reset) { resetHere(); return; }
       if (r && r.signedOut) { signedOutHere(); return; }
@@ -4367,17 +4389,24 @@ window.KIT=KIT;
       if (readJ(DISMISS_KEY) === askKey(a)) return;
       if (a.ends && a.ends < Date.now()) return;
       showAsk(a, !!a.quiet);
-    }).catch(function () { fails++; offlineNote(); });
+    }).catch(function () { if (!checkDone()) return; fails++; offlineNote(); });
   }
   /* How long until the next check. Live Board says 14 seconds (6 while it is asking or leading). While the
-     class is in a lesson (the teacher presenting, Follow me, Hold answers, Pause, or a question asked) the
-     iPad checks every 3 seconds, so Pause and Follow reach it in a few seconds. Outside a lesson it keeps to
-     Live Board's slower pace. */
-  var FAST_SECS = 3;
+     class is in a lesson (a lesson started for the class, the teacher presenting, Follow me, Hold answers, Pause,
+     or a question asked) the iPad checks every 3 seconds, so the teacher's slide, Pause and Follow reach it in a
+     few seconds, and the phone sees where it is. Outside a lesson it keeps to Live Board's slower pace. */
+  var FAST_SECS = 3, lastCheckAt = 0, quickTimer = null, checkBusy = 0, checkAgain = false;
   function pollSecs(r) {
     var c = r.ctl || {};
-    var lesson = !!(r.ask || c.pause || c.follow || c.hold || c.lead);
+    var lesson = !!(r.ask || r.live || c.pause || c.follow || c.hold || c.lead);
     return lesson ? Math.min(r.poll, FAST_SECS) : r.poll;
+  }
+  /* In a lesson, a student's slide change is checked in straight away (at most one check every 1.5 seconds), so the
+     teacher's phone shows them on their new slide at once. */
+  function quickCheck() {
+    if (!askLive || presenting || mode !== 'live' || !ctlKnown || !ctl) return;
+    clearTimeout(quickTimer);
+    quickTimer = setTimeout(checkAsk, Math.max(500, 1500 - (Date.now() - lastCheckAt)));
   }
   function startLive() {
     if (askLive) return;
@@ -4422,8 +4451,8 @@ window.KIT=KIT;
       inner.appendChild(el('h2', '', 'Eyes on the board'));
       inner.appendChild(el('p', '', b.msg || 'Your teacher has paused the iPads.'));
     } else if (b.kind === 'stop') {
-      inner.appendChild(el('h2', '', b.follow ? 'Your teacher is on slide ' + b.limit : 'Stop here for now'));
-      inner.appendChild(el('p', '', b.follow ? 'Wait for your teacher, or look back at an earlier slide.' : 'Your teacher has asked the class to stop at slide ' + b.limit + '. Go back to anything still grey on your checklist.'));
+      inner.appendChild(el('h2', '', b.follow ? 'You are ahead of your teacher' : 'Stop here for now'));
+      inner.appendChild(el('p', '', b.follow ? 'Your teacher is on slide ' + b.limit + '. Wait for them there, or look back at an earlier slide.' : 'Your teacher has asked the class to stop at slide ' + b.limit + '. Go back to anything still grey on your checklist.'));
       btn('Back to slide ' + b.limit, function () { goSlide(slideList()[b.limit - 1].id); }, 'go');
       if (summaryId) btn('My checklist', function () { goSlide(summaryId); });
     } else if (b.kind === 'check') {
@@ -4431,32 +4460,61 @@ window.KIT=KIT;
       inner.appendChild(el('p', '', 'Your teacher will open it when the class is ready.'));
       btn('Go back', function () { var n = b.n - 1; if (n >= 1) goSlide(slideList()[n - 1].id); }, 'go');
     } else if (b.kind === 'together') {
-      inner.appendChild(el('h2', '', "We'll do this one together"));
-      inner.appendChild(el('p', '', 'Wait for your teacher to get here.'));
-      btn('Go back', function () { var n = b.n - 1; if (n >= 1) goSlide(slideList()[n - 1].id); }, 'go');
+      inner.appendChild(el('h2', '', 'You are ahead of your teacher'));
+      inner.appendChild(el('p', '', "We'll do this slide together. " + (b.lead ? 'Your teacher is on slide ' + b.lead + '. ' : '') + 'Wait for them to get here.'));
+      btn(b.lead ? 'Back to slide ' + b.lead : 'Go back', function () { var n = b.lead || b.n - 1; if (n >= 1 && slideList()[n - 1]) goSlide(slideList()[n - 1].id); }, 'go');
     }
     inner.appendChild(row);
     block.appendChild(inner);
     document.body.appendChild(block);
   }
-  /* Runs every second and after each check: puts up (or takes down) whatever the teacher has set. */
+  /* Runs every second and after each check: puts up (or takes down) whatever the teacher has set. A student past the
+     teacher's slide is told so on any slide: with Follow on it is a stop (the checklist slide stays open, with the
+     note), with Follow off a note at the bottom, while the teacher is presenting. */
   function enforce() {
-    if (presenting || !ctl) { setBlock(null); return; }
+    if (presenting || !ctl) { setBlock(null); aheadNote(0); return; }
     var sl = currentSlide();
     if (!sl) return;
     var n = slideList().indexOf(sl) + 1;
-    if (ctl.pause) { setBlock({ kind: 'pause', msg: ctl.msg || '' }); return; }
+    if (ctl.pause) { setBlock({ kind: 'pause', msg: ctl.msg || '' }); aheadNote(0); return; }
     var lead = ctl.lead && ctl.lead.id ? ctl.lead : null;
     if (ctl.follow && lead && lead.at > followedAt) {
       followedAt = lead.at;
-      if (lead.id !== sl.id && document.getElementById(lead.id)) { setBlock(null); goSlide(lead.id); return; }
+      if (lead.id !== sl.id && document.getElementById(lead.id)) { setBlock(null); aheadNote(0); goSlide(lead.id); return; }
     }
     var limit = Number(ctl.to) || 0, byLead = false;
     if (ctl.follow && lead && lead.n && (!limit || lead.n < limit)) { limit = lead.n; byLead = true; }
-    if (limit && n > limit && sl.id !== summaryId) { setBlock({ kind: 'stop', limit: limit, follow: byLead }); return; }
-    if (ctl.check !== 'open' && isCheckSlide(sl)) { setBlock({ kind: 'check', n: n }); return; }
-    if (ctl.hooks && lead && isWholeClass(sl) && n > lead.n) { setBlock({ kind: 'together', n: n }); return; }
-    setBlock(null);
+    var b = null;
+    if (limit && n > limit && sl.id !== summaryId) b = { kind: 'stop', limit: limit, follow: byLead };
+    else if (ctl.check !== 'open' && isCheckSlide(sl)) b = { kind: 'check', n: n };
+    else if (ctl.hooks && lead && isWholeClass(sl) && n > lead.n) b = { kind: 'together', n: n, lead: lead.n };
+    setBlock(b);
+    aheadNote(!b && lead && lead.n && n > lead.n && lead.fresh !== false ? lead.n : 0);
+  }
+  var aheadBox = null, aheadSince = 0, aheadShut = 0;
+  function aheadNote(leadN) {
+    if (!leadN || leadN === aheadShut) { aheadSince = 0; if (aheadBox) aheadBox.hidden = true; if (!leadN) aheadShut = 0; return; }
+    if (!aheadSince) aheadSince = Date.now();
+    if (Date.now() - aheadSince < 1500 && (!aheadBox || aheadBox.hidden)) return;   // the teacher may be on the way
+    if (!aheadBox) {
+      aheadBox = el('div', 'lbahead'); aheadBox.setAttribute('role', 'status');
+      document.body.appendChild(aheadBox);
+    }
+    if (aheadBox.getAttribute('data-n') !== String(leadN)) {
+      aheadBox.setAttribute('data-n', String(leadN));
+      aheadBox.textContent = '';
+      var tx = el('div');
+      tx.appendChild(el('b', '', 'You are ahead of your teacher'));
+      tx.appendChild(el('span', '', 'Your teacher is on slide ' + leadN + '.'));
+      aheadBox.appendChild(tx);
+      var go = el('button', '', 'Back to slide ' + leadN); go.type = 'button';
+      go.addEventListener('click', function () { var s = slideList()[leadN - 1]; if (s) goSlide(s.id); });
+      aheadBox.appendChild(go);
+      var x = el('button', 'lbahead-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close this note');
+      x.addEventListener('click', function () { aheadShut = leadN; aheadBox.hidden = true; });   // until the teacher moves on
+      aheadBox.appendChild(x);
+    }
+    aheadBox.hidden = false;
   }
   var holdCss = el('style'); document.head.appendChild(holdCss);
   var vidNotes = false;
@@ -4487,6 +4545,7 @@ window.KIT=KIT;
   function readIds() { return Object.keys(dwell).filter(function (k) { return dwell[k] >= readSecs; }); }
   function onSlideChange(id) {
     if (presenting) { sendLead(); return; }
+    quickCheck();
     if (reviseCard && reviseCard.getAttribute('data-host') === id) loadReview(false).then(null, function () {});
     // Send the record now and then as the student moves, so the slides they opened are kept.
     var me = readJ(ID_KEY), S = window.ScienceSync;
@@ -4495,9 +4554,22 @@ window.KIT=KIT;
       Promise.resolve().then(function () { return S.sync(); }).catch(function () {});
     }
   }
-  setInterval(function () {
+  function seeSlide() {
     var sl = currentSlide(), id = sl ? sl.id : '';
     if (id !== curId) { curId = id; curSince = Date.now(); if (id) onSlideChange(id); }
+    return id;
+  }
+  /* A key, a tap or a click may change the slide: look straight away (and once more after the deck's move), so the
+     projector's new slide goes to Live Board at once instead of at the next second. */
+  ['keydown', 'click', 'touchend'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      setTimeout(function () { seeSlide(); enforce(); }, 60);
+      setTimeout(seeSlide, 450);
+    }, true);
+  });
+  window.addEventListener('hashchange', function () { setTimeout(seeSlide, 60); });
+  setInterval(function () {
+    var id = seeSlide();
     if (!document.hidden && id && !presenting && readJ(ID_KEY) && mode === 'live') {
       dwell[id] = Math.min(3600, (dwell[id] || 0) + 1);
       if (++tick % 5 === 0) writeJ(DWELL_KEY, dwell);
@@ -4639,7 +4711,7 @@ window.KIT=KIT;
      known, so nothing is asked.
      Pause, Follow and who is where are on the teacher's phone, so the slides show only one small line,
      "Presenting to 1TG5", with Change class. Changing class ends the lesson for the class before. */
-  var presenting = false, presPin = '', presCls = '', leadTimer = null, presInfo = null, pendingStart = null, authAsking = false, revealTimer = null;
+  var presenting = false, presPin = '', presCls = '', leadTimer = null, presInfo = null, pendingStart = null, authAsking = false;
   /* The sign-in or PIN stopped working (a sign-in from the Hub ran out, or the PIN was changed): ask for the PIN on
      this screen, then carry on (the lesson asked for by the Hub, or leading the class). */
   function presAuthLost() {
@@ -4666,8 +4738,7 @@ window.KIT=KIT;
     askPinFor(function (pin) { presPin = pin; try { sessionStorage.setItem(PRES_KEY, pin); } catch (e) {} closeOverlay(); presenterReady(); });
   }
   function presenterReady() {
-    document.body.classList.add('lb-presenter');   // after the PIN: Reveal answer on every question
-    if (!revealTimer) revealTimer = setInterval(addReveals, 1000);
+    document.body.classList.add('lb-presenter');
     var again = '';
     try { again = sessionStorage.getItem(PRES_NOW) || ''; } catch (e) { again = ''; }
     if (presentCls) { pendingStart = { cls: presentCls, part: presentPart, at: presentAt }; presentCls = ''; presentPart = ''; presentAt = 0; }
@@ -4953,16 +5024,24 @@ window.KIT=KIT;
     whoLine.appendChild(ch);
     if (typeof placeResults === 'function') placeResults();
   }
+  /* Flicking through slides sends one call at a time, then the slide it ended on, so Live Board never keeps an
+     earlier slide that happened to arrive last. */
+  var leadBusy = 0, leadAgain = false;
   function sendLead() {
     if (!presenting || !presPin || !presCls) return;
+    if (leadBusy && Date.now() - leadBusy < 15000) { leadAgain = true; return; }   // one at a time (a call stuck for 15 s is given up)
     var sl = currentSlide();
     if (!sl) return;
+    leadBusy = Date.now(); leadAgain = false;
     var body = { api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 };
     if (presentPj) body.pj = presentPj;
+    var mine = leadBusy;
+    var done = function () { if (leadBusy !== mine) return; leadBusy = 0; if (leadAgain) sendLead(); };
     api(body).then(function (r) {
       if (r && r.ok === false && /PIN|sign-in|paired/i.test(r.error || '')) presAuthLost();
       if (r && r.go && presentPj) goNext(r.go);
-    }, function () {});
+      done();
+    }, done);
   }
   /* The projector screen's next step: another lesson's slides, or the waiting screen. */
   var going = false;
@@ -4975,21 +5054,6 @@ window.KIT=KIT;
     var samePage = a.origin === location.origin && a.pathname === location.pathname && a.search === location.search;
     location.href = url;
     if (samePage) location.reload();   // only the address after # changed: load the page again for the new part
-  }
-  function addReveals() {
-    Array.prototype.forEach.call(document.querySelectorAll('.question[data-question]'), function (q) {
-      if (q.querySelector('.lbrev')) return;
-      var t = byId[q.getAttribute('data-question')];
-      if (!t) return;
-      var b = el('button', 'lbrev', 'Reveal answer'); b.type = 'button';
-      var box = el('div', 'lbrev-box'); box.hidden = true;
-      var txt = '';
-      if (t.correct != null && t.correct !== '') txt += 'Answer: ' + t.correct + (t.unit ? ' ' + t.unit : '');
-      if (t.model) txt += (txt ? '\n\n' : '') + t.model;
-      box.textContent = txt || 'This question has no set answer.';
-      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); box.hidden = !box.hidden; b.textContent = box.hidden ? 'Reveal answer' : 'Hide answer'; });
-      q.appendChild(b); q.appendChild(box);
-    });
   }
 
   /* ---------------- revise: My mistakes and Practise ---------------- */

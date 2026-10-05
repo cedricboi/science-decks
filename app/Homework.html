@@ -562,6 +562,50 @@
     .label h1 { font-size: 28px; }
     .who h1 { font-size: 26px; }
   }
+
+  /* ---------- Release 22: the Arcade (was Fun), Revision rush, and the sky folded away ---------- */
+  .pz-row { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .pz[data-pz="r"] .pz-art { background: #FFF1DC; }
+  .pz[aria-disabled="true"] { opacity: .6; box-shadow: var(--shadow); }
+  .pz.fresh[data-pz="r"] { box-shadow: var(--shadow), 0 0 0 3px #FFD58A; }
+  .pz .tick.score { background: #F5A300; color: #2B1A00; }
+  .modal.rushm { max-width: 560px; }
+  .rush-intro { text-align: center; }
+  .rush-intro svg { width: 64px; height: 64px; display: block; margin: 0 auto 6px; animation: rushZap 1.4s ease-in-out infinite; }
+  @keyframes rushZap { 0%, 100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(6deg) scale(1.08); } }
+  .rush-intro .pz-kind { text-align: center; }
+  .rush-rules { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; padding: 0; list-style: none; }
+  .rush-rules li { background: var(--soft); border-radius: 999px; padding: 6px 12px; font: 700 14px var(--text); }
+  .rush-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; }
+  .rush-n { font: 800 14px var(--display); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  .rush-clock { font: 800 26px var(--display); font-variant-numeric: tabular-nums; color: var(--ink); min-width: 2.4em; text-align: right; }
+  .rush-clock.low { color: var(--red-fill); animation: rushBeat .5s ease-in-out infinite alternate; }
+  @keyframes rushBeat { to { transform: scale(1.12); } }
+  .rush-bar { height: 10px; border-radius: 999px; background: var(--soft); overflow: hidden; margin: 0 0 14px; }
+  .rush-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #F5A300, #FFD84D); transition: width .2s linear; }
+  .rush-dots { display: flex; gap: 6px; margin: 14px 0 0; justify-content: center; }
+  .rush-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--rule); }
+  .rush-dots i.on { background: #F5A300; }
+  .opt.picked { border-color: #F5A300; background: #FFF6E3; }
+  .rush-end { text-align: center; }
+  .rush-score { font: 800 64px/1 var(--display); color: #E08A00; margin: 4px 0 6px; animation: medal .9s cubic-bezier(.2,1.5,.4,1) both; }
+  .rush-score small { font: 700 18px var(--text); color: var(--muted); margin-left: 6px; }
+  .rush-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; text-align: left; max-height: 40vh; overflow-y: auto; }
+  .rush-list li { display: flex; gap: 10px; align-items: flex-start; border-radius: 12px; padding: 9px 12px; background: var(--soft); font-size: 15px; line-height: 1.35; }
+  .rush-list li > b { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 14px; background: #6B6457; }
+  .rush-list li.ok > b { background: var(--green-fill); }
+  .rush-list small { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  :root[data-theme="dark"] .opt.picked { background: #3A2D18; }
+  :root[data-theme="dark"] .pz[data-pz="r"] .pz-art { background: #3A2D18; }
+  /* the sky folded away: only the tabs (and, opened on its own, Sign out) */
+  .hw-compact .hero { padding: 8px 14px 10px; border-radius: 0 0 20px 20px; }
+  .hw-compact .hero .who, .hw-compact .hero .pills, .hw-compact .hero .sky-art, .hw-compact .hero .me-full { display: none !important; }
+  .hw-compact .hero.has-body .hero-in { min-height: 0; }
+  .hw-compact .hero-in { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
+  .hw-compact .hero-nav { position: static !important; margin: 0; }
+  .hw-compact .hero-tools { order: 2; margin: 0 0 0 auto; }
+  .in-ms #btn-compact { display: none !important; }
+  @media (max-width: 520px) { .pz-row { grid-template-columns: minmax(0, 1fr); } }
 </style>
 <style>
   /* ---------- Homework page: To do or My folders, at the bottom of the sky. Find is in My folders. ---------- */
@@ -571,7 +615,7 @@
   .fv { margin-top: 22px; }
   .hero-nav button:focus-visible { outline: 3px solid var(--hero-ink); outline-offset: 2px; }
   @media (min-width: 900px) { .hero-nav { position: absolute; right: 0; bottom: 0; margin: 0; } }
-  /* ---------- Fun: the fact of the day, today's puzzles, this week, the streak, badges and Colours ---------- */
+  /* ---------- Arcade: the fact of the day, today's puzzles, this week, the streak, badges and Colours ---------- */
   .hero-nav .tabdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #FF7A1A; margin-left: 6px; vertical-align: 2px; }
   .hero-nav .tabdot.hidden { display: none; }
   /* the waving avatar stands at the right: the sky stays tall enough that it is below Sign out, and the tabs sit to its left */
@@ -676,6 +720,7 @@
       <div class="hero-tools">
         <a class="msback hidden" id="btn-ms" href="#">‹ learnwithmrcedric</a>
         <span class="sp"></span>
+        <button class="linkbtn" id="btn-compact" aria-pressed="false">Hide top</button>
         <button class="linkbtn" id="btn-signout">Sign out</button>
       </div>
       <div class="who">
@@ -691,7 +736,7 @@
         <button class="pill" id="btn-rw" aria-label="My avatar, points and night market"></button>
         <button class="pill go" id="btn-shop">My avatar &rsaquo;</button>
       </div>
-      <div class="hero-nav hidden" id="hero-nav" role="tablist" aria-label="My homework"><button id="hv-todo" role="tab" type="button">To do</button><button id="hv-folders" role="tab" type="button">My folders</button><button id="hv-fun" role="tab" type="button">Fun<span class="tabdot hidden" id="hv-fun-dot" aria-hidden="true"></span></button></div>
+      <div class="hero-nav hidden" id="hero-nav" role="tablist" aria-label="My homework"><button id="hv-todo" role="tab" type="button">To do</button><button id="hv-folders" role="tab" type="button">My folders</button><button id="hv-fun" role="tab" type="button">Arcade<span class="tabdot hidden" id="hv-fun-dot" aria-hidden="true"></span></button></div>
     </div></div>
     <div class="profile">
       <div id="list-body"></div>
@@ -1049,7 +1094,7 @@
     loadOrg();
     call('api_list', S.token).then(function (list) {
       S.list = list; S.listReady = true; renderList();
-      openPending();
+      openPending(); openArcadePending();
       setTimeout(prefetchPdfs, 1200);
     }).catch(function (e) {
       if (/SESSION_EXPIRED/.test(e.message)) { reLogin(openList); return; }
@@ -1566,6 +1611,7 @@
   function showPoints(p, t) {
     $('btn-rw').innerHTML = STAR + '<span>' + p + ' <small>' + (p === 1 ? 'point' : 'points') + '</small></span><span style="width:6px"></span>' + TOKEN + '<span>' + t + ' <small>' + (t === 1 ? 'token' : 'tokens') + '</small></span>';
     $('btn-rw-wrap').classList.remove('hidden');
+    if (EMBED && S.sentPts !== p + '|' + t) { S.sentPts = p + '|' + t; tellMs('wallet', { points: Number(p) || 0, tokens: Number(t) || 0 }); }
   }
   function gotSummary(r) {
     var fromChanged = (r.from || '') !== (S.from || '');
@@ -1613,7 +1659,7 @@
     if (!open && S.hwView === 'fun') { S.hwView = 'todo'; renderList(); }
   }
   setInterval(function () { if (!document.hidden && S.token && $('scr-list') && !$('scr-list').classList.contains('hidden')) funCheck(); }, 60000);
-  function funClosed() { alertBox('Closed during the lesson', 'Avatars and the night market are closed while your class is in its Science lesson. They open again after the lesson.'); }
+  function funClosed() { alertBox('Closed during the lesson', 'Avatars, the Arcade and the night market are closed while your class is in its Science lesson. They open again after the lesson.'); }
   function openShop() {
     busy('Opening your avatar');
     call('api_fun', S.token).catch(function () { return { open: true }; }).then(function (f) {
@@ -1965,7 +2011,8 @@
   var PZ_ART = {
     q: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 5h20a3 3 0 013 3v12a3 3 0 01-3 3H14l-6 5v-5H6a3 3 0 01-3-3V8a3 3 0 013-3z" fill="#2F6FE4"/><path d="M13 11a3 3 0 116 0c0 2-3 2.2-3 4.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="16" cy="19.2" r="1.5" fill="#fff"/></svg>',
     m: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 5v22M9 27h14" stroke="#5B2EA6" stroke-width="2.4" stroke-linecap="round"/><path d="M5 9h22" stroke="#5B2EA6" stroke-width="2.4" stroke-linecap="round"/><path d="M5 9l-3 8h6zM27 9l-3 8h6z" fill="#8E4EC6"/><path d="M2 17a3 3 0 006 0M24 17a3 3 0 006 0" fill="#CDB3FF"/></svg>',
-    z: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="#E3F4EA" stroke="#1C7A4C" stroke-width="3"/><path d="M20 20l8 8" stroke="#1C7A4C" stroke-width="4" stroke-linecap="round"/><path d="M9 13h8M13 9v8" stroke="#1C7A4C" stroke-width="2.4" stroke-linecap="round"/></svg>'
+    z: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="#E3F4EA" stroke="#1C7A4C" stroke-width="3"/><path d="M20 20l8 8" stroke="#1C7A4C" stroke-width="4" stroke-linecap="round"/><path d="M9 13h8M13 9v8" stroke="#1C7A4C" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    r: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M19 2.5L6.5 18h8l-2.5 11.5L25.5 13h-8.2z" fill="#FFB21A" stroke="#8A5200" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 7l-5.5 8" stroke="#FFE38A" stroke-width="1.6" stroke-linecap="round"/></svg>',
   };
   function loadDaily() {
     call('api_daily', S.token).then(function (d) { S.daily = d; renderSide(); }).catch(function () { /* no puzzles today */ });
@@ -2016,11 +2063,123 @@
       $('pz-why').innerHTML = whyBox(r.right, r.why, r.points);
       var row = $('modal-row'); if (row && row.firstChild) { row.firstChild.textContent = 'Close'; row.firstChild.className = 'btn'; }
       S.daily = r.daily; renderSide();
-      if (r.right) { confetti(); loadPoints(); }
+      if (r.right) { confetti(); loadPoints(); tellMs('points'); }
+      tellMs('arcade');
     }).catch(function (e) {
       Array.prototype.forEach.call(btns, function (b) { b.disabled = false; });
       $('pz-why').innerHTML = '<div class="pz-why">' + esc(cleanMsg(e)) + '</div>';
     });
+  }
+
+  /* ---------------- Revision rush: 5 questions from the class's lessons, 60 seconds ---------------- */
+  function rushTile(r) {
+    if (!r || !(r.ready || r.done)) return '';
+    var sub = r.done ? r.score + ' of ' + r.n + ' · +' + r.points + (r.points === 1 ? ' point' : ' points') : '60 seconds · up to +' + (r.n * (r.each || 1) + 2);
+    return '<button class="pz' + (r.done ? '' : ' fresh') + '" data-pz="r" aria-label="Revision rush' + (r.done ? ', done' : '') + '"><span class="pz-art">' + PZ_ART.r + '</span>' +
+      '<span class="txt"><b>Revision rush</b><small>' + sub + '</small></span>' + (r.done ? '<span class="tick score" aria-hidden="true">' + r.score + '</span>' : '') + '</button>';
+  }
+  function rushCheer(n, of) { return n === of ? 'Perfect rush!' : n === of - 1 ? 'So close!' : n >= 3 ? 'Nice work!' : n ? 'Good try!' : 'Keep revising!'; }
+  function openRush() {
+    var r = S.daily && S.daily.rush;
+    if (!r) return;
+    if (r.done) {
+      modal('<div class="rush-end"><p class="pz-kind">Revision rush</p><div class="rush-score">' + r.score + '<small>of ' + r.n + '</small></div><h2>Done for today</h2><p>+' + r.points + (r.points === 1 ? ' point' : ' points') +
+        '. A new rush comes tomorrow.' + (r.best > r.score ? ' Your best is ' + r.best + ' of ' + r.n + '.' : '') + '</p></div>', [{ text: 'Close' }], 'pzm rushm');
+      return;
+    }
+    modal('<div class="rush-intro">' + PZ_ART.r + '<p class="pz-kind">Revision rush</p><h2>' + r.n + ' questions from your lessons. ' + r.secs + ' seconds.</h2>' +
+      '<ul class="rush-rules"><li>+' + (r.each || 1) + ((r.each || 1) === 1 ? ' point' : ' points') + ' for each right answer</li><li>+2 more for all ' + r.n + '</li><li>Once a day</li></ul>' +
+      '<p class="note" style="margin-top:12px">Once you press Start, the clock runs.</p></div>', [{ text: 'Later', ghost: true }, { text: 'Start', fn: startRush }], 'pzm rushm');
+  }
+  function startRush() {
+    busy('Getting your questions...');
+    call('api_rush_start', S.token).then(function (g) {
+      var R = { g: g, i: 0, ans: [], end: Date.now() + g.secs * 1000, total: S.daily && S.daily.rush ? S.daily.rush.secs : g.secs, over: false, timer: null };
+      S.rushNow = R;
+      drawRushQ(R);
+      R.timer = setInterval(function () { tickRush(R); }, 200);
+      if (g.secs <= 0) finishRush(R);
+    }).catch(function (e) { alertBox('Revision rush', cleanMsg(e)); });
+  }
+  function rushLeft(R) { return Math.max(0, Math.ceil((R.end - Date.now()) / 1000)); }
+  function drawRushQ(R) {
+    var q = R.g.qs[R.i], left = rushLeft(R);
+    var dots = R.g.qs.map(function (x, i) { return '<i class="' + (i < R.i ? 'on' : '') + '"></i>'; }).join('');
+    modal('<div class="rush-top"><span class="rush-n">Question ' + (R.i + 1) + ' of ' + R.g.n + '</span><span class="rush-clock' + (left <= 10 ? ' low' : '') + '" id="rush-clock" aria-live="off">' + left + '</span></div>' +
+      '<div class="rush-bar" role="img" aria-label="Time left"><i id="rush-bar" style="width:' + Math.round(100 * left / R.total) + '%"></i></div>' +
+      (q.from ? '<p class="pz-kind">' + esc(q.from) + '</p>' : '') + '<h2>' + esc(q.text) + '</h2>' +
+      '<div class="pz-opts" id="pz-opts">' + q.options.map(function (o, c) {
+        return '<button class="opt" data-c="' + c + '"><span class="l">' + 'ABCDEF'.charAt(c) + '</span><span>' + esc(o) + '</span></button>';
+      }).join('') + '</div><div class="rush-dots" aria-hidden="true">' + dots + '</div>', [], 'pzm rushm');
+    Array.prototype.forEach.call(document.querySelectorAll('#pz-opts .opt'), function (b) {
+      b.onclick = function () {
+        if (R.over || R.ans[R.i] != null) return;
+        R.ans[R.i] = Number(b.getAttribute('data-c'));
+        b.classList.add('picked');
+        Array.prototype.forEach.call(document.querySelectorAll('#pz-opts .opt'), function (x) { x.disabled = true; });
+        setTimeout(function () { if (R.over) return; R.i++; if (R.i >= R.g.n) finishRush(R); else drawRushQ(R); }, 220);
+      };
+    });
+  }
+  function tickRush(R) {
+    if (R.over) return;
+    var left = rushLeft(R), c = $('rush-clock'), b = $('rush-bar');
+    if (c) { c.textContent = left; c.classList.toggle('low', left <= 10); }
+    if (b) b.style.width = Math.round(100 * left / R.total) + '%';
+    if (left <= 0) finishRush(R);
+  }
+  function finishRush(R) {
+    if (R.over) return;
+    R.over = true; clearInterval(R.timer);
+    busy('Checking your answers...');
+    var ans = [];
+    for (var i = 0; i < R.g.n; i++) ans.push(R.ans[i] == null ? -1 : R.ans[i]);
+    call('api_rush_finish', S.token, ans).then(function (r) {
+      S.daily = S.daily || { items: [] }; S.daily.rush = r.rush; renderSide();
+      var rows = R.g.qs.map(function (q, i) {
+        var x = r.results[i] || {};
+        return '<li class="' + (x.right ? 'ok' : '') + '"><b aria-hidden="true">' + (x.right ? '✓' : '✗') + '</b><span>' + esc(q.text) + '<small>' +
+          (x.right ? 'Right: ' : (x.choice < 0 ? 'No answer. ' : 'You chose ' + esc(q.options[x.choice] || '') + '. ') + 'The answer: ') + esc(q.options[x.answer] || '') + '</small></span></li>';
+      }).join('');
+      modal('<div class="rush-end"><p class="pz-kind">Revision rush</p><div class="rush-score">' + r.score + '<small>of ' + r.n + '</small></div><h2>' + rushCheer(r.score, r.n) + '</h2><p>' +
+        (r.late ? 'Time ran out before your answers arrived, so no points this time.' : '+' + r.points + (r.points === 1 ? ' point' : ' points') + (r.score === r.n ? ', with the bonus for all ' + r.n + '!' : '.')) +
+        '</p></div><ul class="rush-list">' + rows + '</ul>', [{ text: 'Done' }], 'pzm rushm');
+      if (r.points) { confetti(r.score === r.n ? 140 : 60); loadPoints(); tellMs('points'); }
+      tellMs('arcade');
+    }).catch(function (e) {
+      if (/answered already|done today|ran out/.test(e.message)) { alertBox('Revision rush', cleanMsg(e)); loadDaily(); return; }
+      modal('<h2>Your answers did not send</h2><p>' + esc(cleanMsg(e)) + ' Check the internet, then send them again. They still count if they arrive within a minute or so.</p>',
+        [{ text: 'Send again', fn: function () { R.over = false; finishRush(R); } }]);
+    });
+  }
+  /* learnwithmrcedric's Lessons page opens a puzzle (or the rush) here, in the Arcade. */
+  function openArcadePending() {
+    var k = S.pendingArcade;
+    if (!k || !S.token || !S.listReady) return;
+    if (S.doc && $('scr-edit') && !$('scr-edit').classList.contains('hidden')) { S.pendingArcade = ''; toast('Close the worksheet you have open first (the arrow at the top left).'); return; }
+    S.pendingArcade = '';
+    if ($('hv-fun').classList.contains('hidden')) { alertBox('Closed during the lesson', 'The Arcade is closed while your class is in its Science lesson. It opens again after the lesson.'); return; }
+    if (S.hwView !== 'fun') { S.hwView = 'fun'; renderList(); }
+    var go = function () { if (k === 'r') openRush(); else if (k === 'q' || k === 'm' || k === 'z') openPuzzle(k); };
+    if (S.daily) go(); else call('api_daily', S.token).then(function (d) { S.daily = d; renderSide(); go(); }).catch(function () { /* the tiles are there to tap */ });
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!EMBED || !m || m.to !== 'wsh' || (m.type !== 'arcade' && m.type !== 'compact')) return;
+    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (m.type === 'compact') { setCompact(!!m.on); return; }
+    S.pendingArcade = String(m.key || '').slice(0, 4);
+    openArcadePending();
+  });
+  /* The sky folds away to the tabs. In learnwithmrcedric its own Hide the top does it (by message); opened on its own,
+     Hide top beside Sign out, kept on this iPad. */
+  function setCompact(on) {
+    document.documentElement.classList.toggle('hw-compact', on);
+    var b = $('btn-compact'); if (b) { b.textContent = on ? 'Show top' : 'Hide top'; b.setAttribute('aria-pressed', String(on)); }
+  }
+  if ($('btn-compact')) {
+    $('btn-compact').onclick = function () { var on = !document.documentElement.classList.contains('hw-compact'); setCompact(on); lsSet('wsh_compact', on ? '1' : ''); };
+    if (lsGet('wsh_compact') === '1') setCompact(true);
   }
 
   /* ---------------- This week: quests, the class goal and the night market ---------------- */
@@ -2072,8 +2231,8 @@
       h += '<div class="fun-top"><p class="fun-fact" id="welcome"></p>' +
         '<button class="iconbtn fun-look" id="btn-look" aria-label="Colours and night look">' + PALETTE + '<span>Colours</span></button></div>';
       h += '<div class="lay"><div class="lay-top">';
-      if (d && d.items && d.items.length) {
-        h += '<h2 class="side-h">Today\'s puzzles<span class="grow"></span>' + (d.streak ? '<span class="pz-streak">' + FLAME + d.streak + '-day streak</span>' : '') + '</h2><div class="pz-row">' + d.items.map(pzTile).join('') + '</div>';
+      if (d && ((d.items && d.items.length) || d.rush)) {
+        h += '<h2 class="side-h">Today\'s puzzles<span class="grow"></span>' + (d.streak ? '<span class="pz-streak">' + FLAME + d.streak + '-day streak</span>' : '') + '</h2><div class="pz-row">' + (d.items || []).map(pzTile).join('') + rushTile(d.rush) + '</div>';
       }
       var wk = weekHtml();
       if (wk) h += '<h2 class="side-h">This week</h2>' + wk;
@@ -2089,16 +2248,16 @@
       el.innerHTML = h;
       welcome();
       $('btn-look').onclick = openLook;
-      Array.prototype.forEach.call(el.querySelectorAll('[data-pz]'), function (b) { b.onclick = function () { openPuzzle(b.getAttribute('data-pz')); }; });
+      Array.prototype.forEach.call(el.querySelectorAll('[data-pz]'), function (b) { b.onclick = function () { var k = b.getAttribute('data-pz'); if (k === 'r') openRush(); else openPuzzle(k); }; });
       Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.onclick = function () { openBadge(bs[Number(b.getAttribute('data-b'))]); }; });
       if ($('go-market')) $('go-market').onclick = openShop;
     }
     funDot(bs);
   }
-  // A small dot on the Fun tab when there is something new there: a puzzle not yet answered today,
-  // or a badge earned since Fun was last opened. It is not shown while Fun is open.
+  // A small dot on the Arcade tab when there is something new there: a puzzle (or Revision rush) not yet done today,
+  // or a badge earned since the Arcade was last opened. It is not shown while the Arcade is open.
   function funDot(bs) {
-    var d = S.daily, pz = !!(d && d.items && d.items.some(function (x) { return !x.done; })), nb = 0;
+    var d = S.daily, pz = !!(d && ((d.items && d.items.some(function (x) { return !x.done; })) || (d.rush && d.rush.ready && !d.rush.done))), nb = 0;
     if (bs) {
       var got = bs.filter(function (x) { return x.got; }).map(function (x) { return x.b[0]; }), seen = safeParse(lsGet(meKey('funseen')));
       if (!Array.isArray(seen)) { seen = got; lsSet(meKey('funseen'), JSON.stringify(got)); }   // badges earned before Fun was a tab are not new
@@ -2106,7 +2265,7 @@
     }
     var show = (pz || nb > 0) && S.hwView !== 'fun', tab = $('hv-fun');
     $('hv-fun-dot').classList.toggle('hidden', !show);
-    if (show) tab.setAttribute('aria-label', 'Fun, ' + [pz ? 'a puzzle to do today' : '', nb ? (nb === 1 ? 'a new badge' : nb + ' new badges') : ''].filter(Boolean).join(' and '));
+    if (show) tab.setAttribute('aria-label', 'Arcade, ' + [pz ? 'a puzzle to do today' : '', nb ? (nb === 1 ? 'a new badge' : nb + ' new badges') : ''].filter(Boolean).join(' and '));
     else tab.removeAttribute('aria-label');
   }
 

@@ -1,52 +1,51 @@
 {
-  "build": "2026-10-10-packages",
-  "seq": 21,
-  "ref": "f8132786408005bc1a6403c3a2466fd4207f5c94",
-  "title": "learnwithmrcedric: chapter packages in Lessons, and Show answers on the slides",
+  "build": "2026-10-12-deploy",
+  "seq": 22,
+  "ref": "main",
+  "title": "learnwithmrcedric: deploy homework, names in colour, and the Arcade",
   "notes": [
-    "Lessons is a tab of its own: each class's chapter packages, with the slides, the homework for each part and topical worksheets",
-    "Topical worksheets are set as homework, or opened as practice, from the package; the Lesson library builds the packages",
-    "Students open each chapter as a package on learnwithmrcedric: slides, homework and practice together",
-    "The Homework tab groups worksheets by chapter, and each chapter folds away",
-    "Show answers on the slides, beside Previous or Back: bars for choice questions, a wall of answers for written ones",
-    "My Science is now learnwithmrcedric"
+    "Homework waits in the chapter's package until you press Deploy; nothing is set by itself when a part is taught (it shows Taught \u00b7 ready)",
+    "Each deployed worksheet shows Deployed, Marking, and Completed once the marking is released",
+    "Your phone shows every student's name in colour (with you, behind, ahead, off the slides, not in), checked every 3 seconds",
+    "The slides: no Reveal answer; You are ahead of your teacher on every slide; the iPads follow faster",
+    "Students: the top folds away to one slim bar; Fun is now the Arcade, on their Lessons page too, with Revision rush"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "907fb116442acde8dd3d8d59737985d36661401b2180d603793841ed9117ccc0"
+      "sha256": "5c253acc511b2f14d53dbcc56113a2e7dae4289c322538d56ca2f822d88da0f3"
     },
     {
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "2edc82faefc1083226570c0b8b21023dc158351e6d75b30fc7ab3874c4a3797e"
+      "sha256": "d7f82291b973495a45feedb8c7ec09394ffbf3a248e495ebd3955592baf570da"
     },
     {
       "name": "Guide",
       "type": "HTML",
       "path": "Guide.html",
-      "sha256": "6522524ce64a358df54650298c548cd226932d02f9a08391a463e65b149a50d1"
+      "sha256": "2737ec984347f3a3ba3ccb61b5f1f69fb250402ef8a475f82ef932b6a4bacc76"
     },
     {
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "0d1a4fab5640c737daadf11cb7684208af9d8f53530c8bd9c74d7a4f53cd945b"
+      "sha256": "861722c0725c4cb12a5f4f21df7f75cc5d7971a1864aef90f6b16d95f25fde86"
     },
     {
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "c80614223c7f3e76aac03cb7a007c744031b090a2f55dae10b8331d423bf42e0"
+      "sha256": "c29a70a14b0105d3a5fce58165a6c68c32304842be98f1823175add0fae07097"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "b11b3c553ce3dff11930d7f9b15da1f7924d71b71a6bfffc639193ee3268541c"
+      "sha256": "ffd84726a35ee2132dcf590af2839c76d310dfe518249f1e8f0979eaf35e8691"
     },
     {
       "name": "Ink",
@@ -64,7 +63,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "0ebe258a85956063cb1f48e69e0aabae2cdf27b177e9d83d86db9174826d8938"
+      "sha256": "6b9b4a8565b73bc81dafe7633cefce8a14c18b7d192f96b0142be875f7895ca5"
     },
     {
       "name": "Styles",
@@ -76,7 +75,7 @@
       "name": "Teacher",
       "type": "HTML",
       "path": "Teacher.html",
-      "sha256": "12ff0754d359af5eb486767587827b170caec87626308f7bed2dd0926ac7bac3"
+      "sha256": "bb199168edfb9f6e84fd68556f5e98d8ac56a96f3fcf8648e382dc21ff0040d2"
     },
     {
       "name": "appsscript",
@@ -86,6 +85,54 @@
     }
   ],
   "pages": [
+    {
+      "seq": 22,
+      "build": "2026-10-12-deploy",
+      "ref": "main",
+      "needsServer": 22,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "2737ec984347f3a3ba3ccb61b5f1f69fb250402ef8a475f82ef932b6a4bacc76"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "861722c0725c4cb12a5f4f21df7f75cc5d7971a1864aef90f6b16d95f25fde86"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "ffd84726a35ee2132dcf590af2839c76d310dfe518249f1e8f0979eaf35e8691"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "b37a79c8f5199b5a5de98adfddbc1c27ff5f7de38788946e1e5060ff4b996787"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "6b9b4a8565b73bc81dafe7633cefce8a14c18b7d192f96b0142be875f7895ca5"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "bb199168edfb9f6e84fd68556f5e98d8ac56a96f3fcf8648e382dc21ff0040d2"
+        }
+      ]
+    },
     {
       "seq": 21,
       "build": "2026-10-10-packages",
@@ -232,6 +279,21 @@
     }
   ],
   "server": [
+    {
+      "seq": 22,
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs"
+      ],
+      "notes": [
+        "Homework waits in the chapter's package until you press Deploy; nothing is set by itself when a part is taught (it shows Taught \u00b7 ready)",
+        "Each deployed worksheet shows Deployed, Marking, and Completed once the marking is released",
+        "Your phone shows every student's name in colour (with you, behind, ahead, off the slides, not in), checked every 3 seconds",
+        "The slides: no Reveal answer; You are ahead of your teacher on every slide; the iPads follow faster",
+        "Students: the top folds away to one slim bar; Fun is now the Arcade, on their Lessons page too, with Revision rush"
+      ]
+    },
     {
       "seq": 21,
       "files": [

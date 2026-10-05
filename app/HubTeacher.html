@@ -426,6 +426,15 @@
   .pk-nm small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
   .pk-st { font: 700 13px var(--display); border-radius: 999px; padding: 3px 10px; background: var(--soft); color: var(--muted); white-space: nowrap; }
   .pk-st.ok { background: var(--green-soft); color: var(--green-ink); }
+  .pk-st.dep { background: var(--blue-soft); color: var(--blue); }
+  .pk-st.mk { background: var(--amber-soft); color: var(--amber); }
+  .pk-st.rd { background: var(--hl); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--hl-line); }
+  .pk-row.dormant { background: transparent; border-style: dashed; border-color: var(--rule); }
+  .pk-row.dormant .pk-nm { color: var(--muted); }
+  .pk-row .btn { margin-left: auto; }
+  .pk-row .pk-st + .btn { margin-left: 0; }
+  .pk-wait { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+  .pk-wait b { color: var(--ink); }
   .pk-kind { font: 800 11px var(--display); letter-spacing: .05em; text-transform: uppercase; border-radius: 6px; padding: 3px 7px; background: var(--blue-soft); color: var(--blue); }
   .pk-kind.pr { background: var(--purple-soft); color: var(--purple); }
   .pk-none { margin: 0; color: var(--muted); font-size: 14px; }
@@ -1343,7 +1352,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'home', cls: '' };
-  var NEWS_VERSION = '2026-10-chapters';
+  var NEWS_VERSION = '2026-10-deploy';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -1907,12 +1916,11 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters as packages</b><ul>' +
-      '<li><b>Lessons</b> is a tab of its own: each class\'s chapter packages, with the slides, the homework for each part and topical worksheets. Build packages and give them to classes in the <b>Lesson library</b>. Topical worksheets are set as homework or opened as practice when you press the button.</li>' +
-      '<li>Homework is grouped <b>by chapter</b>, and each chapter folds away to its header (By status gives the old view). New worksheet and Edit details have a Chapter choice; a worksheet titled with its sub-chapter number, such as 3.2, finds its chapter by itself.</li>' +
-      '<li>On learnwithmrcedric, Lessons is the class\'s chapter packages: each chapter\'s slides, homework and practice together. Homework still shows in To do.</li>' +
-      '<li><b>Show answers</b>: when you present, it sits beside Previous (or Back) in the bar at the bottom of the slides. It shows the whole question full size, with bars for multiple choice and a wall of answers for written questions. No names.</li>' +
-      '<li>My&nbsp;Science is now <b>learnwithmrcedric</b>. The links stay the same.</li></ul></div>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Deploy, and names in colour</b><ul>' +
+      '<li><b>Homework waits to be deployed.</b> In each chapter\'s package (Lessons), worksheets stay dormant until you press <b>Deploy</b>. Nothing is set by itself when you teach a part: a part you have taught shows <b>Taught · ready</b>, due at the class\'s next lesson. Each one then shows Deployed, Marking, and <b>Completed</b> once you release the marking, and it stays in the students\' package.</li>' +
+      '<li><b>Your phone</b> shows every student\'s name in colour: green with you, orange behind, blue ahead, red off the slides, dashed not in yet. It checks every 3 seconds.</li>' +
+      '<li><b>The slides</b>: no Reveal answer button. A student who goes past your slide sees <b>You are ahead of your teacher</b> on every slide, and the iPads follow you faster.</li>' +
+      '<li><b>Students</b>: the top of learnwithmrcedric folds away to one slim bar. Fun is now the <b>Arcade</b>, on their Lessons page too, with a new game: <b>Revision rush</b>, 5 questions from their lessons in 60 seconds for points.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
@@ -2112,7 +2120,7 @@
     var lines = info.slice(0, 4).map(function (n) { var w = needWords(n); return '<li><b>' + esc(w[0]) + '</b> · ' + esc(w[1]) + '</li>'; }).join('');
     box.innerHTML = '<div class="wkcard"><span class="nic">' + ICON.sheet + '</span><span class="txt"><b>This week</b>' +
       (info.length ? '<ul class="wk-mini">' + lines + '</ul>' + (info.length > 4 ? '<span>and ' + (info.length - 4) + ' more</span>' : '')
-        : 'Due soon, corrections, homework set by itself and students to keep an eye on, for each class.') + '</span>' +
+        : 'Due soon, corrections, homework set and students to keep an eye on, for each class.') + '</span>' +
       '<button class="btn small" id="wk-open">See this week</button><button class="later" id="wk-x" title="Not today" aria-label="Not today">' + NICON.later + '</button></div>';
     $('wk-open').onclick = openWeek;
     $('wk-x').onclick = function () { lsSet('wsh_week_day', isoDate(Date.now())); renderWeekCard(); };
@@ -2193,7 +2201,7 @@
 
   /* ---------- chapter packages ----------
      A chapter of a subject on the lesson site, with its slides and its homework. Giving it to a class opens all its
-     slides to them for revision at once; each part's homework is set by itself once that part is taught, and goes
+     slides to them for revision at once; each part's homework waits in the package until it is deployed, and goes
      into the chapter's folder on their learnwithmrcedric. */
   function chList() { return (H.dash && H.dash.chapters && H.dash.chapters.list) || []; }
   function chGiven() { return (H.dash && H.dash.chapters && H.dash.chapters.given) || {}; }
@@ -2415,7 +2423,7 @@
       var head = '<div class="chgrp-h"><div class="chgrp-hl"><button class="chgrp-fold" data-fold="' + esc(fk) + '" aria-expanded="' + !shut + '" aria-label="' + (shut ? 'Show' : 'Hide') + ' the worksheets in ' + esc(c ? chShort(c) : 'Not in a chapter') + '">' + FOLD_ICON + '</button><div class="chgrp-t">' + (c ? '<span class="chgrp-s">' + esc(c.subjectName || c.subject) + '</span>' : '') +
         '<h3>' + esc(c ? chShort(c) : 'Not in a chapter') + '</h3><span class="chgrp-n">' + (c ? plural(c.lessons, 'lesson', 'lessons') + ' · ' : '') +
         plural(ws.length, 'worksheet', 'worksheets') + (open ? ' · ' + open + ' open' : '') + '</span></div></div>' + (c ? chGiveChips(k) : '') + '</div>';
-      var body = now.length ? draw(now) : ws.length ? '' : '<p class="chgrp-e">No homework yet. Each part\'s worksheet is set by itself once you teach that part' + (who.length ? ' to ' + esc(who.join(', ')) : '') + ', and it lands here.</p>';
+      var body = now.length ? draw(now) : ws.length ? '' : '<p class="chgrp-e">No homework deployed yet. Deploy worksheets from this chapter\'s package in Lessons' + (who.length ? ' (' + esc(who.join(', ')) + ')' : '') + ', and they land here.</p>';
       if (!c && ws.length) body = '<p class="chgrp-x">Edit details on a worksheet to put it in a chapter.</p>' + body;
       if (early.length) body += '<details class="earlier"><summary>Earlier (' + early.length + ')</summary>' + draw(early) + '</details>';
       if (shut) body = '';
@@ -2438,7 +2446,8 @@
     if (!H.lib) return;
     H.lib.items.forEach(function (x) { if (x.id === file) x.used = (x.used || []).concat([{ id: id, classes: cls, due: '' }]); });
   }
-  // The homework for each part of a lesson: what is linked, and whether it is set for this class yet.
+  // The homework for each part of a lesson: what is linked, whether it is deployed to this class yet (its worksheet
+  // id), and whether the class has been taught the part (ready, with their next lesson).
   function partHwRows(it, cls) {
     if (!it.topicId) return [];
     var parts = deckParts(it.topicId), m = matchedLinks(it.topicId), auto = H.wa && H.wa.on ? (H.wa.links[it.topicId] || {}) : {};
@@ -2447,35 +2456,82 @@
     return rows.map(function (r) {
       var L = m[r.key], am = !L && r.num ? auto[r.num] : null;
       if ((L && L.file === 'none') || (!L && !am)) return null;
-      var done = L && L.done ? Object.keys(L.done).some(function (c) { return chNorm(c) === chNorm(cls); }) : false;
-      return { num: r.num, part: r.t, name: L ? L.name : am.name, done: done };
+      var done = '', ready = null;
+      if (L && L.done) Object.keys(L.done).forEach(function (c) { if (chNorm(c) === chNorm(cls)) done = L.done[c]; });
+      if (L && L.ready) Object.keys(L.ready).forEach(function (c) { if (chNorm(c) === chNorm(cls)) ready = L.ready[c]; });
+      return { deck: it.topicId, key: r.key, num: r.num, part: r.t, name: L ? L.name : am.name, file: L ? '' : am.file, done: done, ready: ready };
     }).filter(Boolean);
   }
+  function wsById(id) { return ((H.dash && H.dash.worksheets) || []).filter(function (w) { return w.id === id; })[0] || null; }
+  // Where a deployed worksheet is for the class: Deployed (due ...), Marking, then Completed once the marking is released.
+  function pkStatus(w) {
+    if (!w) return { c: 'dep', t: 'Deployed' };
+    if (w.practice) return { c: 'dep', t: 'Deployed · practice' };
+    var k = stageOf(w).k;
+    if (k === 'released' || k === 'answers') return { c: 'ok', t: 'Completed' };
+    if (k === 'collecting') return w.open === false ? { c: 'mk', t: 'Closed' } : { c: 'dep', t: 'Deployed' + (w.due ? ' · due ' + w.due : '') };
+    return { c: 'mk', t: 'Marking' };
+  }
+  function pkStat(s) { return '<span class="pk-st ' + s.c + '">' + esc(s.t) + '</span>'; }
   function pkgHtml(sub, g, cls, rows, site) {
-    var gk = chKey(sub.id, g.name), c = chByKey(gk);
-    var hw = [];
+    var gk = chKey(sub.id, g.name), hw = [], waiting = 0, ready = 0;
     g.items.forEach(function (it) { partHwRows(it, cls).forEach(function (r) { hw.push(r); }); });
+    H.pkHw = H.pkHw || {}; H.pkHw[gk] = hw;
     var tp = chTopical(gk);
-    var h = '<div class="pk-lbl">Homework for each part</div><div class="pk-rows">' + (hw.length ? hw.map(function (r) {
-      return '<div class="pk-row"><span class="pk-num">' + esc(r.num) + '</span><span class="pk-nm">' + esc(r.name) + '<small>' + esc(r.part) + '</small></span>' +
-        '<span class="pk-st' + (r.done ? ' ok' : '') + '">' + (r.done ? 'Set for ' + esc(cls) : 'Sets itself when you teach it') + '</span></div>';
+    var h = '<div class="pk-lbl">Homework for each part</div><div class="pk-rows">' + (hw.length ? hw.map(function (r, i) {
+      var w = r.done ? wsById(r.done) : null, st, act;
+      if (w) { st = pkStatus(w); act = '<button class="btn quiet small" data-open-ws="' + esc(w.id) + '">View</button>'; }
+      else {   // not deployed (or its worksheet was deleted since)
+        waiting++; if (r.ready) ready++;
+        st = r.ready ? { c: 'rd', t: 'Taught · ready' } : { c: '', t: 'Not deployed' };
+        act = '<button class="btn small" data-dp="' + esc(gk) + '|' + i + '">Deploy to ' + esc(cls) + '</button>';
+      }
+      return '<div class="pk-row' + (w ? '' : ' dormant') + '"><span class="pk-num">' + esc(r.num) + '</span><span class="pk-nm">' + esc(r.name) + '<small>' + esc(r.part) + '</small></span>' + pkStat(st) + act + '</div>';
     }).join('') : '<p class="pk-none">Nothing linked yet. Press Homework beside a lesson to link a worksheet to each part.</p>') + '</div>';
     h += '<div class="pk-lbl">Topical worksheets</div><div class="pk-rows">' + (tp.length ? tp.map(function (t, i) {
       var w = topicalSet(t, gk, cls), pr = t.mode === 'practice';
-      var act = w ? '<button class="btn quiet small" data-open-ws="' + esc(w.id) + '">' + (w.practice ? 'Open to practise' : 'Set' + (w.due ? ', due ' + esc(w.due) : '')) + '</button>'
-        : '<button class="btn small" data-tp="' + esc(gk) + '|' + i + '">' + (pr ? 'Open to ' : 'Set for ') + esc(cls) + '</button>';
-      return '<div class="pk-row"><span class="pk-kind' + (pr ? ' pr' : '') + '">' + (pr ? 'Practice' : 'Homework') + '</span><span class="pk-nm">' + esc(t.name) +
-        (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' + act + '</div>';
+      if (!w) waiting++;
+      var act = w ? '<button class="btn quiet small" data-open-ws="' + esc(w.id) + '">View</button>'
+        : '<button class="btn small" data-tp="' + esc(gk) + '|' + i + '">Deploy to ' + esc(cls) + '</button>';
+      return '<div class="pk-row' + (w ? '' : ' dormant') + '"><span class="pk-kind' + (pr ? ' pr' : '') + '">' + (pr ? 'Practice' : 'Homework') + '</span><span class="pk-nm">' + esc(t.name) +
+        (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' + (w ? pkStat(pkStatus(w)) : pkStat({ c: '', t: 'Not deployed' })) + act + '</div>';
     }).join('') : '<p class="pk-none">None yet. Add topical worksheets to this chapter in the Lesson library (Edit package).</p>') + '</div>';
+    if (waiting) h += '<p class="pk-wait"><b>' + waiting + '</b> waiting in the package' + (ready ? ', ' + ready + ' taught and ready' : '') + '. ' + esc(cls) + ' sees nothing until you deploy it.</p>';
     return h;
+  }
+  // A part's homework deployed to one class: due at the class's next lesson once it has been taught, or in a week.
+  function deployPart(r, key, cls) {
+    var c = chByKey(key), nx = r.ready && r.ready.next > Date.now() + 3 * 3600000 ? new Date(r.ready.next) : null;
+    var two = function (n) { return ('0' + n).slice(-2); };
+    modal('<h2>Deploy ' + esc(r.name) + '</h2><p>To ' + esc(cls) + ', for ' + esc(r.part) + (c ? ' in ' + esc(chShort(c)) : '') + '. It goes into their chapter package and To do' +
+      (nx ? ', due at the start of their next lesson unless you change it.' : '.') + '</p>' +
+      '<div class="two"><div class="field"><label for="dp-date">Due date</label><input type="date" id="dp-date" value="' + (nx ? isoDate(nx.getTime()) : isoDate(Date.now() + 7 * 864e5)) + '"></div>' +
+      '<div class="field"><label for="dp-time">Due time (optional)</label><input type="time" id="dp-time" value="' + (nx ? two(nx.getHours()) + ':' + two(nx.getMinutes()) : '') + '"><div class="hint">No time means the end of the day.</div></div></div>' +
+      scheduleFields() + '<div class="err" id="dp-err"></div><div class="foot"><button class="btn ghost" id="dp-c">Cancel</button><button class="btn" id="dp-go">Deploy</button></div>', 'wide');
+    bindSchedule();
+    $('dp-c').onclick = closeModal;
+    $('dp-go').onclick = function () {
+      var meta = { dueDate: $('dp-date').value, dueTime: $('dp-time').value, t: r.part, num: r.num }, sc = scheduleValues();
+      meta.autoClose = sc.autoClose; meta.corrDays = sc.corrDays; meta.answersAfter = sc.answersAfter; meta.autoHandIn = sc.autoHandIn; meta.autoMark = sc.autoMark;
+      if (meta.dueTime && !meta.dueDate) { $('dp-err').textContent = 'Choose a due date to go with the time.'; return; }
+      if (meta.autoHandIn && !meta.dueDate) { $('dp-err').textContent = 'Choose a due date, so the saved work can be handed in then.'; return; }
+      busy('Deploying ' + r.name + ' to ' + cls + '...');
+      tcall('api_t_deployPart', r.deck, r.key, cls, meta, r.file || '').then(function (x) {
+        closeModal();
+        H.wl = H.wl || {}; H.wl[r.deck] = H.wl[r.deck] || {};
+        if (x && x.link) H.wl[r.deck][r.key] = x.link;
+        toast(x && x.already ? r.name + ' was deployed to ' + cls + ' already.' : r.name + ' deployed to ' + cls + '.');
+        redrawAfter();
+      }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not deployed', msg(e)); });
+    };
   }
   // A topical worksheet set as homework for one class: a due date and how it runs, then it is set from the library.
   function setTopical(t, key, cls) {
     var c = chByKey(key);
-    modal('<h2>Set ' + esc(t.name) + '</h2><p>For ' + esc(cls) + ', in ' + esc(chShort(c)) + '. It goes into their chapter package and To do.</p>' +
+    modal('<h2>Deploy ' + esc(t.name) + '</h2><p>To ' + esc(cls) + ', in ' + esc(chShort(c)) + '. It goes into their chapter package and To do.</p>' +
       '<div class="two"><div class="field"><label for="tp-date">Due date</label><input type="date" id="tp-date" value="' + isoDate(Date.now() + 7 * 864e5) + '"></div>' +
       '<div class="field"><label for="tp-time">Due time (optional)</label><input type="time" id="tp-time"><div class="hint">No time means the end of the day.</div></div></div>' +
-      scheduleFields() + '<div class="err" id="tp-err"></div><div class="foot"><button class="btn ghost" id="tp-c">Cancel</button><button class="btn" id="tp-go">Set it</button></div>', 'wide');
+      scheduleFields() + '<div class="err" id="tp-err"></div><div class="foot"><button class="btn ghost" id="tp-c">Cancel</button><button class="btn" id="tp-go">Deploy</button></div>', 'wide');
     bindSchedule();
     $('tp-c').onclick = closeModal;
     $('tp-go').onclick = function () {
@@ -2483,25 +2539,25 @@
       var sc = scheduleValues(); meta.autoClose = sc.autoClose; meta.corrDays = sc.corrDays; meta.answersAfter = sc.answersAfter; meta.autoHandIn = sc.autoHandIn; meta.autoMark = sc.autoMark;
       if (meta.dueTime && !meta.dueDate) { $('tp-err').textContent = 'Choose a due date to go with the time.'; return; }
       if (meta.autoHandIn && !meta.dueDate) { $('tp-err').textContent = 'Choose a due date, so the saved work can be handed in then.'; return; }
-      busy('Setting ' + t.name + ' for ' + cls + '...');
+      busy('Deploying ' + t.name + ' to ' + cls + '...');
       tcall('api_t_newFromLibrary', meta, t.file, '').then(function (r) {
         closeModal(); libUsed(t.file, r.id, cls);
-        toast(t.name + ' set for ' + cls + '.');
+        toast(t.name + ' deployed to ' + cls + '.');
         redrawAfter();
-      }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not set', msg(e)); });
+      }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not deployed', msg(e)); });
     };
   }
   // A practice worksheet opened to one class: no due date, nothing handed in or marked.
   function openPractice(t, key, cls) {
     var c = chByKey(key);
-    busy('Opening ' + t.name + ' to ' + cls + '...');
+    busy('Deploying ' + t.name + ' to ' + cls + '...');
     var meta = { title: t.name, classes: [cls], dueDate: '', dueTime: '', open: true, chapter: key, practice: true,
       autoClose: false, corrDays: 0, answersAfter: false, autoHandIn: false, autoMark: false };
     tcall('api_t_newFromLibrary', meta, t.file, '').then(function (r) {
       closeModal(); libUsed(t.file, r.id, cls);
-      toast(t.name + ' is open to ' + cls + ' to practise, in their ' + chShort(c) + ' package.');
+      toast(t.name + ' deployed to ' + cls + ' to practise, in their ' + chShort(c) + ' package.');
       redrawAfter();
-    }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not opened', msg(e)); });
+    }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not deployed', msg(e)); });
   }
   function redrawAfter() {
     loadDash().then(function () { try { if (H.view === 'te' && H.te) renderTeach(); } catch (e) { /* drawn again next time */ } });
@@ -2512,6 +2568,12 @@
         var p = b.getAttribute('data-tp').split('|'), i = Number(p.pop()), key = p.join('|'), t = chTopical(key)[i];
         if (!t) return;
         if (t.mode === 'practice') openPractice(t, key, cls); else setTopical(t, key, cls);
+      };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-dp]'), function (b) {
+      b.onclick = function () {
+        var p = b.getAttribute('data-dp').split('|'), i = Number(p.pop()), key = p.join('|'), r = ((H.pkHw || {})[key] || [])[i];
+        if (r) deployPart(r, key, cls);
       };
     });
     Array.prototype.forEach.call(root.querySelectorAll('[data-open-ws]'), function (b) { b.onclick = function () { openDetail(b.getAttribute('data-open-ws')); }; });
@@ -5272,8 +5334,8 @@
       '<p class="te-sub">' + (lib ? 'Each class\'s chapter packages. ' : '') + 'Teach opens the slides on the projector for the class you pick, and your phone is the remote.</p>' +
       '<details class="te-how"><summary>How it works</summary><ul>' +
         '<li>Give a class a chapter from the <b>Lesson library</b>: all its slides open to them for revision, and it shows here.</li>' +
-        '<li><b>Homework for each part</b> sets itself once you have taught that part, due at their next lesson.</li>' +
-        '<li><b>Topical worksheets</b> are set as homework, or opened as practice, when you press the button.</li>' +
+        '<li>Worksheets wait in the package. <b>Nothing reaches students until you press Deploy</b>. A part you have taught shows <b>Taught · ready</b>, due at their next lesson.</li>' +
+        '<li>Each one then shows <b>Deployed</b>, <b>Marking</b>, and <b>Completed</b> once you release the marking. It stays in the students\' package.</li>' +
         '<li>Answers count only while you teach. Untick Revision to close a lesson.</li></ul></details>' + '</div>';
     h += '<div class="te-cls" role="group" aria-label="Class to teach"><span>Class</span>' + teClasses().map(function (c) {
       return '<button data-tc="' + esc(c) + '" aria-pressed="' + (c === cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
@@ -5303,7 +5365,7 @@
           else if (parts.length > 1) acts += '<button class="btn te-go" data-parts="' + i + '" aria-haspopup="true" aria-expanded="false" aria-controls="pop-part">' + ICON.tabTe + 'Teach</button>';
           else acts += '<a class="btn te-go" data-go href="' + esc(slideLink(url, cls, parts.length ? 0 : -1)) + '" target="_blank" rel="noopener" aria-label="Teach ' + esc((it.num ? it.num + ' ' : '') + (it.title || '')) + ' to ' + esc(cls) + '">' + ICON.tabTe + 'Teach</a>';
           if (known) acts += '<button class="btn quiet small" data-prog="' + esc(it.topicId) + '">Progress</button>';
-          if (known) { var nl = linkCount(it.topicId); acts += '<button class="btn quiet small te-hw" data-hw="' + i + '" title="Homework set by itself for each sub-chapter">Homework' + (nl ? '<span class="hwn">' + nl + '</span>' : '') + '</button>'; }
+          if (known) { var nl = linkCount(it.topicId); acts += '<button class="btn quiet small te-hw" data-hw="' + i + '" title="Link a worksheet to each sub-chapter, to deploy from the package">Homework' + (nl ? '<span class="hwn">' + nl + '</span>' : '') + '</button>'; }
           if (it.topicId) {
             var on = revOpen(cls, it.topicId);
             acts += '<label class="te-rev' + (on ? ' on' : '') + (H.tn ? '' : ' wait') + '" title="Open to ' + esc(cls) + ' in learnwithmrcedric for revision"><input type="checkbox" data-rev="' + esc(it.topicId) + '"' + (on ? ' checked' : '') + (H.tn ? '' : ' disabled') + '>Revision</label>';
@@ -5351,8 +5413,8 @@
     $('te-file').onchange = function () { var f = this.files && this.files[0]; this.value = ''; if (f) addLesson(f); };
   }
   /* ---------- Homework for each sub-chapter ----------
-     A worksheet from the library linked to a sub-chapter is set for a class by itself once the slides reach the
-     end of that sub-chapter, due at the class's next lesson, and it runs hands-off. */
+     A worksheet from the library linked to a sub-chapter waits in the chapter's package until the teacher deploys it
+     to a class. Once the slides reach the end of that sub-chapter it shows as ready, due at the class's next lesson. */
   function partKey(p, i) { return p.num ? String(p.num) : '#' + i; }
   // The links of a lesson that still match one of its parts (a link by place also needs the same part name).
   function matchedLinks(deck) {
@@ -5377,10 +5439,9 @@
     var rows = parts.length ? parts.map(function (p, i) { return { key: partKey(p, i), t: p.t, num: p.num || '', sub: 'slides ' + p.from + '–' + p.to }; })
       : [{ key: '#all', t: name, num: it.num || '', sub: 'the whole lesson' }];
     var unnumbered = parts.length > 1 && !parts.some(function (p) { return p.num; });
-    modal('<h2>Homework for ' + esc(name) + '</h2><p>Each sub-chapter\'s worksheet is set for a class by itself once you have shown them that sub-chapter on the projector (most of its slides, including the last, over one lesson or more), due at the start of their next lesson. It hands itself in at the due time' + (claudeOn() ? ' and Claude marks it' : '') + '; you check and release. A worksheet in your library named with the sub-chapter\'s number (such as <b>3.2 Heat capacity.pdf</b>, or in a <b>3.2 …</b> folder) links itself.</p>' +
+    modal('<h2>Homework for ' + esc(name) + '</h2><p>Link a worksheet to each sub-chapter. It waits in the chapter\'s package in Lessons, and reaches a class only when you press <b>Deploy</b> there. Once you have taught the sub-chapter, it shows as ready, due at the start of their next lesson. It hands itself in at the due time' + (claudeOn() ? ' and Claude marks it' : '') + '; you check and release. A worksheet in your library named with the sub-chapter\'s number (such as <b>3.2 Heat capacity.pdf</b>, or in a <b>3.2 …</b> folder) links itself.</p>' +
       (unnumbered ? '<p class="hint">These parts have no textbook numbers yet. Rebuild the slides with a sub-chapter in each part (for example 3.2 · Heat capacity) to number them.</p>' : '') +
       '<div class="hwlist" id="hw-list"><p class="muted">Opening your library…</p></div>' +
-      '<label class="check-row"><input type="checkbox" id="hw-back"><span>Also set it now for a class that finished the sub-chapter in the last 2 days</span></label>' +
       '<div class="err" id="hw-err"></div><div class="foot"><button class="btn" id="hw-done">Done</button></div>', 'wide');
     $('hw-done').onclick = function () { closeModal(); if (H.libBack) { var back = H.libBack; H.libBack = null; back(); } else if (H.view === 'te') renderTeach(); };
     Promise.all([loadLinks(), H.lib ? Promise.resolve(H.lib) : tcall('api_t_library', false).then(function (L) { H.lib = L; return L; })]).then(function (res) {
@@ -5404,7 +5465,7 @@
         var missing = cur && cur.file !== 'none' && !items.some(function (x) { return x.id === cur.file; });
         return '<div class="hwrow"><span class="hw-t"><b>' + esc(r.t) + '</b><small>' + esc(r.sub) + (done.length ? ' · set for ' + esc(done.join(', ')) : '') + (cur && cur.auto ? ' · linked by its number' : '') + '</small></span>' +
           '<select data-hwk="' + i + '" aria-label="Homework for ' + esc(r.t) + '">' + opts(r, cur) + (missing ? '<option value="' + esc(cur.file) + '" selected>' + esc(cur.name) + ' (not in the library now)</option>' : '') + '</select></div>';
-      }).join('') + (stale.length ? '<p class="hint">Linked before the parts of this lesson changed (no longer set by itself):</p>' + stale.map(function (k) {
+      }).join('') + (stale.length ? '<p class="hint">Linked before the parts of this lesson changed (no longer used):</p>' + stale.map(function (k) {
         return '<div class="hwrow"><span class="hw-t"><b>' + esc(all[k].name) + '</b><small>was ' + esc(all[k].t || k) + '</small></span><button class="btn small ghost" data-hwx="' + esc(k) + '">Remove</button></div>';
       }).join('') : '');
       Array.prototype.forEach.call($('hw-list').querySelectorAll('[data-hwx]'), function (b) {
@@ -5418,7 +5479,7 @@
         s.onchange = function () {
           var r = rows[Number(s.getAttribute('data-hwk'))], v = s.value, file = v === '__auto' ? '' : v;
           s.disabled = true; $('hw-err').textContent = '';
-          tcall('api_t_setLink', it.topicId, r.key, file, r.t, r.num, $('hw-back').checked ? 48 : 0).then(function (x) {
+          tcall('api_t_setLink', it.topicId, r.key, file, r.t, r.num, 72).then(function (x) {
             H.wl = H.wl || {}; H.wl[it.topicId] = H.wl[it.topicId] || {};
             if (x) H.wl[it.topicId][r.key] = x; else delete H.wl[it.topicId][r.key];
             toast(v === '__auto' ? r.t + ': the worksheet with its number' : v === 'none' || !v ? 'No homework for ' + r.t : 'Linked to ' + r.t);
