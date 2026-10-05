@@ -1,7 +1,7 @@
 {
   "build": "2026-10-13-upload",
   "seq": 23,
-  "ref": "main",
+  "ref": "987c84eed426ea89597783090ff193eeb549a3c0",
   "title": "learnwithmrcedric: upload a worksheet into a chapter",
   "notes": [
     "Upload a worksheet straight into a chapter from the Lesson library: it goes into your worksheet library in a folder for the chapter, and into the package as a topical worksheet or one part's homework"
@@ -84,7 +84,7 @@
     {
       "seq": 23,
       "build": "2026-10-13-upload",
-      "ref": "main",
+      "ref": "987c84eed426ea89597783090ff193eeb549a3c0",
       "needsServer": 23,
       "files": [
         {
