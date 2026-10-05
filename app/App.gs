@@ -14,7 +14,7 @@
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-12-deploy';
+var APP_BUILD = '2026-10-13-upload';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -1000,7 +1000,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 22;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 23;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1526,4 +1526,42 @@ function api_st_arcade(st) {
   return { open: true, day: d.day, streak: d.streak,
     items: d.items.map(function (it) { return { key: it.key, name: it.name, points: it.points, done: it.done, right: it.right }; }),
     rush: d.rush || null };
+}
+
+/* ------------------------------------------------------------------ */
+/* Release 23: a worksheet uploaded straight into a chapter              */
+/* ------------------------------------------------------------------ */
+// From the Lesson library. The PDF goes into the worksheet library (<subject> / <chapter> / <worksheet>, with its marked
+// solution beside it when given), then into the chapter's package. use: { kind: 'hw' | 'practice' } for a topical
+// worksheet, or { kind: 'part', deck, part, t, num } for the homework of one part of a lesson in the chapter.
+function api_t_libUpload(token, key, name, pdfB64, solB64, use) {
+  teacher_(token);
+  CH_MEMO_ = {};
+  var ch = chapterByKey_(String(key || ''));
+  if (!ch) throw new Error('That chapter is not on the lesson site.');
+  use = use || {};
+  var deck = String(use.deck || ''), part = String(use.part == null ? '' : use.part);
+  if (use.kind === 'part' && (!part || !ch.decks.some(function (d) { return d.id === deck; }))) throw new Error('Choose a part of a lesson in this chapter.');
+  var nm = hubClean_(String(name || '').replace(/\.pdf$/i, '')).slice(0, 80);
+  if (!nm) throw new Error('Give the worksheet a name.');
+  var isPdf = function (b) { return b && b.length > 4 && String.fromCharCode.apply(null, b.slice(0, 4)) === '%PDF'; };
+  var bytes = Utilities.base64Decode(String(pdfB64 || ''));
+  if (!isPdf(bytes)) throw new Error('The worksheet is not a PDF.');
+  var sol = solB64 ? Utilities.base64Decode(String(solB64)) : null;
+  if (sol && !isPdf(sol)) throw new Error('The marked solution is not a PDF.');
+  var path = [hubClean_(ch.subjectName || ch.subject || 'Lessons'), hubClean_(chapterShort_(ch))].filter(String).join(' / ');
+  var folder = libNewFolder_(libTopic_(path), nm);
+  var file = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', nm + '.pdf'));
+  var solFile = sol ? folder.createFile(Utilities.newBlob(sol, 'application/pdf', nm + ' marked solution.pdf')) : null;
+  libDrop_();
+  var out = { item: { id: file.getId(), folder: folder.getId(), name: nm, file: nm + '.pdf', path: path, kind: 'pdf', ok: true, size: bytes.length, updated: Date.now(),
+    sol: solFile ? { id: solFile.getId(), name: solFile.getName() } : null, key: null, notes: false, used: [] } };
+  if (use.kind === 'part') {
+    out.link = api_t_setLink(token, deck, part, file.getId(), String(use.t || '').slice(0, 80), String(use.num || '').slice(0, 12), 72);
+    out.deck = deck; out.part = part;
+  } else {
+    var now = parseJson_(PropertiesService.getScriptProperties().getProperty('CHT|' + ch.key)) || [];
+    out.topical = api_t_topicalSave(token, ch.key, now.concat([{ file: file.getId(), name: nm, path: '', mode: use.kind === 'practice' ? 'practice' : 'hw' }])).topical;
+  }
+  return out;
 }

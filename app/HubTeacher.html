@@ -442,6 +442,8 @@
   .libm-sec { margin-top: 10px; }
   .libm-lbl { font: 800 11.5px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
   .libm-ls li .btn { margin-left: auto; }
+  .libm-acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  #lu-use { width: 100%; min-width: 0; height: 44px; border-radius: 10px; border: 1.5px solid var(--rule); background: var(--surface); color: var(--ink); padding: 0 10px; font: 600 15px var(--text); }
   .libm-tp { display: grid; gap: 6px; }
   .tpi { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
   .tpi .nm { flex: 1 1 200px; min-width: 0; font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
@@ -1352,7 +1354,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'home', cls: '' };
-  var NEWS_VERSION = '2026-10-deploy';
+  var NEWS_VERSION = '2026-10-upload';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -1917,6 +1919,7 @@
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
     el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Deploy, and names in colour</b><ul>' +
+      '<li><b>Upload a worksheet into a chapter.</b> In the Lesson library, each chapter has <b>Upload a worksheet</b>: the PDF (and its marked solution) goes into your worksheet library in a folder for the chapter, and into the package as a topical worksheet or as the homework for one part. Deploy it from Lessons as usual.</li>' +
       '<li><b>Homework waits to be deployed.</b> In each chapter\'s package (Lessons), worksheets stay dormant until you press <b>Deploy</b>. Nothing is set by itself when you teach a part: a part you have taught shows <b>Taught · ready</b>, due at the class\'s next lesson. Each one then shows Deployed, Marking, and <b>Completed</b> once you release the marking, and it stays in the students\' package.</li>' +
       '<li><b>Your phone</b> shows every student\'s name in colour: green with you, orange behind, blue ahead, red off the slides, dashed not in yet. It checks every 3 seconds.</li>' +
       '<li><b>The slides</b>: no Reveal answer button. A student who goes past your slide sees <b>You are ahead of your teacher</b> on every slide, and the iPads follow you faster.</li>' +
@@ -2311,13 +2314,14 @@
     H.libBack = null;
     var subs = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
     if (!subs.length) return;
-    var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub'), pick = null;
+    var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub'), pick = null, up = null;
     if (focus) subs.forEach(function (s) { (s.groups || []).forEach(function (g) { if (chKey(s.id, g.name) === focus) cur = s.id; }); });
     if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
     var again = function () { modal('', 'wide libm'); draw(); if (H.view === 'te') renderTeach(); };
     again.always = true;
     var draw = function () {
       if (pick) { drawPick(); return; }
+      if (up) { drawUp(); return; }
       var sub = subs.filter(function (s) { return s.id === cur; })[0];
       var h = '<div class="libm-h"><h2>Lesson library</h2><button class="btn small" id="libm-x">Done</button></div>' +
         '<p class="libm-sub">Each chapter is a package: its slides, the homework for each part, and topical worksheets. Give a class a chapter and it appears in Lessons for that class, with all its slides open to them for revision.</p>' +
@@ -2338,13 +2342,14 @@
               return '<div class="tpi"><span class="nm">' + esc(t.name) + (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' +
                 '<select data-tpm="' + esc(k) + '|' + i + '" aria-label="How ' + esc(t.name) + ' is used"><option value="hw"' + (t.mode !== 'practice' ? ' selected' : '') + '>Set as homework</option><option value="practice"' + (t.mode === 'practice' ? ' selected' : '') + '>Practice</option></select>' +
                 '<button class="x" data-tpx="' + esc(k) + '|' + i + '" aria-label="Take ' + esc(t.name) + ' out of the package">×</button></div>';
-            }).join('') + '<div><button class="btn quiet small" data-tpadd="' + esc(k) + '">' + ICON.plus + 'Add a topical worksheet</button></div></div></div>' : '') + '</section>';
+            }).join('') + '<div class="libm-acts"><button class="btn quiet small" data-tpadd="' + esc(k) + '">' + ICON.plus + 'Add from my library</button>' +
+            '<button class="btn quiet small" data-tpup="' + esc(k) + '">' + ICON.up + 'Upload a worksheet</button></div></div></div>' : '') + '</section>';
         }).join('') + '</div>';
       $('modal').innerHTML = h;
       $('libm-x').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); };
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
       var ref = function (attr) { var p = attr.split('|'), i = Number(p.pop()); return { key: p.join('|'), i: i }; };
-      var hold = function () { Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpm], [data-tpx], [data-tpadd]'), function (x) { x.disabled = true; }); };
+      var hold = function () { Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpm], [data-tpx], [data-tpadd], [data-tpup]'), function (x) { x.disabled = true; }); };
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-lhw]'), function (b) {
         b.onclick = function () {
           var x = ref(b.getAttribute('data-lhw')), g = null;
@@ -2360,9 +2365,74 @@
         b.onclick = function () { var x = ref(b.getAttribute('data-tpx')), list = chTopical(x.key).slice(); list.splice(x.i, 1); hold(); saveTopical(x.key, list, draw); };
       });
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpadd]'), function (b) { b.onclick = function () { pick = { key: b.getAttribute('data-tpadd'), q: '' }; draw(); }; });
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpup]'), function (b) { b.onclick = function () { up = { key: b.getAttribute('data-tpup') }; draw(); }; });
       bindGive($('modal'), again);
       if (focus) { var el = $('libch-' + focus.replace(/[^a-z0-9]+/gi, '-')); focus = null; if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 30); }
       else setTimeout(function () { var x = $('libm-x'); if (x) x.focus(); }, 30);
+    };
+    // Uploading a worksheet into this chapter: the worksheet library gets it, and the package uses it.
+    var drawUp = function () {
+      var c = chByKey(up.key), g = null;
+      subs.forEach(function (s) { (s.groups || []).forEach(function (gg) { if (chKey(s.id, gg.name) === up.key) g = gg; }); });
+      var parts = [];
+      ((g && g.items) || []).forEach(function (it) {
+        if (!it.topicId || it.kind === 'tool') return;
+        var ps = deckParts(it.topicId), m = (H.wl || {})[it.topicId] || {};
+        var add = function (k, t, num) {
+          var L = m[k], now = L && L.file && L.file !== 'none' ? ' (now: ' + L.name + ')' : '';
+          parts.push({ deck: it.topicId, part: k, t: t, num: num, label: (num && t.indexOf(num) !== 0 ? num + ' · ' : '') + t + now });
+        };
+        if (ps.length) ps.forEach(function (p, i) { add(partKey(p, i), p.t, p.num || ''); });
+        else add('#all', (it.num ? it.num + ' ' : '') + (it.title || ''), it.num || '');
+      });
+      var h = '<div class="libm-h"><h2>Upload to ' + esc(chShort(c)) + '</h2><button class="btn ghost small" id="lu-back">Back</button></div>' +
+        '<p class="libm-sub">The PDF goes into your worksheet library, in a folder for this chapter, and into this chapter\'s package. Like everything in the package, it reaches a class only when you deploy it.</p>' +
+        '<div class="field"><span class="lbl">Worksheet (PDF)</span><label class="drop" id="lu-drop"><input type="file" id="lu-file" accept="application/pdf,.pdf"><b>Choose a PDF</b> or drop it here</label><div class="picked" id="lu-picked"></div></div>' +
+        '<div class="field"><label for="lu-name">Name</label><input type="text" id="lu-name" maxlength="80" placeholder="For example, 7.1 Particles in motion"></div>' +
+        '<div class="field"><label for="lu-use">Use it for</label><select id="lu-use"><optgroup label="Topical worksheet"><option value="hw">Topical worksheet, set as homework</option><option value="practice">Topical worksheet, for practice</option></optgroup>' +
+        (parts.length ? '<optgroup label="Homework for a part">' + parts.map(function (x, i) { return '<option value="part:' + i + '">' + esc(x.label) + '</option>'; }).join('') + '</optgroup>' : '') + '</select>' +
+        '<div class="hint" id="lu-why">In the package\'s Topical worksheets, with Deploy for each class.</div></div>' +
+        '<div class="field"><span class="lbl">Marked solution (PDF, optional)</span><label class="drop" id="lu-sdrop"><input type="file" id="lu-sol" accept="application/pdf,.pdf"><b>Choose your marked solution</b> or drop it here</label><div class="picked" id="lu-spicked"></div><div class="hint">Claude marks against it. You can also add it later.</div></div>' +
+        '<div class="err" id="lu-err"></div><div class="foot"><button class="btn ghost" id="lu-c">Cancel</button><button class="btn" id="lu-go">' + ICON.up + 'Upload</button></div>';
+      $('modal').innerHTML = h;
+      var file = null, sol = null;
+      $('lu-back').onclick = $('lu-c').onclick = function () { up = null; draw(); };
+      var pdfOk = function (f, what) {
+        if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { $('lu-err').textContent = what + ' must be a PDF.'; return false; }
+        if (f.size > MAX_MB * 1048576) { $('lu-err').textContent = what + ' is over ' + MAX_MB + ' MB. Make it smaller first.'; return false; }
+        $('lu-err').textContent = ''; return true;
+      };
+      dropZone($('lu-drop'), $('lu-file'), function (fs) {
+        var f = fs[0]; if (!f || !pdfOk(f, 'The worksheet')) return;
+        file = f; $('lu-picked').textContent = f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)';
+        if (!$('lu-name').value.trim()) $('lu-name').value = f.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ');
+      });
+      dropZone($('lu-sdrop'), $('lu-sol'), function (fs) { var f = fs[0]; if (!f || !pdfOk(f, 'The marked solution')) return; sol = f; $('lu-spicked').textContent = f.name; });
+      $('lu-use').onchange = function () {
+        var v = this.value;
+        $('lu-why').textContent = v === 'hw' ? 'In the package\'s Topical worksheets, with Deploy for each class.' : v === 'practice' ? 'In the package\'s Topical worksheets as practice: no due date, nothing handed in.'
+          : 'Linked to this part, so it shows as Taught · ready once you have taught it. It replaces any worksheet linked there now.';
+      };
+      $('lu-go').onclick = function () {
+        if (!file) { $('lu-err').textContent = 'Choose the worksheet PDF.'; return; }
+        var name = $('lu-name').value.trim() || file.name.replace(/\.pdf$/i, ''), v = $('lu-use').value, pt = null, use;
+        if (v.indexOf('part:') === 0) { pt = parts[Number(v.slice(5))]; use = { kind: 'part', deck: pt.deck, part: pt.part, t: pt.t, num: pt.num }; }
+        else use = { kind: v === 'practice' ? 'practice' : 'hw' };
+        var key = up.key, go = $('lu-go');
+        go.disabled = true; go.textContent = 'Uploading…'; $('lu-err').textContent = '';
+        Promise.all([fileToB64(file), sol ? fileToB64(sol) : Promise.resolve('')]).then(function (b) {
+          return tcall('api_t_libUpload', key, name, b[0], b[1], use);
+        }).then(function (r) {
+          if (H.lib && r.item) H.lib.items = H.lib.items.concat([r.item]);
+          if (r.topical && H.dash && H.dash.chapters) { var t = H.dash.chapters.topical = H.dash.chapters.topical || {}; if (r.topical.length) t[key] = r.topical; }
+          if (r.link && pt) { H.wl = H.wl || {}; H.wl[pt.deck] = H.wl[pt.deck] || {}; H.wl[pt.deck][pt.part] = r.link; }
+          up = null; draw();
+          toast(name + ' is in ' + chShort(c) + (pt ? ', as the homework for ' + pt.t : use.kind === 'practice' ? ', for practice' : ', as a topical worksheet') + '. Deploy it from Lessons when you are ready.');
+        }).catch(function (e) {
+          if (/TEACHER_SIGNED_OUT/.test(e.message) || !$('lu-go')) return;
+          $('lu-err').textContent = msg(e); go.disabled = false; go.innerHTML = ICON.up + 'Upload';
+        });
+      };
     };
     // Choosing a topical worksheet from the worksheet library; the ones named for the chapter come first.
     var drawPick = function () {
@@ -2495,7 +2565,7 @@
         : '<button class="btn small" data-tp="' + esc(gk) + '|' + i + '">Deploy to ' + esc(cls) + '</button>';
       return '<div class="pk-row' + (w ? '' : ' dormant') + '"><span class="pk-kind' + (pr ? ' pr' : '') + '">' + (pr ? 'Practice' : 'Homework') + '</span><span class="pk-nm">' + esc(t.name) +
         (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' + (w ? pkStat(pkStatus(w)) : pkStat({ c: '', t: 'Not deployed' })) + act + '</div>';
-    }).join('') : '<p class="pk-none">None yet. Add topical worksheets to this chapter in the Lesson library (Edit package).</p>') + '</div>';
+    }).join('') : '<p class="pk-none">None yet. In the Lesson library (Edit package), add one from your worksheet library or upload a PDF.</p>') + '</div>';
     if (waiting) h += '<p class="pk-wait"><b>' + waiting + '</b> waiting in the package' + (ready ? ', ' + ready + ' taught and ready' : '') + '. ' + esc(cls) + ' sees nothing until you deploy it.</p>';
     return h;
   }
