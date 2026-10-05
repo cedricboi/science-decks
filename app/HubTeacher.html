@@ -412,6 +412,47 @@
   .chgrp details.earlier summary { font-size: 15px; }
   .tag.chap { background: var(--soft); color: var(--ink); box-shadow: inset 4px 0 0 var(--chc, var(--rule)); padding-left: 12px; }
   .viewsw.grp button { width: auto; padding: 0 12px; font: 700 14px var(--display); }
+  /* Lessons: each chapter a package (slides, homework for each part, topical worksheets) */
+  .te-how { max-width: 70ch; color: var(--muted); font-size: 14px; }
+  .te-how summary { cursor: pointer; font-weight: 700; color: var(--ink); padding: 2px 0; width: max-content; }
+  .te-how ul { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+  .pk { padding: 14px 16px 16px; border-radius: var(--r-card); background: var(--surface-2); border: 1px solid var(--line); border-left: 6px solid var(--chc, var(--rule)); margin-top: 18px; }
+  .pk .te-chh { justify-content: space-between; }
+  .pk-lbl { font: 800 12px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+  .pk-rows { display: grid; gap: 6px; }
+  .pk-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-height: 48px; }
+  .pk-num { font: 800 14px var(--display); color: var(--muted); min-width: 3em; font-variant-numeric: tabular-nums; }
+  .pk-nm { flex: 1 1 220px; min-width: 0; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+  .pk-nm small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .pk-st { font: 700 13px var(--display); border-radius: 999px; padding: 3px 10px; background: var(--soft); color: var(--muted); white-space: nowrap; }
+  .pk-st.ok { background: var(--green-soft); color: var(--green-ink); }
+  .pk-kind { font: 800 11px var(--display); letter-spacing: .05em; text-transform: uppercase; border-radius: 6px; padding: 3px 7px; background: var(--blue-soft); color: var(--blue); }
+  .pk-kind.pr { background: var(--purple-soft); color: var(--purple); }
+  .pk-none { margin: 0; color: var(--muted); font-size: 14px; }
+  /* the Lesson library builds the packages */
+  .libm-sec { margin-top: 10px; }
+  .libm-lbl { font: 800 11.5px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  .libm-ls li .btn { margin-left: auto; }
+  .libm-tp { display: grid; gap: 6px; }
+  .tpi { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+  .tpi .nm { flex: 1 1 200px; min-width: 0; font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+  .tpi .nm small { display: block; font-weight: 400; color: var(--muted); }
+  .tpi select { font: 600 14px var(--text); padding: 4px 8px; border-radius: 8px; border: 1.5px solid var(--rule); background: var(--surface); color: var(--ink); min-height: 34px; }
+  .tpi .x { border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; min-width: 34px; min-height: 34px; border-radius: 8px; }
+  .tpi .x:hover { background: var(--soft); color: var(--ink); }
+  .tpk-list { display: grid; gap: 6px; max-height: 52vh; overflow-y: auto; margin-top: 10px; }
+  .tpk { display: flex; align-items: baseline; gap: 10px; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 8px 12px; cursor: pointer; font: 600 14px var(--text); }
+  .tpk small { color: var(--muted); font-weight: 400; margin-left: auto; text-align: right; }
+  .tpk[aria-disabled="true"] { opacity: .5; cursor: default; }
+  .tpk-h { font: 800 12px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 10px 0 2px; }
+  /* Homework: chapter groups fold to their header */
+  .chgrp-fold { border: 0; background: var(--soft); color: var(--ink); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; flex: none; }
+  .chgrp-fold svg { width: 18px; height: 18px; transition: transform .15s; }
+  .chgrp.folded .chgrp-fold svg { transform: rotate(-90deg); }
+  .chgrp-hl { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+  .chgrp.folded { padding-bottom: 14px; }
+  .foldall { border: 0; background: none; color: var(--blue); font: 700 14px var(--display); cursor: pointer; padding: 6px 8px; border-radius: 8px; }
+  .tag.practice { background: var(--purple-soft); color: var(--purple); }
   /* Teach a lesson shows the chapters a class has; the Lesson library holds them all */
   .te-empty { margin: 18px 0 0; padding: 22px; border-radius: var(--r-card); border: 2px dashed var(--rule); background: var(--surface); display: grid; gap: 10px; justify-items: start; }
   .te-empty h3 { margin: 0; font: 800 20px var(--display); color: var(--ink); }
@@ -1258,6 +1299,7 @@
       </div>
       <nav class="tabs" aria-label="Sections">
         <button id="tab-home" aria-current="page"><span class="ti" data-i="home"></span><span>Home</span><i class="badge" id="bd-home"></i></button>
+        <button id="tab-ls" class="hidden"><span class="ti" data-i="te"></span><span>Lessons</span></button>
         <button id="tab-hw"><span class="ti" data-i="ws"></span><span>Homework</span><i class="badge" id="bd-hw"></i></button>
         <button id="tab-st" class="hidden"><span class="ti" data-i="cl"></span><span>Students</span></button>
         <div class="hidden" aria-hidden="true" id="oldtabs">
@@ -1576,8 +1618,8 @@
 
   /* Three tabs: Home (today and the lessons), Homework (worksheets and the tracker) and Students (Progress and
      Classes). Points is in the menu. Each tab has a small bar for its two pages. */
-  var MODES = { home: [['home', 'Today'], ['te', 'Lessons']], hw: [['ws', 'Worksheets'], ['tr', 'Tracker']], st: [['pg', 'Progress'], ['cl', 'Classes']] };
-  function modeOf(v) { return v === 'home' || v === 'te' ? 'home' : v === 'ws' || v === 'tr' || v === 'detail' ? 'hw' : v === 'pg' || v === 'cl' ? 'st' : ''; }
+  var MODES = { home: [['home', 'Today']], ls: [['te', 'Lessons']], hw: [['ws', 'Worksheets'], ['tr', 'Tracker']], st: [['pg', 'Progress'], ['cl', 'Classes']] };
+  function modeOf(v) { return v === 'home' ? 'home' : v === 'te' ? 'ls' : v === 'ws' || v === 'tr' || v === 'detail' ? 'hw' : v === 'pg' || v === 'cl' ? 'st' : ''; }
   function isDashView() { return H.view === 'ws' || H.view === 'home'; }
   function renderSubnav(v) {
     var m = modeOf(v), nav = $('subnav'), items = (MODES[m] || []).filter(function (x) { return x[0] !== 'te' || (H.links && H.links.lessons); });
@@ -1593,6 +1635,7 @@
     $('view-home').classList.toggle('hidden', v !== 'home');
     var md = modeOf(v);
     $('tab-home').setAttribute('aria-current', md === 'home' ? 'page' : 'false');
+    $('tab-ls').setAttribute('aria-current', md === 'ls' ? 'page' : 'false');
     $('tab-hw').setAttribute('aria-current', md === 'hw' ? 'page' : 'false');
     $('tab-st').setAttribute('aria-current', md === 'st' ? 'page' : 'false');
     renderSubnav(v);
@@ -1616,6 +1659,7 @@
   }
   function showTab(v) { setView(v); if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'te') loadTeach(); else if (v === 'pg' || v === 'cl') loadLbView(v); else loadDash(); }
   $('tab-home').onclick = function () { showTab('home'); };
+  $('tab-ls').onclick = function () { showTab('te'); };
   $('tab-hw').onclick = function () { showTab(lsGet('wsh_hw') === 'tr' ? 'tr' : 'ws'); };
   $('tab-st').onclick = function () { showTab(lsGet('wsh_st') === 'cl' ? 'cl' : 'pg'); };
   $('tab-ws').onclick = function () { showTab('ws'); };
@@ -1720,6 +1764,7 @@
     H.links = l;
     $('tab-st').classList.toggle('hidden', !l.liveboard);
     $('tab-te').classList.toggle('hidden', !l.lessons);
+    $('tab-ls').classList.toggle('hidden', !l.lessons);
     $('tab-pg').classList.toggle('hidden', !l.liveboard);
     $('tab-cl').classList.toggle('hidden', !l.liveboard);
     h += '<button id="links-btn" aria-haspopup="true" aria-expanded="false" aria-controls="pop-links">' + ICON.link + '<span class="lbl">Links</span>' + ICON.chev + '</button>';
@@ -1863,9 +1908,9 @@
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
     el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters as packages</b><ul>' +
-      '<li><b>Lesson library</b>: Teach a lesson now shows only the chapters a class has. Press Lesson library and give a class a chapter: it appears in Teach a lesson, all its slides open to the class for revision at once, and each part\'s homework is still set by itself once you teach that part.</li>' +
-      '<li>Homework is grouped <b>by chapter</b> (By status gives the old view). New worksheet and Edit details have a Chapter choice; a worksheet titled with its sub-chapter number, such as 3.2, finds its chapter by itself.</li>' +
-      '<li>Students see the chapter on each worksheet, and each chapter gets a folder of its own in their My folders.</li>' +
+      '<li><b>Lessons</b> is a tab of its own: each class\'s chapter packages, with the slides, the homework for each part and topical worksheets. Build packages and give them to classes in the <b>Lesson library</b>. Topical worksheets are set as homework or opened as practice when you press the button.</li>' +
+      '<li>Homework is grouped <b>by chapter</b>, and each chapter folds away to its header (By status gives the old view). New worksheet and Edit details have a Chapter choice; a worksheet titled with its sub-chapter number, such as 3.2, finds its chapter by itself.</li>' +
+      '<li>On learnwithmrcedric, Lessons is the class\'s chapter packages: each chapter\'s slides, homework and practice together. Homework still shows in To do.</li>' +
       '<li><b>Show answers</b>: when you present, it sits beside Previous (or Back) in the bar at the bottom of the slides. It shows the whole question full size, with bars for multiple choice and a wall of answers for written questions. No names.</li>' +
       '<li>My&nbsp;Science is now <b>learnwithmrcedric</b>. The links stay the same.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
@@ -2229,7 +2274,7 @@
   }
   function groupSwitch() {
     if (!chList().length) return '';
-    return '<div class="viewsw grp" role="group" aria-label="Group worksheets"><button data-group="chapter" aria-pressed="' + (H.group === 'chapter') + '">By chapter</button>' +
+    return (H.group === 'chapter' ? '<button class="foldall" data-foldall>' + (Object.keys(folds()).length ? 'Show all' : 'Hide all') + '</button>' : '') + '<div class="viewsw grp" role="group" aria-label="Group worksheets"><button data-group="chapter" aria-pressed="' + (H.group === 'chapter') + '">By chapter</button>' +
       '<button data-group="status" aria-pressed="' + (H.group !== 'chapter') + '">By status</button></div>';
   }
   H.group = lsGet('wsh_group') || 'chapter';
@@ -2250,34 +2295,103 @@
   }
   /* The Lesson library: every chapter on the lesson site, by subject. Giving a class a chapter here puts it in Teach a
      lesson for that class (and opens its slides to them for revision). */
-  function openLibrary(cls) {
+  /* The Lesson library: every chapter on the lesson site, by subject, each one a package to build and give. A package
+     is its slides, the homework linked to each part, and its topical worksheets (set as homework, or practice).
+     Giving a class a chapter puts it in Lessons for that class and opens its slides to them for revision. */
+  function openLibrary(cls, focus) {
     var cat = H.te || {}, site = H.teSite || '';
+    H.libBack = null;
     var subs = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
     if (!subs.length) return;
-    var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub');
+    var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub'), pick = null;
+    if (focus) subs.forEach(function (s) { (s.groups || []).forEach(function (g) { if (chKey(s.id, g.name) === focus) cur = s.id; }); });
     if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
     var again = function () { modal('', 'wide libm'); draw(); if (H.view === 'te') renderTeach(); };
     again.always = true;
     var draw = function () {
+      if (pick) { drawPick(); return; }
       var sub = subs.filter(function (s) { return s.id === cur; })[0];
       var h = '<div class="libm-h"><h2>Lesson library</h2><button class="btn small" id="libm-x">Done</button></div>' +
-        '<p class="libm-sub">Give a class a chapter and it appears in Teach a lesson for that class. All its slides open to the class for revision at once, and each part\'s homework is set by itself once you teach that part.</p>' +
+        '<p class="libm-sub">Each chapter is a package: its slides, the homework for each part, and topical worksheets. Give a class a chapter and it appears in Lessons for that class, with all its slides open to them for revision.</p>' +
         '<div class="te-subs" role="tablist" aria-label="Subject">' + subs.map(function (s) {
           return '<button role="tab" class="te-subj" data-ls="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
         }).join('') + '</div><div class="libm-list">' + (sub.groups || []).filter(function (g) { return (g.items || []).length; }).map(function (g) {
-          var k = chKey(sub.id, g.name), c = chByKey(k), has = !!(c && chHas(cls, k));
-          var items = g.items.map(function (it) {
+          var k = chKey(sub.id, g.name), c = chByKey(k), has = !!(c && chHas(cls, k)), tp = c ? chTopical(k) : [];
+          var items = g.items.map(function (it, j) {
+            var nl = it.topicId && H.tn && H.tn.parts && H.tn.parts[it.topicId] ? linkCount(it.topicId) : -1;
             return '<li><span class="n">' + esc(it.num || '') + '</span><span class="t">' + esc(it.title || it.file) + '</span>' +
-              (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>' : '') + '</li>';
+              (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>'
+                : nl >= 0 ? '<button class="btn quiet small" data-lhw="' + esc(k) + '|' + j + '" title="The homework for each part of this lesson">Homework' + (nl ? ' (' + nl + ')' : '') + '</button>' : '') + '</li>';
           }).join('');
-          return '<section class="libm-ch' + (has ? ' has' : '') + '"' + (sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="libm-chh"><div class="libm-cht"><h3>' + esc(g.name) + '</h3><span>' +
-            (c ? plural(c.lessons, 'lesson', 'lessons') + (has ? ' · in Teach a lesson for ' + esc(cls) : '') : 'Open these from here') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div><ol class="libm-ls">' + items + '</ol></section>';
+          return '<section class="libm-ch' + (has ? ' has' : '') + '" id="libch-' + esc(k.replace(/[^a-z0-9]+/gi, '-')) + '"' + (sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="libm-chh"><div class="libm-cht"><h3>' + esc(g.name) + '</h3><span>' +
+            (c ? plural(c.lessons, 'lesson', 'lessons') + (tp.length ? ' · ' + plural(tp.length, 'topical worksheet', 'topical worksheets') : '') + (has ? ' · in Lessons for ' + esc(cls) : '') : 'Open these from here') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div>' +
+            '<div class="libm-sec"><div class="libm-lbl">' + (c ? 'Slides' : 'Study tools') + '</div><ol class="libm-ls">' + items + '</ol></div>' +
+            (c ? '<div class="libm-sec"><div class="libm-lbl">Topical worksheets</div><div class="libm-tp">' + tp.map(function (t, i) {
+              return '<div class="tpi"><span class="nm">' + esc(t.name) + (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' +
+                '<select data-tpm="' + esc(k) + '|' + i + '" aria-label="How ' + esc(t.name) + ' is used"><option value="hw"' + (t.mode !== 'practice' ? ' selected' : '') + '>Set as homework</option><option value="practice"' + (t.mode === 'practice' ? ' selected' : '') + '>Practice</option></select>' +
+                '<button class="x" data-tpx="' + esc(k) + '|' + i + '" aria-label="Take ' + esc(t.name) + ' out of the package">×</button></div>';
+            }).join('') + '<div><button class="btn quiet small" data-tpadd="' + esc(k) + '">' + ICON.plus + 'Add a topical worksheet</button></div></div></div>' : '') + '</section>';
         }).join('') + '</div>';
       $('modal').innerHTML = h;
       $('libm-x').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); };
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
+      var ref = function (attr) { var p = attr.split('|'), i = Number(p.pop()); return { key: p.join('|'), i: i }; };
+      var hold = function () { Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpm], [data-tpx], [data-tpadd]'), function (x) { x.disabled = true; }); };
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-lhw]'), function (b) {
+        b.onclick = function () {
+          var x = ref(b.getAttribute('data-lhw')), g = null;
+          sub.groups.forEach(function (gg) { if (chKey(sub.id, gg.name) === x.key) g = gg; });
+          if (!g || !g.items[x.i]) return;
+          H.libBack = again; homeworkBox(g.items[x.i]);
+        };
+      });
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpm]'), function (s) {
+        s.onchange = function () { var x = ref(s.getAttribute('data-tpm')), list = chTopical(x.key).slice(); if (!list[x.i]) return; list[x.i] = Object.assign({}, list[x.i], { mode: s.value }); hold(); saveTopical(x.key, list, draw); };
+      });
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpx]'), function (b) {
+        b.onclick = function () { var x = ref(b.getAttribute('data-tpx')), list = chTopical(x.key).slice(); list.splice(x.i, 1); hold(); saveTopical(x.key, list, draw); };
+      });
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpadd]'), function (b) { b.onclick = function () { pick = { key: b.getAttribute('data-tpadd'), q: '' }; draw(); }; });
       bindGive($('modal'), again);
-      setTimeout(function () { var x = $('libm-x'); if (x) x.focus(); }, 30);
+      if (focus) { var el = $('libch-' + focus.replace(/[^a-z0-9]+/gi, '-')); focus = null; if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 30); }
+      else setTimeout(function () { var x = $('libm-x'); if (x) x.focus(); }, 30);
+    };
+    // Choosing a topical worksheet from the worksheet library; the ones named for the chapter come first.
+    var drawPick = function () {
+      var c = chByKey(pick.key);
+      var h = '<div class="libm-h"><h2>Add to ' + esc(chShort(c)) + '</h2><button class="btn ghost small" id="tpk-back">Back</button></div>' +
+        '<p class="libm-sub">A worksheet from your worksheet library. In the package you choose whether it is set as homework or opened as practice.</p>' +
+        '<input type="search" id="tpk-q" placeholder="Search your worksheet library" aria-label="Search your worksheet library" value="' + esc(pick.q) + '" style="width:100%">' +
+        '<div class="tpk-list" id="tpk-list">' + (H.lib ? '' : '<p class="pk-none">Opening your worksheet library…</p>') + '</div>';
+      $('modal').innerHTML = h;
+      $('tpk-back').onclick = function () { pick = null; draw(); };
+      var list = function () {
+        if (!H.lib || !$('tpk-list')) return;
+        var inPkg = {}; chTopical(pick.key).forEach(function (t) { inPkg[t.file] = 1; });
+        var words = pick.q.toLowerCase().split(/\s+/).filter(String), num = c && c.num ? String(c.num) : '';
+        var likeCh = function (it) { var hay = (it.path + ' ' + it.name).toLowerCase(); return !!num && (new RegExp('\\bchapter\\s*' + num + '\\b').test(hay) || new RegExp('(^|[^\\d.])' + num + '\\.\\d').test(hay)); };
+        var ok = (H.lib.items || []).filter(function (it) { if (!it.ok) return false; var hay = (it.name + ' ' + it.path).toLowerCase(); return words.every(function (w) { return hay.indexOf(w) >= 0; }); });
+        var row = function (it) {
+          return '<button type="button" class="tpk" data-tpk="' + esc(it.id) + '"' + (inPkg[it.id] ? ' aria-disabled="true"' : '') + '>' + esc(it.name) + '<small>' + esc(inPkg[it.id] ? 'In this package' : (it.path || '')) + '</small></button>';
+        };
+        var near = ok.filter(likeCh), rest = ok.filter(function (it) { return !likeCh(it); });
+        $('tpk-list').innerHTML = !ok.length ? '<p class="pk-none">' + (H.lib.items.length ? 'Nothing matches. Try fewer words.' : 'Your worksheet library is empty. Put worksheet PDFs in your library folder (New worksheet, From my library).') + '</p>'
+          : (near.length ? '<div class="tpk-h">Named for this chapter</div>' + near.map(row).join('') + (rest.length ? '<div class="tpk-h">Everything else</div>' : '') : '') + rest.map(row).join('');
+        Array.prototype.forEach.call($('tpk-list').querySelectorAll('[data-tpk]'), function (b) {
+          b.onclick = function () {
+            if (b.getAttribute('aria-disabled') === 'true') return;
+            var it = H.lib.items.filter(function (x) { return x.id === b.getAttribute('data-tpk'); })[0];
+            if (!it) return;
+            b.setAttribute('aria-disabled', 'true');
+            var key = pick.key;
+            saveTopical(key, chTopical(key).concat([{ file: it.id, name: it.name, path: it.path || '', mode: 'hw' }]), function () { pick = null; draw(); toast(it.name + ' added to ' + chShort(c) + '.'); });
+          };
+        });
+      };
+      $('tpk-q').oninput = function () { pick.q = this.value; list(); };
+      setTimeout(function () { var q = $('tpk-q'); if (q) q.focus(); }, 30);
+      needLib(function () { if (pick && $('tpk-list')) list(); });
+      list();
     };
     modal('', 'wide libm'); draw();
   }
@@ -2297,15 +2411,127 @@
       var c = k ? chByKey(k) : null, ws = groups[k].slice().sort(function (x, y) { return rank[wsGroup(x)] - rank[wsGroup(y)]; });
       var early = ws.filter(isEarlier), now = ws.filter(function (w) { return !isEarlier(w); });
       var open = ws.filter(function (w) { return w.open; }).length, who = c ? chClassesWith(k) : [];
-      var head = '<div class="chgrp-h"><div class="chgrp-t">' + (c ? '<span class="chgrp-s">' + esc(c.subjectName || c.subject) + '</span>' : '') +
+      var fk = k || '__none', shut = !!folds()[fk];
+      var head = '<div class="chgrp-h"><div class="chgrp-hl"><button class="chgrp-fold" data-fold="' + esc(fk) + '" aria-expanded="' + !shut + '" aria-label="' + (shut ? 'Show' : 'Hide') + ' the worksheets in ' + esc(c ? chShort(c) : 'Not in a chapter') + '">' + FOLD_ICON + '</button><div class="chgrp-t">' + (c ? '<span class="chgrp-s">' + esc(c.subjectName || c.subject) + '</span>' : '') +
         '<h3>' + esc(c ? chShort(c) : 'Not in a chapter') + '</h3><span class="chgrp-n">' + (c ? plural(c.lessons, 'lesson', 'lessons') + ' · ' : '') +
-        plural(ws.length, 'worksheet', 'worksheets') + (open ? ' · ' + open + ' open' : '') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div>';
+        plural(ws.length, 'worksheet', 'worksheets') + (open ? ' · ' + open + ' open' : '') + '</span></div></div>' + (c ? chGiveChips(k) : '') + '</div>';
       var body = now.length ? draw(now) : ws.length ? '' : '<p class="chgrp-e">No homework yet. Each part\'s worksheet is set by itself once you teach that part' + (who.length ? ' to ' + esc(who.join(', ')) : '') + ', and it lands here.</p>';
       if (!c && ws.length) body = '<p class="chgrp-x">Edit details on a worksheet to put it in a chapter.</p>' + body;
       if (early.length) body += '<details class="earlier"><summary>Earlier (' + early.length + ')</summary>' + draw(early) + '</details>';
-      return '<section class="chgrp"' + (c && c.color ? ' style="--chc:' + esc(c.color) + '"' : '') + ' aria-label="' + esc(c ? chShort(c) : 'Not in a chapter') + '">' + head + body + '</section>';
+      if (shut) body = '';
+      return '<section class="chgrp' + (shut ? ' folded' : '') + '"' + (c && c.color ? ' style="--chc:' + esc(c.color) + '"' : '') + ' aria-label="' + esc(c ? chShort(c) : 'Not in a chapter') + '">' + head + body + '</section>';
     }).join('');
   }
+
+  /* ---------- Lessons: chapter packages ---------- */
+  function chTopical(k) { return ((H.dash && H.dash.chapters && H.dash.chapters.topical) || {})[k] || []; }
+  // The worksheet set for a class from a topical worksheet, if there is one (by the library's record, or its name).
+  function topicalSet(t, key, cls) {
+    var ws = (H.dash && H.dash.worksheets) || [], ids = [];
+    if (H.lib) { var it = H.lib.items.filter(function (x) { return x.id === t.file; })[0]; if (it) ids = (it.used || []).map(function (u) { return u.id; }); }
+    return ws.filter(function (w) {
+      var forCls = !(w.classes || []).length || w.classes.some(function (c) { return chNorm(c) === chNorm(cls); });
+      return forCls && w.chapter === key && !!w.practice === (t.mode === 'practice') && (ids.indexOf(w.id) >= 0 || w.title === t.name);
+    })[0] || null;
+  }
+  function libUsed(file, id, cls) {
+    if (!H.lib) return;
+    H.lib.items.forEach(function (x) { if (x.id === file) x.used = (x.used || []).concat([{ id: id, classes: cls, due: '' }]); });
+  }
+  // The homework for each part of a lesson: what is linked, and whether it is set for this class yet.
+  function partHwRows(it, cls) {
+    if (!it.topicId) return [];
+    var parts = deckParts(it.topicId), m = matchedLinks(it.topicId), auto = H.wa && H.wa.on ? (H.wa.links[it.topicId] || {}) : {};
+    var rows = parts.length ? parts.map(function (p, i) { return { key: partKey(p, i), t: p.t, num: p.num || '' }; })
+      : [{ key: '#all', t: it.title || '', num: it.num || '' }];
+    return rows.map(function (r) {
+      var L = m[r.key], am = !L && r.num ? auto[r.num] : null;
+      if ((L && L.file === 'none') || (!L && !am)) return null;
+      var done = L && L.done ? Object.keys(L.done).some(function (c) { return chNorm(c) === chNorm(cls); }) : false;
+      return { num: r.num, part: r.t, name: L ? L.name : am.name, done: done };
+    }).filter(Boolean);
+  }
+  function pkgHtml(sub, g, cls, rows, site) {
+    var gk = chKey(sub.id, g.name), c = chByKey(gk);
+    var hw = [];
+    g.items.forEach(function (it) { partHwRows(it, cls).forEach(function (r) { hw.push(r); }); });
+    var tp = chTopical(gk);
+    var h = '<div class="pk-lbl">Homework for each part</div><div class="pk-rows">' + (hw.length ? hw.map(function (r) {
+      return '<div class="pk-row"><span class="pk-num">' + esc(r.num) + '</span><span class="pk-nm">' + esc(r.name) + '<small>' + esc(r.part) + '</small></span>' +
+        '<span class="pk-st' + (r.done ? ' ok' : '') + '">' + (r.done ? 'Set for ' + esc(cls) : 'Sets itself when you teach it') + '</span></div>';
+    }).join('') : '<p class="pk-none">Nothing linked yet. Press Homework beside a lesson to link a worksheet to each part.</p>') + '</div>';
+    h += '<div class="pk-lbl">Topical worksheets</div><div class="pk-rows">' + (tp.length ? tp.map(function (t, i) {
+      var w = topicalSet(t, gk, cls), pr = t.mode === 'practice';
+      var act = w ? '<button class="btn quiet small" data-open-ws="' + esc(w.id) + '">' + (w.practice ? 'Open to practise' : 'Set' + (w.due ? ', due ' + esc(w.due) : '')) + '</button>'
+        : '<button class="btn small" data-tp="' + esc(gk) + '|' + i + '">' + (pr ? 'Open to ' : 'Set for ') + esc(cls) + '</button>';
+      return '<div class="pk-row"><span class="pk-kind' + (pr ? ' pr' : '') + '">' + (pr ? 'Practice' : 'Homework') + '</span><span class="pk-nm">' + esc(t.name) +
+        (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' + act + '</div>';
+    }).join('') : '<p class="pk-none">None yet. Add topical worksheets to this chapter in the Lesson library (Edit package).</p>') + '</div>';
+    return h;
+  }
+  // A topical worksheet set as homework for one class: a due date and how it runs, then it is set from the library.
+  function setTopical(t, key, cls) {
+    var c = chByKey(key);
+    modal('<h2>Set ' + esc(t.name) + '</h2><p>For ' + esc(cls) + ', in ' + esc(chShort(c)) + '. It goes into their chapter package and To do.</p>' +
+      '<div class="two"><div class="field"><label for="tp-date">Due date</label><input type="date" id="tp-date" value="' + isoDate(Date.now() + 7 * 864e5) + '"></div>' +
+      '<div class="field"><label for="tp-time">Due time (optional)</label><input type="time" id="tp-time"><div class="hint">No time means the end of the day.</div></div></div>' +
+      scheduleFields() + '<div class="err" id="tp-err"></div><div class="foot"><button class="btn ghost" id="tp-c">Cancel</button><button class="btn" id="tp-go">Set it</button></div>', 'wide');
+    bindSchedule();
+    $('tp-c').onclick = closeModal;
+    $('tp-go').onclick = function () {
+      var meta = { title: t.name, classes: [cls], dueDate: $('tp-date').value, dueTime: $('tp-time').value, open: true, chapter: key };
+      var sc = scheduleValues(); meta.autoClose = sc.autoClose; meta.corrDays = sc.corrDays; meta.answersAfter = sc.answersAfter; meta.autoHandIn = sc.autoHandIn; meta.autoMark = sc.autoMark;
+      if (meta.dueTime && !meta.dueDate) { $('tp-err').textContent = 'Choose a due date to go with the time.'; return; }
+      if (meta.autoHandIn && !meta.dueDate) { $('tp-err').textContent = 'Choose a due date, so the saved work can be handed in then.'; return; }
+      busy('Setting ' + t.name + ' for ' + cls + '...');
+      tcall('api_t_newFromLibrary', meta, t.file, '').then(function (r) {
+        closeModal(); libUsed(t.file, r.id, cls);
+        toast(t.name + ' set for ' + cls + '.');
+        redrawAfter();
+      }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not set', msg(e)); });
+    };
+  }
+  // A practice worksheet opened to one class: no due date, nothing handed in or marked.
+  function openPractice(t, key, cls) {
+    var c = chByKey(key);
+    busy('Opening ' + t.name + ' to ' + cls + '...');
+    var meta = { title: t.name, classes: [cls], dueDate: '', dueTime: '', open: true, chapter: key, practice: true,
+      autoClose: false, corrDays: 0, answersAfter: false, autoHandIn: false, autoMark: false };
+    tcall('api_t_newFromLibrary', meta, t.file, '').then(function (r) {
+      closeModal(); libUsed(t.file, r.id, cls);
+      toast(t.name + ' is open to ' + cls + ' to practise, in their ' + chShort(c) + ' package.');
+      redrawAfter();
+    }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not opened', msg(e)); });
+  }
+  function redrawAfter() {
+    loadDash().then(function () { try { if (H.view === 'te' && H.te) renderTeach(); } catch (e) { /* drawn again next time */ } });
+  }
+  function bindPkg(root, cls) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-tp]'), function (b) {
+      b.onclick = function () {
+        var p = b.getAttribute('data-tp').split('|'), i = Number(p.pop()), key = p.join('|'), t = chTopical(key)[i];
+        if (!t) return;
+        if (t.mode === 'practice') openPractice(t, key, cls); else setTopical(t, key, cls);
+      };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-open-ws]'), function (b) { b.onclick = function () { openDetail(b.getAttribute('data-open-ws')); }; });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-pkedit]'), function (b) { b.onclick = function () { openLibrary(cls, b.getAttribute('data-pkedit')); }; });
+  }
+  // The worksheet library, for adding topical worksheets (loaded once; the server keeps it for 10 minutes).
+  function needLib(then) {
+    if (H.lib) { then(); return; }
+    if (H.libBusy) { H.libBusy.then(then); return; }
+    H.libBusy = tcall('api_t_library', false).then(function (L) { H.lib = L; H.libBusy = null; }, function (e) { H.libBusy = null; throw e; });
+    H.libBusy.then(then).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); });
+  }
+  function saveTopical(key, list, after) {
+    tcall('api_t_topicalSave', key, list).then(function (r) {
+      if (H.dash && H.dash.chapters) { var t = H.dash.chapters.topical = H.dash.chapters.topical || {}; if (r.topical.length) t[key] = r.topical; else delete t[key]; }
+      if (after) after();
+    }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); if (after) after(); });
+  }
+  var FOLD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  function folds() { if (!H.fold) { try { H.fold = JSON.parse(lsGet('wsh_fold') || '{}') || {}; } catch (e) { H.fold = {}; } } return H.fold; }
 
   /* ---------- worksheet cards ---------- */
   var FILTERS = [['all', 'All'], ['open', 'Open'], ['marking', 'Marking'], ['done', 'Done']];
@@ -2378,6 +2604,17 @@
     if ($('snz-t')) $('snz-t').onclick = function () { H.showSnoozed = !H.showSnoozed; renderDash(H.dash); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-filter]'), function (b) { b.onclick = function () { H.filter = b.getAttribute('data-filter'); lsSet('wsh_filter', H.filter); renderDash(H.dash); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-layout]'), function (b) { b.onclick = function () { H.layout = b.getAttribute('data-layout'); lsSet('wsh_layout', H.layout); renderDash(H.dash); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fold]'), function (b) {
+      b.onclick = function () { var k = b.getAttribute('data-fold'), f = folds(); if (f[k]) delete f[k]; else f[k] = 1; lsSet('wsh_fold', JSON.stringify(f)); renderDash(H.dash); };
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-foldall]'), function (b) {
+      b.onclick = function () {
+        var f = folds();
+        if (Object.keys(f).length) H.fold = {};
+        else { H.fold = {}; Array.prototype.forEach.call(document.querySelectorAll('[data-fold]'), function (x) { H.fold[x.getAttribute('data-fold')] = 1; }); }
+        lsSet('wsh_fold', JSON.stringify(H.fold)); renderDash(H.dash);
+      };
+    });
     Array.prototype.forEach.call(document.querySelectorAll('[data-group]'), function (b) { b.onclick = function () { H.group = b.getAttribute('data-group'); lsSet('wsh_group', H.group); renderDash(H.dash); }; });
     bindGive($('view-ws'), function () { if (H.dash) renderDash(H.dash); });
     bindActs($('view-ws'));
@@ -2412,6 +2649,7 @@
   }
   // Where a worksheet is: set, handing in, ready to mark, being marked, marked, released.
   function stageOf(w) {
+    if (w.practice) return { k: 'practice', act: 'open', label: 'Open' };
     var j = w.job, connected = !!(H.dash && H.dash.claude && H.dash.claude.connected);
     if (w.showMarked && w.hasAnswerKey && !w.showAnswers) return { k: 'answers', act: 'answers', label: 'Release answers', icon: ICON.key };
     if (w.showMarked) return { k: 'released', act: 'open', label: 'Open' };
@@ -2473,7 +2711,7 @@
   function card(w) {
     var tags = '<span class="tag ' + (w.open ? 'open' : 'closed') + '">' + (w.open ? 'Open' : 'Closed') + '</span>' +
       (w.showMarked ? '<span class="tag released">Marking released</span>' : '') +
-      (w.showAnswers ? '<span class="tag answers">Answers released</span>' : '') + chTag(w);
+      (w.showAnswers ? '<span class="tag answers">Answers released</span>' : '') + (w.practice ? '<span class="tag practice">Practice</span>' : '') + chTag(w);
     var marking = w.markedFiles || w.scored ? '<p class="meta">' + plural(w.markedFiles, 'marked file', 'marked files') + ' and ' + plural(w.scored, 'score', 'scores') + ' uploaded.</p>' : '';
     marking += jobLine(w);
     if (w.showMarked && w.corrDue) {
@@ -2483,8 +2721,9 @@
     var pcs = w.perClass.filter(function (pc) { return !H.cls || pc.cls === H.cls; }), main = stageOf(w);
     return '<div class="sheet card" data-open="' + esc(w.id) + '" style="--strip:' + stripFor(H.cls ? [H.cls] : w.classes) + '"><div class="card-head">' + topicHtml(w.title, w.icon) + '<div><h3>' + esc(w.title) + '</h3>' +
       '<p class="meta">' + dueChip(w) + tags + '</p><p class="meta" style="font-size:13px">' + esc(w.id + ' · ' + w.classText) + '</p></div></div>' +
+      (w.practice ? '<p class="meta">Practice: students open it from their chapter package any time. Nothing is handed in or marked.</p>' :
       '<div class="rings">' + (pcs.length ? pcs.map(ringHtml).join('') : '<span class="muted">No students in these classes.</span>') + '</div>' +
-      stageDots(w) + marking +
+      stageDots(w) + marking) +
       '<div class="acts">' + mainBtn(w, main) + moreMenu(w, main) + '</div></div>';
   }
   function listRow(w) {
@@ -5025,14 +5264,17 @@
     var subs = all.filter(function (s) { return (s.groups || []).some(function (g) { return shown(s, g); }); });
     var cur = lsGet('wsh_te_sub');
     if (!subs.some(function (s) { return s.id === cur; })) cur = subs.length ? subs[0].id : '';
-    var h = '<div class="te-head"><div class="row"><h2 class="h">Teach a lesson</h2><span class="spacer"></span><div class="te-tools">' +
+    var h = '<div class="te-head"><div class="row"><h2 class="h">Lessons</h2><span class="spacer"></span><div class="te-tools">' +
       '<a class="btn quiet small" id="te-pj" href="#" target="_blank" rel="noopener" title="Open on the laptop you take to class">' + ICON.tabTe + 'Projector screen</a>' +
       '<button class="btn quiet small" id="te-pair">' + ICON.phone + 'Pair my phone</button>' +
       (lib ? '<button class="btn small" id="te-lib">' + ICON.folder + 'Lesson library</button>' : '') +
       '<label class="btn ghost small" id="te-add">' + ICON.plus + 'Add or update a lesson<input type="file" id="te-file" accept=".html,.htm,text/html" hidden></label></div></div>' +
-      '<p class="te-sub">Teach opens the slides for the projector, already signed in, for the class you choose here. The lesson starts for them, it shows on their learnwithmrcedric, and their iPads follow your slides. Your phone is the remote. Answers count only while you teach.</p>' +
-      '<p class="te-sub"><b>Revision</b> opens by itself once you teach a lesson to the class, so they can go over it in learnwithmrcedric after school (nothing they do there is saved). Untick it to close a lesson. <b>Homework</b> links a worksheet from your library to each sub-chapter: it is set for a class by itself once you have shown them that sub-chapter (most of its slides, including the last, over one lesson or more).</p>' +
-      (chList().length ? '<p class="te-sub">Only the chapters you have given this class are here. Open the <b>Lesson library</b> to give a class a chapter: all its slides open to them for revision at once, each part\'s homework is still set by itself once you teach that part, and their learnwithmrcedric keeps the chapter\'s homework in a folder of its own.</p>' : '') + '</div>';
+      '<p class="te-sub">' + (lib ? 'Each class\'s chapter packages. ' : '') + 'Teach opens the slides on the projector for the class you pick, and your phone is the remote.</p>' +
+      '<details class="te-how"><summary>How it works</summary><ul>' +
+        '<li>Give a class a chapter from the <b>Lesson library</b>: all its slides open to them for revision, and it shows here.</li>' +
+        '<li><b>Homework for each part</b> sets itself once you have taught that part, due at their next lesson.</li>' +
+        '<li><b>Topical worksheets</b> are set as homework, or opened as practice, when you press the button.</li>' +
+        '<li>Answers count only while you teach. Untick Revision to close a lesson.</li></ul></details>' + '</div>';
     h += '<div class="te-cls" role="group" aria-label="Class to teach"><span>Class</span>' + teClasses().map(function (c) {
       return '<button data-tc="' + esc(c) + '" aria-pressed="' + (c === cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
     }).join('') + '</div>';
@@ -5045,8 +5287,9 @@
     var rows = [];
     (sub.groups || []).forEach(function (g) {
       if (!shown(sub, g)) return;
-      var gk = chKey(sub.id, g.name);
-      h += '<section class="te-ch"><div class="te-chh"><h3>' + esc(g.name) + '</h3>' + (chByKey(gk) ? chGiveChips(gk) : '') + '</div><ul class="te-list">';
+      var gk = chKey(sub.id, g.name), isPkg = lib && !!chByKey(gk);
+      h += '<section class="te-ch' + (isPkg ? ' pk' : '') + '"' + (isPkg && sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="te-chh"><h3>' + esc(g.name) + '</h3>' + (chByKey(gk) ? chGiveChips(gk) : '') +
+        (isPkg ? '<button class="btn quiet small" data-pkedit="' + esc(gk) + '">Edit package</button>' : '') + '</div>' + (isPkg ? '<div class="pk-lbl">Slides</div>' : '') + '<ul class="te-list">';
       g.items.forEach(function (it) {
         var url = site + encodeURI(it.file), tool = it.kind === 'tool', i = rows.length;
         rows.push({ it: it, url: url });
@@ -5070,9 +5313,9 @@
           '<span class="te-t"><b>' + esc(it.title || it.file) + '</b>' + (run ? '<span class="te-run"><i></i>Running for ' + esc(cls) + ' · ' + esc(mine.running.lesson) + '</span>' : (it.note && !tool ? '' : '<small>' + esc(it.note || '') + '</small>')) + '</span>' +
           '<span class="te-acts">' + acts + '</span></li>';
       });
-      h += '</ul></section>';
+      h += '</ul>' + (isPkg ? pkgHtml(sub, g, cls, rows, site) : '') + '</section>';
     });
-    h += '<p class="te-foot">Students open the same lessons in learnwithmrcedric. <a href="' + esc(site) + '" target="_blank" rel="noopener">See the lesson site</a></p>';
+    h += '<p class="te-foot">Students open their chapter packages in learnwithmrcedric. <a href="' + esc(site) + '" target="_blank" rel="noopener">See the lesson site</a></p>';
     $('view-te').innerHTML = h;
     Array.prototype.forEach.call($('view-te').querySelectorAll('.te-subj'), function (b) {
       b.onclick = function () { lsSet('wsh_te_sub', b.getAttribute('data-s')); renderTeach(); };
@@ -5084,7 +5327,7 @@
       b.onclick = function (e) { e.stopPropagation(); var r = rows[Number(b.getAttribute('data-parts'))]; partMenu(b, r.it, r.url, cls); };
     });
     Array.prototype.forEach.call($('view-te').querySelectorAll('[data-prog]'), function (b) { b.onclick = function () { openProgress(cls, b.getAttribute('data-prog'), true); }; });
-    Array.prototype.forEach.call($('view-te').querySelectorAll('[data-hw]'), function (b) { b.onclick = function () { homeworkBox(rows[Number(b.getAttribute('data-hw'))].it); }; });
+    Array.prototype.forEach.call($('view-te').querySelectorAll('[data-hw]'), function (b) { b.onclick = function () { H.libBack = null; homeworkBox(rows[Number(b.getAttribute('data-hw'))].it); }; });
     if (!H.wl && !H.wlBusy && H.tn) H.wlBusy = loadLinks().then(function () { H.wlBusy = null; if (H.view === 'te') renderTeach(); });
     Array.prototype.forEach.call($('view-te').querySelectorAll('[data-rev]'), function (b) {
       b.onchange = function () {
@@ -5101,6 +5344,8 @@
     bindGo($('view-te'));
     bindGive($('view-te'), function () { if (H.view === 'te') renderTeach(); });
     Array.prototype.forEach.call($('view-te').querySelectorAll('#te-lib, [data-lib]'), function (b) { b.onclick = function () { openLibrary(cls); }; });
+    bindPkg($('view-te'), cls);
+    if (lib && !H.lib && subs.some(function (s) { return (s.groups || []).some(function (g) { return shown(s, g) && chTopical(chKey(s.id, g.name)).length; }); })) needLib(function () { if (H.view === 'te') renderTeach(); });
     $('te-pair').onclick = pairPhone;
     bindProjector($('te-pj'));
     $('te-file').onchange = function () { var f = this.files && this.files[0]; this.value = ''; if (f) addLesson(f); };
@@ -5137,7 +5382,7 @@
       '<div class="hwlist" id="hw-list"><p class="muted">Opening your library…</p></div>' +
       '<label class="check-row"><input type="checkbox" id="hw-back"><span>Also set it now for a class that finished the sub-chapter in the last 2 days</span></label>' +
       '<div class="err" id="hw-err"></div><div class="foot"><button class="btn" id="hw-done">Done</button></div>', 'wide');
-    $('hw-done').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); };
+    $('hw-done').onclick = function () { closeModal(); if (H.libBack) { var back = H.libBack; H.libBack = null; back(); } else if (H.view === 'te') renderTeach(); };
     Promise.all([loadLinks(), H.lib ? Promise.resolve(H.lib) : tcall('api_t_library', false).then(function (L) { H.lib = L; return L; })]).then(function (res) {
       var mine = matchedLinks(it.topicId), all = res[0][it.topicId] || {}, L = res[1] || { items: [] }, items = (L.items || []).filter(function (x) { return x.ok; });
       var auto = (H.wa && H.wa.on) ? (H.wa.links[it.topicId] || {}) : null;

@@ -1,12 +1,14 @@
 {
-  "build": "2026-10-09-chapters",
-  "seq": 20,
-  "ref": "57e5fbeedd9c7b66353c3c3ffcf844c9e68d411e",
-  "title": "learnwithmrcedric: chapter packages, and Show answers on the slides",
+  "build": "2026-10-10-packages",
+  "seq": 21,
+  "ref": "main",
+  "title": "learnwithmrcedric: chapter packages in Lessons, and Show answers on the slides",
   "notes": [
-    "Chapters as packages: give a class a whole chapter, its slides open at once and each part's homework is set as you teach it",
-    "Homework grouped by chapter in the Teacher Hub, with the chapter on every worksheet and a folder for each chapter for students",
-    "Show answers on the slides: the whole question, bars for choice questions, a wall of answers for written ones",
+    "Lessons is a tab of its own: each class's chapter packages, with the slides, the homework for each part and topical worksheets",
+    "Topical worksheets are set as homework, or opened as practice, from the package; the Lesson library builds the packages",
+    "Students open each chapter as a package on learnwithmrcedric: slides, homework and practice together",
+    "The Homework tab groups worksheets by chapter, and each chapter folds away",
+    "Show answers on the slides, beside Previous or Back: bars for choice questions, a wall of answers for written ones",
     "My Science is now learnwithmrcedric"
   ],
   "files": [
@@ -14,13 +16,13 @@
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "36d43def0a6c56db622a1341c265aff805c4939d9af8c2ef2000968ea708e9b4"
+      "sha256": "907fb116442acde8dd3d8d59737985d36661401b2180d603793841ed9117ccc0"
     },
     {
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "8b39454d83ef97d882ba45eaec6b5bb33b0951ddda053a30bf24f71f9524578c"
+      "sha256": "2edc82faefc1083226570c0b8b21023dc158351e6d75b30fc7ab3874c4a3797e"
     },
     {
       "name": "Guide",
@@ -32,19 +34,19 @@
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "000167476910d40baa0fc40946cc9e84d5086c1982ef76a9fc641158ee74a3d9"
+      "sha256": "0d1a4fab5640c737daadf11cb7684208af9d8f53530c8bd9c74d7a4f53cd945b"
     },
     {
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "5f2e075a4e6d5f8c597dab0fbe6cb1993ebee3d54dab802a5600ac3ecd96f0bb"
+      "sha256": "c80614223c7f3e76aac03cb7a007c744031b090a2f55dae10b8331d423bf42e0"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "863c5a93401ccc9b64cdf0213bc2bcdc3125660f98b051105fbaba15fe1d7996"
+      "sha256": "b11b3c553ce3dff11930d7f9b15da1f7924d71b71a6bfffc639193ee3268541c"
     },
     {
       "name": "Ink",
@@ -62,7 +64,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "89ccfa76e24db0bc0b036d82033b51fbf049b2254dfef5c1e2b4fdc7e9041534"
+      "sha256": "0ebe258a85956063cb1f48e69e0aabae2cdf27b177e9d83d86db9174826d8938"
     },
     {
       "name": "Styles",
@@ -74,7 +76,7 @@
       "name": "Teacher",
       "type": "HTML",
       "path": "Teacher.html",
-      "sha256": "4ab471bfc6ba19aa013de67cb5a1193b2a657fc7e6a84498f45ba32354e9d9d8"
+      "sha256": "12ff0754d359af5eb486767587827b170caec87626308f7bed2dd0926ac7bac3"
     },
     {
       "name": "appsscript",
@@ -84,6 +86,54 @@
     }
   ],
   "pages": [
+    {
+      "seq": 21,
+      "build": "2026-10-10-packages",
+      "ref": "main",
+      "needsServer": 21,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "6522524ce64a358df54650298c548cd226932d02f9a08391a463e65b149a50d1"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "0d1a4fab5640c737daadf11cb7684208af9d8f53530c8bd9c74d7a4f53cd945b"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "b11b3c553ce3dff11930d7f9b15da1f7924d71b71a6bfffc639193ee3268541c"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "b37a79c8f5199b5a5de98adfddbc1c27ff5f7de38788946e1e5060ff4b996787"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "0ebe258a85956063cb1f48e69e0aabae2cdf27b177e9d83d86db9174826d8938"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "12ff0754d359af5eb486767587827b170caec87626308f7bed2dd0926ac7bac3"
+        }
+      ]
+    },
     {
       "seq": 20,
       "build": "2026-10-09-chapters",
@@ -182,6 +232,22 @@
     }
   ],
   "server": [
+    {
+      "seq": 21,
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs"
+      ],
+      "notes": [
+        "Lessons is a tab of its own: each class's chapter packages, with the slides, the homework for each part and topical worksheets",
+        "Topical worksheets are set as homework, or opened as practice, from the package; the Lesson library builds the packages",
+        "Students open each chapter as a package on learnwithmrcedric: slides, homework and practice together",
+        "The Homework tab groups worksheets by chapter, and each chapter folds away",
+        "Show answers on the slides, beside Previous or Back: bars for choice questions, a wall of answers for written ones",
+        "My Science is now learnwithmrcedric"
+      ]
+    },
     {
       "seq": 20,
       "files": [

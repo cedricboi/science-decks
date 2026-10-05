@@ -219,6 +219,28 @@
   .subchip.on { background: var(--sc, var(--dkr-bg-ink, var(--ink))); border-color: var(--sc, var(--ink)); color: var(--dk-fg-ffffff, #fff); }
   .chapters .chap { font-size: 15px; margin: 16px 0 8px; color: var(--ink-2); }
   .chapters .chap:first-child { margin-top: 0; }
+  /* The class's chapter packages: slides, homework and practice for each chapter */
+  .pkgs { display: grid; gap: 12px; }
+  .pkg { background: var(--dk-bg-ffffff, #fff); border: 1px solid var(--line); border-left: 6px solid var(--sc, var(--ink)); border-radius: 16px; overflow: hidden; }
+  .pkg-h { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px; min-height: 60px; cursor: pointer; color: var(--ink); }
+  .pkg-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pkg-t b { font-family: var(--display); font-size: 17px; line-height: 1.25; }
+  .pkg-n { font-size: 13px; color: var(--muted); }
+  .pkg-due { font-family: var(--display); font-weight: 800; font-size: 13px; border-radius: 999px; padding: 4px 10px; background: var(--bad-soft); color: var(--bad); white-space: nowrap; }
+  .pkg-due.soft { background: var(--hl-soft); color: var(--ink); }
+  .pkg-chev { font-size: 20px; color: var(--muted); transition: transform .15s; }
+  .pkg.open .pkg-chev { transform: rotate(90deg); }
+  .pkg-b { padding: 0 16px 16px; display: grid; gap: 8px; }
+  .pkg-l { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 8px 0 0; }
+  .pkg-b .group { border-radius: 12px; }
+  .pkg-w { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--dk-bg-f4f6fa, #F4F6FA); border-radius: 12px; padding: 11px 14px; min-height: 52px; cursor: pointer; color: var(--ink); }
+  .pkg-w .t { flex: 1; min-width: 0; font-family: var(--display); font-weight: 700; font-size: 15px; }
+  .pkg-w .t small { display: block; font-family: var(--body); font-weight: 400; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .pkg-st { font-family: var(--display); font-weight: 700; font-size: 12.5px; border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--hl-soft); color: var(--ink); }
+  .pkg-st.over { background: var(--bad-soft); color: var(--bad); }
+  .pkg-st.done { background: var(--ok-soft); color: var(--ok); }
+  .pkg-st.gone { background: var(--dk-bg-f4f6fa, #F4F6FA); color: var(--muted); border: 1px solid var(--line); }
+  .pkg-none { margin: 0; font-size: 14px; color: var(--muted); }
   .bar { height: 6px; border-radius: 999px; background: var(--dk-bg-e6eaf3, #E6EAF3); overflow: hidden; flex: 1; max-width: 180px; }
   .bar i { display: block; height: 100%; background: var(--blue); border-radius: 999px; }
   .chk { align-self: flex-start; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 8px; background: var(--dk-bg-f1f3f8, #F1F3F8); color: var(--ink-2); }
@@ -427,7 +449,7 @@
       <button id="hw-line" class="hwline hidden" type="button"></button>
 
       <div id="sec-lessons">
-        <h2 class="sec">Revise</h2>
+        <h2 class="sec" id="lessons-head">Revise</h2>
         <p class="revnote"><span aria-hidden="true">📖</span><span>Go over these lessons any time. <b>Your answers here are not saved and do not count.</b> They count only in class, when your teacher is teaching the lesson.</span></p>
         <div id="lesson-subs" class="subchips"></div>
         <div id="lesson-list" class="group"></div>
@@ -932,7 +954,7 @@
     if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
     if (!inHw(e.source)) return;   // only the homework frame (or a frame inside it) is answered
     if (m.type === 'ready') { try { e.source.postMessage({ to: 'wsh', type: 'signin', st: me.st }, e.origin); hwTheme = [e.source, e.origin]; tellHwTheme(); } catch (x) { /* gone */ } }
-    else if (m.type === 'in') { hwSigned = true; $('hw-wait').classList.add('gone'); }
+    else if (m.type === 'in') { hwSigned = true; $('hw-wait').classList.add('gone'); setTimeout(sendHwOpen, 300); }
     else if (m.type === 'signedout') {
       call('apiStMe', me.st).then(function (r) { if (!r.ok) signedOutNow(); else { $('hw-wait').classList.add('gone'); msg('hw-msg', m.error || 'Homework could not open. Try again in a moment.'); } });
     }
@@ -983,7 +1005,7 @@
       drawNext(o);
       drawHomework(o);
       drawPoints(o);
-      drawLessons(o.lessons, o.rule, o.catalog);
+      drawLessons(o.lessons, o.rule, o.catalog, o);
     }).catch(function (e) { if (isSignedOut(e)) signedOutNow(); /* otherwise the rest of the page still works */ });
   }
 
@@ -1021,7 +1043,7 @@
   /* Homework still to do shows on the Homework tab, and as one line on Lessons. */
   function drawHomework(o) {
     var h = o.hub, okHub = !!(h && !h.error);
-    var hw = okHub ? h.homework : [];
+    var hw = okHub ? h.homework.filter(function (x) { return !x.practice; }) : [];
     var over = hw.filter(function (x) { return x.status === 'overdue'; }), todo = hw.filter(function (x) { return x.status === 'todo'; });
     var n = over.length + todo.length, cnt = $('hw-count');
     cnt.textContent = String(n); cnt.classList.toggle('hidden', !n); cnt.classList.toggle('soft', !over.length);
@@ -1078,11 +1100,105 @@
     var recent = lessons.filter(function (l) { return l.last; }).sort(function (a, b) { return b.last - a.last; })[0];
     return (recent && withId(recent.id)) || ids[0];
   }
-  function drawLessons(lessons, rule, cat) {
+  /* The class's chapter packages: each chapter's slides (for revision), its homework and its practice worksheets
+     together. A worksheet opens in Homework. */
+  var openPkg = null;
+  function hwState(w) {
+    if (w.status === 'marked') return ['done', w.score ? 'Marked · ' + w.score : 'Marked'];
+    if (w.status === 'submitted') return ['done', 'Handed in'];
+    if (w.status === 'missed') return ['gone', 'Closed'];
+    if (w.practice) return ['', 'Practice'];
+    if (w.status === 'overdue') return ['over', 'Overdue'];
+    return ['', w.due ? 'Due ' + w.due : 'To do'];
+  }
+  function drawPackages(o, lessons, rule, cat) {
+    var pk = o.packages || [], byId = {}, items = {}, hw = (o.hub && !o.hub.error && o.hub.homework) || [];
+    lessons.forEach(function (l) { byId[l.id] = l; });
+    ((cat && cat.subjects) || []).forEach(function (s) { (s.groups || []).forEach(function (g) { (g.items || []).forEach(function (it) { if (it.id) items[it.id] = it; }); }); });
+    if (openPkg === null) openPkg = load('lb_pkg');
+    var subjects = [], names = {};
+    pk.forEach(function (p) { if (!names[p.subject]) { names[p.subject] = p; subjects.push(p.subject); } });
+    var sub = tappedSubject && names[tappedSubject] ? tappedSubject : (load('lb_subject') && names[load('lb_subject')] ? load('lb_subject') : subjects[0]);
+    var chips = $('lesson-subs'); chips.innerHTML = '';
+    if (subjects.length > 1) subjects.forEach(function (sid) {
+      var b = el('button', 'subchip' + (sid === sub ? ' on' : ''), names[sid].subjectName || sid);
+      b.style.setProperty('--sc', names[sid].color || 'var(--ink)');
+      b.addEventListener('click', function () { tappedSubject = sid; store('lb_subject', sid); drawPackages(o, lessons, rule, cat); });
+      chips.appendChild(b);
+    });
+    var box = $('lesson-list'); box.innerHTML = ''; box.className = 'pkgs';
+    // the first time, the subject's first chapter is open
+    if (openPkg == null) { var first = pk.filter(function (p) { return p.subject === sub; })[0]; openPkg = first ? first.key : ''; }
+    pk.filter(function (p) { return p.subject === sub; }).forEach(function (p) {
+      var mine = hw.filter(function (w) { return w.chapter === p.key && !w.practice; }), prac = hw.filter(function (w) { return w.chapter === p.key && w.practice; });
+      // the chapter's lessons: open ones with this student's progress; in a chapter given to the class, the rest as links
+      var ls = (p.items || p.decks.map(function (id) { return { id: id }; })).filter(function (it) { return byId[it.id] || (it.open && it.url); });
+      var due = mine.filter(function (w) { return w.status === 'todo' || w.status === 'overdue'; }), over = due.some(function (w) { return w.status === 'overdue'; });
+      var open = openPkg === p.key;
+      var card = el('section', 'pkg' + (open ? ' open' : '')); card.style.setProperty('--sc', p.color || 'var(--ink)');
+      var head = el('button', 'pkg-h'); head.type = 'button'; head.setAttribute('aria-expanded', String(open));
+      var tx = el('span', 'pkg-t'); tx.appendChild(el('b', '', p.name));
+      var bits = [ls.length + (ls.length === 1 ? ' lesson' : ' lessons')];
+      if (mine.length) bits.push(mine.length + ' homework');
+      if (prac.length) bits.push(prac.length + ' practice');
+      tx.appendChild(el('span', 'pkg-n', bits.join(' · ')));
+      head.appendChild(tx);
+      if (due.length) head.appendChild(el('span', 'pkg-due' + (over ? '' : ' soft'), due.length + ' to do'));
+      head.appendChild(el('span', 'pkg-chev', '›'));
+      head.addEventListener('click', function () { openPkg = open ? '' : p.key; store('lb_pkg', openPkg); drawPackages(o, lessons, rule, cat); });
+      card.appendChild(head);
+      if (open) {
+        var b = el('div', 'pkg-b');
+        b.appendChild(el('p', 'pkg-l', 'Slides'));
+        if (ls.length) {
+          var grp = el('div', 'group'); grp.style.setProperty('--sc', p.color || 'var(--ink)');
+          ls.forEach(function (x) {
+            var it = items[x.id] || {}, l = byId[x.id];
+            if (l) { drawLessonCards(grp, [Object.assign({}, l, { title: it.title || x.title || l.title, num: it.num || x.num || l.num, url: it.url || l.url })], rule, true); return; }
+            var a = el('a', 'lcard plain'); a.href = deckUrl(x.url); a.target = '_blank'; a.rel = 'noopener';
+            a.appendChild(el('span', 'n' + (String(x.num || '').length > 3 ? ' sm' : ''), x.num || '•'));
+            var bd = el('span', 'bd'); bd.appendChild(el('span', 't', x.title || '')); bd.appendChild(el('span', 's', 'Slides and questions'));
+            a.appendChild(bd); a.appendChild(el('span', 'go', '›'));
+            grp.appendChild(a);
+          });
+          b.appendChild(grp);
+        } else b.appendChild(el('p', 'pkg-none', 'Your teacher has not opened these slides yet.'));
+        var rows = function (title, list, none) {
+          b.appendChild(el('p', 'pkg-l', title));
+          if (!list.length) { b.appendChild(el('p', 'pkg-none', none)); return; }
+          list.forEach(function (w) {
+            var st = hwState(w), r = el('button', 'pkg-w'); r.type = 'button';
+            var t = el('span', 't', w.title);
+            if (w.status === 'marked' && w.late) t.appendChild(el('small', '', 'Handed in late'));
+            r.appendChild(t); r.appendChild(el('span', 'pkg-st' + (st[0] ? ' ' + st[0] : ''), st[1]));
+            r.addEventListener('click', function () { openHw(w.id); });
+            b.appendChild(r);
+          });
+        };
+        rows('Homework', mine, 'Homework for this chapter shows here when your teacher sets it.');
+        if (prac.length) rows('Practice', prac, '');
+        card.appendChild(b);
+      }
+      box.appendChild(card);
+    });
+  }
+  // A worksheet from a package opens in Homework (once it is signed in).
+  var hwPending = '';
+  function openHw(id) { hwPending = id || ''; setTab('hw'); sendHwOpen(); }
+  function sendHwOpen() {
+    if (!hwPending || !hwSigned || !hwTheme) return;
+    try { hwTheme[0].postMessage({ to: 'wsh', type: 'open', id: hwPending }, hwTheme[1]); hwPending = ''; } catch (x) { /* again once it is signed in */ }
+  }
+
+  function drawLessons(lessons, rule, cat, o) {
     var mine = lessons.filter(function (l) { return l.open !== false; });
     var hasCat = !!(cat && cat.subjects && cat.subjects.length);
     var any = hasCat ? cat.subjects.some(function (s) { return s.groups.some(function (g) { return g.items.some(function (it) { return it.kind !== 'tool'; }); }); }) : mine.length > 0;
-    $('lesson-none').classList.toggle('hidden', any);
+    var pkgs = !!(o && o.packages && o.packages.length);
+    $('lesson-none').classList.toggle('hidden', any || pkgs);
+    $('sec-lessons').classList.toggle('as-pkgs', pkgs);
+    $('lessons-head').textContent = pkgs ? 'Your chapters' : 'Revise';
+    if (pkgs) { drawPackages(o, mine, rule, cat); return; }
     if (hasCat) { drawCatalog(mine, rule, cat); return; }
     $('lesson-subs').innerHTML = '';
     drawLessonCards($('lesson-list'), mine, rule);
@@ -1094,7 +1210,7 @@
     if (cat.subjects.length > 1) cat.subjects.forEach(function (s) {
       var b = el('button', 'subchip' + (s.id === sub ? ' on' : ''), s.name);
       b.style.setProperty('--sc', s.color || 'var(--ink)');
-      b.addEventListener('click', function () { tappedSubject = s.id; store('lb_subject', s.id); drawLessons(lessons, rule, cat); });
+      b.addEventListener('click', function () { tappedSubject = s.id; store('lb_subject', s.id); drawLessons(lessons, rule, cat, overview); });
       subs.appendChild(b);
     });
     var s = cat.subjects.filter(function (x) { return x.id === sub; })[0] || cat.subjects[0], box = $('lesson-list');

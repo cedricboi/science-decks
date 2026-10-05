@@ -49,7 +49,7 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
-var BUILD = '2026-10-09-chapters';
+var BUILD = '2026-10-10-packages';
 var BRIDGE_LATEST = 11;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
@@ -2384,7 +2384,8 @@ function hubStudent_(h, name) {
   var hw = h.work.map(function (w, i) {
     var c = me.hw.charAt(i);
     var status = c === 'm' ? 'marked' : c === 's' ? 'submitted' : c === 'x' ? 'missed' : (w.dueTs && w.dueTs < now ? 'overdue' : 'todo');
-    return { title: w.title, due: w.due, dueTs: w.dueTs, status: status, score: me.sc[i] || '', late: me.late.indexOf(i) >= 0 };
+    return { id: w.id || '', title: w.title, due: w.due, dueTs: w.dueTs, status: status, score: me.sc[i] || '', late: me.late.indexOf(i) >= 0,
+      chapter: w.chapter || '', practice: !!w.practice };
   });
   return { points: me.points, tokens: me.tokens, earned: me.earned, recent: me.recent, homework: hw };
 }
@@ -3375,7 +3376,9 @@ function apiStudentOverview(st) {
   var hub = (map['Worksheet Hub link'] || selfUrl_()) ? hubStudent_(hubClass_(cls, false, map), name) : null;
   var catalog = null, now = nowRun;
   try { catalog = studentCatalog_(lessons.filter(function (l) { return l.open; })); } catch (err) { catalog = null; }
-  return { lessons: lessons, catalog: catalog, now: now, hub: hub, hubLink: (map['Worksheet Hub link'] || selfUrl_()) || '',
+  var packages = [];
+  try { packages = studentPackages_(cls, lessons, hub); } catch (err) { packages = []; }
+  return { lessons: lessons, catalog: catalog, now: now, hub: hub, packages: packages, hubLink: (map['Worksheet Hub link'] || selfUrl_()) || '',
     rule: { pass: rules.pass, points: rules.points, best: rules.best } };
 }
 

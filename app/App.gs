@@ -14,7 +14,7 @@
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-09-chapters';
+var APP_BUILD = '2026-10-10-packages';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -777,7 +777,7 @@ function markInfo_(items) {
    after two weeks of counting, the buttons never used. */
 function weekExtras_(s) {
   var now = new Date(), t = now.getTime(), WEEK = 7 * 86400000;
-  var subs = submissionIndex_(), assigns = getAssignments_().filter(function (a) { return a.fileId; }), byClass = studentsByClass_();
+  var subs = submissionIndex_(), assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; }), byClass = studentsByClass_();
   var parents = parentMsgs_(), seen = followSeen_(now), list = assigns.map(function (a) { return summarise_(a, subs, now, null); });
   var links = wsLinksAll_(), titles = {};
   assigns.forEach(function (a) { titles[a.id] = a; });
@@ -1000,7 +1000,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 20;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 21;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1184,7 +1184,7 @@ function chaptersAll_() {
   ((cat && cat.subjects) || []).forEach(function (s) {
     (s.groups || []).forEach(function (g) {
       var decks = (g.items || []).filter(function (it) { return (it.kind || 'deck') === 'deck' && it.topicId; })
-        .map(function (it) { return { id: String(it.topicId), title: String(it.title || ''), num: String(it.num || '') }; });
+        .map(function (it) { return { id: String(it.topicId), title: String(it.title || ''), num: String(it.num || ''), file: String(it.file || '') }; });
       if (!decks.length) return;
       var m = /\bchapter\s+(\d+[a-z]?)\b/i.exec(String(g.name || ''));
       out.push({ key: chapterKey_(s.id, g.name), subject: String(s.id || ''), subjectName: String(s.name || ''), color: String(s.color || ''),
@@ -1212,7 +1212,7 @@ function chapterOfTitle_(title) {
 /* Worksheets set by themselves from a lesson: worksheet id -> its lesson's chapter key (from WSD|deck|part|CLASS). */
 function chapterBySet_() {
   if (CH_MEMO_.bySet) return CH_MEMO_.bySet;
-  var out = {}, props = PropertiesService.getScriptProperties().getProperties();
+  var out = {}, props = allProps_();
   Object.keys(props).forEach(function (k) {
     if (k.indexOf('WSD|') !== 0) return;
     var v = parseJson_(props[k]), deck = k.split('|')[1];
@@ -1318,4 +1318,72 @@ function api_t_setChapter(token, id, key) {
 function wholeNum_(deckId) {
   var ch = chapterOfDeck_(deckId), d = ch ? ch.decks.filter(function (x) { return x.id === deckId; })[0] : null;
   return d && /^\d+\.\d+[a-z]?$/i.test(d.num) ? d.num : '';
+}
+
+/* ---- what else is in a chapter package: topical worksheets, and practice ----
+   CHT|<chapterKey>   [{ file, name, path, mode }]   the chapter's topical worksheets, from the worksheet library. mode
+                      'hw': set as homework for a class when the teacher chooses (due date, handed in, marked);
+                      'practice': opened to a class to practise on (no due date, nothing handed in or marked).
+   WS_PRACTICE        { worksheetId: 1 }   the worksheets that are practice. They stay out of Needs you, the
+                      Tracker, This week and students' To do, and live in the chapter's package. */
+var CH_TOPICAL_MAX = 30;
+function allProps_() {
+  if (!CH_MEMO_.props) CH_MEMO_.props = PropertiesService.getScriptProperties().getProperties();
+  return CH_MEMO_.props;
+}
+function topicalAll_() {
+  var out = {}, props = allProps_();
+  Object.keys(props).forEach(function (k) {
+    if (k.indexOf('CHT|') !== 0) return;
+    var v = parseJson_(props[k]);
+    if (Array.isArray(v) && v.length) out[k.slice(4)] = v;
+  });
+  return out;
+}
+function api_t_topicalSave(token, key, list) {
+  teacher_(token);
+  var ch = chapterByKey_(String(key || ''));
+  if (!ch) throw new Error('That chapter is not on the lesson site.');
+  var seen = {}, clean = (Array.isArray(list) ? list : []).filter(function (x) {
+    if (!x || !x.file || seen[x.file]) return false;
+    seen[x.file] = 1; return true;
+  }).slice(0, CH_TOPICAL_MAX).map(function (x) {
+    return { file: String(x.file).slice(0, 100), name: String(x.name || '').slice(0, 140), path: String(x.path || '').slice(0, 200), mode: x.mode === 'practice' ? 'practice' : 'hw' };
+  });
+  // one script property holds at most 9 KB: long folder names go first, then the last worksheets
+  if (JSON.stringify(clean).length > 8500) clean.forEach(function (x) { x.path = ''; });
+  while (clean.length && JSON.stringify(clean).length > 8500) clean.pop();
+  var props = PropertiesService.getScriptProperties();
+  if (clean.length) props.setProperty('CHT|' + ch.key, JSON.stringify(clean)); else props.deleteProperty('CHT|' + ch.key);
+  if (CH_MEMO_.props) delete CH_MEMO_.props;
+  return { ok: true, key: ch.key, topical: clean };
+}
+function practiceIds_() { return parseJson_(PropertiesService.getScriptProperties().getProperty('WS_PRACTICE')) || {}; }
+/* Written only when it changes. A new worksheet never keeps the mark of a deleted one with the same ID, and the
+   list drops worksheets no longer on the sheet once it is long. */
+function setPractice_(id, on) {
+  var props = PropertiesService.getScriptProperties(), p = practiceIds_();
+  if (!!p[id] === !!on) return;
+  if (on) p[id] = 1; else delete p[id];
+  if (Object.keys(p).length > 300) {
+    var live = {};
+    try { getAssignments_().forEach(function (a) { live[a.id] = 1; }); } catch (err) { live = null; }
+    if (live) Object.keys(p).forEach(function (k) { if (!live[k] && k !== id) delete p[k]; });
+  }
+  if (Object.keys(p).length) props.setProperty('WS_PRACTICE', JSON.stringify(p)); else props.deleteProperty('WS_PRACTICE');
+}
+/* learnwithmrcedric: the chapter packages one student sees, in the lesson site's order: the chapters given to the
+   class, chapters with a lesson open to them, and chapters their homework is in. */
+function studentPackages_(cls, lessons, hub) {
+  var want = {}, given = chGiven_(cls), site = '', open = {};
+  try { site = lessonSite_(); } catch (err) { site = ''; }
+  try { allocFor_(cls).forEach(function (id) { open[id] = 1; }); } catch (err) { open = {}; }
+  Object.keys(given).forEach(function (k) { want[k] = 1; });
+  (lessons || []).forEach(function (l) { if (l.open) { var c = chapterOfDeck_(l.id); if (c) want[c.key] = 1; } });
+  ((hub && !hub.error && hub.homework) || []).forEach(function (w) { if (w.chapter) want[w.chapter] = 1; });
+  return chaptersAll_().filter(function (c) { return want[c.key]; }).map(function (c) {
+    return { key: c.key, name: chapterShort_(c), subject: c.subject, subjectName: c.subjectName, color: c.color, given: !!given[c.key],
+      decks: c.decks.map(function (d) { return d.id; }),
+      items: c.decks.map(function (d) { return { id: d.id, num: d.num, title: d.title, url: d.file ? site + d.file : '', open: !!open[d.id] }; }) };
+  });
 }

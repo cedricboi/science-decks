@@ -215,7 +215,7 @@ function getAssignments_() {
   var last = sh.getLastRow();
   if (last < 2) return [];
   var width = Math.max(7, Math.min(18, sh.getLastColumn ? sh.getLastColumn() : 18));
-  var now = new Date(), DAY = 86400000, autos = wsAuto_();
+  var now = new Date(), DAY = 86400000, autos = wsAuto_(), pract = practiceIds_();
   return sh.getRange(2, 1, last - 1, width).getValues().map(function (r, i) {
     var au = autos[String(r[0]).trim()] || {};
     var due = r[6], dueAt = null, allDay = false;
@@ -249,6 +249,7 @@ function getAssignments_() {
       id: String(r[0]).trim(),
       title: String(r[1]).trim(),
       chapter: String(r[17] == null ? '' : r[17]).trim(),
+      practice: !!pract[String(r[0]).trim()],
       classes: String(r[2]).split(',').map(function (c) { return hubNormClass_(c); }).filter(String),
       fileId: fileIdFromLink_(r[3]),
       open: r[4] === true && !(autoClose && dueAt && now > dueAt),
@@ -363,7 +364,7 @@ function api_list(token) {
       icon: icons[a.id] || '',
       late: !!(sub && a.dueAt && sub.first instanceof Date && sub.first > a.dueAt),
       handedTs: sub && sub.first instanceof Date ? sub.first.getTime() : null,
-      auto: !!(sub && sub.auto), autoHandIn: !!(a.autoHandIn && a.dueAt),
+      auto: !!(sub && sub.auto), autoHandIn: !!(a.autoHandIn && a.dueAt), practice: !!a.practice,
       chapter: (function () { var ci = chapterInfo_(chapterOfWs_(a)); return ci ? { key: ci.key, name: chapterShort_(ci), subject: ci.subjectName, color: ci.color } : null; })(),
       v: a.fileId, draftTs: draftTs
     });
@@ -1017,7 +1018,7 @@ function assignsForClass_(assigns, cls) {
 function buildTracker() {
   ensureSubmissionCols_();
   var now = new Date();
-  var assigns = getAssignments_().filter(function (a) { return a.fileId; });
+  var assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; });
   var subs = submissionIndex_();
   var byClass = {};
   getStudents_().forEach(function (st) {
@@ -1306,7 +1307,7 @@ function summarise_(a, subs, now, help) {
     } else pc.notHanded.push(s.name);
   });
   return {
-    id: a.id, title: a.title, chapter: chapterOfWs_(a), chapterSet: a.chapter, classes: a.classes, classText: a.classes.length ? a.classes.join(', ') : 'All classes',
+    id: a.id, title: a.title, chapter: chapterOfWs_(a), chapterSet: a.chapter, practice: !!a.practice, classes: a.classes, classText: a.classes.length ? a.classes.join(', ') : 'All classes',
     due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open, showMarked: a.showMarked, isDue: isDue,
     fileUrl: fileUrl_(a.fileId), reportUrl: a.reportLink,
     answerUrl: a.answerLink, hasAnswerKey: !!a.answerLink, showAnswers: a.showAnswers && !!a.answerLink,
@@ -1405,7 +1406,7 @@ function api_t_dashboard(token) {
 
   var byClass = studentsByClass_(), follow = [], parents = parentMsgs_();
   Object.keys(byClass).sort().forEach(function (cls) {
-    follow = follow.concat(trackerModel_(byClass[cls], assignsForClass_(assigns, cls), subs, now, parents).flagged);
+    follow = follow.concat(trackerModel_(byClass[cls], assignsForClass_(assigns.filter(function (a) { return !a.practice; }), cls), subs, now, parents).flagged);
   });
   var seen = followSeen_(now);
   follow = follow.filter(function (f) { return !seen[f.cls + '|' + hubNormName_(f.name)]; });
@@ -1417,8 +1418,8 @@ function api_t_dashboard(token) {
     classes: Object.keys(byClass).sort(),
     links: { student: (hubUrl_() || '').replace(/\?teacher$/, ''), site: SITE_URL, sheet: ss.getUrl ? ss.getUrl() : '', folder: folder_('ROOT').getUrl(), liveboard: liveBoardUrl_() + '?view=teacher', lessons: lessonSiteUrl_() },
     worksheets: list,
-    chapters: (function () { try { var c = api_t_chapters(token); return { list: c.chapters, given: c.given }; } catch (e) { return { list: [], given: {} }; } })(),
-    attention: attention_(list, now, follow.length, red, extraNeeds_(now, live)),
+    chapters: (function () { try { var c = api_t_chapters(token); return { list: c.chapters, given: c.given, topical: topicalAll_() }; } catch (e) { return { list: [], given: {}, topical: {} }; } })(),
+    attention: attention_(list.filter(function (w) { return !w.practice; }), now, follow.length, red, extraNeeds_(now, live)),
     claude: { connected: !!(PropertiesService.getScriptProperties().getProperty('CLAUDE_FIRE_URL') && PropertiesService.getScriptProperties().getProperty('CLAUDE_FIRE_TOKEN')) },
     updated: Utilities.formatDate(now, TZ, 'h:mm a')
   };
@@ -1946,6 +1947,7 @@ function newWorksheet_(meta, bytes, solBytes) {
     sh.getRange(row, 16).insertCheckboxes(); sh.getRange(row, 16).setValue(meta.answersAfter !== false);
     if (due) sh.getRange(row, 7).setNumberFormat(meta.dueTime ? 'ddd d mmm yyyy, h:mm am/pm' : 'ddd d mmm yyyy');
     if (meta.autoHandIn || meta.autoMark) setAuto_(id, { handIn: !!meta.autoHandIn, mark: !!meta.autoMark });
+    setPractice_(id, !!meta.practice);
     return { id: id };
   } finally {
     lock.releaseLock();
@@ -2402,7 +2404,7 @@ function api_t_tracker(token) {
   teacher_(token);
   var now = new Date(), subs = submissionIndex_(), icons = wsIcons_(), seen = followSeen_(now), today = Utilities.formatDate(now, TZ, 'yyyyMMdd'), sheetAt = sheetTrackerAt_();
   var parents = parentMsgs_();
-  var assigns = getAssignments_().filter(function (a) { return a.fileId; });
+  var assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; });
   var byClass = studentsByClass_();
   return Object.keys(byClass).sort().map(function (cls) {
     var list = assignsForClass_(assigns, cls);
@@ -2482,7 +2484,7 @@ function api_t_student(token, cls, name) {
   var s = hubFindStudent_(hubNormClass_(cls), name);
   if (!s) throw new Error('That student was not found.');
   var now = new Date(), subs = submissionIndex_(), rules = rwRules_();
-  var assigns = getAssignments_().filter(function (a) { return a.fileId && canSee_(a, s); });
+  var assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice && canSee_(a, s); });
   var record = assigns.map(function (a) {
     var sub = subs[a.id + '|' + studentKey_(s)], c = trackCell_(a, sub, now);
     return { id: a.id, title: a.title, due: a.due, kind: c.kind, note: c.note,
@@ -2755,13 +2757,16 @@ function lbClass_(req) {
   var studs = getStudents_().filter(function (s) { return s.cls === cls; });
   var rules = rwRules_(), log = rwLog_(), assigns = getAssignments_(), subs = submissionIndex_(), items = rwItems_(rules);
   var probe = { cls: cls, name: '' };
+  CH_MEMO_ = {};
   var work = assigns.filter(function (a) { return a.fileId && canSee_(a, probe); });
-  if (work.length > 60) work = work.slice(work.length - 60);
+  var keepW = {};
+  work.filter(function (a) { return !a.practice; }).slice(-60).concat(work.filter(function (a) { return a.practice; }).slice(-30)).forEach(function (a) { keepW[a.id] = 1; });
+  work = work.filter(function (a) { return keepW[a.id]; });
   var now = Date.now();
   return {
     ok: true, cls: cls, at: now,
     work: work.map(function (a) {
-      return { id: a.id, title: a.title, due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open };
+      return { id: a.id, title: a.title, due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open, chapter: chapterOfWs_(a), practice: !!a.practice };
     }),
     students: studs.map(function (s) {
       var L = rwLedger_(s, assigns, subs, log, rules, items);
@@ -4524,7 +4529,7 @@ function api_t_letin(token, cls, gkey, yes) {
    The Hub shows it on Home the first time it opens each week, and any time from the menu. */
 function summary_() {
   var now = new Date(), WEEK = 7 * 86400000, t = now.getTime();
-  var subs = submissionIndex_(), assigns = getAssignments_().filter(function (a) { return a.fileId; }), byClass = studentsByClass_();
+  var subs = submissionIndex_(), assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; }), byClass = studentsByClass_();
   var lb = null;
   try { lb = lbAsk_('summary').classes || null; } catch (e) { lb = null; }
   var classes = Object.keys(byClass).sort().map(function (cls) {

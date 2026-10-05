@@ -992,6 +992,26 @@
     }).then(function () { ticketBusy = false; });
   });
 
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'open' || !m.id) return;
+    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    S.pendingOpen = String(m.id).slice(0, 40);
+    openPending();
+  });
+  function openPending() {
+    if (!S.pendingOpen || !S.listReady) return;
+    if (S.doc && $('scr-edit') && !$('scr-edit').classList.contains('hidden')) {
+      S.pendingOpen = '';
+      toast('Close the worksheet you have open first (the arrow at the top left), then tap the other one again.');
+      return;
+    }
+    var id = S.pendingOpen; S.pendingOpen = '';
+    var a = S.list.filter(function (x) { return x.id === id; })[0];
+    if (!a) { toast('That worksheet is not here yet. Ask your teacher.'); return; }
+    if (a.open && (a.status === 'new' || a.status === 'started')) openWorksheet(a); else worksheetBox(a);
+  }
+
   // Sessions last 6 hours. If one runs out, it is renewed quietly with learnwithmrcedric's sign-in.
   function renew() {
     if (!S.st) return Promise.reject(new Error('Open learnwithmrcedric and sign in again.'));
@@ -1029,6 +1049,7 @@
     loadOrg();
     call('api_list', S.token).then(function (list) {
       S.list = list; S.listReady = true; renderList();
+      openPending();
       setTimeout(prefetchPdfs, 1200);
     }).catch(function (e) {
       if (/SESSION_EXPIRED/.test(e.message)) { reLogin(openList); return; }
@@ -1155,7 +1176,10 @@
       return '<div class="card sheet missed"><div class="card-head">' + WSH.topicHtml(a.title, a.icon) + '<div class="grow"><p class="card-title">' + esc(own0.n || a.title) + (own0.n ? '<span class="real">' + esc(a.title) + '</span>' : '') + '</p>' + chChip(a) +
         '<p class="kind">This worksheet closed before you handed it in. If you still want to do it, ask your teacher.</p></div></div></div>';
     }
-    if (a.status === 'new' || a.status === 'started') {
+    if (a.practice && (a.status === 'new' || a.status === 'started')) {
+      head = '<span class="chchip"><i></i><span>Practice</span></span>';
+      meta.push(a.status === 'started' ? 'You have started this one. Your work is saved here.' : 'Practise on it any time. Your work is saved here. Nothing is handed in.');
+    } else if (a.status === 'new' || a.status === 'started') {
       head = dueChip(a);
       if (a.status === 'started') meta.push('You have started this one.');
       if (a.autoHandIn && a.open) meta.push('Your saved work hands itself in at the due time.');
@@ -1190,7 +1214,7 @@
     drawNav();
     if (S.hwView === 'folders') { renderFolders(); return; }
     if (S.hwView === 'fun') { renderFun(); return; }
-    var count = function (list) { return S.list.filter(function (a) { return list.indexOf(a.status) >= 0; }).length; };
+    var count = function (list) { return S.list.filter(function (a) { return !a.practice && list.indexOf(a.status) >= 0; }).length; };
     var todo = count(['new', 'started']), waiting = count(['submitted']), marked = count(['marked']);
     var corrs = S.list.filter(function (a) { return view(a) === 'corr'; }).length;
     var plural = function (n, one, many) { return n === 1 ? one : many; };
@@ -1200,9 +1224,9 @@
     }
     // this term (from the date the teacher set), or everything so far
     var from = S.from ? new Date(S.from + 'T00:00:00').getTime() : 0;
-    var term = S.list.filter(function (a) { return !from || (a.dueTs || a.handedTs || Date.now()) >= from; });
+    var term = S.list.filter(function (a) { return !a.practice && (!from || (a.dueTs || a.handedTs || Date.now()) >= from); });
     var handed = term.filter(function (a) { return a.status === 'submitted' || a.status === 'marked'; }).length;
-    var streak = streakOf(S.list);   // the on-time streak is about homework, so it stays on To do
+    var streak = streakOf(S.list.filter(function (a) { return !a.practice; }));   // the on-time streak is about homework, so it stays on To do
     var html = '<div class="progress-row"><div class="term"><b>' + handed + ' of ' + term.length + '</b> ' + plural(term.length, 'worksheet', 'worksheets') + ' handed in ' + (from ? 'this term' : 'so far') +
       '<div class="bar" role="img" aria-label="' + handed + ' of ' + term.length + ' handed in"><i style="width:' + (term.length ? Math.round(100 * handed / term.length) : 0) + '%"></i></div></div>' +
       '<span class="streak' + (streak ? '' : ' none') + '" style="--s:' + Math.min(streak, 8) + '">' + FLAME + (streak ? streak + ' on time in a row' : 'Hand in on time to start a streak') + '</span></div>';
@@ -1215,7 +1239,7 @@
     var order = shownOrder(), found = 0;
     SECTIONS.forEach(function (sec, k) {
       var items = [];
-      order.forEach(function (i) { var a = S.list[i]; if (sec.has.indexOf(view(a)) >= 0) items.push(card(a, i, fresh).replace('<div class="card ', '<div ' + (anim ? 'style="--i:' + (n++) + '" ' : '') + 'class="' + (anim ? 'rise ' : '') + 'card ')); });
+      order.forEach(function (i) { var a = S.list[i]; if (!a.practice && sec.has.indexOf(view(a)) >= 0) items.push(card(a, i, fresh).replace('<div class="card ', '<div ' + (anim ? 'style="--i:' + (n++) + '" ' : '') + 'class="' + (anim ? 'rise ' : '') + 'card ')); });
       found += items.length;
       var part = items.length ? '<h2 class="sec">' + sec.title + '<span class="n">' + items.length + '</span></h2>' + items.join('') : '';
       if (k < 2) html += part; else rest += part;
@@ -1290,7 +1314,7 @@
     if (a.status === 'started') return '<span class="todo">Started</span>';
     return '<span class="todo">To do</span>';
   }
-  function kindLine(a) { return 'Worksheet · ' + ({ new: 'to do', started: 'started', submitted: 'handed in', marked: 'marked', missed: 'closed' }[a.status] || ''); }
+  function kindLine(a) { return (a.practice ? 'Practice · ' : 'Worksheet · ') + ({ new: 'to do', started: 'started', submitted: 'handed in', marked: 'marked', missed: 'closed' }[a.status] || ''); }
 
   /* Chapter folders: a worksheet in one of the teacher's chapters goes into that chapter's folder by itself, unless
      the student moved it into a folder of their own. */
@@ -2193,7 +2217,7 @@
     busy('Opening ' + a.title + '...');
     Promise.all([libs(), pdfGet(a.id)]).then(function (res) {
       var c = res[1];
-      S.doc = { id: a.id, title: a.title, submittedAt: a.submittedAt || '', dueTs: a.dueTs || null, autoHandIn: !!a.autoHandIn };
+      S.doc = { id: a.id, title: a.title, submittedAt: a.submittedAt || '', dueTs: a.dueTs || null, autoHandIn: !!a.autoHandIn, practice: !!a.practice };
       S.readOnly = false; S.mode = 'work';
       var local = safeParse(lsGet(backupKey()));
       // At once from the iPad: the PDF is here and current, and either nothing was saved yet or this iPad has the work.
@@ -2202,7 +2226,7 @@
         return startDoc(local).then(function () { closeModal(); helpFirstTime(); checkOpen(a, c, local); });
       }
       return call('api_open', S.token, a.id, c ? c.ver : '').then(function (d) {
-        S.doc = { id: d.id, title: d.title, submittedAt: d.submittedAt, dueTs: d.dueTs, autoHandIn: d.autoHandIn };
+        S.doc = { id: d.id, title: d.title, submittedAt: d.submittedAt, dueTs: d.dueTs, autoHandIn: d.autoHandIn, practice: !!a.practice };
         S.extras = d.extras || null;
         if (d.pdf) { S.pdfBytes = b64ToBytes(d.pdf); pdfPut(a.id, d.ver, S.pdfBytes); }
         else S.pdfBytes = c.bytes;
@@ -2431,7 +2455,7 @@
       else if (S.color === GREEN) S.color = PENS[0][0];
       refreshTools();
       Array.prototype.forEach.call(document.querySelectorAll('.edit-only'), function (el) { el.classList.toggle('hidden', S.readOnly); });
-      $('btn-handin').classList.toggle('hidden', S.readOnly);
+      $('btn-handin').classList.toggle('hidden', S.readOnly || (S.mode === 'work' && !!(S.doc && S.doc.practice)));
       $('btn-handin').textContent = S.mode === 'note' ? 'Save as PDF' : S.mode === 'corr' ? (S.doc.submittedAt ? 'Hand in corrections again' : 'Hand in corrections') : (S.doc.submittedAt ? 'Hand in again' : 'Hand in');
       setStatus(S.readOnly ? '' : S.mode === 'note' ? 'Your note' : (S.doc.submittedAt ? 'Handed in ' + S.doc.submittedAt : ''));
       updateUndo();

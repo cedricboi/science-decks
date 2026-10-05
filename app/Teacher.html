@@ -1913,6 +1913,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       var r = { s: s, set: 0, handed: 0, overdue: 0, missed: 0, last: '', reasons: [] };
       if (s.hub) {
         v.work.forEach(function (w, i) {
+          if (w.practice) return;   // practice: nothing to hand in
           var c = s.hub.hw.charAt(i);
           var due = w.dueTs && w.dueTs < now;
           if (c === 's' || c === 'm' || c === 'x' || due) r.set++;
@@ -2041,6 +2042,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     var hw = $('stu-hw'); hw.innerHTML = '';
     if (s.hub) {
       v.work.slice().reverse().forEach(function (w) {
+        if (w.practice) return;
         var i = v.work.indexOf(w), c = s.hub.hw.charAt(i), due = w.dueTs && w.dueTs < now;
         var row = el('div', 'srow'), tx = el('div');
         tx.appendChild(el('div', 't', w.title)); tx.appendChild(el('div', 's', w.due ? 'Due ' + w.due : 'No due date'));
