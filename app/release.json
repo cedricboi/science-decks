@@ -1,7 +1,7 @@
 {
   "build": "2026-10-14-simple",
   "seq": 24,
-  "ref": "main",
+  "ref": "e10fe4d839c41397117f3655f84147bb0d124666",
   "title": "learnwithmrcedric: a simpler Teacher Hub",
   "notes": [
     "A simpler Teacher Hub: three tabs (Today, Chapters, Students) for the class chosen at the top, one page for each chapter with one next step on each row, Deploy in one tap with Change date and Undo, and Teach that opens the slides for the class"
@@ -84,7 +84,7 @@
     {
       "seq": 24,
       "build": "2026-10-14-simple",
-      "ref": "main",
+      "ref": "e10fe4d839c41397117f3655f84147bb0d124666",
       "needsServer": 24,
       "files": [
         {
