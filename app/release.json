@@ -1,7 +1,7 @@
 {
   "build": "2026-10-12-deploy",
   "seq": 22,
-  "ref": "main",
+  "ref": "e0a43d891ce8d2a2f054927d5acc9e41e68166a6",
   "title": "learnwithmrcedric: deploy homework, names in colour, and the Arcade",
   "notes": [
     "Homework waits in the chapter's package until you press Deploy; nothing is set by itself when a part is taught (it shows Taught \u00b7 ready)",
@@ -88,7 +88,7 @@
     {
       "seq": 22,
       "build": "2026-10-12-deploy",
-      "ref": "main",
+      "ref": "e0a43d891ce8d2a2f054927d5acc9e41e68166a6",
       "needsServer": 22,
       "files": [
         {
