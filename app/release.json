@@ -1,7 +1,7 @@
 {
   "build": "2026-10-10-packages",
   "seq": 21,
-  "ref": "main",
+  "ref": "f8132786408005bc1a6403c3a2466fd4207f5c94",
   "title": "learnwithmrcedric: chapter packages in Lessons, and Show answers on the slides",
   "notes": [
     "Lessons is a tab of its own: each class's chapter packages, with the slides, the homework for each part and topical worksheets",
@@ -89,7 +89,7 @@
     {
       "seq": 21,
       "build": "2026-10-10-packages",
-      "ref": "main",
+      "ref": "f8132786408005bc1a6403c3a2466fd4207f5c94",
       "needsServer": 21,
       "files": [
         {
