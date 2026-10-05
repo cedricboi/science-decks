@@ -412,6 +412,27 @@
   .chgrp details.earlier summary { font-size: 15px; }
   .tag.chap { background: var(--soft); color: var(--ink); box-shadow: inset 4px 0 0 var(--chc, var(--rule)); padding-left: 12px; }
   .viewsw.grp button { width: auto; padding: 0 12px; font: 700 14px var(--display); }
+  /* Teach a lesson shows the chapters a class has; the Lesson library holds them all */
+  .te-empty { margin: 18px 0 0; padding: 22px; border-radius: var(--r-card); border: 2px dashed var(--rule); background: var(--surface); display: grid; gap: 10px; justify-items: start; }
+  .te-empty h3 { margin: 0; font: 800 20px var(--display); color: var(--ink); }
+  .te-empty p { margin: 0; color: var(--muted); max-width: 60ch; }
+  .te-sugg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .te-sugg .chg small { font-weight: 400; color: var(--muted); }
+  .modal.libm { max-width: min(980px, 100%); }
+  .libm-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .modal .libm-h h2 { margin: 0; }
+  .modal p.libm-sub { color: var(--muted); margin: 6px 0 12px; max-width: 70ch; }
+  .libm-list { display: grid; gap: 12px; margin-top: 12px; }
+  .libm-ch { border: 1px solid var(--line); border-left: 6px solid var(--chc, var(--rule)); border-radius: 14px; padding: 12px 14px; background: var(--surface); }
+  .libm-ch.has { box-shadow: inset 0 0 0 2px var(--green); }
+  .libm-chh { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; }
+  .libm-cht { min-width: 0; }
+  .libm-cht h3 { margin: 0; font: 800 17px var(--display); color: var(--ink); }
+  .libm-cht span { font-size: 13px; color: var(--muted); }
+  .libm-ls { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 14px; }
+  .libm-ls li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; color: var(--ink); min-width: 0; }
+  .libm-ls .n { font-weight: 700; color: var(--muted); min-width: 2.6em; font-variant-numeric: tabular-nums; }
+  .libm-ls .t { min-width: 0; overflow-wrap: anywhere; flex: 1; }
   .te-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .te-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 14px; border-radius: 14px; background: var(--surface, #fff); box-shadow: inset 0 0 0 1.5px var(--rule, #e3dccd); border-left: 5px solid var(--c, var(--blue)); min-width: 0; }
   .te-num { font: 800 16px var(--display); min-width: 42px; color: var(--c, var(--ink)); font-variant-numeric: tabular-nums; }
@@ -1842,11 +1863,11 @@
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
     el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters as packages</b><ul>' +
-      '<li><b>Give to</b>: on Lessons, press a class beside a chapter. All its slides open to that class for revision at once, and each part\'s homework is still set by itself once you teach that part.</li>' +
+      '<li><b>Lesson library</b>: Teach a lesson now shows only the chapters a class has. Press Lesson library and give a class a chapter: it appears in Teach a lesson, all its slides open to the class for revision at once, and each part\'s homework is still set by itself once you teach that part.</li>' +
       '<li>Homework is grouped <b>by chapter</b> (By status gives the old view). New worksheet and Edit details have a Chapter choice; a worksheet titled with its sub-chapter number, such as 3.2, finds its chapter by itself.</li>' +
       '<li>Students see the chapter on each worksheet, and each chapter gets a folder of its own in their My folders.</li>' +
       '<li><b>Show answers</b>: when you present, it sits beside Previous (or Back) in the bar at the bottom of the slides. It shows the whole question full size, with bars for multiple choice and a wall of answers for written questions. No names.</li>' +
-      '<li>learnwithmrcedric is now <b>learnwithmrcedric</b>. The links stay the same.</li></ul></div>' +
+      '<li>My&nbsp;Science is now <b>learnwithmrcedric</b>. The links stay the same.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
@@ -2191,7 +2212,7 @@
     if (on) { go(); return; }
     modal('<h2>Take ' + esc(chShort(c)) + ' back from ' + esc(cls) + '?</h2><p>Its ' + plural(c.lessons, 'lesson closes', 'lessons close') + ' to ' + esc(cls) + ' for revision. Homework already set stays, in their folder for the chapter, and a part you teach them later still sets its homework.</p>' +
       '<div class="foot"><button class="btn ghost" id="cg-no">Keep it</button><button class="btn" id="cg-yes">Take it back</button></div>');
-    $('cg-no').onclick = closeModal;
+    $('cg-no').onclick = function () { closeModal(); if (after && after.always) after(); };
     $('cg-yes').onclick = function () { closeModal(); busyChips(); go(); };
   }
   // One give at a time: every chip waits until the answer is back (and the page is drawn again).
@@ -2212,6 +2233,54 @@
       '<button data-group="status" aria-pressed="' + (H.group !== 'chapter') + '">By status</button></div>';
   }
   H.group = lsGet('wsh_group') || 'chapter';
+  // Teach a lesson with nothing given to the class yet: the library, and the chapters it already has lessons open in.
+  function teEmpty(cls, all) {
+    var sugg = [];
+    all.forEach(function (s) { (s.groups || []).forEach(function (g) {
+      var k = chKey(s.id, g.name);
+      if (!chByKey(k) || chHas(cls, k) || sugg.indexOf(k) >= 0) return;
+      if ((g.items || []).some(function (it) { return it.topicId && revOpen(cls, it.topicId); })) sugg.push(k);
+    }); });
+    return '<div class="te-empty"><h3>Nothing to teach ' + esc(cls) + ' yet</h3><p>Open the Lesson library and give ' + esc(cls) + ' a chapter. It appears here, ready to teach.</p>' +
+      '<button class="btn" data-lib>' + ICON.folder + 'Open the lesson library</button>' +
+      (sugg.length ? '<p>Already open to ' + esc(cls) + ' for revision, so you may want these:</p><div class="te-sugg">' + sugg.map(function (k) {
+        var c = chByKey(k);
+        return '<button type="button" class="chg" data-chg="' + esc(k) + '" data-cls="' + esc(cls) + '" aria-pressed="false" title="Give it to ' + esc(cls) + '">' + ICON.plus + esc(chShort(c)) + ' <small>' + esc(c.subjectName || '') + '</small></button>';
+      }).join('') + '</div>' : '') + '</div>';
+  }
+  /* The Lesson library: every chapter on the lesson site, by subject. Giving a class a chapter here puts it in Teach a
+     lesson for that class (and opens its slides to them for revision). */
+  function openLibrary(cls) {
+    var cat = H.te || {}, site = H.teSite || '';
+    var subs = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
+    if (!subs.length) return;
+    var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub');
+    if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
+    var again = function () { modal('', 'wide libm'); draw(); if (H.view === 'te') renderTeach(); };
+    again.always = true;
+    var draw = function () {
+      var sub = subs.filter(function (s) { return s.id === cur; })[0];
+      var h = '<div class="libm-h"><h2>Lesson library</h2><button class="btn small" id="libm-x">Done</button></div>' +
+        '<p class="libm-sub">Give a class a chapter and it appears in Teach a lesson for that class. All its slides open to the class for revision at once, and each part\'s homework is set by itself once you teach that part.</p>' +
+        '<div class="te-subs" role="tablist" aria-label="Subject">' + subs.map(function (s) {
+          return '<button role="tab" class="te-subj" data-ls="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
+        }).join('') + '</div><div class="libm-list">' + (sub.groups || []).filter(function (g) { return (g.items || []).length; }).map(function (g) {
+          var k = chKey(sub.id, g.name), c = chByKey(k), has = !!(c && chHas(cls, k));
+          var items = g.items.map(function (it) {
+            return '<li><span class="n">' + esc(it.num || '') + '</span><span class="t">' + esc(it.title || it.file) + '</span>' +
+              (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>' : '') + '</li>';
+          }).join('');
+          return '<section class="libm-ch' + (has ? ' has' : '') + '"' + (sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="libm-chh"><div class="libm-cht"><h3>' + esc(g.name) + '</h3><span>' +
+            (c ? plural(c.lessons, 'lesson', 'lessons') + (has ? ' · in Teach a lesson for ' + esc(cls) : '') : 'Open these from here') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div><ol class="libm-ls">' + items + '</ol></section>';
+        }).join('') + '</div>';
+      $('modal').innerHTML = h;
+      $('libm-x').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); };
+      Array.prototype.forEach.call($('modal').querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
+      bindGive($('modal'), again);
+      setTimeout(function () { var x = $('libm-x'); if (x) x.focus(); }, 30);
+    };
+    modal('', 'wide libm'); draw();
+  }
   // Worksheets as chapter packages: the busy chapters first, then the rest in the lesson site's order, and the
   // worksheets in no chapter last. Chapters given to these classes show even before their first homework.
   function chapterGroups(list, draw) {
@@ -4947,29 +5016,35 @@
   // Whether a lesson is open to a class for revision (Live Board keeps the list, by class).
   function revOpen(cls, id) { var a = H.tn && H.tn.alloc, k = String(cls || '').toUpperCase().replace(/[\s\-_.]+/g, ''); return !!(a && a[k] && a[k].indexOf(id) >= 0); }
   function renderTeach() {
-    var cat = H.te, site = H.teSite, subs = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
-    if (!subs.length) { $('view-te').innerHTML = '<p class="empty">No lessons on the lesson site yet.</p>'; return; }
-    var cur = lsGet('wsh_te_sub');
-    if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
+    var cat = H.te, site = H.teSite, all = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
+    if (!all.length) { $('view-te').innerHTML = '<p class="empty">No lessons on the lesson site yet.</p>'; return; }
     var cls = teCls(), mine = tnFor(cls);
+    // With chapter packages (release 20 on the server), only the chapters this class has been given are here.
+    var lib = chList().length > 0;
+    var shown = function (s, g) { return !!(g.items || []).length && (!lib || chHas(cls, chKey(s.id, g.name))); };
+    var subs = all.filter(function (s) { return (s.groups || []).some(function (g) { return shown(s, g); }); });
+    var cur = lsGet('wsh_te_sub');
+    if (!subs.some(function (s) { return s.id === cur; })) cur = subs.length ? subs[0].id : '';
     var h = '<div class="te-head"><div class="row"><h2 class="h">Teach a lesson</h2><span class="spacer"></span><div class="te-tools">' +
       '<a class="btn quiet small" id="te-pj" href="#" target="_blank" rel="noopener" title="Open on the laptop you take to class">' + ICON.tabTe + 'Projector screen</a>' +
       '<button class="btn quiet small" id="te-pair">' + ICON.phone + 'Pair my phone</button>' +
+      (lib ? '<button class="btn small" id="te-lib">' + ICON.folder + 'Lesson library</button>' : '') +
       '<label class="btn ghost small" id="te-add">' + ICON.plus + 'Add or update a lesson<input type="file" id="te-file" accept=".html,.htm,text/html" hidden></label></div></div>' +
       '<p class="te-sub">Teach opens the slides for the projector, already signed in, for the class you choose here. The lesson starts for them, it shows on their learnwithmrcedric, and their iPads follow your slides. Your phone is the remote. Answers count only while you teach.</p>' +
       '<p class="te-sub"><b>Revision</b> opens by itself once you teach a lesson to the class, so they can go over it in learnwithmrcedric after school (nothing they do there is saved). Untick it to close a lesson. <b>Homework</b> links a worksheet from your library to each sub-chapter: it is set for a class by itself once you have shown them that sub-chapter (most of its slides, including the last, over one lesson or more).</p>' +
-      (chList().length ? '<p class="te-sub"><b>Give to</b>, beside a chapter, sends the class the whole chapter as one package: all its slides open for revision at once, each part\'s homework is still set by itself once you teach that part, and their learnwithmrcedric keeps the chapter\'s homework in a folder of its own.</p>' : '') + '</div>';
+      (chList().length ? '<p class="te-sub">Only the chapters you have given this class are here. Open the <b>Lesson library</b> to give a class a chapter: all its slides open to them for revision at once, each part\'s homework is still set by itself once you teach that part, and their learnwithmrcedric keeps the chapter\'s homework in a folder of its own.</p>' : '') + '</div>';
     h += '<div class="te-cls" role="group" aria-label="Class to teach"><span>Class</span>' + teClasses().map(function (c) {
       return '<button data-tc="' + esc(c) + '" aria-pressed="' + (c === cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
     }).join('') + '</div>';
     if (!H.tn && H.tnErr) h += '<p class="te-note">' + esc(H.tnErr) + ' Until then, the slides ask for your PIN and the class.</p>';
-    h += '<div class="te-subs" role="tablist">' + subs.map(function (s) {
+    if (!subs.length) h += teEmpty(cls, all);
+    else h += '<div class="te-subs" role="tablist">' + subs.map(function (s) {
       return '<button role="tab" class="te-subj" data-s="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
     }).join('') + '</div>';
-    var sub = subs.filter(function (s) { return s.id === cur; })[0];
+    var sub = subs.filter(function (s) { return s.id === cur; })[0] || { groups: [] };
     var rows = [];
     (sub.groups || []).forEach(function (g) {
-      if (!(g.items || []).length) return;
+      if (!shown(sub, g)) return;
       var gk = chKey(sub.id, g.name);
       h += '<section class="te-ch"><div class="te-chh"><h3>' + esc(g.name) + '</h3>' + (chByKey(gk) ? chGiveChips(gk) : '') + '</div><ul class="te-list">';
       g.items.forEach(function (it) {
@@ -5025,6 +5100,7 @@
     });
     bindGo($('view-te'));
     bindGive($('view-te'), function () { if (H.view === 'te') renderTeach(); });
+    Array.prototype.forEach.call($('view-te').querySelectorAll('#te-lib, [data-lib]'), function (b) { b.onclick = function () { openLibrary(cls); }; });
     $('te-pair').onclick = pairPhone;
     bindProjector($('te-pj'));
     $('te-file').onchange = function () { var f = this.files && this.files[0]; this.value = ''; if (f) addLesson(f); };

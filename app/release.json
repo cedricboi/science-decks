@@ -1,7 +1,7 @@
 {
   "build": "2026-10-09-chapters",
   "seq": 20,
-  "ref": "5d66bdc9cf93fb816539a9eef9c2a41a2e2d8e30",
+  "ref": "main",
   "title": "learnwithmrcedric: chapter packages, and Show answers on the slides",
   "notes": [
     "Chapters as packages: give a class a whole chapter, its slides open at once and each part's homework is set as you teach it",
@@ -44,7 +44,7 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "9ceef0f05a4b32c29b3006a94b4bb9463e4d54fd503eec1a4cdf7d7f2e9de6d6"
+      "sha256": "863c5a93401ccc9b64cdf0213bc2bcdc3125660f98b051105fbaba15fe1d7996"
     },
     {
       "name": "Ink",
@@ -87,7 +87,7 @@
     {
       "seq": 20,
       "build": "2026-10-09-chapters",
-      "ref": "5d66bdc9cf93fb816539a9eef9c2a41a2e2d8e30",
+      "ref": "main",
       "needsServer": 20,
       "files": [
         {
@@ -103,7 +103,7 @@
         {
           "name": "HubTeacher",
           "path": "HubTeacher.html",
-          "sha256": "9ceef0f05a4b32c29b3006a94b4bb9463e4d54fd503eec1a4cdf7d7f2e9de6d6"
+          "sha256": "863c5a93401ccc9b64cdf0213bc2bcdc3125660f98b051105fbaba15fe1d7996"
         },
         {
           "name": "Ink",
