@@ -548,7 +548,7 @@
   .lbm-h h2 { margin: 0 !important; flex: 1; }
   .lbmodal iframe { display: block; width: 100%; height: min(76vh, 760px); border: 0; border-radius: 12px; background: #fff; }
   .lbmodal.lbpair iframe { height: min(76vh, 620px); }
-  @media (max-width: 700px) { #tab-pg, #tab-cl { display: none !important; } }
+  @media (max-width: 700px) { #tab-pg, #tab-cl, #tab-st { display: none !important; } }
   .subnav { display: flex; gap: 4px; background: var(--soft); border-radius: 13px; padding: 3px; width: max-content; max-width: 100%; margin: 0 0 16px; overflow-x: auto; }
   .subnav button { border: 0; background: none; border-radius: 10px; padding: 0 16px; min-height: 38px; font: 700 15px var(--display); color: var(--muted); cursor: pointer; white-space: nowrap; }
   .subnav button[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(70,48,20,.15); }
@@ -1390,6 +1390,9 @@
     .sx-onch { flex-wrap: wrap; gap: 4px 12px; }
     .sx-onch-l { flex-basis: 100%; }
   }
+  .sx-cls { margin: 14px 0 0; }
+  .te-chl { margin: 14px 0 6px; }
+  .sx-pkbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 0; }
 </style>
 </head>
 <body>
@@ -1439,10 +1442,10 @@
         <div class="clsw" id="clsw" role="group" aria-label="Class"></div>
       </div>
       <nav class="tabs" aria-label="Sections">
-        <button id="tab-home" aria-current="page"><span class="ti" data-i="home"></span><span>Today</span><i class="badge" id="bd-home"></i></button>
-        <button id="tab-ls" class="hidden"><span class="ti" data-i="te"></span><span>Chapters</span></button>
-        <button id="tab-hw" class="hidden" tabindex="-1"><span class="ti" data-i="ws"></span><span>Homework</span><i class="badge" id="bd-hw"></i></button>
-        <button id="tab-st"><span class="ti" data-i="cl"></span><span>Students</span></button>
+        <button id="tab-home" aria-current="page"><span class="ti" data-i="home"></span><span>Home</span><i class="badge" id="bd-home"></i></button>
+        <button id="tab-ls" class="hidden"><span class="ti" data-i="te"></span><span>Lessons</span></button>
+        <button id="tab-hw"><span class="ti" data-i="ws"></span><span>Homework</span><i class="badge" id="bd-hw"></i></button>
+        <button id="tab-st" class="hidden"><span class="ti" data-i="cl"></span><span>Students</span></button>
         <div class="hidden" aria-hidden="true" id="oldtabs">
         <button id="tab-ws" tabindex="-1"><i class="badge" id="bd-ws"></i></button>
         <button id="tab-tr" tabindex="-1"><i class="badge" id="bd-tr"></i></button>
@@ -1459,23 +1462,19 @@
   <main>
     <div id="news"></div>
     <nav class="subnav hidden" id="subnav" aria-label="In this tab"></nav>
-    <section id="view-today"></section>
-    <section id="view-chs" class="hidden"></section>
-    <section id="view-chap" class="hidden"></section>
-    <section id="view-stu" class="hidden"></section>
-    <section id="view-home" class="hidden"></section>
+    <section id="view-home"></section>
     <section id="view-ws" class="hidden"></section>
     <section id="view-detail" class="hidden"></section>
     <section id="view-tr" class="hidden"></section>
     <section id="view-rw" class="hidden"></section>
     <section id="view-te" class="hidden"></section>
+    <section id="view-chap" class="hidden"></section>
     <section id="view-pg" class="hidden"></section>
     <section id="view-cl" class="hidden"></section>
   </main>
 </div>
 
 <div id="review" class="hidden" role="region" aria-label="Check and mark"></div>
-<div class="drawer" id="sdrawer" role="dialog" aria-modal="false" aria-label="Student record"></div>
 
 <div id="veil" class="veil hidden" role="dialog" aria-modal="true"><div class="modal" id="modal"></div></div>
 
@@ -1488,8 +1487,8 @@
                 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'];
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
-  var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'today', cls: '' };
-  var NEWS_VERSION = '2026-10-simple';
+  var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'home', cls: '' };
+  var NEWS_VERSION = '2026-10-chapters';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -1765,24 +1764,22 @@
 
   /* Three tabs: Home (today and the lessons), Homework (worksheets and the tracker) and Students (Progress and
      Classes). Points is in the menu. Each tab has a small bar for its two pages. */
-  var MODES = { home: [['today', 'Today']], ls: [['chs', 'Chapters']], hw: [['ws', 'Worksheets'], ['tr', 'Tracker']], st: [['stu', 'Students'], ['pg', 'Progress'], ['cl', 'Classes']] };
-  function modeOf(v) { return v === 'home' || v === 'today' ? 'home' : v === 'te' || v === 'chs' || v === 'chap' ? 'ls' : v === 'ws' || v === 'tr' || v === 'detail' ? 'hw' : v === 'pg' || v === 'cl' || v === 'stu' ? 'st' : ''; }
+  var MODES = { home: [['home', 'Today']], ls: [['te', 'Lessons']], hw: [['ws', 'Worksheets'], ['tr', 'Tracker']], st: [['pg', 'Progress'], ['cl', 'Classes']] };
+  function modeOf(v) { return v === 'home' ? 'home' : v === 'te' || v === 'chap' ? 'ls' : v === 'ws' || v === 'tr' || v === 'detail' ? 'hw' : v === 'pg' || v === 'cl' ? 'st' : ''; }
   function isDashView() { return H.view === 'ws' || H.view === 'home'; }
   function renderSubnav(v) {
-    var m = modeOf(v), nav = $('subnav'), items = (MODES[m] || []).filter(function (x) { return (x[0] !== 'pg' && x[0] !== 'cl') || (H.links && H.links.liveboard); });
-    if (v === 'detail' || sxView(v) || items.length < 2) { nav.classList.add('hidden'); nav.innerHTML = ''; return; }
+    var m = modeOf(v), nav = $('subnav'), items = (MODES[m] || []).filter(function (x) { return x[0] !== 'te' || (H.links && H.links.lessons); });
+    if (v === 'detail' || items.length < 2) { nav.classList.add('hidden'); nav.innerHTML = ''; return; }
     nav.classList.remove('hidden');
     nav.innerHTML = items.map(function (x) { return '<button data-sv="' + x[0] + '" aria-current="' + (x[0] === v ? 'page' : 'false') + '">' + x[1] + '</button>'; }).join('');
     Array.prototype.forEach.call(nav.querySelectorAll('[data-sv]'), function (b) { b.onclick = function () { showTab(b.getAttribute('data-sv')); }; });
   }
   function setView(v) {
-    if (v === 'home') v = 'today';   // Home is Today now
     if (v === 'detail' && H.view !== 'detail') H.backTo = H.view;   // Back from a worksheet goes where it was opened from
     H.view = v;
-    if (v === 'today' || v === 'chs' || v === 'chap' || v === 'stu' || v === 'ws' || v === 'tr' || v === 'rw' || v === 'te' || v === 'pg' || v === 'cl') lsSet('wsh_view24', v);
-    $('view-home').classList.add('hidden');
-    ['today', 'chs', 'chap', 'stu'].forEach(function (x) { $('view-' + x).classList.toggle('hidden', v !== x); });
-    if (v !== 'detail' && v !== 'tr') closeDrawer();
+    if (v === 'home' || v === 'ws' || v === 'tr' || v === 'rw' || v === 'te' || v === 'chap' || v === 'pg' || v === 'cl') lsSet('wsh_view17', v);
+    $('view-home').classList.toggle('hidden', v !== 'home');
+    $('view-chap').classList.toggle('hidden', v !== 'chap');
     var md = modeOf(v);
     $('tab-home').setAttribute('aria-current', md === 'home' ? 'page' : 'false');
     $('tab-ls').setAttribute('aria-current', md === 'ls' ? 'page' : 'false');
@@ -1808,16 +1805,15 @@
     window.scrollTo(0, 0);
   }
   function showTab(v) {
-    if (v === 'home') v = 'today';
     setView(v);
     if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'te') loadTeach(); else if (v === 'pg' || v === 'cl') loadLbView(v);
-    else if (sxView(v)) { sxLoad(false); if (!H.dash || Date.now() - (H.dashAt || 0) > 20000) loadDash(); }
+    else if (v === 'chap') { sxLoad(false); if (!H.dash || Date.now() - (H.dashAt || 0) > 20000) loadDash(); }
     else loadDash();
   }
-  $('tab-home').onclick = function () { showTab('today'); };
-  $('tab-ls').onclick = function () { showTab('chs'); };
+  $('tab-home').onclick = function () { showTab('home'); };
+  $('tab-ls').onclick = function () { showTab('te'); };
   $('tab-hw').onclick = function () { showTab(lsGet('wsh_hw') === 'tr' ? 'tr' : 'ws'); };
-  $('tab-st').onclick = function () { showTab('stu'); };
+  $('tab-st').onclick = function () { showTab(lsGet('wsh_st') === 'cl' ? 'cl' : 'pg'); };
   $('tab-ws').onclick = function () { showTab('ws'); };
   $('tab-tr').onclick = function () { showTab('tr'); };
   $('tab-rw').onclick = function () { showTab('rw'); };
@@ -1871,7 +1867,7 @@
   // Colours drawn in code (class tints) follow the theme, so the open page is drawn again.
   function redraw() {
     if (!H.token) return;
-    if (sxView(H.view)) sxRender();
+    if (H.view === 'chap') sxRender();
     else if (H.view === 'tr' && H.tracker) renderTracker();
     else if (H.view === 'rw' && H.rw) renderRewards();
     else if (isDashView() && H.dash) renderDash(H.dash);
@@ -1919,7 +1915,7 @@
     var l = d.links || {}, h = '', on = !!(d.claude && d.claude.connected), unseen = lsGet('wsh_news') !== NEWS_VERSION;
     if (l.liveboard) $('tab-lb').href = l.liveboard;   // Live Board is in Links now
     H.links = l;
-    $('tab-st').classList.remove('hidden');
+    $('tab-st').classList.toggle('hidden', !l.liveboard);
     $('tab-te').classList.toggle('hidden', !l.lessons);
     $('tab-ls').classList.toggle('hidden', !l.lessons);
     $('tab-pg').classList.toggle('hidden', !l.liveboard);
@@ -1930,9 +1926,7 @@
     if (l.site) h += '<a role="menuitem" href="' + esc(l.site) + '" target="_blank" rel="noopener">' + ICON.site + 'Class site</a>';
     if (l.sheet) h += '<a role="menuitem" href="' + esc(l.sheet) + '" target="_blank" rel="noopener">' + ICON.sheet + 'Sheet</a>';
     if (l.folder) h += '<a role="menuitem" href="' + esc(l.folder) + '" target="_blank" rel="noopener">' + ICON.folder + 'Drive folder</a>';
-    if (l.liveboard) h += '<a role="menuitem" href="' + esc(l.liveboard) + '" target="_blank" rel="noopener">' + ICON.tabTe + 'Live Board (boards and the projector)</a>' +
-      '<a role="menuitem" id="lk-pj" href="#" target="_blank" rel="noopener">' + ICON.tabTe + 'Projector screen, for the classroom laptop</a>' +
-      '<button role="menuitem" id="lk-pair">' + ICON.phone + 'Pair my phone</button>';
+    if (l.liveboard) h += '<a role="menuitem" href="' + esc(l.liveboard) + '" target="_blank" rel="noopener">' + ICON.tabTe + 'Live Board (boards and the projector)</a>';
     h += '</div>';
     h += '<button id="claude-set" class="' + (on ? 'on' : 'off') + '" title="' + (on ? 'Claude marking is connected' : 'Claude marking is not set up') + '" aria-label="Claude marking' + (on ? ', connected' : ' (set up)') + '">' +
       '<span class="status-dot' + (on ? ' on' : '') + '"></span><span class="lbl">Claude marking' + (on ? '' : ' (set up)') + '</span></button>';
@@ -1940,11 +1934,7 @@
     h += '<button id="me-btn" class="me" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="pop-me">T' + (unseen ? '<span class="newdot" aria-hidden="true"></span>' : '') + '</button>';
     h += '<div class="pop hidden" id="pop-me" role="menu"><div class="cap">' + esc(d.school || 'Teacher Hub') + '</div>' +
       '<button role="menuitem" id="me-week">' + ICON.sheet + 'This week</button>' +
-      '<button role="menuitem" id="me-ws">' + ICON.tabWs + 'All worksheets</button>' +
-      '<button role="menuitem" id="me-tr">' + ICON.tabTr + 'Homework tracker</button>' +
-      '<button role="menuitem" id="me-points">' + ICON.tabRw + 'Points and prizes</button>' +
-      (l.lessons ? '<button role="menuitem" id="me-te">' + ICON.tabTe + 'Lessons (the old page)</button>' : '') +
-      (l.liveboard ? '<button role="menuitem" id="me-add">' + ICON.plus + 'Add or update a lesson</button><input type="file" id="me-file" accept=".html,.htm,text/html" hidden>' : '') + '<hr>' +
+      '<button role="menuitem" id="me-points">' + ICON.tabRw + 'Points and prizes</button><hr>' +
       '<button role="menuitem" id="me-news">' + ICON.gift + 'What\'s new</button>' +
       '<button role="menuitem" id="me-keys">' + ICON.keys + 'Keyboard shortcuts</button>' +
       '<button role="menuitem" id="me-guide">' + ICON.sheet + 'Setup guide</button>' +
@@ -1959,18 +1949,9 @@
     $('links-btn').onclick = function (e) { e.stopPropagation(); togglePop(this, $('pop-links')); };
     $('me-btn').onclick = function (e) { e.stopPropagation(); togglePop(this, $('pop-me')); };
     Array.prototype.forEach.call($('pop-links').querySelectorAll('a'), function (a) { a.addEventListener('click', function () { closePops(); }); });
-    if ($('lk-pj')) { bindProjector($('lk-pj')); if (!H.tn) loadTeachNext(false); }
-    if ($('lk-pair')) $('lk-pair').onclick = function () { closePops(); pairPhone(); };
     $('claude-set').onclick = claudeSettings;
     $('me-news').onclick = function () { closePops(); showNews(true); };
     $('me-week').onclick = function () { closePops(); openWeek(); };
-    $('me-ws').onclick = function () { closePops(); showTab('ws'); };
-    $('me-tr').onclick = function () { closePops(); showTab('tr'); };
-    if ($('me-te')) $('me-te').onclick = function () { closePops(); showTab('te'); };
-    if ($('me-file')) {
-      $('me-add').onclick = function (e) { e.stopPropagation(); $('me-file').click(); };
-      $('me-file').onchange = function () { var f = this.files && this.files[0]; this.value = ''; closePops(); if (f) addLesson(f); };
-    }
     $('me-points').onclick = function () { closePops(); showTab('rw'); };
     $('me-keys').onclick = function () { closePops(); shortcutsBox(); };
     $('me-guide').onclick = function () { closePops(); openGuide(); };
@@ -1990,15 +1971,13 @@
   function renderClassSwitch() {
     var list = allClasses();
     if (H.cls && list.length && list.indexOf(H.cls) < 0) H.cls = '';
-    // One class at a time: every page shows only the class chosen here.
-    if (!H.cls && list.length) { var real = list.filter(function (c) { return c !== 'TEST'; }); H.cls = real[0] || list[0]; lsSet('wsh_cls', H.cls); }
     var el = $('clsw');
     if (list.length > 5) {
-      el.innerHTML = '<select id="clsw-sel" aria-label="Class">' + list.map(function (c) { return '<option' + (c === H.cls ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
+      el.innerHTML = '<select id="clsw-sel" aria-label="Class"><option value="">All classes</option>' + list.map(function (c) { return '<option' + (c === H.cls ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>';
       $('clsw-sel').onchange = function () { setClass(this.value); };
       return;
     }
-    el.innerHTML = list.map(function (c) {
+    el.innerHTML = '<button data-c="" aria-pressed="' + !H.cls + '">All</button>' + list.map(function (c) {
       return '<button data-c="' + esc(c) + '" aria-pressed="' + (c === H.cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
     }).join('');
     Array.prototype.forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function () { setClass(b.getAttribute('data-c')); }; });
@@ -2007,12 +1986,12 @@
     H.cls = c || ''; lsSet('wsh_cls', H.cls);
     if (H.cls) H.trackerCls = H.cls;
     renderClassSwitch();
-    if (sxView(H.view)) { sxLoad(false); renderBadges(); }
-    else if (isDashView() && H.dash) renderDash(H.dash);
+    if (isDashView() && H.dash) renderDash(H.dash);
     else if (H.view === 'detail' && H.marks) renderDetail();
     else if (H.view === 'tr' && H.tracker) renderTracker();
     else if (H.view === 'rw' && H.rw) renderRewards();
     else if (H.view === 'te' && H.te) renderTeach();
+    else if (H.view === 'chap') sxRender();
     else if (H.view === 'pg' || H.view === 'cl') loadLbView(H.view);
   }
 
@@ -2022,8 +2001,7 @@
     if (d) {
       var need = (d.attention || []).filter(function (n) { return !n.info && n.action !== 'tracker' && inClass((byId(n.id) || {}).classes); });
       $('bd-ws').textContent = need.length || '';
-      var nToday = 0; try { nToday = sxTodayItems(sxCls()).filter(function (x) { return x.kind !== 'run' && x.kind !== 'teach'; }).length; } catch (e) { nToday = 0; }
-      $('bd-home').textContent = nToday || '';
+      $('bd-home').textContent = (d.attention || []).filter(function (n) { return !n.snoozed && !n.info && (n.action === 'tracker' || inClass(n.classes || (byId(n.id) || {}).classes)); }).length || '';
       var nTr = (d.attention || []).filter(function (n) { return n.action === 'tracker'; }).reduce(function (t, n) { return t + (n.count || 0); }, 0);
       if (H.tracker) nTr = H.tracker.filter(function (c) { return !H.cls || c.cls === H.cls; }).reduce(function (t, c) { return t + c.flagged.filter(function (f) { return !f.seen; }).length; }, 0);
       $('bd-tr').textContent = nTr || '';
@@ -2082,13 +2060,11 @@
   /* ---------- what's new ---------- */
   function showNews(force) {
     var el = $('news');
-    if (!force) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>A simpler Hub</b><ul>' +
-      '<li><b>Three tabs: Today, Chapters and Students</b>, for the class chosen at the top (one class at a time). All worksheets, the tracker, Points and the old Lessons page are in this menu.</li>' +
-      '<li><b>Today</b> shows only what needs you, one button each: the lesson to teach, homework taught and ready to deploy, and marking to do.</li>' +
-      '<li><b>One page for each chapter</b>, with Teach for each lesson and the homework for each part, showing only its next step: Add, Deploy, then Mark. Renaming, changing the worksheet and the rest are under ⋯. <b>Add worksheet</b> uploads a PDF or takes one from your library.</li>' +
-      '<li><b>Deploy is one tap</b>, due at the class\'s next lesson. The note after it has <b>Change date</b> and <b>Undo</b>.</li>' +
-      '<li>The <b>?</b> on each page shows or hides its tips.</li></ul>' +
+    if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>A page for each chapter</b><ul>' +
+      '<li><b>The Hub is back as it was</b> (Home, Lessons, Homework, Students), with one change: in <b>Lessons</b>, each chapter opens a page of its own.</li>' +
+      '<li><b>A chapter\'s page</b> has <b>Teach</b> for each lesson, and under it the homework linked to each sub-chapter, showing only its next step: <b>Add</b> a worksheet (upload a PDF or take one from your library), <b>Deploy</b> it once taught, then <b>Mark</b> and release. The rest is under the <b>⋯</b> button, with its topical worksheets at the bottom.</li>' +
+      '<li><b>Deploy is one tap</b>, due at the class\'s next lesson. The note after it has <b>Change date</b> and <b>Undo</b>.</li></ul>' +
       '<p class="muted" style="margin:8px 0 0">Before this:</p><ul>' +
       '<li><b>Upload a worksheet into a chapter.</b> In the Lesson library, each chapter has <b>Upload a worksheet</b>: the PDF (and its marked solution) goes into your worksheet library in a folder for the chapter, and into the package as a topical worksheet or as the homework for one part. Deploy it from Lessons as usual.</li>' +
       '<li><b>Homework waits to be deployed.</b> In each chapter\'s package (Lessons), worksheets stay dormant until you press <b>Deploy</b>. Nothing is set by itself when you teach a part: a part you have taught shows <b>Taught · ready</b>, due at the class\'s next lesson. Each one then shows Deployed, Marking, and <b>Completed</b> once you release the marking, and it stays in the students\' package.</li>' +
@@ -2102,7 +2078,7 @@
   /* ---------- keyboard ---------- */
   function shortcutsBox() {
     modal('<h2>Keyboard shortcuts</h2><div class="kbd-list">' +
-      [['/', 'Find a student or worksheet'], ['N', 'New worksheet'], ['1 2 3', 'Today, Chapters, Students'], ['S', 'Save marks'], ['J  K', 'Next or previous student in the marks table'], ['?', 'This list'], ['Esc', 'Close a box']]
+      [['/', 'Find a student or worksheet'], ['N', 'New worksheet'], ['1 2 3', 'Home, Homework, Students'], ['S', 'Save marks'], ['J  K', 'Next or previous student in the marks table'], ['?', 'This list'], ['Esc', 'Close a box']]
         .map(function (r) { return '<kbd>' + r[0] + '</kbd><span>' + r[1] + '</span>'; }).join('') +
       '</div><div class="foot"><button class="btn" id="kb-ok">OK</button></div>');
     $('kb-ok').onclick = closeModal;
@@ -2119,7 +2095,7 @@
     var k = e.key;
     if (k === '/') { e.preventDefault(); $('q').focus(); }
     else if (k === '?') { e.preventDefault(); shortcutsBox(); }
-    else if (k === '1') $('tab-home').click(); else if (k === '2' && !$('tab-ls').classList.contains('hidden')) $('tab-ls').click(); else if (k === '3') $('tab-st').click();
+    else if (k === '1') $('tab-home').click(); else if (k === '2') $('tab-hw').click(); else if (k === '3' && !$('tab-st').classList.contains('hidden')) $('tab-st').click();
     else if ((k === 'n' || k === 'N') && H.view === 'ws') { e.preventDefault(); newWorksheet(); }
     else if ((k === 's' || k === 'S') && H.view === 'detail' && $('savebar') && !$('savebar').classList.contains('hidden')) { e.preventDefault(); $('save-go').click(); }
     else if ((k === 'j' || k === 'k') && H.view === 'detail') { e.preventDefault(); moveRow(document.activeElement, k === 'j' ? 1 : -1); }
@@ -2175,7 +2151,7 @@
       });
     }).then(function (n) {
       autoRun = null;
-      if (n) { toast(plural(n, 'automatic hand-in is', 'automatic hand-ins are') + ' ready to mark'); if (isDashView() || sxView(H.view)) loadDash(); else if (H.view === 'detail' && H.marks) openDetail(H.marks.worksheet.id); }
+      if (n) { toast(plural(n, 'automatic hand-in is', 'automatic hand-ins are') + ' ready to mark'); if (isDashView()) loadDash(); else if (H.view === 'detail' && H.marks) openDetail(H.marks.worksheet.id); }
       return n;
     }).catch(function () { autoRun = null; return 0; });
     return autoRun;
@@ -2489,7 +2465,7 @@
     var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub'), pick = null, up = null;
     if (focus) subs.forEach(function (s) { (s.groups || []).forEach(function (g) { if (chKey(s.id, g.name) === focus) cur = s.id; }); });
     if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
-    var again = function () { modal('', 'wide libm'); draw(); if (H.view === 'te') renderTeach(); };
+    var again = function () { modal('', 'wide libm'); draw(); if (H.view === 'te') renderTeach(); else if (H.view === 'chap') sxRender(); };
     again.always = true;
     var draw = function () {
       if (pick) { drawPick(); return; }
@@ -2518,7 +2494,7 @@
             '<button class="btn quiet small" data-tpup="' + esc(k) + '">' + ICON.up + 'Upload a worksheet</button></div></div></div>' : '') + '</section>';
         }).join('') + '</div>';
       $('modal').innerHTML = h;
-      $('libm-x').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); };
+      $('libm-x').onclick = function () { closeModal(); if (H.view === 'te') renderTeach(); else if (H.view === 'chap') sxRender(); };
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
       var ref = function (attr) { var p = attr.split('|'), i = Number(p.pop()); return { key: p.join('|'), i: i }; };
       var hold = function () { Array.prototype.forEach.call($('modal').querySelectorAll('[data-tpm], [data-tpx], [data-tpadd], [data-tpup]'), function (x) { x.disabled = true; }); };
@@ -2804,7 +2780,7 @@
     }, function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not deployed', msg(e)); });
   }
   function redrawAfter() {
-    loadDash().then(function () { try { if (H.view === 'te' && H.te) renderTeach(); } catch (e) { /* drawn again next time */ } });
+    loadDash().then(function () { try { if (H.view === 'te' && H.te) renderTeach(); else if (H.view === 'chap') sxRender(); } catch (e) { /* drawn again next time */ } });
   }
   function bindPkg(root, cls) {
     Array.prototype.forEach.call(root.querySelectorAll('[data-tp]'), function (b) {
@@ -2859,7 +2835,7 @@
     h += '<div id="up-card"></div><div id="wk-card"></div>';
     h += '<div class="tn" id="tn"></div>';
     h += needsHtml(d, need);
-    $('view-home').innerHTML = '';
+    $('view-home').innerHTML = h;
     h = '';
     var mine = d.worksheets.filter(function (w) { return inClass(w.classes); });
     var count = function (f) { return mine.filter(function (w) { return f === 'all' || wsGroup(w) === f; }).length; };
@@ -2870,7 +2846,7 @@
       '<div class="viewsw" role="group" aria-label="Layout"><button data-layout="cards" aria-pressed="' + (H.layout === 'cards') + '" aria-label="Cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></button>' +
       '<button data-layout="list" aria-pressed="' + (H.layout === 'list') + '" aria-label="List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button></div></div>';
     if (!d.worksheets.length) h += '<div class="sheet" style="margin-top:14px">' + emptyState('No worksheets yet', 'Tap New worksheet to set the first one.') + '</div>';
-    else if (!mine.length) h += '<div class="sheet" style="margin-top:14px">' + emptyState('Nothing for ' + H.cls + ' yet', 'Choose another class at the top to see its worksheets.') + '</div>';
+    else if (!mine.length) h += '<div class="sheet" style="margin-top:14px">' + emptyState('Nothing for ' + H.cls + ' yet', 'Choose All at the top to see every class.') + '</div>';
     var draw = function (list) { return H.layout === 'list' ? '<div class="wslist">' + list.map(listRow).join('') + '</div>' : '<div class="cards">' + list.map(card).join('') + '</div>'; };
     var sections = H.filter === 'all' ? [['open', 'Open'], ['marking', 'Marking'], ['done', 'Done']] : FILTERS.filter(function (f) { return f[0] === H.filter; });
     if (byChapter() && mine.length) {
@@ -2932,11 +2908,8 @@
     renderTeachNext();
     if (!H.tn || Date.now() - (H.tnAt || 0) > 40000) loadTeachNext(false);
     renderWeekCard();
-    if (first && (H.view === 'home' || H.view === 'today')) {
-      var last = lsGet('wsh_view24');
-      if (last === 'chs' || last === 'stu' || (last === 'chap' && SX.chap) || last === 'ws' || last === 'tr' || last === 'rw' || ((last === 'te' || last === 'pg' || last === 'cl') && H.links && H.links.liveboard)) showTab(last);
-      else showTab('today');
-    } else if (sxView(H.view)) sxLoad(false);
+    if (first && H.view === 'home') { var last = lsGet('wsh_view17'); if (last === 'ws' || last === 'tr' || last === 'rw' || ((last === 'te' || last === 'pg' || last === 'cl' || (last === 'chap' && SX.chap)) && H.links && H.links.liveboard)) showTab(last); else setView('home'); }
+    else if (H.view === 'chap') sxLoad(false);
   }
   function bindActs(root) {
     Array.prototype.forEach.call(root.querySelectorAll('[data-act]'), function (b) {
@@ -3049,13 +3022,13 @@
   // Keeps the page up to date by itself: when it comes back into view, and every few minutes.
   function quietRefresh() {
     if (document.hidden || !H.token || $('app').classList.contains('hidden') || !$('veil').classList.contains('hidden')) return;
-    if ((isDashView() || sxView(H.view)) && Date.now() - (H.dashAt || 0) > 60000 && !document.querySelector('.pop:not(.hidden)')) loadDash();
+    if ((isDashView() || H.view === 'chap') && Date.now() - (H.dashAt || 0) > 60000 && !document.querySelector('.pop:not(.hidden)')) loadDash();
   }
   document.addEventListener('visibilitychange', quietRefresh);
   setInterval(quietRefresh, 180000);
   // On Home, Let in requests are looked at every 30 seconds.
   setInterval(function () {
-    if ((H.view === 'home' || H.view === 'today') && H.dash && !document.hidden && Date.now() - (H.dashAt || 0) > 30000 && $('veil').classList.contains('hidden') && !document.querySelector('.pop:not(.hidden)')) loadDash();
+    if (H.view === 'home' && H.dash && !document.hidden && Date.now() - (H.dashAt || 0) > 30000 && $('veil').classList.contains('hidden') && !document.querySelector('.pop:not(.hidden)')) loadDash();
   }, 30000);
 
   /* ---------------- zip ---------------- */
@@ -3589,7 +3562,7 @@
   function renderDetail() {
     var w = H.marks.worksheet, rows = H.marks.rows;
     var step = H.step[w.id] || defaultStep(w);
-    var h = '<button class="btn quiet back" id="d-back">&larr; ' + sxBackLabel() + '</button>' +
+    var h = '<button class="btn quiet back" id="d-back">&larr; ' + (H.backTo === 'home' ? 'Home' : H.backTo === 'chap' ? (sxBackLabel() || 'Lessons') : 'All worksheets') + '</button>' +
       '<div class="dhead detail-head"><button class="topic-btn" id="d-topic" aria-label="Change the picture" style="border:0;background:none;padding:0;cursor:pointer">' + topicHtml(w.title, w.icon).replace('class="topic"', 'class="topic"') + '</button>' +
       '<div style="min-width:0"><h2>' + esc(w.title) + '<button class="btn quiet" id="d-edit" aria-label="Edit details" title="Edit details">' + ICON.pen + '</button><button class="btn quiet" id="d-copy" aria-label="Copy to classes" title="Copy to other classes or next year">' + ICON.copy + '</button></h2><p>' + dueChip(w) + esc(w.id + ' · ' + w.classText) + '</p></div></div>';
 
@@ -3602,7 +3575,7 @@
       return '<button role="tab" data-step="' + st[0] + '" aria-selected="' + (st[0] === step) + '" class="' + (inf[0] ? 'done' : '') + '"><span class="sn">' + (inf[0] && st[0] !== step ? '&#10003;' : i + 1) + '</span><span style="min-width:0"><b>' + st[1] + '</b><small>' + esc(inf[1]) + '</small></span></button>';
     }).join('') + '</div>';
 
-    var notIn = w.perClass.filter(function (pc) { return pc.notHanded.length; });
+    var notIn = w.perClass.filter(function (pc) { return pc.notHanded.length && (!H.cls || pc.cls === H.cls); });
     var P = {};
     P.set = '<h3>Set</h3><p class="lead">The worksheet, your marked solution and the answer key. Edit the title, classes, due date and schedule with the pencil by the title.</p>' +
       solutionLine(w) +
@@ -3649,14 +3622,15 @@
     STEPS.forEach(function (st) { h += '<div class="sheet panel' + (st[0] === step ? '' : ' hidden') + '" id="p-' + st[0] + '" role="tabpanel">' + P[st[0]] + '</div>'; });
 
     // the marks table
-    var vis = rows.slice();
+    var vis = rows.filter(function (r) { return !H.cls || r.cls === H.cls; });
     var many = vis.some(function (r) { return r.cls !== (vis[0] || {}).cls; });
-    h += '<div class="sheet marks"><div class="marks-head"><h3 style="margin:0">Marks</h3>' + tip('Type a score in the box. Tap a student for their comment and the Mostly blank tick. Students see them when marking is released. J and K move between students, S saves.') +
+    h += '<div class="sheet marks"><div class="marks-head"><h3 style="margin:0">Marks' + (H.cls ? ' for ' + esc(H.cls) : '') + '</h3>' + tip('Type a score in the box. Tap a student for their comment and the Mostly blank tick. Students see them when marking is released. J and K move between students, S saves.') +
       '<span class="spacer"></span><button class="btn ghost small noprint" id="d-print">' + ICON.print + 'Print</button><span class="printonly">' + esc(w.title + ' · ' + w.classText + (w.due ? ' · due ' + w.due : '')) + '</span></div>' +
       spreadHtml(vis) +
       (notIn.length ? '<div class="notin"><b>Not handed in</b><div class="chips">' + chipsFor(notIn.reduce(function (a, pc) { return a.concat(pc.notHanded); }, [])) + '</div><button class="btn small ghost" id="d-nudge2">Copy a reminder</button></div>' : '') +
       '<div class="table-wrap"><table class="mk"><thead><tr><th>Name</th>' + (many ? '<th>Class</th>' : '') + '<th>Script</th><th>Score</th><th style="width:34%">Comment</th><th></th><th>Corrections</th></tr></thead><tbody>';
     rows.forEach(function (r, i) {
+      if (H.cls && r.cls !== H.cls) return;
       var can = !!r.handedAt, e = H.edits[i] || {};
       var score = e.score !== undefined ? e.score : r.score, comment = e.comment !== undefined ? e.comment : r.comment, blank = e.blank !== undefined ? e.blank : !!r.blank;
       h += '<tr data-i="' + i + '" class="' + (H.edits[i] ? 'dirty' : '') + '"><td class="nm">' + (r.reg ? '<small>' + esc(r.reg) + '</small>' : '') + esc(r.name) + '</td>' +
@@ -3703,7 +3677,7 @@
 
   // Copies a reminder for the students who have not handed in.
   function nudge(w) {
-    var names = w.perClass.reduce(function (a, pc) { return a.concat(pc.notHanded.map(function (n) { return n; })); }, []);
+    var names = w.perClass.filter(function (pc) { return !H.cls || pc.cls === H.cls; }).reduce(function (a, pc) { return a.concat(pc.notHanded.map(function (n) { return n; })); }, []);
     var text = 'Reminder: please hand in "' + w.title + '" on the Worksheet Hub' + (w.due ? (w.isDue ? '. It was due ' : ' by ') + w.due : '') + '.\nStill to hand in: ' + names.join(', ') + '.';
     var done = function () { toast('Reminder copied. Paste it into your class chat.'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { showText(); });
@@ -3732,7 +3706,7 @@
   }
 
   function bindDetail(w, rows) {
-    $('d-back').onclick = function () { closeDrawer(); sxBack(); };
+    $('d-back').onclick = function () { closeDrawer(); if (H.backTo === 'chap') { setView('chap'); sxLoad(false); loadDash(); } else { setView(H.backTo === 'home' ? 'home' : 'ws'); loadDash(); } };
     $('d-edit').onclick = function () { editWorksheet(w); };
     $('d-copy').onclick = function () { copyWorksheet(w); };
     $('d-topic').onclick = function () { pickTopic(w); };
@@ -5086,7 +5060,7 @@
         var y = window.scrollY;
         tcall('api_t_marks', H.marks.worksheet.id).then(function (m) { if (H.view !== 'detail') return; H.marks = m; renderDetail(); window.scrollTo(0, y); }).catch(function () {});
       }
-    } else if ((isDashView() || sxView(H.view)) && ((H.dash && H.dash.worksheets) || []).some(jobBusy)) loadDash();
+    } else if (isDashView() && ((H.dash && H.dash.worksheets) || []).some(jobBusy)) loadDash();
   }, 30000);
 
   /* ---------------- one-file return ---------------- */
@@ -5388,7 +5362,7 @@
     });
     h += '</tbody><tfoot><tr class="tot"><td class="nm">Handed in</td>' + c.handed.map(function (n) { return '<td>' + n + '/' + c.rows.length + '</td>'; }).join('') + '<td></td><td></td></tr>' +
       '<tr class="tot"><td class="nm">On time</td>' + c.onTime.map(function (n) { return '<td>' + n + '/' + c.rows.length + '</td>'; }).join('') + '<td></td><td></td></tr></tfoot>';
-    h += '</table></div>';
+    h += '</table></div><div class="drawer" id="sdrawer" role="dialog" aria-modal="false" aria-label="Student record"></div>';
     $('view-tr').innerHTML = h;
     bindTr(c);
     if (H.flashName) { var f = $('tr-flash'); if (f) f.scrollIntoView({ block: 'center' }); H.flashName = null; }
@@ -5581,7 +5555,7 @@
       '<p class="te-sub">' + (lib ? 'Each class\'s chapter packages. ' : '') + 'Teach opens the slides on the projector for the class you pick, and your phone is the remote.</p>' +
       '<details class="te-how"><summary>How it works</summary><ul>' +
         '<li>Give a class a chapter from the <b>Lesson library</b>: all its slides open to them for revision, and it shows here.</li>' +
-        '<li>Worksheets wait in the package. <b>Nothing reaches students until you press Deploy</b>. A part you have taught shows <b>Taught · ready</b>, due at their next lesson.</li>' +
+        '<li>Open a chapter for its page: <b>Teach</b> for each lesson, and the homework linked to each part. <b>Nothing reaches students until you press Deploy</b>. A part you have taught shows <b>Taught · ready to deploy</b>, due at their next lesson, and the note after Deploy has Change date and Undo.</li>' +
         '<li>Each one then shows <b>Deployed</b>, <b>Marking</b>, and <b>Completed</b> once you release the marking. It stays in the students\' package.</li>' +
         '<li>Answers count only while you teach. Untick Revision to close a lesson.</li></ul></details>' + '</div>';
     h += '<div class="te-cls" role="group" aria-label="Class to teach"><span>Class</span>' + teClasses().map(function (c) {
@@ -5593,10 +5567,11 @@
       return '<button role="tab" class="te-subj" data-s="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
     }).join('') + '</div>';
     var sub = subs.filter(function (s) { return s.id === cur; })[0] || { groups: [] };
-    var rows = [];
+    var rows = [], pkKeys = [];
     (sub.groups || []).forEach(function (g) {
       if (!shown(sub, g)) return;
       var gk = chKey(sub.id, g.name), isPkg = lib && !!chByKey(gk);
+      if (isPkg) { if (!pkKeys.length) h += '<!--SXCH-->'; pkKeys.push(gk); return; }   // release 25: each chapter has a page of its own
       h += '<section class="te-ch' + (isPkg ? ' pk' : '') + '"' + (isPkg && sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="te-chh"><h3>' + esc(g.name) + '</h3>' + (chByKey(gk) ? chGiveChips(gk) : '') +
         (isPkg ? '<button class="btn quiet small" data-pkedit="' + esc(gk) + '">Edit package</button>' : '') + '</div>' + (isPkg ? '<div class="pk-lbl">Slides</div>' : '') + '<ul class="te-list">';
       g.items.forEach(function (it) {
@@ -5624,6 +5599,7 @@
       });
       h += '</ul>' + (isPkg ? pkgHtml(sub, g, cls, rows, site) : '') + '</section>';
     });
+    if (pkKeys.length) h = h.replace('<!--SXCH-->', sxLessonsRows(pkKeys, cls));
     h += '<p class="te-foot">Students open their chapter packages in learnwithmrcedric. <a href="' + esc(site) + '" target="_blank" rel="noopener">See the lesson site</a></p>';
     $('view-te').innerHTML = h;
     Array.prototype.forEach.call($('view-te').querySelectorAll('.te-subj'), function (b) {
@@ -5654,6 +5630,7 @@
     bindGive($('view-te'), function () { if (H.view === 'te') renderTeach(); });
     Array.prototype.forEach.call($('view-te').querySelectorAll('#te-lib, [data-lib]'), function (b) { b.onclick = function () { openLibrary(cls); }; });
     bindPkg($('view-te'), cls);
+    Array.prototype.forEach.call($('view-te').querySelectorAll('[data-sxchap]'), function (b) { b.onclick = function () { sxGo('chap', b.getAttribute('data-sxchap')); }; });
     if (lib && !H.lib && subs.some(function (s) { return (s.groups || []).some(function (g) { return shown(s, g) && chTopical(chKey(s.id, g.name)).length; }); })) needLib(function () { if (H.view === 'te') renderTeach(); });
     $('te-pair').onclick = pairPhone;
     bindProjector($('te-pj'));
@@ -5779,13 +5756,12 @@
     if (H.tnBusy) return H.tnBusy;
     H.tnBusy = tcall('api_t_teachnext', !!fresh).then(function (r) {
       H.tn = r; H.tnErr = ''; H.tnAt = Date.now(); H.tnBusy = null;
-      renderTeachNext(); if (H.view === 'te' && H.te) renderTeach();
-      if (sxView(H.view)) sxRender(); if (H.dash) renderBadges();
+      renderTeachNext(); if (H.view === 'te' && H.te) renderTeach(); if (H.view === 'chap') sxRender();
       return r;
     }).catch(function (e) {
       H.tnBusy = null; H.tnAt = Date.now();
       if (/TEACHER_SIGNED_OUT/.test(e.message)) return null;
-      H.tnErr = msg(e); renderTeachNext(); if (H.view === 'te' && H.te) renderTeach(); if (sxView(H.view)) sxRender();
+      H.tnErr = msg(e); renderTeachNext(); if (H.view === 'te' && H.te) renderTeach(); if (H.view === 'chap') sxRender();
       return null;
     });
     return H.tnBusy;
@@ -5928,7 +5904,7 @@
     }
     else if (m.type === 'close' && $('lbm-body')) closeModal();
     else if (m.type === 'paired') toast('Your phone is signed in');
-    else if (m.type === 'lessons') { H.te = null; loadTeachNext(true); if (H.view === 'te') loadTeach(); else if (sxView(H.view)) sxLoad(true); }
+    else if (m.type === 'lessons') { H.te = null; loadTeachNext(true); if (H.view === 'te') loadTeach(); else if (H.view === 'chap') sxLoad(true); }
     else if (m.type === 'signin' && m.error) {
       // Live Board's sign-in ran out (or the PIN changed): get a new one and open the page again, once a minute at most.
       var again = !H.signinAt || Date.now() - H.signinAt > 60000;
@@ -6375,18 +6351,14 @@
 
   window.__hub = H; window.__parseCsv = parseCsv;   // for testing only
 
-  /* ================= The simple Hub (release 24) =================
-     Three tabs: Today (only the next steps for the class), Chapters (one page for each chapter, where its slides,
-     each part's homework and its topical worksheets all are) and Students (who missed homework). The class is
-     chosen once, at the top. Each row shows one next step; everything else is under its ⋯ button. The older
-     pages (all worksheets, the tracker, Lessons, Progress, Classes, Points) are in the menu. */
+  /* ================= A page for each chapter (release 25) =================
+     Lessons lists each class's chapters; each one opens a page of its own with its lessons (Teach), the homework
+     linked to each part showing its next step (Add, Deploy, then Mark), and its topical worksheets. Everything else
+     is under each row's ⋯ button. Deploy is one tap, with Change date and Undo on the note after it. */
   var SX = { chap: lsGet('wsh_chap') || '', tips: lsGet('wsh_tips') !== '0', dep: {}, depT: {} };
-  function sxView(v) { return v === 'today' || v === 'chs' || v === 'chap' || v === 'stu'; }
-  function sxCls() {
-    var l = teClasses();
-    if (!l.length) l = allClasses();
-    return H.cls && l.indexOf(H.cls) >= 0 ? H.cls : (H.cls || l[0] || '');
-  }
+  function sxView(v) { return v === 'chap'; }
+  // The class the page is for: the one chosen in Lessons (or at the top).
+  function sxCls() { return teCls(); }
   var SX_ICON = {
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>',
     back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
@@ -6418,22 +6390,16 @@
   function sxLoad(fresh) {
     var jobs = [sxCatalog(), sxLinks(fresh)];
     if (!H.tn || fresh || Date.now() - (H.tnAt || 0) > 40000) jobs.push(loadTeachNext(!!fresh));
-    if (H.view === 'stu' && (!H.tracker || fresh || Date.now() - (H.trAt || 0) > 120000)) jobs.push(tcall('api_t_tracker').then(function (t) { H.tracker = t; H.trAt = Date.now(); }).catch(function () { /* the page says so */ }));
     sxRender();
     return Promise.all(jobs.map(function (p) { return p && p.then ? p.then(null, function () {}) : p; })).then(sxRender);
   }
   function sxRender() {
     if (!H.token || !sxView(H.view)) return;
-    try {
-      if (H.view === 'today') sxToday();
-      else if (H.view === 'chs') sxChapters();
-      else if (H.view === 'chap') sxChapter();
-      else if (H.view === 'stu') sxStudents();
-    } catch (e) { if (window.console) console.error(e); }
+    try { sxChapter(); } catch (e) { if (window.console) console.error(e); }
   }
   function sxGo(v, key) {
     if (v === 'chap') { SX.chap = key || SX.chap; lsSet('wsh_chap', SX.chap); }
-    setView(v); sxLoad(false); loadDash();
+    setView(v); sxLoad(false); if (!H.dash || Date.now() - (H.dashAt || 0) > 20000) loadDash();
   }
 
   /* ---------- the lesson site's chapters, lessons and parts ---------- */
@@ -6701,100 +6667,6 @@
   }
   function sxSkel(n) { var h = ''; for (var i = 0; i < (n || 3); i++) h += '<li class="sx-row sx-wait"><span class="skel" style="width:90px;height:22px"></span><div class="sx-main"><span class="skel" style="width:60%;height:16px"></span><span class="skel" style="width:40%;height:13px"></span></div></li>'; return h; }
 
-  /* ================= Today ================= */
-  // Everything that needs the teacher for the class, each with one button: the lesson to teach (or running), the
-  // homework taught and ready to deploy, then Needs you (marking, releasing, overdue, letting a student in ...).
-  function sxTodayItems(cls) {
-    var out = [], d = H.dash || {}, x = tnFor(cls);
-    if (x && x.running) {
-      var r = x.running;
-      out.push({ kind: 'run', tag: 'Lesson running', tagCls: 'run', title: deckName(r.deck), sub: (r.lesson ? r.lesson + ' · ' : '') + 'started ' + since(r.at),
-        act: '<a class="btn green" data-go href="' + esc(slideLink(r.deck.url, cls, null)) + '" target="_blank" rel="noopener">Open the slides</a>' });
-    } else if (x && x.next && x.next.deck && x.next.deck.url) {
-      var n = x.next, when = x.onNow ? 'Now' + (x.slot ? ', until ' + timeShort(x.slot.end) : '') : x.nextAt ? 'Next lesson ' + (sameDay(x.nextAt, Date.now()) ? 'today' : dayName(x.nextAt)) + ' ' + timeShort(x.nextAt) : '';
-      var what = deckName(n.deck) + (n.t && n.part >= 0 ? ', ' + n.t : '');
-      out.push({ kind: 'teach', tag: x.onNow ? 'Teach now' : 'Teach next', tagCls: 'teach', title: deckName(n.deck), sub: [n.t, when].filter(String).join(' · '),
-        act: sxTeachLink(n.deck.url, cls, n.part, n.carry, 'yellow', what) });
-    } else if (H.tn && x && !x.last) {
-      out.push({ kind: 'teach', tag: 'Teach next', tagCls: 'teach', title: 'No lesson taught to ' + cls + ' yet', sub: 'Choose the first one from its chapters.', act: '<button class="btn yellow" data-sxgo="chs">Choose a lesson</button>' });
-    }
-    // homework taught and ready to deploy
-    sxAllChapters(cls).filter(function (ch) { return ch.given; }).forEach(function (ch) {
-      ch.items.forEach(function (it) {
-        sxHw(it, cls).forEach(function (r) {
-          if (!r.linked || r.w || r.pending || !r.ready) return;
-          out.push({ kind: 'deploy', tag: 'Ready', tagCls: 'ready', title: r.name, sub: 'Homework for ' + (r.multi ? r.t : (it.num || it.title || '')) + ', taught · due ' + sxDueText(sxDue(r)) + ' if you deploy it now',
-            act: '<button class="btn yellow" data-sxdp="' + esc(ch.key) + '|' + esc(it.topicId) + '|' + esc(r.key) + '">Deploy</button>' });
-        });
-      });
-    });
-    // Needs you, for this class (the students to keep an eye on are on the Students page)
-    var NG = {}; NGROUPS.forEach(function (g) { NG[g[0]] = g[1]; });
-    var tagOf = { letin: 'letin', linkerr: 'warn', overdue: 'warn', solution: 'mark', mark: 'mark', release: 'mark', due: 'due', corr: 'ok', stuck: 'warn', autoset: 'ok', prizes: 'ready' };
-    (d.attention || []).forEach(function (nd, i) {
-      if (nd.info || nd.action === 'tracker' || nd.snoozed) return;
-      var cl = nd.cls ? [nd.cls] : nd.classes || (byId(nd.id) || {}).classes;
-      if (cl && cl.length && !cl.some(function (c) { return chNorm(c) === chNorm(cls); })) return;
-      var g = needGroup(nd), words = needWords(nd);
-      out.push({ kind: 'need', i: i, tag: NG[g] || 'Needs you', tagCls: tagOf[g] || '', title: words[0], sub: words[1],
-        act: (nd.action === 'letin' ? '<button class="btn ghost" data-sxno="' + i + '">No</button>' : '') + '<button class="btn ' + (g === 'due' || g === 'autoset' || g === 'corr' ? 'ghost' : 'yellow') + '" data-sxneed="' + i + '">' + esc(needLabel(nd, d)) + '</button>',
-        later: '<button class="later" data-sxlater="' + i + '" title="Put away until tomorrow" aria-label="Put away until tomorrow">' + NICON.later + '</button>' });
-    });
-    return out;
-  }
-  function sxToday() {
-    var box = $('view-today'), cls = sxCls();
-    if (!box) return;
-    var now = new Date(), day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()] + ' ' + now.getDate() + ' ' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()];
-    var items = H.dash ? sxTodayItems(cls) : [], waiting = !H.dash || !sxReady();
-    var off = ((H.dash && H.dash.attention) || []).filter(function (nd) { return nd.snoozed && !nd.info && nd.action !== 'tracker'; }).length;
-    var h = sxHead('Today for ' + cls, day, 'Only what needs you for ' + esc(cls) + ', one button each: the lesson to teach, homework ready to deploy, and marking to do. Change class at the top. Each chapter, with its slides and homework, is under <b>Chapters</b>; who missed homework is under <b>Students</b>.');
-    h += '<div id="up-card"></div>';
-    if (items.length) h += '<p class="sx-lede">' + (items.length === 1 ? '1 thing needs you.' : items.length + ' things need you.') + '</p><ul class="sx-list">' + items.map(sxRow).join('') + (waiting ? sxSkel(1) : '') + '</ul>';
-    else if (waiting) h += '<ul class="sx-list">' + sxSkel(3) + '</ul>';
-    else h += '<div class="sx-calm">' + SX_ICON.ok + 'Nothing needs you for ' + esc(cls) + ' right now.</div>';
-    if (off) h += '<p class="sx-snz">' + plural(off, 'thing is', 'things are') + ' put away until tomorrow. <button type="button" class="sx-link" id="sx-wake">Show them</button></p>';
-    if (!H.tn && H.tnErr) h += '<p class="sx-note">' + esc(H.tnErr) + ' <button type="button" class="sx-link" id="sx-retry">Try again</button></p>';
-    // the chapter the class is on
-    var x = tnFor(cls), deck = x && (x.running ? x.running.deck.id : x.next ? x.next.deck.id : x.last ? x.last.deck.id : ''), ch = deck ? sxChapterOfDeck(cls, deck) : null;
-    if (ch) h += '<button type="button" class="sx-onch" data-sxchap="' + esc(ch.key) + '"><span class="sx-onch-l">Chapter now</span><b>' + esc(chShort(ch.c)) + '</b><span class="sx-onch-go">Open' + SX_ICON.go + '</span></button>';
-    box.innerHTML = h;
-    renderUpdateCard();
-    sxBindHead(box); sxBindToday(box, items, cls);
-  }
-  function sxBindToday(box, items, cls) {
-    sxBindTeach(box);
-    var d = H.dash || {};
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxgo]'), function (b) { b.onclick = function () { showTab(b.getAttribute('data-sxgo')); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxchap]'), function (b) { b.onclick = function () { sxGo('chap', b.getAttribute('data-sxchap')); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxdp]'), function (b) {
-      b.onclick = function () {
-        var p = b.getAttribute('data-sxdp').split('|'), part = p.pop(), deck = p.pop(), key = p.join('|'), it = sxItemOf(deck);
-        var r = it ? sxHw(it, cls).filter(function (x) { return x.key === part; })[0] : null;
-        if (r) sxDeployPart(r, key, cls, b);
-      };
-    });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxneed]'), function (b) {
-      b.onclick = function () {
-        var n = d.attention[Number(b.getAttribute('data-sxneed'))];
-        if (!n) return;
-        if (n.action === 'zip') { if (d.claude && d.claude.connected) markWithClaude(n.id); else downloadZip(n.id); }
-        else if (n.action === 'release') confirmRelease(n.id, true);
-        else if (n.action === 'answers') confirmAnswers(n.id, true);
-        else if (n.action === 'letin') letIn(n, true, b);
-        else if (n.action === 'prizes') prizesBox(n);
-        else if (n.action === 'linkerr') { b.disabled = true; tcall('api_t_linkSeen', n.k, n.cls).then(loadDash).catch(function (e) { b.disabled = false; if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); }); }
-        else if (n.action === 'help') { H.focusHelp = true; openDetail(n.id, 'hand'); }
-        else if (n.action === 'solution') openSolution(n.id);
-        else openDetail(n.id, n.kind === 'nosolution' ? 'set' : undefined);
-      };
-    });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxno]'), function (b) { b.onclick = function () { var n = d.attention[Number(b.getAttribute('data-sxno'))]; if (n) letIn(n, false, b); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxlater]'), function (b) { b.onclick = function () { var n = d.attention[Number(b.getAttribute('data-sxlater'))]; if (n) snooze(n, true); }; });
-    if ($('sx-wake')) $('sx-wake').onclick = function () { (d.attention || []).forEach(function (n) { if (n.snoozed && !n.info && n.action !== 'tracker') snooze(n, false); }); };
-    if ($('sx-retry')) $('sx-retry').onclick = function () { H.tnErr = ''; sxLoad(true); };
-  }
-
   /* ================= Chapters ================= */
   function sxChapterStats(ch, cls) {
     var s = { taught: 0, lessons: ch.items.length, ready: 0, mark: 0, out: 0 }, x = tnFor(cls), here = false;
@@ -6828,40 +6700,22 @@
     return '<li><button type="button" class="sx-chrow' + (s.here ? ' now' : '') + '" data-sxchap="' + esc(ch.key) + '"><span class="sx-num" style="--sc:' + esc(ch.sub.color || '#2A3F7E') + '">' + esc(ch.c.num || '') + '</span>' +
       '<span class="sx-main"><b>' + esc(sxChTitle(ch.c)) + '</b><span>' + esc(status) + '</span></span><span class="sx-flags">' + flags.join('') + '</span>' + SX_ICON.go + '</button></li>';
   }
-  function sxChapters() {
-    var box = $('view-chs'), cls = sxCls();
-    if (!box) return;
-    var tip = 'Each chapter has one page with everything in it: <b>Teach</b> for each lesson, the homework for each part, and its topical worksheets. Each row shows only its next step.';
-    var head = sxHead('Chapters for ' + cls, '', tip);
-    if (!H.links || !H.links.lessons) { box.innerHTML = head + '<p class="sx-note">The lesson site is not set, so there are no chapters to show.</p>'; sxBindHead(box); return; }
-    if (!sxReady()) { box.innerHTML = head + (H.teErr ? '<p class="sx-note">' + esc(H.teErr) + '</p>' : '<ul class="sx-list">' + sxSkel(4) + '</ul>'); sxBindHead(box); return; }
-    var all = sxAllChapters(cls), mine = all.filter(function (c) { return c.given; });
-    var subs = {}; mine.forEach(function (c) { subs[c.sub.id] = 1; });
-    var others = all.filter(function (c) { return !c.given && (!mine.length || subs[c.sub.id]); });
-    var rest = all.filter(function (c) { return !c.given && mine.length && !subs[c.sub.id]; });
-    var subNames = []; mine.forEach(function (c) { if (subNames.indexOf(c.sub.name) < 0) subNames.push(c.sub.name); });
-    var h = sxHead('Chapters for ' + cls, subNames.join(' · '), tip);
-    if (mine.length) h += '<ul class="sx-list sx-chlist">' + mine.map(function (c) { return sxChRow(c, cls); }).join('') + '</ul>';
-    else h += '<div class="sx-calm sx-plain">No chapters given to ' + esc(cls) + ' yet. Open one below and give it to ' + esc(cls) + '.</div>';
-    if (others.length) h += (mine.length ? '<details class="sx-other"><summary>More chapters (' + others.length + ')</summary>' : '<h2 class="sx-h2">All chapters</h2>') +
-      '<ul class="sx-list sx-chlist">' + others.map(function (c) { return sxChRow(c, cls); }).join('') + '</ul>' + (mine.length ? '</details>' : '');
-    if (rest.length) h += '<details class="sx-other"><summary>Other subjects (' + rest.length + ')</summary><ul class="sx-list sx-chlist">' + rest.map(function (c) { return sxChRow(c, cls); }).join('') + '</ul></details>';
-    box.innerHTML = h;
-    sxBindHead(box);
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxchap]'), function (b) { b.onclick = function () { sxGo('chap', b.getAttribute('data-sxchap')); }; });
-  }
-
   /* ================= One chapter ================= */
   function sxChapter() {
     var box = $('view-chap'), cls = sxCls();
     if (!box) return;
-    var back = '<button type="button" class="sx-back" id="sx-back">' + SX_ICON.back + 'All chapters</button>';
-    if (!sxReady()) { box.innerHTML = back + (H.teErr ? '<p class="sx-note">' + esc(H.teErr) + '</p>' : '<ul class="sx-list">' + sxSkel(4) + '</ul>'); $('sx-back').onclick = function () { sxGo('chs'); }; return; }
+    var back = '<button type="button" class="sx-back" id="sx-back">' + SX_ICON.back + 'Lessons</button>';
+    if (!sxReady()) { box.innerHTML = back + (H.teErr ? '<p class="sx-note">' + esc(H.teErr) + '</p>' : '<ul class="sx-list">' + sxSkel(4) + '</ul>'); $('sx-back').onclick = function () { showTab('te'); }; return; }
     var ch = sxChapterOf(cls, SX.chap);
-    if (!ch) { box.innerHTML = back + '<p class="sx-note">That chapter is not on the lesson site any more.</p>'; $('sx-back').onclick = function () { sxGo('chs'); }; return; }
+    if (!ch) { box.innerHTML = back + '<p class="sx-note">That chapter is not on the lesson site any more.</p>'; $('sx-back').onclick = function () { showTab('te'); }; return; }
     var x = tnFor(cls), runDeck = x && x.running ? x.running.deck.id : '', nx = x && !x.running && x.next ? x.next : null;
     var h = back + sxHead(chShort(ch.c), (ch.sub.name || '') + ' · ' + cls,
       'Each lesson has <b>Teach</b>, and each part its homework, showing only the next step: <b>Add</b> a worksheet, <b>Deploy</b> it once taught (due at the class\'s next lesson, and you can Undo), then <b>Mark</b> and release. Everything else is under the ⋯ button.');
+    h += '<div class="te-cls sx-cls" role="group" aria-label="Class"><span>Class</span>' + teClasses().map(function (c) {
+      return '<button data-tc="' + esc(c) + '" aria-pressed="' + (c === cls) + '" style="--cc:' + ccOf(c) + '"><i></i>' + esc(c) + '</button>';
+    }).join('') + '</div>';
+    // as in release 23: which classes have the chapter, and Edit package (the Lesson library, at this chapter)
+    h += '<div class="sx-pkbar">' + chGiveChips(ch.key) + '<button type="button" class="btn quiet small" data-pkedit="' + esc(ch.key) + '">Edit package</button></div>';
     if (!ch.given) h += '<div class="sx-give"><span>' + esc(cls) + ' does not have this chapter yet. Giving it opens all its slides to ' + esc(cls) + ' for revision.</span><button type="button" class="btn yellow" id="sx-give">Give it to ' + esc(cls) + '</button></div>';
     var rows = [];
     h += '<ol class="sx-parts">';
@@ -6923,8 +6777,13 @@
     h += '<button type="button" class="btn ghost sx-addw" id="sx-addw">' + ICON.plus + 'Add worksheet</button>';
     box.innerHTML = h;
     sxBindHead(box);
-    $('sx-back').onclick = function () { sxGo('chs'); };
+    $('sx-back').onclick = function () { showTab('te'); };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-tc]'), function (b) {
+      b.onclick = function () { var c = b.getAttribute('data-tc'); lsSet('wsh_te_cls', c); if (H.cls && H.cls !== c) setClass(c); else sxRender(); };
+    });
     if ($('sx-give')) $('sx-give').onclick = function () { var b = this; b.disabled = true; giveChapter(ch.key, cls, true, function () { sxRender(); }); };
+    bindGive(box, function () { if (H.view === 'chap') sxRender(); });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-pkedit]'), function (e) { e.onclick = function () { openLibrary(cls, e.getAttribute('data-pkedit')); }; });
     sxBindTeach(box);
     Array.prototype.forEach.call(box.querySelectorAll('[data-sxparts]'), function (b) {
       b.onclick = function (e) { e.stopPropagation(); var it = ch.items[Number(b.getAttribute('data-sxparts'))]; partMenu(b, it, sxUrl(it), cls); };
@@ -7106,59 +6965,16 @@
     draw();
   }
 
-  /* ================= Students ================= */
-  function sxStudents() {
-    var box = $('view-stu'), cls = sxCls();
-    if (!box) return;
-    var all = H.tracker || [], c = all.filter(function (x) { return chNorm(x.cls) === chNorm(cls); })[0] || null;
-    var h = sxHead('Students in ' + cls, c ? plural(c.rows.length, 'student', 'students') : '', 'Only the students who did not hand in homework that was due, the most first. <b>Open</b> shows a student\'s homework, notes and points.');
-    if (!H.tracker) h += '<ul class="sx-list">' + sxSkel(4) + '</ul>';
-    else if (!c) h += '<p class="sx-note">No students in ' + esc(cls) + ' on the Students tab of your Sheet yet.</p>';
-    else {
-      // Homework most of the class missed is one line (not a line for every student); the rest are by student.
-      var half = Math.max(3, Math.ceil(c.rows.length / 2)), byWs = {}, wide = [];
-      c.rows.forEach(function (r) { missingTitles(c, r).forEach(function (t) { byWs[t] = (byWs[t] || 0) + 1; }); });
-      c.worksheets.forEach(function (w) { if ((byWs[w.title] || 0) >= half && wide.indexOf(w) < 0) wide.push(w); });
-      var wideT = wide.map(function (w) { return w.title; });
-      var miss = c.rows.map(function (r) { return { r: r, list: missingTitles(c, r).filter(function (t) { return wideT.indexOf(t) < 0; }) }; }).filter(function (x) { return x.list.length; })
-        .sort(function (a, b) { return b.list.length - a.list.length || (a.r.name < b.r.name ? -1 : 1); });
-      if (wide.length) h += '<h2 class="sx-h2">Most of the class did not hand in</h2><ul class="sx-list">' + wide.map(function (w) {
-        return '<li class="sx-row sx-person"><div class="sx-main"><b>' + esc(w.title) + '</b><span>' + byWs[w.title] + ' of ' + c.rows.length + ' did not hand it in' + (w.due ? ' · due ' + esc(w.due) : '') + '</span></div>' +
-          '<div class="sx-acts"><button type="button" class="btn ghost small" data-sxws="' + esc(w.id || '') + '">Open</button></div></li>';
-      }).join('') + '</ul>';
-      if (miss.length) h += '<h2 class="sx-h2">' + (wide.length ? 'Also missed homework' : 'Missed homework') + '</h2><ul class="sx-list">' + miss.map(function (x) {
-        var l = x.list, txt = l.length > 3 ? l.slice(0, 3).join(', ') + ' and ' + (l.length - 3) + ' more' : listJoin(l);
-        return '<li class="sx-row sx-person"><span class="sx-av" style="--cc:' + ccOf(cls) + '" aria-hidden="true">' + esc(initials(x.r.name)) + '</span><div class="sx-main"><b>' + esc(x.r.name) + '</b><span>Did not hand in ' + esc(txt) + '</span></div>' +
-          '<div class="sx-acts"><button type="button" class="btn ghost small" data-sxst="' + esc(x.r.name) + '">Open</button></div></li>';
-      }).join('') + '</ul>';
-      var rest = c.rows.length - miss.length;
-      if (!wide.length) h += '<div class="sx-calm">' + SX_ICON.ok + (miss.length ? 'Everyone else (' + rest + ') has handed in everything that was due.' : 'Everyone in ' + esc(cls) + ' has handed in everything that was due.') + '</div>';
-      else if (!miss.length) h += '<p class="sx-note">Apart from that, everyone has handed in everything that was due.</p>';
-    }
-    h += '<div class="sx-foot"><button type="button" class="sx-link" data-sxtab="tr">Homework tracker</button>' + (H.links && H.links.liveboard ? '<button type="button" class="sx-link" id="sx-prog">Progress in lessons</button><button type="button" class="sx-link" id="sx-cl">Classes: points, homework and lessons</button>' : '') + '<button type="button" class="sx-link" data-sxtab="rw">Points and prizes</button></div>';
-    box.innerHTML = h;
-    sxBindHead(box);
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxst]'), function (b) { b.onclick = function () { openStudent(cls, b.getAttribute('data-sxst')); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxws]'), function (b) { b.onclick = function () { var id = b.getAttribute('data-sxws'); if (id && wsById(id)) openDetail(id); else showTab('tr'); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-sxtab]'), function (b) { b.onclick = function () { showTab(b.getAttribute('data-sxtab')); }; });
-    if ($('sx-prog')) $('sx-prog').onclick = function () { openProgress(cls, '', false); };
-    if ($('sx-cl')) $('sx-cl').onclick = function () { showTab('cl'); };
+  // Lessons: each chapter the class has is one row that opens its page.
+  function sxLessonsRows(keys, cls) {
+    var all = sxAllChapters(cls);
+    return '<ul class="sx-list sx-chlist te-chl">' + keys.map(function (k) {
+      var ch = all.filter(function (x) { return x.key === k; })[0];
+      return ch ? sxChRow(ch, cls) : '';
+    }).join('') + '</ul>';
   }
-  // Back from a worksheet to the page it was opened from.
-  function sxBackLabel() {
-    var b = H.backTo;
-    if (b === 'today' || b === 'home') return 'Today';
-    if (b === 'chap') { var ch = H.te ? sxChapterOf(sxCls(), SX.chap) : null; return ch ? chShort(ch.c) : 'Chapters'; }
-    if (b === 'chs') return 'Chapters';
-    if (b === 'stu') return 'Students';
-    return 'All worksheets';
-  }
-  function sxBack() {
-    var b = H.backTo;
-    if (b === 'home') b = 'today';
-    if (sxView(b)) { setView(b); sxLoad(false); loadDash(); }
-    else { setView('ws'); loadDash(); }
-  }
+  // Back from a worksheet opened on a chapter's page goes back to that page.
+  function sxBackLabel() { var ch = H.backTo === 'chap' && H.te ? sxChapterOf(sxCls(), SX.chap) : null; return ch ? chShort(ch.c) : ''; }
 
   boot();
 })();

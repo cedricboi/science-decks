@@ -1,10 +1,10 @@
 {
-  "build": "2026-10-14-simple",
-  "seq": 24,
-  "ref": "e10fe4d839c41397117f3655f84147bb0d124666",
-  "title": "learnwithmrcedric: a simpler Teacher Hub",
+  "build": "2026-10-15-chapters",
+  "seq": 25,
+  "ref": "main",
+  "title": "learnwithmrcedric: the Hub as before, with a page for each chapter",
   "notes": [
-    "A simpler Teacher Hub: three tabs (Today, Chapters, Students) for the class chosen at the top, one page for each chapter with one next step on each row, Deploy in one tap with Change date and Undo, and Teach that opens the slides for the class"
+    "The Teacher Hub as before (Home, Lessons, Homework, Students, with All in the class switch), with one change: in Lessons each chapter opens a page of its own, with Teach for each lesson and the homework linked to each part"
   ],
   "files": [
     {
@@ -23,7 +23,7 @@
       "name": "Guide",
       "type": "HTML",
       "path": "Guide.html",
-      "sha256": "ceb54de0eb7828f55b2f254648945f80a7d0d4917f1e88f2737c8deb8cd61302"
+      "sha256": "5d24d9489440ebe6fd66967966b5faad6c6f3fe78b89d804dad26fef2a0a9eba"
     },
     {
       "name": "Homework",
@@ -41,7 +41,7 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "573f7f4d5727e54c160537cfac010cccd4905212a959d7d0b936c15a60bf36f2"
+      "sha256": "b257b49157854a8128fee257b123021b2baa1256c59a756da1564308fa3da812"
     },
     {
       "name": "Ink",
@@ -81,6 +81,54 @@
     }
   ],
   "pages": [
+    {
+      "seq": 25,
+      "build": "2026-10-15-chapters",
+      "ref": "main",
+      "needsServer": 24,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "5d24d9489440ebe6fd66967966b5faad6c6f3fe78b89d804dad26fef2a0a9eba"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "861722c0725c4cb12a5f4f21df7f75cc5d7971a1864aef90f6b16d95f25fde86"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "b257b49157854a8128fee257b123021b2baa1256c59a756da1564308fa3da812"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "b37a79c8f5199b5a5de98adfddbc1c27ff5f7de38788946e1e5060ff4b996787"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "6b9b4a8565b73bc81dafe7633cefce8a14c18b7d192f96b0142be875f7895ca5"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "bb199168edfb9f6e84fd68556f5e98d8ac56a96f3fcf8648e382dc21ff0040d2"
+        }
+      ]
+    },
     {
       "seq": 24,
       "build": "2026-10-14-simple",
