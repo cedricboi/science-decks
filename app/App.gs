@@ -14,7 +14,7 @@
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 
-var APP_BUILD = '2026-10-14-simple';
+var APP_BUILD = '2026-10-16-privacy';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -898,6 +898,9 @@ function setupChecks_() {
   if (!pin) add('pin', 'bad', 'There is no teacher PIN', 'Live Board sheet, Settings tab: type one next to Teacher PIN.');
   else if (/^(1234|0000|1111|123456)$/.test(pin)) add('pin', 'warn', 'The teacher PIN is easy to guess', 'Change it in the Live Board sheet, Settings tab. Your phone and projector will need pairing again.');
   else add('pin', 'ok', 'Teacher PIN', 'One PIN for the Teacher Hub, Live Board, your phone and the projector.');
+  // Release 26: the Google lock
+  if (glockOn_()) add('glock', 'ok', 'The Teacher Hub needs your Google account', 'The teacher PIN alone opens nothing that shows students\' names: the Teacher Hub opens only when you are signed in to Google with the account that owns learnwithmrcedric, and phones and laptops are paired from the Hub. Presenting from the slides and Not you? on an iPad still take the PIN.', { act: 'glock_off', label: 'Turn off' });
+  else add('glock', 'info', 'The Teacher Hub opens with the PIN alone', 'Turn this on so the Teacher Hub, and Live Board\'s teacher pages, open only when you are signed in to Google with the account that owns learnwithmrcedric. Your paired phone and projector laptop keep working. Pair them first if you have not.', { act: 'glock_on', label: 'Turn on' });
   // Classes: Live Board's class list and the Hub's Students tab
   try {
     var lb = Object.keys(readRoster_()).filter(function (c) { return c !== 'TEST'; }), hubCls = hubReady_() ? Object.keys(studentsByClass_()) : [];
@@ -931,6 +934,8 @@ function setupChecks_() {
       add('autolink', 'ok', 'Worksheets link themselves by their number', n >= 0 ? n + ' numbered worksheets in your library (such as "3.2 Heat capacity.pdf").' : 'Your library could not be read.', { act: 'autolink_off', label: 'Switch off' });
     } else add('autolink', 'info', 'Worksheets link themselves: off', 'Name library worksheets with the sub-chapter number ("3.2 Heat capacity.pdf") and they link themselves to that part, ready to deploy.', { act: 'autolink_on', label: 'Switch on' });
   }
+  // Release 26: Name lines on the library's worksheets (checked in the Hub: it reads the PDFs)
+  if (hubReady_()) add('names', 'info', 'Name lines on worksheets', 'Check every worksheet in your library for a Name line ("Name: ____"). Whatever a student writes on one is left out of what they hand in, and the Hub offers to cover it when you upload.', { act: 'namescan', label: 'Check my worksheets' });
   // Room for settings: Google keeps at most 500 KB of them for the whole app.
   try {
     var all = props.getProperties(), size = 0;
@@ -972,6 +977,14 @@ function api_t_setupFix(token, act) {
   if (act === 'pages_local') { props.setProperty('PAGES_LOCAL', '1'); return { ok: true, done: 'The pasted pages from now on' }; }
   if (act === 'pages_site') { props.deleteProperty('PAGES_LOCAL'); CacheService.getScriptCache().remove('pg_rel'); return { ok: true, done: 'Pages update themselves again' }; }
   if (act === 'unpair') { var n = unpairAll_(); return { ok: true, done: n + ' unpaired. Pair your phone and the projector again.' }; }
+  if (act === 'glock_on') {
+    if (!isOwner_()) throw new Error('Open the Teacher Hub signed in to Google with the account that owns learnwithmrcedric, then turn this on from there. (So you cannot lock yourself out.)');
+    var at = Date.now();
+    props.setProperty('GLOCK', 'on'); props.setProperty('GLOCK_AT', String(at));
+    CacheService.getScriptCache().put('ttok_' + token, String(at + 1), T_SESSION_SECONDS);   // this sign-in carries on
+    return { ok: true, done: 'On: the Teacher Hub needs your Google account now' };
+  }
+  if (act === 'glock_off') { props.deleteProperty('GLOCK'); props.deleteProperty('GLOCK_AT'); return { ok: true, done: 'Off: the PIN opens the Teacher Hub again' }; }
   throw new Error('Unknown fix.');
 }
 /* The sheet's menu: the same checks, in a dialog. */
@@ -1000,7 +1013,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 24;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 26;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1565,3 +1578,11 @@ function api_t_libUpload(token, key, name, pdfB64, solB64, use) {
   }
   return out;
 }
+
+/* ---------- Release 26: the Google lock ----------
+   With it on, the teacher PIN typed on its own opens nothing that shows students' names: the Teacher Hub opens only
+   for the Google account that owns this script (it signs that account in by itself), and phones, laptops and the
+   projector are paired from the Hub (their keys keep working). Presenting from the slides, and the teacher's
+   Not you? on a student's iPad, still take the PIN: they show no names. */
+function glockOn_() { return PropertiesService.getScriptProperties().getProperty('GLOCK') === 'on'; }
+var GLOCK_MSG = 'The teacher PIN alone does not open this any more. Open the Teacher Hub signed in to Google with the account that owns learnwithmrcedric, or pair this phone or laptop from the Hub (Teach next > Pair my phone).';

@@ -329,6 +329,9 @@ function uuid_() { return 'p' + Utilities.getUuid().replace(/-/g, '').slice(0, 1
 
 function bool_(v) { return v === true || String(v).toUpperCase() === 'TRUE'; }
 
+/* Set for the slides' presenting calls: with the Google lock on (Setup check), the PIN on its own still works for
+   them, because they show no names. */
+var PIN_INCLASS_ = false;
 function checkPin_(pin) {
   var cache = CacheService.getScriptCache();
   var given = String(pin == null ? '' : pin).trim();
@@ -348,6 +351,7 @@ function checkPin_(pin) {
   var fails = Number(cache.get('pin_fails') || 0);
   if (fails >= 20) throw new Error('Wrong PIN. Too many wrong PINs: wait 15 minutes.');
   if (!real || String(pin).trim() !== real) { cache.put('pin_fails', String(fails + 1), 900); throw new Error('Wrong PIN.'); }
+  if (!PIN_INCLASS_ && glockOn_() && !isOwner_()) throw new Error(GLOCK_MSG);
 }
 
 function bump_(boardId) {
@@ -681,11 +685,14 @@ function publicPost_(p, showNames) {
 /* Student calls                                                       */
 /* ------------------------------------------------------------------ */
 
+/* The classes for the sign-in. Release 26: never the names. Students type their own name, so the class list
+   stays in the sheet. (names is kept, empty, for a page opened before the update.) */
 function apiRoster() {
-  var r = readRoster_();
-  return Object.keys(r).sort().map(function (c) {
-    return { cls: c, names: r[c].map(function (s) { return s.name; }) };
-  });
+  return Object.keys(readRoster_()).sort().map(function (c) { return { cls: c, names: [] }; });
+}
+/* Everything the sign-in page needs: the classes and the security questions. */
+function apiSignInInfo() {
+  return { classes: Object.keys(readRoster_()).sort(), questions: ST_QUESTIONS };
 }
 
 function studentBoards_(cls, name) {
@@ -1032,17 +1039,17 @@ function lbDoPost_(e) {
   var out;
   try {
     var d = JSON.parse(e.postData.contents);
-    if (d && d.api === 'roster') out = { ok: true, classes: apiRoster() };
+    if (d && d.api === 'roster') out = { ok: true, classes: apiRoster(), typed: true };
     else if (d && d.api === 'unlock') out = { ok: apiUnlock(d.pin) };
     else if (d && d.api === 'live') out = liveCheck_(d);
     else if (d && d.api === 'away') out = awayNote_(d);
-    else if (d && d.api === 'present') { checkPin_(d.pin); out = presentInfo_(d); }
-    else if (d && d.api === 'start') { checkPin_(d.pin); out = presentStart_(d); }
-    else if (d && d.api === 'end') { checkPin_(d.pin); apiEndLesson(d.pin, clean_(d.topicId, 120), String(d.cls || '').toUpperCase()); out = { ok: true }; }
-    else if (d && d.api === 'lead') out = presenterLead_(d);
-    else if (d && d.api === 'control') { checkPin_(d.pin); out = { ok: true, ctl: apiSetControlNoPin_(clean_(d.topicId, 120), d.cls, d.set || {}) }; }
+    else if (d && d.api === 'present') { PIN_INCLASS_ = true; checkPin_(d.pin); out = presentInfo_(d); }
+    else if (d && d.api === 'start') { PIN_INCLASS_ = true; checkPin_(d.pin); out = presentStart_(d); }
+    else if (d && d.api === 'end') { PIN_INCLASS_ = true; checkPin_(d.pin); apiEndLesson(d.pin, clean_(d.topicId, 120), String(d.cls || '').toUpperCase()); out = { ok: true }; }
+    else if (d && d.api === 'lead') { PIN_INCLASS_ = true; out = presenterLead_(d); }
+    else if (d && d.api === 'control') { PIN_INCLASS_ = true; checkPin_(d.pin); out = { ok: true, ctl: apiSetControlNoPin_(clean_(d.topicId, 120), d.cls, d.set || {}) }; }
     else if (d && d.api === 'review') out = review_(d);
-    else if (d && d.api === 'results') out = slideResults_(d);
+    else if (d && d.api === 'results') { PIN_INCLASS_ = true; out = slideResults_(d); }
     else if (d && d.api === 'gatehelp') out = gateHelp_(d);
     else if (d && d.api === 'st') out = stRequest_(d);
     else if (d && d.api === 'mine') { var tkm = stCheck_(d.st); out = { ok: true, done: tkm ? studentDone_(clean_(d.topicId, 120), tkm.cls, tkm.name) : [] }; }
@@ -2247,6 +2254,7 @@ function checkHubLink() {
 }
 
 function givePendingPoints() {
+  needOwner_('Give chapter check points');
   var rules = checkRules_();
   var roster = readRoster_();
   var given = 0, waiting = 0, note = '', due = [];
@@ -3159,24 +3167,29 @@ function gateHelp_(d) {
     var st = cache.get('ghs_' + clean_(d.key, 40));
     return { ok: true, state: st || 'gone' };
   }
-  var who = matchStudent_(d.cls, d.name);
-  if (!who.matched) return { ok: false, error: 'That name is not on the class list.' };
+  var cls = rosterClass_(d.cls), typed = clean_(String(d.name || '').replace(/\s+/g, ' '), 60);
+  if (!cls) return { ok: false, error: 'Choose your class.' };
+  if (!nameWords_(typed).length) return { ok: false, error: 'Type your name.' };
+  // Release 26: a name that is not on the list is asked for all the same (the phone shows it as typed, and it can
+  // only be turned down), so the answer never says whether a name is on the list.
+  var who = typedStudent_(cls, typed) || { cls: cls, name: '\u201c' + typed + '\u201d (not on the class list)', nomatch: true };
   var key = Utilities.getUuid().replace(/-/g, '').slice(0, 20), dev = clean_(d.dev, 40);
   // Under the lock, so two students asking at the same moment are both kept. A request from another iPad for the
   // same name is kept too (the phone marks the name), so nobody can push a real request out by asking for that name.
   return withLock_(function () {
     var list = gateHelpList_(who.cls).filter(function (x) { return !(x.name === who.name && x.dev === dev); });
     if (list.length >= 30) return { ok: false, error: 'Too many students are waiting. Ask your teacher.' };
-    list.push({ key: key, name: who.name, dev: dev, at: Date.now() });
+    list.push({ key: key, name: who.name, dev: dev, at: Date.now(), nomatch: !!who.nomatch });
     cachePut_(gateHelpKey_(who.cls), JSON.stringify(list), 600);
     cachePut_('ghs_' + key, 'wait', 600);
-    cachePut_('ghn_' + key, who.cls + '|' + who.name, 600);
+    cachePut_('ghn_' + key, who.nomatch ? '-' : who.cls + '|' + who.name, 600);
     return { ok: true, key: key };
   }, 10000);
 }
 function apiGateHelpAnswer(pin, cls, key, yes) {
   checkPin_(pin);
   key = clean_(key, 40);
+  if (yes && CacheService.getScriptCache().get('ghn_' + key) === '-') throw new Error('That name is not on the class list, so it cannot be let in. Press No, and ask the student to type their name as it is on the class list.');
   withLock_(function () {
     cachePut_('ghs_' + key, yes ? 'ok' : 'no', 600);
     var list = gateHelpList_(cls).filter(function (x) { return x.key !== key; });
@@ -3655,6 +3668,60 @@ function acctPut_(id, a) {
   PropertiesService.getScriptProperties().setProperty('acct_' + id, JSON.stringify(a));
   cachePut_('sv_' + id, String(a.v || 0), 21600);
 }
+/* ---------- Release 26: students type their name ----------
+   The server never sends the class list. What a student types is matched to it: capitals, spaces, punctuation and
+   the order of the words do not matter, and part of a long name (two words at least) is enough when it fits only
+   one student in that class. Every answer is the same whether or not the name is on the list (tries are counted the
+   same way too), so nobody can find out who is in a class by guessing names. */
+function nameWords_(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9\u00c0-\uffff]+/g, ' ').trim().split(' ').filter(String); }
+function rosterClass_(cls) {
+  var c = normClass_(cls), key = '';
+  Object.keys(readRoster_()).forEach(function (k) { if (normClass_(k) === c) key = k; });
+  return key;
+}
+function typedStudent_(cls, typed) {
+  var key = rosterClass_(cls), tw = nameWords_(typed);
+  if (!key || !tw.length || String(typed).length > 120) return null;
+  var tj = tw.join(''), ts = tw.slice().sort().join(' '), exact = [], part = [];
+  (readRoster_()[key] || []).forEach(function (s) {
+    var w = nameWords_(s.name);
+    if (w.slice().sort().join(' ') === ts || w.join('') === tj) exact.push(s);
+    else if (tw.length >= 2 && tw.every(function (x) { return w.indexOf(x) >= 0; })) part.push(s);
+  });
+  var hit = exact.length === 1 ? exact[0] : !exact.length && part.length === 1 ? part[0] : null;
+  return hit ? { cls: key, name: hit.name, reg: hit.reg, matched: true } : null;
+}
+function typedKey_(cls, typed) { return hash_(normClass_(cls) + '|' + nameWords_(typed).sort().join(' ')); }
+/* Counts one try, for a name on the list (its account) or not (the cache, so guesses cannot fill the script's
+   settings), in the same way. Returns the tries left after this one, or refuses it. */
+function stTryAny_(kind, who, cls, typed) {
+  if (who) return stTry_(kind, acctId_(who.cls, who.name));
+  var L = ST_LIMITS[kind], cache = CacheService.getScriptCache(), k = 'nf_' + kind + typedKey_(cls, typed), f = null;
+  try { f = JSON.parse(cache.get(k) || 'null'); } catch (err) { f = null; }
+  f = f || { n: 0, w: 0, t: 0 };
+  var now = Date.now();
+  if (f.t >= L.hard) throw new Error(stTeacherMsg_(kind));
+  if (!f.w || (L.mins && now - f.w >= L.mins * 60000)) { f.n = 0; f.w = now; }
+  if (L.mins && f.n >= L.max) throw new Error(stWaitMsg_(L.mins));
+  f.n++; f.t++;
+  cachePut_(k, JSON.stringify(f), 21600);
+  return Math.max(0, Math.min(L.mins ? L.max - f.n : L.hard - f.t, L.hard - f.t));
+}
+function stNoMatch_(kind, left, what) {
+  if (left > 0) return what + ' ' + left + (left === 1 ? ' try' : ' tries') + ' left.';
+  return kind === 'srf_' ? stTeacherMsg_(kind) : stWaitMsg_(ST_LIMITS[kind].mins);
+}
+var ST_NOMATCH_PIN = 'That name and PIN do not match. Type your name as it is on the class list. First time here? Choose Set up my PIN.';
+/* Signing in: the class, the name as typed, and the PIN, checked together. */
+function apiStSignIn(cls, typed, pin) {
+  var who = typedStudent_(cls, typed);
+  var left = stTryAny_('stf_', who, cls, typed);
+  var id = who ? acctId_(who.cls, who.name) : '', a = who ? acctGet_(id) : null;
+  if (!who || !a || !a.ph || stHash_(a.s, String(pin == null ? '' : pin).trim()) !== a.ph) throw new Error(stNoMatch_('stf_', left, ST_NOMATCH_PIN));
+  stClear_('stf_', id);
+  return { ok: true, st: stIssue_(who, a.v), cls: who.cls, name: who.name };
+}
+
 /* The student on the class list, or an error. */
 function rosterStudent_(cls, name) {
   var who = matchStudent_(cls, name);
@@ -3750,55 +3817,44 @@ function stMissMsg_(kind, left, what) {
 }
 function stClear_(kind, id) { PropertiesService.getScriptProperties().deleteProperty(kind + id); }
 
-/* Step 1 of signing in: what this student needs (sign in with the PIN, or set it up the first time). */
-function apiStStart(cls, name) {
-  var who = rosterStudent_(cls, name), id = acctId_(who.cls, who.name), a = acctGet_(id);
-  var set = !!(a && a.ph);
-  return { ok: true, cls: who.cls, name: who.name, set: set, question: set ? ST_QUESTIONS[a.q] || '' : '',
-    reg: !!who.reg && !stBlocked_('srf_', id), questions: ST_QUESTIONS, inLesson: classLive_(who.cls) && !stBlocked_('srf_', id),
-    locked: set && !!stBlocked_('stf_', id) };
-}
-function apiStLogin(cls, name, pin) {
-  var who = rosterStudent_(cls, name), id = acctId_(who.cls, who.name), a = acctGet_(id);
-  if (!a || !a.ph) throw new Error('You have not set your PIN yet. Go back and choose your name again.');
-  var left = stTry_('stf_', id);
-  if (stHash_(a.s, String(pin == null ? '' : pin).trim()) !== a.ph) throw new Error(stMissMsg_('stf_', left, 'That PIN is not right.', id));
-  stClear_('stf_', id);
-  return { ok: true, st: stIssue_(who, a.v), cls: who.cls, name: who.name };
-}
-/* The first time: the register number (or the teacher's Let in, key), then the PIN and the question. */
-function apiStSetup(cls, name, proof, pin, q, answer) {
-  var who = rosterStudent_(cls, name), id = acctId_(who.cls, who.name);
+/* The pages before release 26 asked for the student first, which said whether a name was on the list. */
+function apiStStart() { throw new Error('Reload this page to sign in.'); }
+function apiStLogin(cls, name, pin) { return apiStSignIn(cls, name, pin); }
+/* The first time: the name as typed and the register number (or the teacher's Let in, key; or nothing in the
+   class's own lesson), then the PIN and the question. A wrong name and a wrong register number get the same answer. */
+function apiStSetup(cls, typed, proof, pin, q, answer) {
   pin = stPinOk_(pin);
   q = Math.round(Number(q));
   if (!(q >= 0 && q < ST_QUESTIONS.length)) throw new Error('Choose a question.');
   var ans = stAnswer_(answer);
   if (ans.length < 2) throw new Error('Type an answer to your question that you will remember.');
+  if (!nameWords_(typed).length) throw new Error('Type your name.');
+  if (!rosterClass_(cls)) throw new Error('Choose your class.');
   proof = proof || {};
-  var cache = CacheService.getScriptCache();
-  var a0 = acctGet_(id);
-  if (a0 && a0.ph) throw new Error(who.name + ' already has a PIN. Go back and sign in, or use Forgot my PIN.');
+  var cache = CacheService.getScriptCache(), who = typedStudent_(cls, typed);
+  var regTyped = String(proof.reg == null ? '' : proof.reg).trim().replace(/^0+(?=\d)/, '');
   if (proof.key) {
     var key = clean_(proof.key, 40);
     var n = cache.get('ghn_' + key);
-    if (cache.get('ghs_' + key) !== 'ok' || n !== who.cls + '|' + who.name) throw new Error('Your teacher has not let you in yet.');
+    if (!who || cache.get('ghs_' + key) !== 'ok' || n !== who.cls + '|' + who.name) throw new Error('Your teacher has not let you in yet.');
     cache.remove('ghs_' + key);
-  } else if (!String(proof.reg == null ? '' : proof.reg).trim() && classLive_(who.cls) && !stBlocked_('srf_', id)) {
+  } else if (!regTyped && classLive_(rosterClass_(cls))) {
     // In the class's own lesson the teacher is in the room, so no register number is needed. The phone shows
     // who set up a PIN this way.
+    if (!who) throw new Error('That name is not on the class list for ' + rosterClass_(cls) + '. Type your full name as it is on the class list.');
+    if (stBlocked_('srf_', acctId_(who.cls, who.name))) throw new Error(stTeacherMsg_('srf_'));
     noteNewPin_(who.cls, who.name);
   } else {
-    if (!who.reg) throw new Error('Your register number is not on the class list. Ask your teacher to let you in.');
-    if (!String(proof.reg == null ? '' : proof.reg).trim()) throw new Error('Type your register number.');
-    var left = stTry_('srf_', id);
-    var typed = String(proof.reg == null ? '' : proof.reg).trim().replace(/^0+(?=\d)/, '');
-    if (!typed || typed !== String(who.reg).trim().replace(/^0+(?=\d)/, '')) {
-      throw new Error(left > 0 ? 'That register number does not match ' + who.name + '. ' + left + (left === 1 ? ' try' : ' tries') + ' left.' : 'That register number does not match. Ask your teacher to let you in.');
+    if (!regTyped) throw new Error('Type your register number, or ask your teacher to let you in.');
+    var left = stTryAny_('srf_', who, cls, typed);
+    if (!who || !who.reg || regTyped !== String(who.reg).trim().replace(/^0+(?=\d)/, '')) {
+      throw new Error(left > 0 ? 'That name and register number do not match the class list. ' + left + (left === 1 ? ' try' : ' tries') + ' left.' : 'That name and register number do not match. Ask your teacher to let you in.');
     }
   }
+  var id = acctId_(who.cls, who.name);
   return withLock_(function () {
     var a = acctGet_(id);
-    if (a && a.ph) throw new Error(who.name + ' already has a PIN. Go back and sign in, or use Forgot my PIN.');
+    if (a && a.ph) throw new Error('You already have a PIN. Go back and sign in, or use Forgot my PIN.');
     var s = Utilities.getUuid().replace(/-/g, '');
     var v = (a ? Number(a.v) || 0 : 0) + 1;
     acctPut_(id, { c: who.cls, n: who.name, s: s, ph: stHash_(s, pin), q: q, ah: stHash_(s, 'a|' + ans), v: v, at: Date.now() });
@@ -3806,14 +3862,14 @@ function apiStSetup(cls, name, proof, pin, q, answer) {
     return { ok: true, st: stIssue_(who, v), cls: who.cls, name: who.name };
   }, 10000);
 }
-/* Forgot my PIN: the answer to their question, then a new PIN. Every other sign-in of theirs ends. */
-function apiStForgot(cls, name, answer, pin) {
-  var who = rosterStudent_(cls, name), id = acctId_(who.cls, who.name);
+/* Forgot my PIN: the name as typed, the question they chose and its answer, then a new PIN. The question is not shown
+   (that would say the name is on the list): they pick it from the list. Every other sign-in of theirs ends. */
+function apiStForgot(cls, typed, q, answer, pin) {
   pin = stPinOk_(pin);
-  var a = acctGet_(id);
-  if (!a || !a.ph) throw new Error('You have not set your PIN yet. Go back and choose your name again.');
-  var left = stTry_('saf_', id);
-  if (stHash_(a.s, 'a|' + stAnswer_(answer)) !== a.ah) throw new Error(stMissMsg_('saf_', left, 'That is not the answer you chose.', id));
+  var who = typedStudent_(cls, typed);
+  var left = stTryAny_('saf_', who, cls, typed);
+  var id = who ? acctId_(who.cls, who.name) : '', a = who ? acctGet_(id) : null;
+  if (!who || !a || !a.ph || Number(q) !== Number(a.q) || stHash_(a.s, 'a|' + stAnswer_(answer)) !== a.ah) throw new Error(stNoMatch_('saf_', left, 'That name, question and answer do not match.'));
   return withLock_(function () {
     var b = acctGet_(id) || a;
     b.ph = stHash_(b.s, pin); b.v = (Number(b.v) || 0) + 1; b.at = Date.now();
@@ -3854,10 +3910,10 @@ function apiStStatus(pin, cls) {
 /* The student pages' calls through doPost (the slides): { api: 'st', op, ... }. */
 function stRequest_(d) {
   try {
-    if (d.op === 'start') return apiStStart(d.cls, d.name);
-    if (d.op === 'login') return apiStLogin(d.cls, d.name, d.pin);
+    if (d.op === 'signin' || d.op === 'login') return apiStSignIn(d.cls, d.name, d.pin);
+    if (d.op === 'start') return { ok: false, error: 'Reload this page to sign in.' };
     if (d.op === 'setup') return apiStSetup(d.cls, d.name, { reg: d.reg, key: d.key }, d.pin, d.q, d.answer);
-    if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.answer, d.pin);
+    if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.q, d.answer, d.pin);
     if (d.op === 'me') return apiStMe(d.st);
   } catch (err) {
     return { ok: false, error: String(err && err.message || err) };
@@ -4170,6 +4226,7 @@ function autoReleaseAnswered_(deckId, cls, boardIds) {
 function hubLetIn_(d) {
   var cls = String(d.cls || '').toUpperCase(), key = clean_(d.gkey, 40);
   if (!key) return { ok: false, error: 'No request.' };
+  if (d.yes && CacheService.getScriptCache().get('ghn_' + key) === '-') return { ok: false, error: 'That name is not on the class list, so it cannot be let in. Press No.' };
   withLock_(function () {
     cachePut_('ghs_' + key, d.yes ? 'ok' : 'no', 600);
     cachePut_(gateHelpKey_(cls), JSON.stringify(gateHelpList_(cls).filter(function (x) { return x.key !== key; })), 600);

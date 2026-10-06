@@ -79,6 +79,12 @@
   .cover .btn { width: 100%; margin-top: 20px; min-height: 52px; font-size: 18px; }
   .cover .note { font-size: 14px; opacity: .9; margin: 14px 0 0; line-height: 1.45; }
   .err { color: var(--bad); font-size: 15px; margin-top: 10px; }
+  .nmg { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft, #FFF4D6); color: var(--ink); font-size: 14.5px; line-height: 1.45; }
+  .nmg.done { background: var(--surface-2); color: var(--muted); }
+  .nmg > span { flex: 1 1 260px; min-width: 0; }
+  .nmg svg { width: 18px; height: 18px; flex: none; color: var(--ok, #1C7A4C); }
+  .nmg-acts { display: flex; gap: 8px; flex: none !important; }
+  .nmg-list { margin: 8px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
   .err:empty { display: none; }
 
   /* ---------- App frame ---------- */
@@ -1488,7 +1494,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'home', cls: '' };
-  var NEWS_VERSION = '2026-10-chapters';
+  var NEWS_VERSION = '2026-10-privacy';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -2061,7 +2067,15 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>A page for each chapter</b><ul>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Students\' names stay in your sheets</b><ul>' +
+      '<li><b>No class list on the web.</b> Students sign in by choosing their class and typing their own name and PIN. The first time, they type their name and register number. The page never shows a list of names.</li>' +
+      '<li><b>No names on handed-in work.</b> Each student has a code (S001, S002 …) in a new Code column of your Students tab. The grey line on handed-in pages and the file names use the class and the code. Anything a student writes on a worksheet\'s Name line is left out.</li>' +
+      '<li><b>Claude marks by code.</b> Claude never sees a name. The Hub turns codes back into names.</li>' +
+      '<li><b>A Name line on a worksheet?</b> When you upload one, the Hub offers <b>Cover it for me</b>. Setup check can check your whole library.</li>' +
+      '<li><b>The leaderboard</b> shows initials. <b>Setup check</b> can make the Teacher Hub need your Google account, not just the PIN.</li></ul>' +
+      '<p class="muted" style="margin:8px 0 0">Before this:</p><ul>' +
+      '<li><b>A page for each chapter.</b> The Hub is back as it was, and in <b>Lessons</b> each chapter opens a page of its own, with Teach and the homework linked to each sub-chapter.</li>' +
+      '</ul><p class="muted" style="margin:8px 0 0">And before that:</p><ul>' +
       '<li><b>The Hub is back as it was</b> (Home, Lessons, Homework, Students), with one change: in <b>Lessons</b>, each chapter opens a page of its own.</li>' +
       '<li><b>A chapter\'s page</b> has <b>Teach</b> for each lesson, and under it the homework linked to each sub-chapter, showing only its next step: <b>Add</b> a worksheet (upload a PDF or take one from your library), <b>Deploy</b> it once taught, then <b>Mark</b> and release. The rest is under the <b>⋯</b> button, with its topical worksheets at the bottom.</li>' +
       '<li><b>Deploy is one tap</b>, due at the class\'s next lesson. The note after it has <b>Change date</b> and <b>Undo</b>.</li></ul>' +
@@ -2142,7 +2156,7 @@
               })();
               return ws.then(function (W) {
                 var draft = null; try { draft = JSON.parse(d.draft || 'null'); } catch (e) { draft = null; }
-                return Ink.buildPdf({ pdfBytes: W.bytes, vps: W.vps, strokes: Ink.draftPages(draft, W.vps.length), label: Ink.label(d.cls, d.reg, d.name) });
+                return Ink.buildPdf({ pdfBytes: W.bytes, vps: W.vps, strokes: Ink.draftPages(draft, W.vps.length), label: Ink.label(d.cls, '', d.code || '') });
               }).then(function (bytes) { return tcall('api_t_autoPut', it.id, it.cls, it.name, bytesB64(bytes)); })
                 .then(function (r) { if (r && !r.skipped) made++; });
             }).catch(function () { /* tried again next time the Hub opens */ });
@@ -2307,7 +2321,7 @@
       return '<li class="sc-' + c.level + '"><span class="sc-m" aria-hidden="true">' + SC_MARK[c.level] + '</span><span class="sc-t"><b>' + esc(c.title) + '</b>' + (c.detail ? '<small>' + esc(c.detail) + '</small>' : '') + '</span>' +
         (c.link ? '<a class="btn small ghost" href="' + esc(c.link) + '" target="_blank" rel="noopener">' + (c.id === 'update' ? 'Code page' : 'Open') + '</a>' : '') +
         (c.fix ? '<button class="btn small' + (c.level === 'bad' || c.fix.act === 'update' ? ' yellow' : ' ghost') + '" data-sc="' + i + '">' + esc(c.fix.label) + '</button>' : '') + '</li>';
-    }).join('') + '</ul><p class="muted">learnwithmrcedric build ' + esc(r.build) + '.</p><p class="err" id="sc-err"></p>';
+    }).join('') + '</ul><div id="sc-names"></div><p class="muted">learnwithmrcedric build ' + esc(r.build) + '.</p><p class="err" id="sc-err"></p>';
     Array.prototype.forEach.call($('sc-body').querySelectorAll('[data-sc]'), function (b) {
       b.onclick = function () { setupFix(r.checks[Number(b.getAttribute('data-sc'))].fix.act, b); };
     });
@@ -2315,6 +2329,7 @@
   function setupFix(act, b) {
     if (act === 'claude') { closeModal(); claudeSettings(); return; }
     if (act === 'update') { runUpdate(b); return; }
+    if (act === 'namescan') { nameScan(b); return; }
     b.disabled = true;
     var p = act === 'undo' ? tcall('api_t_updateUndo').then(function (r) { updated('Back on ' + (r.build || 'the version before'), 'learnwithmrcedric is back on the version before the update.'); return null; })
       : tcall('api_t_setupFix', act).then(function (r) { toast(r.done || 'Done'); return tcall('api_t_setupCheck', true); });
@@ -2535,7 +2550,7 @@
       });
       var h = '<div class="libm-h"><h2>Upload to ' + esc(chShort(c)) + '</h2><button class="btn ghost small" id="lu-back">Back</button></div>' +
         '<p class="libm-sub">The PDF goes into your worksheet library, in a folder for this chapter, and into this chapter\'s package. Like everything in the package, it reaches a class only when you deploy it.</p>' +
-        '<div class="field"><span class="lbl">Worksheet (PDF)</span><label class="drop" id="lu-drop"><input type="file" id="lu-file" accept="application/pdf,.pdf"><b>Choose a PDF</b> or drop it here</label><div class="picked" id="lu-picked"></div></div>' +
+        '<div class="field"><span class="lbl">Worksheet (PDF)</span><label class="drop" id="lu-drop"><input type="file" id="lu-file" accept="application/pdf,.pdf"><b>Choose a PDF</b> or drop it here</label><div class="picked" id="lu-picked"></div><div id="lu-nm"></div></div>' +
         '<div class="field"><label for="lu-name">Name</label><input type="text" id="lu-name" maxlength="80" placeholder="For example, 7.1 Particles in motion"></div>' +
         '<div class="field"><label for="lu-use">Use it for</label><select id="lu-use"><optgroup label="Topical worksheet"><option value="hw">Topical worksheet, set as homework</option><option value="practice">Topical worksheet, for practice</option></optgroup>' +
         (parts.length ? '<optgroup label="Homework for a part">' + parts.map(function (x, i) { return '<option value="part:' + i + '">' + esc(x.label) + '</option>'; }).join('') + '</optgroup>' : '') + '</select>' +
@@ -2543,7 +2558,8 @@
         '<div class="field"><span class="lbl">Marked solution (PDF, optional)</span><label class="drop" id="lu-sdrop"><input type="file" id="lu-sol" accept="application/pdf,.pdf"><b>Choose your marked solution</b> or drop it here</label><div class="picked" id="lu-spicked"></div><div class="hint">Claude marks against it. You can also add it later.</div></div>' +
         '<div class="err" id="lu-err"></div><div class="foot"><button class="btn ghost" id="lu-c">Cancel</button><button class="btn" id="lu-go">' + ICON.up + 'Upload</button></div>';
       $('modal').innerHTML = h;
-      var file = null, sol = null;
+      var file = null, sol = null, nm = null;
+      var showNm = function () { if ($('lu-nm')) { $('lu-nm').innerHTML = nameNoteHtml(nm); bindNameNote($('lu-nm'), nm, file, function (f2) { file = f2; }, showNm); } };
       $('lu-back').onclick = $('lu-c').onclick = function () { up = null; draw(); };
       var pdfOk = function (f, what) {
         if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { $('lu-err').textContent = what + ' must be a PDF.'; return false; }
@@ -2553,6 +2569,7 @@
       dropZone($('lu-drop'), $('lu-file'), function (fs) {
         var f = fs[0]; if (!f || !pdfOk(f, 'The worksheet')) return;
         file = f; $('lu-picked').textContent = f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)';
+        nm = null; showNm(); nameCheck(f).then(function (r) { if (file === f) { nm = r; showNm(); } });
         if (!$('lu-name').value.trim()) $('lu-name').value = f.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ');
       });
       dropZone($('lu-sdrop'), $('lu-sol'), function (fs) { var f = fs[0]; if (!f || !pdfOk(f, 'The marked solution')) return; sol = f; $('lu-spicked').textContent = f.name; });
@@ -3128,7 +3145,7 @@
       '<div class="field"><span class="lbl">Worksheet</span>' +
       '<div class="srcseg" role="tablist" aria-label="Where the worksheet comes from"><button type="button" role="tab" id="nw-tab-up" aria-selected="true">Upload a PDF</button><button type="button" role="tab" id="nw-tab-lib" aria-selected="false">From my library</button></div>' +
       '<div id="nw-up"><label class="drop" id="nw-drop"><input type="file" id="nw-file" accept="application/pdf,.pdf">' +
-      '<b>Choose a PDF</b> or drop it here</label><div class="picked" id="nw-picked"></div>' +
+      '<b>Choose a PDF</b> or drop it here</label><div class="picked" id="nw-picked"></div><div id="nw-nm"></div>' +
       '<label class="check-row"><input type="checkbox" id="nw-keep"><span>Keep it in my library<br><span class="muted">The Hub gives it a folder in your library and saves the marked solution, the answer key and Claude\'s notes there after marking, ready to set again.</span></span></label>' +
       '<div class="libbar hidden" id="nw-keeprow" style="margin-top:2px"><select id="nw-keeptopic" aria-label="Topic folder in the library"><option value="">Top of the library</option></select>' +
       '<input type="text" id="nw-newtopic" class="hidden" placeholder="New topic, for example Heat" aria-label="New topic name"></div></div>' +
@@ -3300,6 +3317,8 @@
       if (f.size > MAX_MB * 1048576) { $('nw-err').textContent = 'That PDF is over ' + MAX_MB + ' MB. Make it smaller first.'; return; }
       file = f; $('nw-err').textContent = '';
       $('nw-picked').textContent = f.name + ' (' + (f.size / 1048576).toFixed(1) + ' MB)';
+      var nwNm = function (nm) { if ($('nw-nm')) { $('nw-nm').innerHTML = nameNoteHtml(nm); bindNameNote($('nw-nm'), nm, file, function (f2) { file = f2; }, function () { nwNm(nm); }); } };
+      nwNm(null); nameCheck(f).then(function (r) { if (file === f) nwNm(r); });
       if (!$('nw-title').value) $('nw-title').value = f.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ');
     };
     dropZone($('nw-drop'), $('nw-file'), function (fs) { pick(fs[0]); });
@@ -4129,6 +4148,60 @@
     });
   }
   var pdfReady = null;
+  /* ---------- Release 26: a Name line on a worksheet ----------
+     When a worksheet PDF is chosen, the Hub looks for a Name line ("Name: ____", "Student's name") near the top of
+     each page: students would write their name on it, so it offers to cover it before the upload. Whatever a student
+     writes on a Name line is left out of what they hand in anyway. */
+  function fileBuf(f) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsArrayBuffer(f); }); }
+  // Promise of { bytes, boxes } (no boxes when there is no Name line, or the PDF cannot be read).
+  function nameCheck(file) {
+    return loadPdfLibs().then(function () { return fileBuf(file); }).then(function (buf) {
+      var bytes = new Uint8Array(buf);
+      return Ink.nameBoxesOf(bytes).then(function (boxes) { return { bytes: bytes, boxes: boxes }; });
+    }).catch(function () { return { bytes: null, boxes: [] }; });
+  }
+  function namePages(boxes) { var out = []; boxes.forEach(function (b) { if (out.indexOf(b.i + 1) < 0) out.push(b.i + 1); }); return out; }
+  function nameNoteHtml(nm) {
+    if (!nm || !nm.boxes || !nm.boxes.length) return '';
+    if (nm.state === 'covered') return '<div class="nmg done">' + ICON.tick + '<span>The Name line is covered. It now says no name is needed.</span></div>';
+    if (nm.state === 'kept') return '<div class="nmg done"><span>Left as it is. Whatever a student writes on the Name line is left out of what they hand in.</span></div>';
+    var pg = namePages(nm.boxes);
+    return '<div class="nmg"><span><b>This worksheet has a Name line</b> (page ' + pg.join(', ') + '). Students would write their name on it, and names stay in your sheets.</span>' +
+      '<span class="nmg-acts"><button type="button" class="btn small" data-nmg="cover">Cover it for me</button><button type="button" class="btn small ghost" data-nmg="keep">Leave it</button></span></div>';
+  }
+  // setFile(f): the covered copy replaces the chosen file. redraw(): draw the note again.
+  function bindNameNote(root, nm, file, setFile, redraw) {
+    if (!root || !nm) return;
+    var c = root.querySelector('[data-nmg="cover"]'), k = root.querySelector('[data-nmg="keep"]');
+    if (k) k.onclick = function () { nm.state = 'kept'; redraw(); };
+    if (c) c.onclick = function () {
+      c.disabled = true; c.textContent = 'Covering…';
+      Ink.coverNames(nm.bytes, nm.boxes).then(function (bytes) {
+        setFile(new File([bytes], file.name, { type: 'application/pdf' })); nm.state = 'covered'; redraw();
+      }).catch(function () { c.disabled = false; c.textContent = 'Cover it for me'; toast('It could not be covered. Upload it as it is, or take the Name line off first.'); });
+    };
+  }
+  // Setup check: every worksheet in the library, checked for a Name line.
+  function nameScan(b) {
+    var out = $('sc-names'); if (!out) return;
+    b.disabled = true;
+    Promise.all([loadPdfLibs(), tcall('api_t_library', true)]).then(function (r) {
+      var items = ((r[1] && r[1].items) || []).filter(function (it) { return it.ok; }), hits = [], n = 0;
+      return items.reduce(function (pr, it) {
+        return pr.then(function () {
+          n++; if ($('sc-names')) b.textContent = 'Checking ' + n + ' of ' + items.length + '…';
+          return tcall('api_t_libFile', it.id).then(function (f) { return Ink.nameBoxesOf(b64Bytes(f.b64)); })
+            .then(function (boxes) { if (boxes.length) hits.push({ it: it, pages: namePages(boxes) }); }).catch(function () { /* left out */ });
+        });
+      }, Promise.resolve()).then(function () {
+        b.disabled = false; b.textContent = 'Check again';
+        if (!$('sc-names')) return;
+        $('sc-names').innerHTML = !items.length ? '<p class="muted">Your worksheet library is empty.</p>' : !hits.length ? '<p class="nmg done">' + ICON.tick + '<span>None of your ' + items.length + ' worksheets has a Name line.</span></p>'
+          : '<div class="nmg"><span><b>' + hits.length + ' of your ' + items.length + ' worksheets ' + (hits.length === 1 ? 'has' : 'have') + ' a Name line.</b> Whatever students write there is left out of what they hand in. To take the line off the worksheet itself, upload it again: the Hub offers Cover it for me.</span></div><ul class="nmg-list">' +
+            hits.map(function (h) { return '<li>' + esc(h.it.name) + (h.it.path ? ' <span class="muted">' + esc(h.it.path) + '</span>' : '') + ' <span class="muted">(page ' + h.pages.join(', ') + ')</span></li>'; }).join('') + '</ul>';
+      });
+    }).catch(function (e) { b.disabled = false; if ($('sc-err')) $('sc-err').textContent = msg(e); });
+  }
   function loadPdfLibs() {
     if (pdfReady) return pdfReady;
     pdfReady = Promise.all([
@@ -4970,7 +5043,7 @@
     var m = 56, page = doc.addPage([w, h]), y = h - 64, t = totals();
     var S = function (f, s) { return pdfSafe(f, s); };
     page.drawText('Your marking', { x: m, y: y, size: 18, font: bold, color: INK });
-    page.drawText(S(font, (R.layout.worksheet || R.data.id + ' ' + R.data.title) + '   ' + R.data.cls + '   ' + R.data.name), { x: m, y: y - 18, size: 10.5, font: font, color: GREY });
+    page.drawText(S(font, (R.layout.worksheet || R.data.id + ' ' + R.data.title) + '   ' + R.data.cls + '   ' + (R.data.code || '')), { x: m, y: y - 18, size: 10.5, font: font, color: GREY });
     page.drawEllipse({ x: w - m - 46, y: y - 7, xScale: 46, yScale: 23, borderColor: RED, borderWidth: 2.2 });
     var tt = fmtN(t.got) + '/' + t.max;
     page.drawText(tt, { x: w - m - 46 - bold.widthOfTextAtSize(tt, 17) / 2, y: y - 13, size: 17, font: bold, color: RED });
@@ -6877,7 +6950,7 @@
       var r = useOf();
       var h = '<h2>' + (st.swap ? 'Change the worksheet' : 'Add a worksheet') + '</h2><p class="muted">' + esc(chShort(c)) + (st.swap && r ? ' · ' + esc(partLabel(r)) : '') + '</p>' +
         '<div class="sx-seg" role="group" aria-label="Where the worksheet comes from"><button type="button" data-src="up" aria-pressed="' + (st.src === 'up') + '">' + ICON.up + 'Upload a PDF</button><button type="button" data-src="lib" aria-pressed="' + (st.src === 'lib') + '">' + ICON.folder + 'From my library</button></div>';
-      if (st.src === 'up') h += '<label class="drop sx-drop" id="sa-drop"><input type="file" id="sa-file" accept="application/pdf,.pdf"><b>' + (st.file ? esc(st.file.name) : 'Choose the worksheet PDF') + '</b> ' + (st.file ? 'Choose a different file' : 'or drop it here') + '</label>' +
+      if (st.src === 'up') h += '<label class="drop sx-drop" id="sa-drop"><input type="file" id="sa-file" accept="application/pdf,.pdf"><b>' + (st.file ? esc(st.file.name) : 'Choose the worksheet PDF') + '</b> ' + (st.file ? 'Choose a different file' : 'or drop it here') + '</label><div id="sa-nm">' + nameNoteHtml(st.nm) + '</div>' +
         '<div class="field"><label for="sa-name">Name</label><input type="text" id="sa-name" maxlength="80" placeholder="For example, 7.1 Particles in motion" value="' + esc(st.name || '') + '"></div>' +
         '<details class="sx-sol"' + (st.sol ? ' open' : '') + '><summary>Add its marked solution (optional)</summary><label class="drop sx-drop" id="sa-sdrop"><input type="file" id="sa-sol" accept="application/pdf,.pdf"><b>' + (st.sol ? esc(st.sol.name) : 'Choose your marked solution') + '</b> Claude marks against it. You can also add it later.</label></details>';
       else h += '<input type="search" id="sa-q" class="sx-search" placeholder="Search your worksheet library" aria-label="Search your worksheet library" value="' + esc(st.q) + '"><div class="tpk-list sx-pick" id="sa-list">' + (H.lib ? '' : '<p class="pk-none">Opening your worksheet library…</p>') + '</div>';
@@ -6896,7 +6969,11 @@
           if (f.size > MAX_MB * 1048576) { $('sa-err').textContent = what + ' is over ' + MAX_MB + ' MB. Make it smaller first.'; return false; }
           return true;
         };
-        dropZone($('sa-drop'), $('sa-file'), function (fs) { var f = fs[0]; if (!f || !ok(f, 'The worksheet')) return; keep(); st.file = f; if (!st.name) st.name = f.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' '); draw(); });
+        dropZone($('sa-drop'), $('sa-file'), function (fs) {
+          var f = fs[0]; if (!f || !ok(f, 'The worksheet')) return; keep(); st.file = f; st.nm = null; if (!st.name) st.name = f.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' '); draw();
+          nameCheck(f).then(function (r) { if (st.file === f && $('sa-drop')) { keep(); st.nm = r; draw(); } });
+        });
+        if ($('sa-nm') && st.nm) bindNameNote($('sa-nm'), st.nm, st.file, function (f2) { st.file = f2; }, function () { keep(); draw(); });
         dropZone($('sa-sdrop'), $('sa-sol'), function (fs) { var f = fs[0]; if (!f || !ok(f, 'The marked solution')) return; keep(); st.sol = f; draw(); });
       } else {
         $('sa-q').oninput = function () { st.q = this.value; list(); };

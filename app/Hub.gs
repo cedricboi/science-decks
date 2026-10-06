@@ -293,16 +293,15 @@ function hubDoGet_(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+/* The homework page's heading. Release 26: no class list (it never needed one). */
 function api_roster() {
-  var names = {};
-  getStudents_().forEach(function (s) { (names[s.cls] = names[s.cls] || []).push(s.name); });
-  return { classes: Object.keys(names).sort(), names: names, title: APP_TITLE, school: APP_SCHOOL, myScience: liveBoardUrl_() };
+  return { classes: [], names: {}, title: APP_TITLE, school: APP_SCHOOL, myScience: liveBoardUrl_() };
 }
 
 function issueStudent_(s, secs) {
   var token = Utilities.getUuid();
   CacheService.getScriptCache().put('stok_' + token, JSON.stringify({ cls: s.cls, name: s.name }), secs || 21600);
-  return { token: token, name: s.name, cls: s.cls, reg: s.reg };
+  return { token: token, name: s.name, cls: s.cls, reg: s.reg, code: studentCode_(s) };
 }
 /* Students sign in once, in learnwithmrcedric (Live Board), with their own PIN. Their homework opens there, on the
    Homework tab, and this page is signed in with learnwithmrcedric's sign-in, which Live Board checks. There is no
@@ -429,8 +428,7 @@ function api_submit(token, id, pdfBase64, json, stats) {
 
   var name = submissionName_(a, s);
   var folder = childFolder_(folder_('SUB'), folderName_(a));
-  var old = folder.getFilesByName(name);
-  while (old.hasNext()) old.next().setTrashed(true);
+  trashNamed_(folder, [name, oldSubmissionName_(a, s)]);
   var blob = Utilities.newBlob(Utilities.base64Decode(pdfBase64), 'application/pdf', name);
   var file = folder.createFile(blob);
 
@@ -501,13 +499,16 @@ function zipFor_(a, onlyNew) {
   if (onlyNew) {
     listSubmissions_(a).forEach(function (x) { if (x.marked) markedIds[x.fileId] = true; });
   }
-  var folder = childFolder_(folder_('SUB'), folderName_(a));
-  var blobs = [];
-  var it = folder.getFiles();
-  while (it.hasNext()) {
-    var f = it.next();
-    if (!f.isTrashed() && f.getMimeType() === 'application/pdf' && !markedIds[f.getId()]) blobs.push(f.getBlob());
-  }
+  // Release 26: each hand-in in the Submissions tab, under its name with the class and the code (files handed in
+  // before the update keep the student's name in Drive; in the zip it is the code).
+  var blobs = [], studs = studentsFor_(a), sn = 0;
+  listSubmissions_(a).forEach(function (x) {
+    if (markedIds[x.fileId]) return;
+    var f = driveFile_(x.fileId);
+    if (!f || f.getMimeType() !== 'application/pdf') return;
+    var st = studs.filter(function (s) { return s.cls === x.cls && hubNormName_(s.name) === hubNormName_(x.name); })[0];
+    blobs.push(f.getBlob().setName(st ? submissionName_(a, st) : hubClean_(x.cls + '_X' + (++sn) + '_' + a.id) + '.pdf'));
+  });
   childFolder_(folder_('MARKED'), folderName_(a));
   if (!blobs.length) return null;
   var count = blobs.length;
@@ -528,7 +529,7 @@ function packExtras_(a) {
 
 function packInfo_(a) {
   return { id: a.id, title: a.title, classes: a.classes, due: a.due, hasSolution: !!a.solutionLink,
-    students: studentsFor_(a).map(function (s) { return { cls: s.cls, reg: s.reg, name: s.name }; }) };
+    students: studentsFor_(a).map(function (s) { return { cls: s.cls, code: studentCode_(s) }; }) };   // release 26: no names
 }
 
 function driveFile_(id) {
@@ -616,9 +617,13 @@ function getStudents_() {
   var sh = hubSheet_(TABS.students.name);
   var last = sh.getLastRow();
   if (last < 2) return [];
+  var cc = stuCodeCol_(sh), codes = sh.getRange(2, cc, last - 1, 1).getValues();
   var list = sh.getRange(2, 1, last - 1, 3).getValues().map(function (r, i) {
-    return { cls: hubNormClass_(r[0]), reg: normReg_(r[1]), name: String(r[2]).replace(/\s+/g, ' ').trim(), row: i };
+    return { cls: hubNormClass_(r[0]), reg: normReg_(r[1]), name: String(r[2]).replace(/\s+/g, ' ').trim(), code: stuCodeNorm_(codes[i][0]), row: i };
   }).filter(function (s) { return s.cls && s.name; });
+  var seenC = {};
+  list.forEach(function (s) { if (s.code && seenC[s.code]) s.code = ''; else if (s.code) seenC[s.code] = 1; });   // a code used twice is given again
+  if (list.some(function (s) { return !s.code; })) fillCodes_(sh, cc, list);
   list.sort(function (a, b) {
     var ra = a.reg ? Number(a.reg) : 1e9, rb = b.reg ? Number(b.reg) : 1e9;
     return ra - rb || a.row - b.row;
@@ -635,7 +640,56 @@ function hubFindStudent_(cls, name) {
 
 function studentKey_(s) { return s.cls + '|' + hubNormName_(s.name); }
 
+/* ---------- Release 26: a code for each student ----------
+   Each student has a code (S001, S002 ...) in the Students tab's Code column, filled in by itself and never given
+   twice (not even after a student leaves the list). Handed-in work is labelled and named with the class and the code,
+   never the name, and Claude only ever sees codes. The Hub turns codes back into names with this tab. */
+function stuCodeNorm_(v) { var c = String(v == null ? '' : v).trim().toUpperCase(); return /^[A-Z0-9-]{2,12}$/.test(c) ? c : ''; }
+function stuCodeCol_(sh) {
+  var cache = CacheService.getScriptCache(), hit = Number(cache.get('stu_cc') || 0);
+  if (hit && /^\s*code\s*$/i.test(String(sh.getRange(1, hit).getValue()))) return hit;
+  var lastC = Math.max(3, sh.getLastColumn()), head = sh.getRange(1, 1, 1, lastC).getValues()[0], col = 0;
+  for (var c = 3; c < head.length && !col; c++) if (/^\s*code\s*$/i.test(String(head[c]))) col = c + 1;
+  if (!col) {
+    // column D when it is empty, or else the first column after the last one used
+    var lr = sh.getLastRow(), dFree = String(head[3] == null ? '' : head[3]).trim() === '' &&
+      (lr < 2 || sh.getRange(2, 4, lr - 1, 1).getValues().every(function (r) { return String(r[0]).trim() === ''; }));
+    col = dFree ? 4 : lastC + 1;
+    sh.getRange(1, col).setValue('Code').setFontWeight('bold').setBackground('#e8eef7');
+  }
+  cache.put('stu_cc', String(col), 600);
+  return col;
+}
+function fillCodes_(sh, cc, list) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(8000)) return;   // given next time
+  try {
+    var last = sh.getLastRow(), now = sh.getRange(2, cc, last - 1, 1).getValues(), props = PropertiesService.getScriptProperties();
+    var top = Number(props.getProperty('STU_CODE_N') || 0), used = {};
+    now.forEach(function (r) { var c = stuCodeNorm_(r[0]); if (c) { used[c] = (used[c] || 0) + 1; var m = /^S(\d+)$/.exec(c); if (m) top = Math.max(top, Number(m[1])); } });
+    var wrote = false;
+    list.forEach(function (s) {
+      var c = stuCodeNorm_(now[s.row] ? now[s.row][0] : '');
+      if (c && used[c] === 1) { s.code = c; return; }
+      if (c && used[c] > 1) used[c]--;          // the first row keeps a code used twice; the others get new ones
+      top++;
+      s.code = 'S' + (top < 100 ? ('00' + top).slice(-3) : String(top));
+      now[s.row] = [s.code]; used[s.code] = 1; wrote = true;
+    });
+    if (wrote) { sh.getRange(2, cc, last - 1, 1).setValues(now); props.setProperty('STU_CODE_N', String(top)); }
+  } finally { lock.releaseLock(); }
+}
+/* The student's code, or (only if the sheet could not be written just now) a stand-in made from the class list. */
+function studentCode_(s) { return s.code || ('X' + hash_(s.cls + '|' + hubNormName_(s.name)).slice(0, 6).toUpperCase()); }
+/* For Claude: the class and the code, never the name. */
+function codeLabel_(s) { return s.cls + ' ' + studentCode_(s); }
+function studentByCode_(students, code) {
+  var c = stuCodeNorm_(code);
+  return c ? students.filter(function (s) { return studentCode_(s) === c; })[0] || null : null;
+}
+
 function label_(s) { return s.cls + ' ' + (s.reg ? s.reg + ' ' : '') + s.name; }
+function labelOf_(s) { return label_(s); }
 
 function who_(token) {
   var v = CacheService.getScriptCache().get('stok_' + token);
@@ -718,18 +772,28 @@ function scoreText_(v) {
   return String(v).trim();
 }
 
+// Release 26: hand-ins are named with the class and the student's code (1E2_S014_WS07.pdf), never the name.
 function submissionName_(a, s) {
   return hubClean_(fileStem_(s) + '_' + a.id) + '.pdf';
 }
 
 function fileStem_(s) {
-  return s.cls + '_' + (s.reg ? pad2_(s.reg) + '_' : '') + s.name;
+  return s.cls + '_' + studentCode_(s);
+}
+// The names before release 26 (class, register number, name), so files handed in before still match.
+function oldStem_(s) { return s.cls + '_' + (s.reg ? pad2_(s.reg) + '_' : '') + s.name; }
+function oldSubmissionName_(a, s) { return hubClean_(oldStem_(s) + '_' + a.id) + '.pdf'; }
+function trashNamed_(folder, names) {
+  names.forEach(function (n) { var it = folder.getFilesByName(n); while (it.hasNext()) it.next().setTrashed(true); });
 }
 
 function findMarkedFile_(a, s) {
   var folder = childFolder_(folder_('MARKED'), folderName_(a));
-  var it = folder.getFilesByName(submissionName_(a, s));
-  while (it.hasNext()) { var f = it.next(); if (!f.isTrashed()) return f; }
+  var names = [submissionName_(a, s), oldSubmissionName_(a, s)];
+  for (var k = 0; k < names.length; k++) {
+    var it = folder.getFilesByName(names[k]);
+    while (it.hasNext()) { var f = it.next(); if (!f.isTrashed()) return f; }
+  }
   var files = {};
   var all = folder.getFiles();
   while (all.hasNext()) { var g = all.next(); if (!g.isTrashed()) files[g.getName()] = g; }
@@ -737,10 +801,10 @@ function findMarkedFile_(a, s) {
 }
 
 function matchByPrefix_(files, a, s) {
-  var prefix = hubClean_(fileStem_(s) + '_').toLowerCase();
+  var prefixes = [hubClean_(fileStem_(s) + '_').toLowerCase(), hubClean_(oldStem_(s) + '_').toLowerCase()];
   var names = Object.keys(files);
   for (var i = 0; i < names.length; i++) {
-    if (names[i].toLowerCase().indexOf(prefix) === 0 && /\.pdf$/i.test(names[i])) return files[names[i]];
+    for (var k = 0; k < prefixes.length; k++) if (names[i].toLowerCase().indexOf(prefixes[k]) === 0 && /\.pdf$/i.test(names[i])) return files[names[i]];
   }
   return null;
 }
@@ -780,6 +844,7 @@ function corrState_(a, sub) {
 }
 
 function corrName_(a, s) { return hubClean_(fileStem_(s) + '_' + a.id + '_corrections') + '.pdf'; }
+function oldCorrName_(a, s) { return hubClean_(oldStem_(s) + '_' + a.id + '_corrections') + '.pdf'; }
 
 function corrContext_(token, id) {
   var s = who_(token);
@@ -818,8 +883,7 @@ function api_submitCorrection(token, id, pdfBase64, json) {
   saveDraft_(c.a, c.s, json, 'corr');
   var name = corrName_(c.a, c.s);
   var folder = childFolder_(folder_('CORR'), folderName_(c.a));
-  var old = folder.getFilesByName(name);
-  while (old.hasNext()) old.next().setTrashed(true);
+  trashNamed_(folder, [name, oldCorrName_(c.a, c.s)]);
   var file = folder.createFile(Utilities.newBlob(Utilities.base64Decode(pdfBase64), 'application/pdf', name));
   var lock = hubLock_();
   lock.waitLock(30000);
@@ -1238,12 +1302,15 @@ function hubHash_(text, salt) {
 
 function tIssue_() {
   var token = Utilities.getUuid();
-  CacheService.getScriptCache().put('ttok_' + token, '1', T_SESSION_SECONDS);
+  CacheService.getScriptCache().put('ttok_' + token, String(Date.now()), T_SESSION_SECONDS);
   return token;
 }
 
 function teacher_(token) {
-  if (!token || !CacheService.getScriptCache().get('ttok_' + token)) throw new Error('TEACHER_SIGNED_OUT');
+  var v = token ? CacheService.getScriptCache().get('ttok_' + token) : null;
+  if (!v) throw new Error('TEACHER_SIGNED_OUT');
+  // Release 26: with the Google lock on, a sign-in from before it was turned on is over.
+  if (glockOn_() && Number(v) < Number(PropertiesService.getScriptProperties().getProperty('GLOCK_AT') || 0)) throw new Error('TEACHER_SIGNED_OUT');
 }
 
 // Signs the teacher in straight away when they are signed in to Google with the account that owns this script.
@@ -1269,6 +1336,7 @@ function api_t_login(pass) {
 }
 
 function api_unlockStudent(pass) {
+  PIN_INCLASS_ = true;   // shows nothing: true or an error
   checkPin_(String(pass == null ? '' : pass));
   return true;
 }
@@ -2119,7 +2187,7 @@ function api_t_autoDraft(token, id, cls, name, withPdf) {
   var a = findAssignment_(id), s = hubFindStudent_(hubNormClass_(cls), name);
   if (!a || !s) throw new Error('That hand-in was not found.');
   var f = findDraft_(a, s), w = withPdf ? driveFile_(a.fileId) : null;
-  return { id: a.id, cls: s.cls, name: s.name, reg: s.reg, draft: f ? f.getBlob().getDataAsString() : null,
+  return { id: a.id, cls: s.cls, name: s.name, reg: s.reg, code: studentCode_(s), draft: f ? f.getBlob().getDataAsString() : null,
     pdf: w ? Utilities.base64Encode(w.getBlob().getBytes()) : null };
 }
 
@@ -2133,8 +2201,7 @@ function api_t_autoPut(token, id, cls, name, pdfBase64) {
   var bytes = Utilities.base64Decode(pdfBase64 || '');
   if (bytes.length < 5 || String.fromCharCode.apply(null, bytes.slice(0, 4)) !== '%PDF') throw new Error('That file is not a PDF.');
   var name2 = submissionName_(a, s), folder = childFolder_(folder_('SUB'), folderName_(a));
-  var old = folder.getFilesByName(name2);
-  while (old.hasNext()) old.next().setTrashed(true);
+  trashNamed_(folder, [name2, oldSubmissionName_(a, s)]);
   var file = folder.createFile(Utilities.newBlob(bytes, 'application/pdf', name2));
   hubSheet_(TABS.submissions.name).getRange(sub.row, 9).setValue(file.getUrl());
   return { ok: true };
@@ -2325,11 +2392,12 @@ function api_t_saveMarks(token, id, rows) {
 function studentForFile_(a, fileName, students) {
   var n = String(fileName).split('/').pop();
   var exact = hubClean_(n).toLowerCase();
-  for (var i = 0; i < students.length; i++) if (submissionName_(a, students[i]).toLowerCase() === exact) return students[i];
+  for (var i = 0; i < students.length; i++) if (submissionName_(a, students[i]).toLowerCase() === exact || oldSubmissionName_(a, students[i]).toLowerCase() === exact) return students[i];
   var best = null, bestLen = 0;
   students.forEach(function (s) {
-    var p = hubClean_(fileStem_(s) + '_').toLowerCase();
-    if (exact.indexOf(p) === 0 && p.length > bestLen) { best = s; bestLen = p.length; }
+    [hubClean_(fileStem_(s) + '_').toLowerCase(), hubClean_(oldStem_(s) + '_').toLowerCase()].forEach(function (p) {
+      if (exact.indexOf(p) === 0 && p.length > bestLen) { best = s; bestLen = p.length; }
+    });
   });
   return best;
 }
@@ -2347,7 +2415,8 @@ function api_t_putMarked(token, id, fileName, pdfBase64, kind) {
   return putMarked_(a, fileName, pdfBase64, kind);
 }
 
-function putMarked_(a, fileName, pdfBase64, kind) {
+function putMarked_(a, fileName, pdfBase64, kind, who) {
+  var lbl = who || label_;
   var base = String(fileName).split('/').pop();
   var asKey = kind === 'answers' || isAnswerKeyName_(base);
   if (asKey) base = 'Answer key - ' + hubClean_(a.title) + '.pdf';
@@ -2369,9 +2438,9 @@ function putMarked_(a, fileName, pdfBase64, kind) {
   var s = studentForFile_(a, base, studentsFor_(a));
   if (!s) return { matched: '', reason: 'No student in ' + (a.classes.join(', ') || 'your classes') + ' matches this file name.' };
   var sub = submissionIndex_()[a.id + '|' + studentKey_(s)];
-  if (!sub) return { matched: label_(s), reason: label_(s) + ' has not handed in this worksheet, so the file was kept but not linked.' };
+  if (!sub) return { matched: lbl(s), reason: lbl(s) + ' has not handed in this worksheet, so the file was kept but not linked.' };
   hubSheet_(TABS.submissions.name).getRange(sub.row, 10).setValue(file.getUrl());
-  return { matched: label_(s), ok: true };
+  return { matched: lbl(s), ok: true };
 }
 
 // rows from scores.csv: [{ file, cls, name, score, comment }]. Matches by file name first, then by class and name.
@@ -2383,11 +2452,12 @@ function api_t_applyScores(token, id, rows) {
 }
 
 // keepChecked: rows for work the teacher has already checked are left as they are (Claude's uploads).
-function applyScores_(a, rows, keepChecked) {
+function applyScores_(a, rows, keepChecked, who) {
   ensureSubmissionCols_();
-  var students = studentsFor_(a), subs = submissionIndex_(), sh = hubSheet_(TABS.submissions.name);
+  var students = studentsFor_(a), subs = submissionIndex_(), sh = hubSheet_(TABS.submissions.name), label_ = who || labelOf_;
   return (rows || []).map(function (r) {
     var s = r.file ? studentForFile_(a, r.file, students) : null;
+    if (!s && (r.code || r.name)) s = studentByCode_(students, r.code || r.name);   // Claude knows codes only
     if (!s && r.name) {
       var n = hubNormName_(r.name), c = hubNormClass_(r.cls);
       s = students.filter(function (x) { return hubNormName_(x.name) === n && (!c || x.cls === c); })[0] || null;
@@ -2799,43 +2869,49 @@ function claudeApi_(req) {
   var a = findAssignment_(String(req.id || ''));
   if (!a) throw new Error('No worksheet ' + req.id + '.');
   var subs = listSubmissions_(a);
+  // Release 26: Claude never sees a name. Each hand-in goes by its class and code (1E2_S014_WS07.pdf), files
+  // handed in before the update too, and every answer names the class and the code.
+  var studs0 = studentsFor_(a);
+  var stOf = function (x) { return studs0.filter(function (s) { return s.cls === x.cls && hubNormName_(s.name) === hubNormName_(x.name); })[0] || null; };
+  var nameOf = function (x, i) { var st = stOf(x); return st ? submissionName_(a, st) : hubClean_(x.cls + '_X' + (i + 1) + '_' + a.id) + '.pdf'; };
   if (req.action === 'job') {
     var w = driveFile_(a.fileId), sol = driveFile_(fileIdFromLink_(a.solutionLink));
     return { ok: true, job: getJob_(a.id), worksheet: { id: a.id, title: a.title, classes: a.classes, due: a.due,
       file: w ? { fileId: w.getId(), name: '_worksheet.pdf' } : null,
       solution: sol ? { fileId: sol.getId(), name: '_marked solution.pdf' } : null },
       students: packInfo_(a).students,
-      submissions: subs.map(function (x) {
-        var f = driveFile_(x.fileId);
-        return { fileId: x.fileId, name: f ? f.getName() : '', cls: x.cls, reg: x.reg, student: x.name, handedAt: x.handedAt,
+      submissions: subs.map(function (x, i) {
+        var st = stOf(x);
+        return { fileId: x.fileId, name: nameOf(x, i), cls: x.cls, student: st ? studentCode_(st) : 'X' + (i + 1), handedAt: x.handedAt,
           pages: x.pages, strokes: x.strokes, blank: x.strokes === 0, marked: x.marked, score: x.score };
       }) };
   }
   if (req.action === 'file') {
-    var ok = subs.some(function (x) { return x.fileId === req.fileId; }) || req.fileId === a.fileId || req.fileId === fileIdFromLink_(a.solutionLink);
+    var si = -1;
+    subs.forEach(function (x, i) { if (x.fileId === req.fileId) si = i; });
+    var ok = si >= 0 || req.fileId === a.fileId || req.fileId === fileIdFromLink_(a.solutionLink);
     if (!ok) throw new Error('That file is not part of this worksheet.');
     var f = driveFile_(req.fileId);
     if (!f) throw new Error('File not found.');
-    return { ok: true, name: f.getName(), b64: Utilities.base64Encode(f.getBlob().getBytes()) };
+    return { ok: true, name: si >= 0 ? nameOf(subs[si], si) : req.fileId === a.fileId ? '_worksheet.pdf' : '_marked solution.pdf', b64: Utilities.base64Encode(f.getBlob().getBytes()) };
   }
   if (req.action === 'put') {
     if (req.kind !== 'answers') {
-      var cs = checkedSub_(a, String(req.name || ''));
+      var cs = checkedSub_(a, String(req.name || ''), codeLabel_);
       if (cs) return { ok: true, result: { ok: true, kept: true, matched: cs } };
     }
-    var r = putMarked_(a, String(req.name || ''), String(req.b64 || ''), req.kind === 'answers' ? 'answers' : '');
+    var r = putMarked_(a, String(req.name || ''), String(req.b64 || ''), req.kind === 'answers' ? 'answers' : '', codeLabel_);
     return { ok: true, result: r };
   }
-  if (req.action === 'scores') return { ok: true, result: applyScores_(a, req.rows || [], true) };
+  if (req.action === 'scores') return { ok: true, result: applyScores_(a, req.rows || [], true, codeLabel_) };
   if (req.action === 'checked') {
     // The scripts the teacher has checked in the Hub, with their marks, so Claude can follow the teacher's changes.
-    var studs = studentsFor_(a), outc = [];
-    subs.forEach(function (x) {
+    var outc = [];
+    subs.forEach(function (x, i) {
       if (!x.checked) return;
-      var who = studs.filter(function (s) { return s.cls === x.cls && hubNormName_(s.name) === hubNormName_(x.name); })[0];
-      var f = driveFile_(x.fileId);
-      if (!who || !f) return;
-      outc.push({ name: f.getName(), student: who.name, score: x.score, review: parseJson_(readDraftFile_(reviewName_(a, who))) });
+      var who = stOf(x);
+      if (!who || !driveFile_(x.fileId)) return;
+      outc.push({ name: submissionName_(a, who), student: studentCode_(who), score: x.score, review: parseJson_(readDraftFile_(reviewName_(a, who))) });
     });
     return { ok: true, checked: outc };
   }
@@ -2903,11 +2979,11 @@ function writeDraftFile_(name, text) {
 function parseJson_(t) { try { return t ? JSON.parse(t) : null; } catch (e) { return null; } }
 
 // The student a file name belongs to, if the teacher has already checked their marking.
-function checkedSub_(a, fileName) {
+function checkedSub_(a, fileName, who) {
   var st = studentForFile_(a, fileName, studentsFor_(a));
   if (!st) return '';
   var sub = submissionIndex_()[a.id + '|' + studentKey_(st)];
-  return sub && sub.checked ? label_(st) : '';
+  return sub && sub.checked ? (who || label_)(st) : '';
 }
 
 function reviewTarget_(id, cls, name) {
@@ -2928,7 +3004,7 @@ function api_t_review(token, id, cls, name) {
   teacher_(token);
   var t = reviewTarget_(id, cls, name);
   return {
-    id: t.a.id, title: t.a.title, cls: t.s.cls, name: t.s.name, reg: t.s.reg,
+    id: t.a.id, title: t.a.title, cls: t.s.cls, name: t.s.name, reg: t.s.reg, code: studentCode_(t.s),
     fileName: t.file.getName(), b64: Utilities.base64Encode(t.file.getBlob().getBytes()),
     review: parseJson_(readDraftFile_(reviewName_(t.a, t.s))),
     layout: parseJson_(readDraftFile_(layoutName_(t.a))),
@@ -3338,7 +3414,7 @@ function api_rw_market(token) {
   getStudents_().forEach(function (x) {
     if (x.cls !== s.cls || hubNormName_(x.name) === hubNormName_(s.name)) return;
     var av = outfits[studentKey_(x)];
-    if (av && av.outfit) mates.push({ name: x.name, outfit: av.outfit, stickers: stick[x.cls + '|' + hubNormName_(x.name)] || [] });
+    if (av && av.outfit) mates.push({ name: initials_(x.name), outfit: av.outfit, stickers: stick[x.cls + '|' + hubNormName_(x.name)] || [] });
   });
   mk.classmates = mates.sort(function () { return Math.random() - 0.5; }).slice(0, 12);
   mk.state = st;
@@ -3383,7 +3459,7 @@ function rwLeaderboard_(s, log) {
   list.forEach(function (x, i) { if (x.points !== last) { rank = i + 1; last = x.points; } x.rank = rank; });
   var mine = list.filter(function (x) { return x.me; })[0] || null;
   return { scope: rules.board, cls: s.cls, count: list.length,
-    rows: list.slice(0, 10).map(function (x) { return { rank: x.rank, name: x.name, cls: x.cls, points: x.points, me: x.me }; }),
+    rows: list.slice(0, 10).map(function (x) { return { rank: x.rank, name: x.me ? 'You' : initials_(x.name), cls: x.cls, points: x.points, me: x.me }; }),   // release 26: initials
     me: mine ? { rank: mine.rank, points: mine.points } : null };
 }
 
@@ -4712,4 +4788,10 @@ function api_t_undeploy(token, id, back) {
   } catch (e) { /* none */ }
   try { libDrop_(); } catch (e) { /* none */ }
   return { ok: true };
+}
+
+/* Release 26: what other students see of a classmate's name: its initials (Tan Wei Ming: T.W.M.). */
+function initials_(n) {
+  return String(n || '').split(/[\s\-]+/).filter(function (w) { return /[A-Za-z0-9\u00c0-\uffff]/.test(w); })
+    .map(function (w) { return w.replace(/^[^A-Za-z0-9\u00c0-\uffff]+/, '').charAt(0).toUpperCase() + '.'; }).join('');
 }

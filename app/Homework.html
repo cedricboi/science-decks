@@ -442,6 +442,9 @@
   .lasso { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; overflow: visible; }
   .cropbox { position: absolute; z-index: 5; border: 2px dashed var(--claude); background: rgba(179,85,47,.08); pointer-events: none; }
   .qmark { position: absolute; left: 4px; z-index: 3; display: flex; gap: 3px; align-items: center; pointer-events: none; }
+  .nmbox { position: absolute; z-index: 4; pointer-events: none; display: flex; align-items: center; padding: 0 10px; box-sizing: border-box; border: 1.5px dashed rgba(90, 90, 120, .55); border-radius: 6px;
+    background: repeating-linear-gradient(-45deg, rgba(244, 244, 248, .92) 0 7px, rgba(232, 232, 240, .92) 7px 14px); }
+  .nmbox span { font: 700 12px/1.25 system-ui, -apple-system, sans-serif; color: #44465a; background: rgba(255, 255, 255, .9); padding: 2px 7px; border-radius: 4px; }
   .qflag { color: #C23B35; font-size: 16px; line-height: 1; }
   .qdot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
   .ed-toast { position: fixed; left: 50%; bottom: 24px; z-index: 65; transform: translate(-50%, 160%); background: var(--toast); color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 700; font-size: 15px;
@@ -1584,7 +1587,7 @@
   function savePdf() {
     busy('Making the PDF...');
     saveNow().then(function () {
-      return Ink.notePdf({ paper: S.doc.paper, strokes: S.strokes, label: Ink.label(S.me.cls, S.me.reg, S.me.name) });
+      return Ink.notePdf({ paper: S.doc.paper, strokes: S.strokes, label: Ink.label(S.me.cls, '', S.me.code || '') });
     }).then(function (bytes) {
       var name = String(S.doc.title || 'My note').replace(/[\\\/:*?"<>|]+/g, ' ').trim() + '.pdf';
       var blob = new Blob([bytes], { type: 'application/pdf' });
@@ -2591,7 +2594,7 @@
   function safeParse(s) { if (!s) return null; try { return JSON.parse(s); } catch (e) { return null; } }
 
   function startDoc(draft) {
-    S.undo = []; S.redo = []; S.version = 0; S.savedVersion = 0; S.zoom = FIT; S.near = {};
+    S.undo = []; S.redo = []; S.version = 0; S.savedVersion = 0; S.zoom = FIT; S.near = {}; S.nameBoxes = null;
     closePop(); toolsReset();
     S.extra = draft && draft.extra ? draft.extra : 0;
     return pdfjsLib.getDocument({ data: S.pdfBytes.slice() }).promise.then(function (pdf) {
@@ -2625,6 +2628,8 @@
       kitShow();
       $('scroller').scrollTop = 0; $('scroller').scrollLeft = 0;
       if (S.extras) findQuestions().then(qMarks);
+      // Release 26: a note over any Name line. Writing there is left out of what is handed in.
+      if (S.mode !== 'note') Ink.nameBoxes(S.pdf, S.pages.slice(0, S.pdf.numPages).map(function (pg) { return pg.vp; })).then(function (b) { S.nameBoxes = b; nameMarks(); });
     });
   }
   // Every tool box closes and every mode ends when a worksheet opens or closes.
@@ -2682,7 +2687,7 @@
       pg.renderedScale = null;
     });
     Object.keys(S.near).forEach(function (i) { ensurePage(Number(i)); });
-    renderOv(); qMarks(); readHighlight(0, null);
+    renderOv(); qMarks(); nameMarks(); readHighlight(0, null);
     if (S.sel) selShow();
   }
 
@@ -3902,6 +3907,18 @@
     });
   }
   // Little marks in the margin beside each question: a flag if stuck, a dot for how sure.
+  function nameMarks() {
+    Array.prototype.forEach.call(document.querySelectorAll('.nmbox'), function (e) { e.remove(); });
+    if (!S.nameBoxes || !S.nameBoxes.length || S.mode === 'note' || S.readOnly) return;
+    S.nameBoxes.forEach(function (q) {
+      var pg = S.pages[q.i]; if (!pg || !pg.el) return;
+      var el = document.createElement('div'); el.className = 'nmbox';
+      el.style.left = (q.x * S.scale) + 'px'; el.style.top = (q.y * S.scale) + 'px';
+      el.style.width = (q.w * S.scale) + 'px'; el.style.height = (q.h * S.scale) + 'px';
+      el.innerHTML = '<span>No name needed here: your teacher knows whose work this is.</span>';
+      pg.el.appendChild(el);
+    });
+  }
   function qMarks() {
     Array.prototype.forEach.call(document.querySelectorAll('.qmark'), function (e) { e.remove(); });
     var X = S.extras; if (!X || !S.questions || S.mode !== 'work') return;
@@ -4276,7 +4293,7 @@
 
   function buildPdf() {
     return Ink.buildPdf({ pdfBytes: S.pdfBytes, strokes: S.strokes, vps: S.pages.slice(0, S.pdf.numPages).map(function (pg) { return pg.vp; }),
-      label: Ink.label(S.me.cls, S.me.reg, S.me.name), corr: S.mode === 'corr' });
+      label: Ink.label(S.me.cls, '', S.me.code || ''), corr: S.mode === 'corr', nameBoxes: S.nameBoxes || undefined });
   }
 
   /* ---------------- Start ---------------- */

@@ -457,17 +457,22 @@
     <div class="mark"><svg viewBox="0 0 34 34"><rect x="1" y="5" width="32" height="26" rx="6" fill="#1B1F3B"/><rect x="6" y="11" width="9" height="7" rx="2" fill="#fff"/><rect x="18" y="11" width="10" height="11" rx="2" fill="#fff"/><rect x="6" y="21" width="9" height="5" rx="2" fill="#fff"/><circle cx="27" cy="6" r="5" fill="#FFE45C" stroke="#1B1F3B" stroke-width="2"/></svg>learnwithmrcedric</div>
     <div class="panel">
       <div id="si-who" class="si-step">
-        <h1>Who are you?</h1>
-        <p class="lead">Choose your class and your name. Then you sign in with your own PIN.</p>
+        <h1>Sign in</h1>
+        <p class="lead">Choose your class, type your name, then your own PIN.</p>
         <div class="field">
           <label class="f" for="in-class">Your class</label>
           <select id="in-class"><option value="">Loading…</option></select>
         </div>
         <div class="field">
           <label class="f" for="in-name">Your name</label>
-          <select id="in-name" disabled><option value="">Choose your class first</option></select>
+          <input id="in-name" class="txt" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your full name, as on the class list">
         </div>
-        <button id="btn-signin" class="btn primary block" disabled>Continue</button>
+        <div class="field">
+          <label class="f" for="in-pin">Your PIN (4 numbers)</label>
+          <input id="in-pin" class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+        </div>
+        <button id="btn-signin" class="btn primary block" disabled>Sign in</button>
+        <div class="si-links"><button type="button" class="link" id="si-first">First time here? Set up my PIN</button><button type="button" class="link" id="si-forgot">Forgot my PIN?</button></div>
       </div>
       <div id="si-step" class="si-step hidden"></div>
       <div id="signin-msg" class="msg err hidden"></div>
@@ -659,7 +664,7 @@
   };
   function ic(name) { var s = el('span', 'ic'); s.innerHTML = ICON[name]; return s; }
   var me = null;            // {cls, name}
-  var roster = [];
+  var roster = [];   // release 26: no names come to this page
   var current = null;       // board id
   var boardData = null;     // last full response
   var version = 0;
@@ -711,49 +716,57 @@
   }
 
   /* ---------- sign in ----------
-     Choose your class and name, then your own 4-digit PIN. The first time, the register number (or the teacher
-     letting you in from the phone) proves who you are, and you choose your PIN and a security question.
-     Forgot my PIN asks the question. Once signed in, the name stays on this iPad: only the teacher's PIN changes it. */
+     Release 26: the class list never leaves the server, so there is no list of names here. Students choose their
+     class, type their own name and their 4-digit PIN. The first time, they type their name and register number (or
+     the teacher lets them in from the phone; in the class's own Science lesson nothing more is needed), then choose a
+     PIN and a security question. Forgot my PIN: the question they chose and its answer. Once signed in, the name stays
+     on this iPad: only the teacher's PIN changes it. The class and name typed last are kept on this iPad, to fill in. */
   var DEV = load('lb_dev');
   if (!DEV) { DEV = 'm' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store('lb_dev', DEV); }
-  var siTimer = null;
+  var siTimer = null, siInfo = null, last = load('lb_last') || {};
+  function siInfoLoad() {
+    if (siInfo) return Promise.resolve(siInfo);
+    return call('apiSignInInfo').then(function (r) { siInfo = r; return r; });
+  }
+  function classOptions(sel, keep) {
+    var cl = (siInfo.classes || []).filter(function (c) { return c !== 'TEST'; }).concat((siInfo.classes || []).filter(function (c) { return c === 'TEST'; }));
+    sel.innerHTML = '';
+    sel.appendChild(new Option('Choose your class', ''));
+    cl.forEach(function (c) { sel.appendChild(new Option(c, c)); });
+    if (keep && cl.indexOf(keep) >= 0) sel.value = keep;
+  }
+  function remember(cls, name) { last = { cls: cls, name: name }; store('lb_last', last); }
   function startSignin(note) {
     stopPolling(); clearTimeout(siTimer);
     show('v-signin');
     $('si-who').classList.remove('hidden'); $('si-step').classList.add('hidden');
     msg('signin-msg', note || '');
     $('signin-msg').className = 'msg ' + (note ? 'info' : 'err') + (note ? '' : ' hidden');
-    call('apiRoster').then(function (r) {
-      roster = r;
-      var sel = $('in-class'), keep = sel.value;
-      sel.innerHTML = '';
-      sel.appendChild(new Option('Choose your class', ''));
-      r.filter(function (c) { return c.cls !== 'TEST'; }).concat(r.filter(function (c) { return c.cls === 'TEST'; }))
-        .forEach(function (c) { sel.appendChild(new Option(c.cls, c.cls)); });
-      if (keep) { sel.value = keep; }
+    $('in-pin').value = '';
+    siInfoLoad().then(function () {
+      classOptions($('in-class'), $('in-class').value || last.cls || '');
+      if (!$('in-name').value && last.name) $('in-name').value = last.name;
+      siReady();
     }).catch(function (e) { siErr(e.message); });
   }
   function siErr(t) { $('signin-msg').className = 'msg err'; msg('signin-msg', t); }
-  $('in-class').addEventListener('change', function () {
-    var c = this.value, nm = $('in-name');
-    nm.innerHTML = '';
-    var entry = roster.filter(function (x) { return x.cls === c; })[0];
-    if (!entry) { nm.appendChild(new Option('Choose your class first', '')); nm.disabled = true; $('btn-signin').disabled = true; return; }
-    nm.appendChild(new Option('Choose your name', ''));
-    entry.names.forEach(function (n) { nm.appendChild(new Option(n, n)); });
-    nm.disabled = false;
-    $('btn-signin').disabled = true;
-  });
-  $('in-name').addEventListener('change', function () { $('btn-signin').disabled = !this.value; });
-  $('btn-signin').addEventListener('click', function () {
-    var cls = $('in-class').value, name = $('in-name').value;
-    if (!cls || !name) return;
-    var b = this; b.disabled = true; b.textContent = 'One moment…'; msg('signin-msg', '');
-    call('apiStStart', cls, name).then(function (r) {
-      if (r.set) siPin(r); else siSetup(r);
-    }).catch(function (e) { siErr(e.message); })
-      .then(function () { b.disabled = false; b.textContent = 'Continue'; });
-  });
+  function siReady() { $('btn-signin').disabled = !($('in-class').value && $('in-name').value.trim() && $('in-pin').value.length === 4); }
+  ['in-class', 'in-name'].forEach(function (id) { $(id).addEventListener('input', siReady); $(id).addEventListener('change', siReady); });
+  $('in-pin').addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 4); siReady(); });
+  function siSend() {
+    var cls = $('in-class').value, name = $('in-name').value.trim(), pin = $('in-pin').value;
+    if (!cls) { siErr('Choose your class.'); return; }
+    if (!name) { siErr('Type your name.'); return; }
+    if (pin.length !== 4) { siErr('Your PIN is 4 numbers.'); return; }
+    var done = busyBtn($('btn-signin'), 'Signing in…'); msg('signin-msg', '');
+    call('apiStSignIn', cls, name, pin).then(function (r) { remember(cls, name); signedIn(r); })
+      .catch(function (e) { $('in-pin').value = ''; $('in-pin').focus(); siErr(e.message); }).then(function () { done(); siReady(); });
+  }
+  $('btn-signin').addEventListener('click', siSend);
+  $('in-pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') siSend(); });
+  $('in-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('in-pin').focus(); });
+  $('si-first').addEventListener('click', function () { siSetup(null, { cls: $('in-class').value, name: $('in-name').value.trim() }); });
+  $('si-forgot').addEventListener('click', function () { siForgot({ cls: $('in-class').value, name: $('in-name').value.trim() }); });
 
   function siOpen(build) {
     clearTimeout(siTimer);
@@ -761,14 +774,8 @@
     $('si-who').classList.add('hidden');
     var box = $('si-step'); box.innerHTML = ''; box.classList.remove('hidden');
     build(box);
-    var first = box.querySelector('input, select');
+    var first = box.querySelector('input:not([disabled]), select:not([disabled])');
     if (first) setTimeout(function () { first.focus(); }, 60);
-  }
-  function siBadge(box, r) {
-    var w = el('div', 'si-who'), parts = r.name.split(/\s+/);
-    w.appendChild(el('span', 'av', ((parts[0] || '')[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')));
-    w.appendChild(document.createTextNode(r.name + ' · ' + r.cls));
-    box.appendChild(w);
   }
   function siField(box, label, input, note) {
     var f = el('div', 'field'), id = 'si-' + Math.random().toString(36).slice(2, 8);
@@ -784,78 +791,64 @@
     return i;
   }
   function textInput(ph) { var i = el('input', 'txt'); i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph; return i; }
+  function nameInput(v) { var i = textInput('Your full name, as on the class list'); i.autocomplete = 'name'; i.setAttribute('autocapitalize', 'words'); i.maxLength = 80; i.value = v || ''; return i; }
+  // The class and the name, at the top of each step (fixed once the teacher has let the student in).
+  function whoFields(box, v, fixed) {
+    var cls = el('select'); siField(box, 'Your class', cls); classOptions(cls, v.cls);
+    var name = siField(box, 'Your name', nameInput(v.name));
+    if (fixed) { cls.disabled = true; name.disabled = true; }
+    return { cls: cls, name: name, check: function () {
+      if (!cls.value) { siErr('Choose your class.'); return false; }
+      if (!name.value.trim()) { siErr('Type your name.'); return false; }
+      return true;
+    }, val: function () { return { cls: cls.value, name: name.value.trim() }; } };
+  }
   function linkBtn(text, fn) { var b = el('button', 'link', text); b.type = 'button'; b.addEventListener('click', fn); return b; }
   function goBack() { startSignin(); }
   function busyBtn(b, text) { var was = b.textContent; b.disabled = true; b.textContent = text; return function () { b.disabled = false; b.textContent = was; }; }
 
-  /* Sign in with the PIN. */
-  function siPin(r) {
-    siOpen(function (box) {
-      box.appendChild(el('h1', '', 'Type your PIN'));
-      siBadge(box, r);
-      var pin = siField(box, 'Your PIN (4 numbers)', pinInput());
-      var go = el('button', 'btn primary block', 'Sign in'); go.type = 'button'; box.appendChild(go);
-      var links = el('div', 'si-links');
-      links.appendChild(linkBtn('Forgot my PIN?', function () { siForgot(r); }));
-      links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack));
-      box.appendChild(links);
-      if (r.locked) siErr('Too many wrong tries. Wait 15 minutes, or ask your teacher.');
-      var send = function () {
-        if (pin.value.length !== 4) { siErr('Your PIN is 4 numbers.'); return; }
-        var done = busyBtn(go, 'Signing in…');
-        call('apiStLogin', r.cls, r.name, pin.value).then(signedIn).catch(function (e) { pin.value = ''; pin.focus(); siErr(e.message); }).then(done);
-      };
-      go.addEventListener('click', send);
-      pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
-      pin.addEventListener('input', function () { if (pin.value.length === 4) send(); });
-    });
-  }
-
-  /* Forgot my PIN: the security question, then a new PIN. */
-  function siForgot(r) {
+  /* Forgot my PIN: the question they chose (from the list), its answer, then a new PIN. */
+  function siForgot(v) {
     siOpen(function (box) {
       box.appendChild(el('h1', '', 'Forgot your PIN?'));
-      siBadge(box, r);
-      box.appendChild(el('p', 'lead', 'Answer your security question, then choose a new PIN.'));
-      var ans = siField(box, r.question || 'Your security question', textInput('Your answer'));
+      box.appendChild(el('p', 'lead', 'Choose the security question you picked when you set up your PIN, type your answer, then choose a new PIN.'));
+      var w = whoFields(box, v || {});
+      var q = el('select'); q.appendChild(new Option('Choose your question', ''));
+      (siInfo.questions || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); });
+      siField(box, 'Your security question', q);
+      var ans = siField(box, 'Your answer', textInput('Your answer'));
       var two = el('div', 'si-two'); box.appendChild(two);
       var p1 = siField(two, 'New PIN', pinInput()), p2 = siField(two, 'New PIN again', pinInput());
       var go = el('button', 'btn primary block', 'Set my new PIN'); go.type = 'button'; box.appendChild(go);
       var links = el('div', 'si-links');
-      links.appendChild(linkBtn('I remember my PIN', function () { siPin(r); }));
+      links.appendChild(linkBtn('I remember my PIN', goBack));
       links.appendChild(el('span', 'si-note', 'Forgot the answer too? Ask your teacher to reset your PIN.'));
       box.appendChild(links);
       go.addEventListener('click', function () {
+        if (!w.check()) return;
+        if (q.value === '') { siErr('Choose your security question.'); return; }
         if (!ans.value.trim()) { siErr('Type the answer to your question.'); return; }
         if (p1.value.length !== 4) { siErr('Your new PIN is 4 numbers.'); return; }
         if (p1.value !== p2.value) { siErr('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
-        var done = busyBtn(go, 'Saving…');
-        call('apiStForgot', r.cls, r.name, ans.value, p1.value).then(function (x) { toast('Your new PIN is set', true); signedIn(x); })
+        var x = w.val(), done = busyBtn(go, 'Saving…');
+        call('apiStForgot', x.cls, x.name, Number(q.value), ans.value, p1.value).then(function (r) { remember(x.cls, x.name); toast('Your new PIN is set', true); signedIn(r); })
           .catch(function (e) { siErr(e.message); }).then(done);
       });
     });
   }
 
-  /* The first time: prove who you are, then choose a PIN and a security question. */
-  function siSetup(r, key) {
+  /* The first time: the name and the register number (or the teacher's Let in, key), then a PIN and a security question. */
+  function siSetup(key, v) {
     siOpen(function (box) {
       box.appendChild(el('h1', '', 'Set up your PIN'));
-      siBadge(box, r);
       var reg = null;
       if (key) {
         var okNote = el('div', 'si-wait'); okNote.style.borderColor = 'var(--ok)'; okNote.style.background = 'var(--ok-soft)';
         okNote.appendChild(el('span', '', '✓ Your teacher let you in. Now choose your PIN.'));
         box.appendChild(okNote);
-      } else if (r.inLesson) {
-        // In the class's own lesson the teacher is in the room: no register number.
-        box.appendChild(el('p', 'lead', 'This is your first time. Your class is in its Science lesson, so just choose your PIN.'));
-      } else if (r.reg) {
-        box.appendChild(el('p', 'lead', 'This is your first time. Type your register number to show it is you.'));
-        reg = siField(box, 'Your register number', textInput()); reg.inputMode = 'numeric';
-      } else {
-        siLetIn(box, r);
-        return;
-      }
+      } else box.appendChild(el('p', 'lead', 'This is your first time. Type your name as it is on the class list, and your register number to show it is you.'));
+      var w = whoFields(box, v || {}, !!key);
+      if (!key) { reg = siField(box, 'Your register number', textInput(), 'In your class\'s own Science lesson you can leave this empty.'); reg.inputMode = 'numeric'; }
       box.appendChild(el('div', 'si-sec', 'Choose your PIN'));
       var two = el('div', 'si-two'); box.appendChild(two);
       var p1 = siField(two, 'PIN (4 numbers)', pinInput()), p2 = siField(two, 'PIN again', pinInput());
@@ -863,62 +856,65 @@
       box.appendChild(el('div', 'si-sec', 'Choose a security question'));
       box.appendChild(el('p', 'si-note', 'If you forget your PIN, you answer this question to set a new one.'));
       var q = el('select'); q.appendChild(new Option('Choose a question', ''));
-      (r.questions || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); });
+      (siInfo.questions || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); });
       siField(box, 'Question', q);
       var ans = siField(box, 'Your answer', textInput('An answer you will remember'));
       var go = el('button', 'btn primary block', 'Save and sign in'); go.type = 'button'; box.appendChild(go);
       var links = el('div', 'si-links');
-      links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack));
-      if (!key) links.appendChild(linkBtn('Ask my teacher to let me in', function () { siLetIn(null, r); }));
+      links.appendChild(linkBtn('Back to sign in', goBack));
+      if (!key) links.appendChild(linkBtn('No register number? Ask my teacher to let me in', function () { siLetIn(w.val()); }));
       box.appendChild(links);
       go.addEventListener('click', function () {
-        if (reg && !reg.value.trim()) { siErr('Type your register number.'); return; }
+        if (!w.check()) return;
         if (p1.value.length !== 4) { siErr('Your PIN is 4 numbers.'); return; }
         if (p1.value !== p2.value) { siErr('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
         if (q.value === '') { siErr('Choose a security question.'); return; }
         if (ans.value.trim().length < 2) { siErr('Type an answer to your question.'); return; }
-        var done = busyBtn(go, 'Saving…');
-        call('apiStSetup', r.cls, r.name, key ? { key: key } : { reg: reg ? reg.value : '' }, p1.value, Number(q.value), ans.value)
-          .then(function (x) { toast('Your PIN is set', true); signedIn(x); })
+        var x = w.val(), done = busyBtn(go, 'Saving…');
+        call('apiStSetup', x.cls, x.name, key ? { key: key } : { reg: reg ? reg.value : '' }, p1.value, Number(q.value), ans.value)
+          .then(function (r) { remember(x.cls, x.name); toast('Your PIN is set', true); signedIn(r); })
           .catch(function (e) {
             siErr(e.message);
-            if (/let you in/.test(e.message)) { r.reg = false; siTimer = setTimeout(function () { siLetIn(null, r); }, 1800); }
-            if (/already has a PIN/.test(e.message)) { siTimer = setTimeout(function () { call('apiStStart', r.cls, r.name).then(siPin); }, 1800); }
-            // The lesson ended while the form was open: ask again, with the register number this time.
-            if (!reg && !key && /register number/.test(e.message) && !/let you in/.test(e.message)) { siTimer = setTimeout(function () { call('apiStStart', r.cls, r.name).then(function (r2) { siSetup(r2); siErr('Your lesson has ended, so type your register number too.'); }); }, 1200); }
+            if (/let you in/.test(e.message) && !key) { siTimer = setTimeout(function () { siLetIn(x); }, 2200); }
+            if (/already have a PIN/.test(e.message)) { siTimer = setTimeout(goBack, 2200); }
           }).then(done);
       });
     });
   }
-  /* No register number (or too many wrong ones): the teacher's phone shows the name with Let in. */
-  function siLetIn(box0, r) {
-    var build = function (box) {
-      if (!box0) { box.appendChild(el('h1', '', 'Set up your PIN')); siBadge(box, r); }
-      box.appendChild(el('p', 'lead', 'Your teacher needs to let you in the first time.'));
-      var wait = el('div', 'si-wait hidden'); wait.appendChild(el('span', 'dot')); var wt = el('span', '', 'Your teacher sees your name on their phone. Wait here.'); wait.appendChild(wt);
+  /* No register number (or too many wrong ones): the teacher's phone shows the name as typed, with Let in. */
+  function siLetIn(v) {
+    siOpen(function (box) {
+      box.appendChild(el('h1', '', 'Ask your teacher'));
+      box.appendChild(el('p', 'lead', 'Your teacher needs to let you in the first time. Type your name as it is on the class list.'));
+      var w = whoFields(box, v || {});
+      var wait = el('div', 'si-wait hidden'); wait.appendChild(el('span', 'dot')); wait.appendChild(el('span', '', 'Your teacher sees your name on their phone. Wait here.'));
       box.appendChild(wait);
       var go = el('button', 'btn primary block', 'Ask my teacher'); go.type = 'button'; box.appendChild(go);
-      var links = el('div', 'si-links'); links.appendChild(linkBtn('Not ' + r.name.split(/\s+/)[0] + '? Go back', goBack)); box.appendChild(links);
+      var links = el('div', 'si-links'); links.appendChild(linkBtn('Back to sign in', goBack)); box.appendChild(links);
       go.addEventListener('click', function () {
+        if (!w.check()) return;
+        var x = w.val();
         go.disabled = true; msg('signin-msg', '');
-        call('apiGateHelp', r.cls, r.name, DEV).then(function (g) {
+        call('apiGateHelp', x.cls, x.name, DEV).then(function (g) {
           if (!g || !g.ok || !g.key) { go.disabled = false; siErr((g && g.error) || 'That did not work. Try again.'); return; }
-          go.classList.add('hidden'); wait.classList.remove('hidden');
+          go.classList.add('hidden'); wait.classList.remove('hidden'); w.cls.disabled = true; w.name.disabled = true;
           (function check() {
             siTimer = setTimeout(function () {
               if ($('v-signin').classList.contains('hidden')) return;
               call('apiGateHelpState', g.key).then(function (s) {
-                if (s.state === 'ok') { siSetup(r, g.key); return; }
-                if (s.state === 'no') { wait.classList.add('hidden'); go.classList.remove('hidden'); go.disabled = false; siErr('Your teacher did not let you in. Check that you chose your own name.'); return; }
-                if (s.state === 'gone') { wait.classList.add('hidden'); go.classList.remove('hidden'); go.disabled = false; siErr('Nobody answered in time. Ask again.'); return; }
+                if (s.state === 'ok') { siSetup(g.key, x); return; }
+                if (s.state === 'no' || s.state === 'gone') {
+                  wait.classList.add('hidden'); go.classList.remove('hidden'); go.disabled = false; w.cls.disabled = false; w.name.disabled = false;
+                  siErr(s.state === 'no' ? 'Your teacher did not let you in. Check how you typed your name, and ask again.' : 'Nobody answered in time. Ask again.');
+                  return;
+                }
                 check();
               }).catch(function () { check(); });
             }, 3000);
           })();
         }).catch(function (e) { go.disabled = false; siErr(e.message); });
       });
-    };
-    if (box0) build(box0); else siOpen(build);
+    });
   }
   function signedIn(r) {
     me = { cls: r.cls, name: r.name, st: r.st };
@@ -929,7 +925,7 @@
   /* The teacher signed this student out (or reset the PIN): back to the start. */
   function signedOutNow() {
     store('lb_me', null); me = null; hwReset();
-    startSignin('You have been signed out. Choose your name and sign in again.');
+    startSignin('You have been signed out. Type your name and your PIN to sign in again.');
   }
   function isSignedOut(e) { return /SIGNED_OUT/.test((e && e.message) || ''); }
 

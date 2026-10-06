@@ -172,14 +172,102 @@ window.Ink = (function () {
     });
   }
 
+
+  /* ---------------- Release 26: the Name line ----------------
+     Where a worksheet asks for a name ("Name: ____", "Student's name:", a cell that just says Name) in the top 40% of
+     a page. Writing there is left out of the handed-in PDF (the student page shows a note over it), and the Teacher
+     Hub can cover the line before a worksheet is uploaded. Boxes are in page points from the top-left (scale 1):
+     { i: page index, x, y, w, h }, from the label to the right edge of the page, a writing line high. */
+  var NAME_ITEM = /^\s*(?:student'?s?\s+|full\s+|your\s+)?name\s*(?:\([^)]{0,30}\))?\s*[:：]?\s*[_.…\-–—]*\s*$/i;
+  var NAME_LEAD = /(^|[\s|])((?:student'?s?\s+|full\s+|your\s+)?name\s*(?:\([^)]{0,30}\))?\s*[:：])/i;
+  function nameBoxesOnPage(page, vp, i) {
+    return page.getTextContent().then(function (tc) {
+      var out = [];
+      tc.items.forEach(function (it) {
+        var s = it.str || '';
+        if (!s.trim()) return;
+        var whole = NAME_ITEM.test(s), m = whole ? null : NAME_LEAD.exec(s);
+        if (!whole && !m) return;
+        var t = pdfjsLib.Util.transform(vp.transform, it.transform), fs = Math.sqrt(t[2] * t[2] + t[3] * t[3]) || 10, base = t[5];
+        if (base > vp.height * 0.4 || base < 0) return;
+        var x0 = t[4];
+        if (m) x0 += (it.width || 0) * (vp.scale || 1) * ((m.index + m[1].length) / Math.max(1, s.length));
+        var x = Math.max(0, x0 - 4);
+        out.push({ i: i, x: x, y: Math.max(0, base - fs * 2.1), w: Math.max(30, vp.width - x - 6), h: fs * 3.1 });
+      });
+      return out;
+    }).catch(function () { return []; });
+  }
+  // A pdf.js document and its pages' viewports (scale 1): the boxes on every page.
+  function nameBoxes(pdf, vps) {
+    var jobs = [];
+    vps.forEach(function (vp, k) { if (vp && vp.transform) jobs.push(pdf.getPage(k + 1).then(function (pg) { return nameBoxesOnPage(pg, vp, k); })); });
+    return Promise.all(jobs).then(function (a) { return [].concat.apply([], a); }).catch(function () { return []; });
+  }
+  // The same from a PDF's bytes.
+  function nameBoxesOf(pdfBytes) {
+    return pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise.then(function (pdf) {
+      var jobs = [];
+      for (var i = 1; i <= pdf.numPages; i++) jobs.push(pdf.getPage(i));
+      return Promise.all(jobs).then(function (pages) {
+        return Promise.all(pages.map(function (pg, k) { return nameBoxesOnPage(pg, pg.getViewport({ scale: 1 }), k); }));
+      }).then(function (a) { if (pdf.destroy) pdf.destroy(); return [].concat.apply([], a); });
+    }).catch(function () { return []; });
+  }
+  // The middle of a piece of writing, in page points.
+  function strokeMid(s) {
+    if (s.k === 'text') return [s.p[0] + (s.bw || 0) / 2, s.p[1] + (s.bh || 0) / 2];
+    var pts = isGeom(s) ? [].concat.apply([], geomLines(s)) : (s.p || []), x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    for (var k = 0; k + 1 < pts.length; k += 2) { x1 = Math.min(x1, pts[k]); x2 = Math.max(x2, pts[k]); y1 = Math.min(y1, pts[k + 1]); y2 = Math.max(y2, pts[k + 1]); }
+    return x2 < x1 ? null : [(x1 + x2) / 2, (y1 + y2) / 2];
+  }
+  function inNameBox(s, boxes) {
+    var c = strokeMid(s);
+    return !!c && boxes.some(function (q) { return c[0] >= q.x && c[0] <= q.x + q.w && c[1] >= q.y && c[1] <= q.y + q.h; });
+  }
+  // The strokes with whatever is on a Name line left out.
+  function withoutNames(strokes, boxes) {
+    if (!boxes || !boxes.length) return strokes;
+    return (strokes || []).map(function (list, i) {
+      var mine = boxes.filter(function (q) { return q.i === i; });
+      return mine.length ? (list || []).filter(function (s) { return !inNameBox(s, mine); }) : list;
+    });
+  }
+  // For the Teacher Hub, before a worksheet is uploaded: a white box with a note over each Name line. Promise of the bytes.
+  function coverNames(pdfBytes, boxes) {
+    var L = PDFLib;
+    return viewports(pdfBytes).then(function (vps) {
+      return L.PDFDocument.load(pdfBytes, { ignoreEncryption: true }).then(function (doc) {
+        return doc.embedFont(L.StandardFonts.HelveticaOblique).then(function (font) {
+          boxes.forEach(function (q) {
+            if (q.i >= doc.getPageCount() || !vps[q.i]) return;
+            var page = doc.getPage(q.i), vp = vps[q.i];
+            var a = vp.convertToPdfPoint(q.x, q.y), b = vp.convertToPdfPoint(q.x + q.w, q.y + q.h);
+            var x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]), w = Math.abs(b[0] - a[0]), h = Math.abs(b[1] - a[1]);
+            page.drawRectangle({ x: x, y: y, width: w, height: h, color: L.rgb(1, 1, 1) });
+            page.drawText('No name needed here.', { x: x + 4, y: y + h / 2 - 3, size: 9, font: font, color: L.rgb(0.5, 0.5, 0.5) });
+          });
+          return doc.save();
+        });
+      });
+    });
+  }
+
   // The handed-in PDF: the worksheet with the writing drawn on it, extra blank pages at the end, and the
-  // student's name in small grey letters at the top of each page.
+  // student's class and code (release 26: never the name) in small grey letters at the top of each page.
   // o: { pdfBytes, strokes: [[stroke]] one list per page, vps (pdf.js viewports of the worksheet pages; worked
-  //      out when left out), label, corr (corrections: no label, the marked copy has one) }
+  //      out when left out), label, corr (corrections: no label, the marked copy has one),
+  //      nameBoxes (the Name lines, worked out when left out), noNameCheck (a note: no worksheet under it) }
   function buildPdf(o) {
     var L = PDFLib;
     return (o.vps ? Promise.resolve(o.vps) : viewports(o.pdfBytes)).then(function (vps) {
-      return L.PDFDocument.load(o.pdfBytes, { ignoreEncryption: true }).then(function (doc) { return draw(L, doc, vps, o); });
+      var nb = o.nameBoxes ? Promise.resolve(o.nameBoxes) : o.noNameCheck || !window.pdfjsLib ? Promise.resolve([]) : nameBoxesOf(o.pdfBytes);
+      return nb.then(function (boxes) {
+        var o2 = {};
+        Object.keys(o).forEach(function (k) { o2[k] = o[k]; });
+        o2.strokes = withoutNames(o.strokes, boxes);   // writing on a Name line is never handed in
+        return L.PDFDocument.load(o.pdfBytes, { ignoreEncryption: true }).then(function (doc) { return draw(L, doc, vps, o2); });
+      });
     });
   }
 
@@ -262,7 +350,7 @@ window.Ink = (function () {
     });
   }
 
-  // The small grey name at the top of each page.
+  // The small grey label at the top of each page. Release 26: the class and the student's code (label(cls, '', code)).
   function label(cls, reg, name) { return cls + '  ' + (reg ? (String(reg).length < 2 ? '0' : '') + reg + '  ' : '') + name; }
 
   // A saved draft as the per-page stroke lists for a worksheet of nOrig pages.
@@ -315,7 +403,7 @@ window.Ink = (function () {
     }).then(function (bytes) {
       var vps = [];
       for (var i = 0; i < pages; i++) vps.push({ convertToPdfPoint: function (x, y) { return [x, BLANK_H - y]; } });
-      return buildPdf({ pdfBytes: bytes, strokes: o.strokes, vps: vps, label: o.label });
+      return buildPdf({ pdfBytes: bytes, strokes: o.strokes, vps: vps, label: o.label, noNameCheck: true });
     });
   }
 
@@ -325,7 +413,8 @@ window.Ink = (function () {
     STAMPS: STAMPS, STAMP_ORDER: STAMP_ORDER,
     tracePath: tracePath, shapeLines: shapeLines, isShape: isShape, stampLines: stampLines, isGeom: isGeom, geomLines: geomLines,
     stampIcon: stampIcon, textLines: textLines, textFont: textFont, drawStroke: drawStroke, hexRgb: hexRgb, textPng: textPng,
-    viewports: viewports, buildPdf: buildPdf, label: label, draftPages: draftPages
+    viewports: viewports, buildPdf: buildPdf, label: label, draftPages: draftPages,
+    nameBoxes: nameBoxes, nameBoxesOf: nameBoxesOf, withoutNames: withoutNames, coverNames: coverNames
   };
 })();
 </script>

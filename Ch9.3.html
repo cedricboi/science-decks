@@ -2864,7 +2864,7 @@ window.KIT=KIT;
 })();</script>
 <script id="liveboard-bridge">(function () {
   'use strict';
-  /* Live Board bridge, version 12. Added to every deck by scripts/liveboard_connect.py.
+  /* Live Board bridge, version 13. Added to every deck by scripts/liveboard_connect.py.
      The deck's own code is not changed.
      1. Who are you? Students choose their class, then their name, from the class list
         (the Worksheet Hub Students tab, served by Live Board). The choice is locked on
@@ -2929,7 +2929,10 @@ window.KIT=KIT;
      16. Version 12: no Reveal answer on the projector (Show answers does that). A student who goes past the teacher's
         slide sees "You are ahead of your teacher" on any slide: a stop with Follow on, a note at the bottom with
         Follow off. Following is quicker: the projector tells Live Board the moment its slide changes, and a student's
-        iPad checks in every 3 seconds all through a lesson, and straight after the student changes slide. */
+        iPad checks in every 3 seconds all through a lesson, and straight after the student changes slide.
+     17. Version 13: no class list on the iPad. With Live Board release 26 the sign-in has the classes only: the
+        student types their own name and PIN, checked together. With an older Live Board the list of names still
+        works, but it is kept in memory only, and a copy kept on the iPad before is removed. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -2937,7 +2940,7 @@ window.KIT=KIT;
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 12;
+  var VERSION = 13;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -2946,6 +2949,7 @@ window.KIT=KIT;
     }
   } catch (e) { /* nothing to add */ }
   var ID_KEY = 'liveboard.identity', ROSTER_KEY = 'liveboard.roster', DEV_KEY = 'liveboard.device';
+  try { window.localStorage.removeItem(ROSTER_KEY); } catch (e) { /* none kept */ }   // version 13: never kept on the iPad
   var PRES_KEY = 'liveboard.presenter', PRES_CLS = 'liveboard.presenterClass';
   var DWELL_KEY = 'liveboard.dwell:' + (cfg.topicId || '');
   var original = window.fetch;
@@ -3348,26 +3352,22 @@ window.KIT=KIT;
   var whoLine = el('div', 'lbx-who');
   if (identityBlock) { identityBlock.style.display = 'none'; identityBlock.parentNode.insertBefore(whoLine, identityBlock.nextSibling); }
 
+  // Version 13: the classes (and, from a Live Board before release 26, the names) are kept in memory only.
+  var typedSignIn = false;
   function loadRoster() {
-    var c0 = readJ(ROSTER_KEY);
-    if (c0 && Array.isArray(c0.classes) && c0.classes.length && Date.now() - (c0.at || 0) < 12 * 3600000 && c0.v === 8) {
-      roster = c0.classes;
-      return Promise.resolve(roster);
-    }
+    if (roster) return Promise.resolve(roster);
     return api({ api: 'roster' }).then(function (r) {
       if (!r || !r.ok || !Array.isArray(r.classes)) throw new Error('bad reply');
+      typedSignIn = !!r.typed || !r.classes.some(function (c) { return c.names && c.names.length; });
       roster = r.classes;
-      writeJ(ROSTER_KEY, { at: Date.now(), classes: roster, v: 8 });
       return roster;
     }).catch(function (err) {
-      var c = readJ(ROSTER_KEY);
-      if (c && Array.isArray(c.classes) && c.classes.length) { roster = c.classes; return roster; }
       var e = new Error('no class list'); e.kind = err && err.kind; throw e;
     });
   }
   function onList(id) {
-    if (!roster) return true;
-    return roster.some(function (c) { return c.cls === id.cls && c.names.indexOf(id.name) >= 0; });
+    if (!roster || typedSignIn) return true;
+    return roster.some(function (c) { return c.cls === id.cls && (c.names || []).indexOf(id.name) >= 0; });
   }
 
   function setDeckProfile(id) {
@@ -3392,7 +3392,7 @@ window.KIT=KIT;
       if (reviseWanted) { reviseWanted = false; setTimeout(openRevise, 700); }
     } else {
       whoLine.appendChild(document.createTextNode('Your answers are not being saved yet.'));
-      var go = el('button', '', 'Choose your name');
+      var go = el('button', '', 'Sign in');
       go.type = 'button';
       go.addEventListener('click', function () { openGate(); });
       whoLine.appendChild(go);
@@ -3434,6 +3434,35 @@ window.KIT=KIT;
       s1.appendChild(new Option('Choose your class', ''));
       roster.forEach(function (c) { s1.appendChild(new Option(c.cls, c.cls)); });
       s1.disabled = false;
+      if (typedSignIn) typedForm();
+    }
+    // Version 13: Live Board release 26 sends no names. The student types their own name and PIN, checked together.
+    function typedForm() {
+      p.querySelector('p').textContent = 'Choose your class, type your name, then your own PIN.';
+      var nm = el('input', 'lbx-name'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = 'Your full name, as on the class list';
+      nm.setAttribute('autocapitalize', 'words'); nm.spellcheck = false;
+      l2.replaceChild(nm, s2);
+      var l3 = el('label', '', 'PIN'), pin = el('input', 'lbx-pin'); pin.type = 'password'; pin.inputMode = 'numeric'; pin.maxLength = 4; pin.autocomplete = 'off';
+      l3.appendChild(pin); p.insertBefore(l3, row);
+      var go2 = el('button', 'lbx-go', 'Sign in'); go2.type = 'button'; go2.disabled = true; row.replaceChild(go2, go); go = go2;
+      var more = el('a', 'lbx-ms', 'First time, or forgot your PIN? Open learnwithmrcedric'); more.href = MS_URL; more.target = '_blank'; more.rel = 'noopener';
+      var links = el('div', 'lbx-links'); links.appendChild(more); p.insertBefore(links, msg.nextSibling);
+      var ready = function () { go.disabled = !(s1.value && nm.value.trim() && pin.value.length === 4); };
+      var send = function () {
+        if (go.disabled) return;
+        go.disabled = true; msg.textContent = '';
+        api({ api: 'st', op: 'signin', cls: s1.value, name: nm.value.trim(), pin: pin.value }).then(function (x) {
+          if (!x || !x.ok || !x.st) { msg.textContent = (x && x.error) || 'That did not work. Try again.'; pin.value = ''; ready(); pin.focus(); return; }
+          lockIn({ cls: x.cls, name: x.name, st: x.st });
+        }).catch(function (err) { ready(); failNote(msg, err, 'Signing in'); });
+      };
+      s1.addEventListener('change', ready);
+      nm.addEventListener('input', ready);
+      nm.addEventListener('keydown', function (e) { if (e.key === 'Enter') pin.focus(); });
+      pin.addEventListener('input', function () { pin.value = pin.value.replace(/\D/g, '').slice(0, 4); ready(); if (pin.value.length === 4 && !go.disabled) send(); });
+      pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+      go.addEventListener('click', send);
+      setTimeout(function () { (s1.value ? nm : s1).focus(); }, 50);
     }
     s1.addEventListener('change', function () {
       s2.innerHTML = '';
@@ -3524,7 +3553,7 @@ window.KIT=KIT;
     writeJ(OLD_KEY, null);
     setMode('wait');
     showWho(null);
-    openGate('You have been signed out. Choose your name and type your PIN.');
+    openGate('You have been signed out. Sign in again with your PIN.');
   }
   /* The teacher's PIN, for something only the teacher may do on this iPad. */
   function askPinFor(done) {
@@ -4093,7 +4122,7 @@ window.KIT=KIT;
         if (S && typeof S.sync === 'function') Promise.resolve().then(function () { return S.sync(); }).catch(function () {});
         return;
       }
-    } else { writeJ(RESET_KEY, null); showWho(null); openGate('Your teacher has reset the name on this iPad. Choose your name.'); }
+    } else { writeJ(RESET_KEY, null); showWho(null); openGate('Your teacher has reset the name on this iPad. Sign in again.'); }
   }
   setInterval(function () { if (readJ(RESET_KEY) && readJ(ID_KEY) && !pendingCount()) resetHere(); }, 3000);
 
@@ -4646,7 +4675,7 @@ window.KIT=KIT;
     var me = readJ(ID_KEY), line;
     if (!stateKnown()) line = 'See your mistakes and practise this lesson again.';
     else if (heldNow()) line = 'Opens when your teacher shows the answers.';
-    else if (!me || !me.cls) line = 'Practise the questions again. Choose your name to keep a list of your mistakes.';
+    else if (!me || !me.cls) line = 'Practise the questions again. Sign in to keep a list of your mistakes.';
     else {
       var m = mistakes();
       line = (m.todo.length ? m.todo.length + (m.todo.length === 1 ? ' mistake' : ' mistakes') + ' to put right. '
@@ -4730,7 +4759,7 @@ window.KIT=KIT;
     if (acts.children.length) body.appendChild(acts);
     var sec = el('div', 'lbv-sec lbv-mine');
     sec.appendChild(el('h3', '', 'My mistakes'));
-    if (!signed) sec.appendChild(el('p', '', 'Choose your name on this iPad to keep a list of the questions you get wrong.'));
+    if (!signed) sec.appendChild(el('p', '', 'Sign in on this iPad to keep a list of the questions you get wrong.'));
     else if (state === 'loading') sec.appendChild(el('p', 'lbv-wait', 'Getting your list…'));
     else {
       if (state === 'offline') sec.appendChild(el('p', 'lbv-note', 'Live Board did not send your full list, so this shows the answers given on this iPad.'));
@@ -5072,7 +5101,7 @@ window.KIT=KIT;
         api({ api: 'st', op: 'me', st: handed.st }).then(function (r) {
           if (r && r.ok) { lockIn({ cls: r.cls, name: r.name, st: handed.st }); return; }
           if (id && id.st) go(id);
-          else { showWho(null); openGate('Your sign-in has run out. Choose your name and type your PIN.'); }
+          else { showWho(null); openGate('Your sign-in has run out. Sign in again with your PIN.'); }
         }).catch(function () { if (id && id.st) go(id); else lockIn(handed); });
         return;
       }
