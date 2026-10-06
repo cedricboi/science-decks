@@ -1,7 +1,7 @@
 {
   "build": "2026-10-16-privacy",
   "seq": 26,
-  "ref": "main",
+  "ref": "f7b3d4f1a1ce245e5680d84326f234f3dac11c1b",
   "title": "learnwithmrcedric: students' names stay in your sheets",
   "notes": [
     "Students' names stay in your sheets: students sign in by typing their own name and PIN (no class list is sent to iPads, and the slides keep none)",
@@ -87,7 +87,7 @@
     {
       "seq": 26,
       "build": "2026-10-16-privacy",
-      "ref": "main",
+      "ref": "f7b3d4f1a1ce245e5680d84326f234f3dac11c1b",
       "needsServer": 26,
       "files": [
         {
