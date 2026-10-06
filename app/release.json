@@ -1,7 +1,7 @@
 {
   "build": "2026-10-15-chapters",
   "seq": 25,
-  "ref": "main",
+  "ref": "05faca05602fd50c0559dbdc71cd969247fc56c7",
   "title": "learnwithmrcedric: the Hub as before, with a page for each chapter",
   "notes": [
     "The Teacher Hub as before (Home, Lessons, Homework, Students, with All in the class switch), with one change: in Lessons each chapter opens a page of its own, with Teach for each lesson and the homework linked to each part"
@@ -84,7 +84,7 @@
     {
       "seq": 25,
       "build": "2026-10-15-chapters",
-      "ref": "main",
+      "ref": "05faca05602fd50c0559dbdc71cd969247fc56c7",
       "needsServer": 24,
       "files": [
         {
