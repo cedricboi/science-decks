@@ -1,0 +1,159 @@
+{
+ "about": "The Spreadsheet Coaches for learnwithmrcedric's Computing page (Teacher Hub > Computing). Each Coach is one sub-chapter, and its parts are the file checkers inside it. The files themselves are private: they sit in the teacher's Drive (Worksheet Hub > Computing > Coaches and task files), so this list holds only their names.",
+ "coaches": [
+  {
+   "id": "8.1",
+   "title": "Entering Data",
+   "chapter": "Chapter 8 Spreadsheets",
+   "file": "Spreadsheet Coach 8.1.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "FLORIST.xlsx",
+    "BAKERY.xlsx",
+    "BOOKFAIR.xlsx",
+    "STATIONERY_JunWei.xlsx",
+    "JUICE.xlsx"
+   ]
+  },
+  {
+   "id": "8.2",
+   "title": "Validating Data",
+   "chapter": "Chapter 8 Spreadsheets",
+   "file": "Spreadsheet Coach 8.2.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "PATIENTS.xlsx",
+    "NAPFA.xlsx",
+    "SWIMMING.xlsx",
+    "FUNRUN_Priya.xlsx",
+    "PLANTS.xlsx"
+   ]
+  },
+  {
+   "id": "8.3",
+   "title": "Organising Data",
+   "chapter": "Chapter 8 Spreadsheets",
+   "file": "Spreadsheet Coach 8.3.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "WASTE_DISPOSED.xlsx",
+    "NLB.xlsx",
+    "HAWKER.xlsx",
+    "LIBRARY_Priya.xlsx",
+    "BOOKFAIR_SALES.xlsx"
+   ]
+  },
+  {
+   "id": "8.4",
+   "title": "Charts",
+   "chapter": "Chapter 8 Spreadsheets",
+   "file": "Spreadsheet Coach 8.4.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "copilot2",
+     "P2b Stacked"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "pi",
+     "P5 Income Charts"
+    ],
+    [
+     "pm",
+     "P6 Museum Chart"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "ACTIVITY.xlsx",
+    "COLLECTION.xlsx",
+    "TICKETS.xlsx",
+    "RAINFALL_Priya.xlsx",
+    "INCOME.xlsx",
+    "MUSEUM.xlsx",
+    "CANTEEN_SALES.xlsx"
+   ]
+  }
+ ]
+}

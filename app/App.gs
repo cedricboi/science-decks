@@ -13,8 +13,9 @@
 //   /exec?teacher         the Teacher Hub
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
+//   /exec?computing       the computing page for students: their Spreadsheet Coaches and files (ComputingCode.gs)
 
-var APP_BUILD = '2026-10-16-privacy';
+var APP_BUILD = '2026-10-21-computing';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -25,6 +26,7 @@ function doGet(e) {
   }
   if (p.view === 'teacher') return lbDoGet_(e);
   if (p.projector !== undefined) return projectorPage_(e);
+  if (p.computing !== undefined) return cmpPage_(e);
   if (p.teacher !== undefined) return hubDoGet_(e);
   if (p.embed === 'ms' || p.hw !== undefined || p.preview !== undefined) return hubDoGet_(e);
   return lbDoGet_(e);
@@ -36,6 +38,8 @@ function doPost(e) {
   // Claude's marking (it signs its requests with the Hub's Claude key). Live Board and the Teacher Hub call each
   // other directly now, so their old links ('hub', 'lb_class') are not answered from outside any more.
   if (d && d.api === 'lb_class') return appJson_({ ok: false, error: 'Unknown request.' });
+  // The Spreadsheet Coaches: sign in, save a checked Excel file, list files (ComputingCode.gs).
+  if (d && d.api === 'cmp') return appJson_(appSafe_(function () { return cmpPost_(d); }));
   if (d && !d.api && d.action && d.key && d.version == null) return hubDoPost_(e);
   // The projector screen (a page on the lesson site), and the slides on the projector checking in.
   if (d && /^pj(pair|teach|parts)?$/.test(String(d.api || ''))) return appJson_(appSafe_(function () { return projectorPost_(d); }));
@@ -999,7 +1003,7 @@ function menuSetupCheck() {
 /* Show my links (sheet menu): the addresses of everything. */
 function showLinks() {
   var url = selfUrl_();
-  var rows = url ? [['Teacher Hub (bookmark this)', url + '?teacher'], ['learnwithmrcedric, for students', url], ['Live Board teacher page', url + '?view=teacher'], ['Projector screen (on the laptop)', projectorUrl_() + '#app=' + encodeURIComponent(url)]] : [];
+  var rows = url ? [['Teacher Hub (bookmark this)', url + '?teacher'], ['learnwithmrcedric, for students', url], ['Computing, for students (Spreadsheet Coaches)', url + '?computing'], ['Live Board teacher page', url + '?view=teacher'], ['Projector screen (on the laptop)', projectorUrl_() + '#app=' + encodeURIComponent(url)]] : [];
   var html = '<div style="font:14px Arial,sans-serif;line-height:1.5">' + (rows.length ? rows.map(function (r) {
     return '<p style="margin:0 0 10px"><b>' + esc_(r[0]) + '</b><br><a href="' + esc_(r[1]) + '" target="_blank">' + esc_(r[1]) + '</a></p>';
   }).join('') : '<p>The web address is not known yet. Deploy, then learnwithmrcedric > Change the web app link.</p>') + '</div>';
@@ -1013,7 +1017,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 26;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 28;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1054,7 +1058,7 @@ function api_t_updateUndo(token) { teacher_(token); throw new Error('Updates are
 // owner's switch, PAGES_LOCAL) means the copy pasted into this script, which always works.
 var PAGES_REPO = 'cedricboi/science-decks', PAGES_RAW = 'https://raw.githubusercontent.com/';
 var PAGES_REL_SECS = 600, PAGES_KEEP_SECS = 21600, PAGES_CHUNK = 90000;
-var PAGE_NAMES = ['Teacher', 'Student', 'HubTeacher', 'Homework', 'Guide', 'Rewards', 'Ink', 'Styles'];
+var PAGE_NAMES = ['Teacher', 'Student', 'HubTeacher', 'Homework', 'Guide', 'Rewards', 'Ink', 'Styles', 'Computing'];
 var PAGE_MEMO_ = {};   // for this request only: the page set chosen, and each page's text
 
 /* The release list from the lesson site (only what the pages need), cached ten minutes. null: none to use.

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<script>
+  /* Light or dark: this device's own setting, unless Look chose the other. Shared with every learnwithmrcedric page. */
+  (function () {
+    var K = 'ms_theme', root = document.documentElement, mem = '';
+    function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { } return v === 'dark' || v === 'light' ? v : ''; }
+    function device() { return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    function now() { return chosen() || device(); }
+    function store(v) { mem = v || ''; try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) { } }
+    function apply() { root.setAttribute('data-theme', now()); }
+    window.msTheme = { now: now, chosen: chosen, apply: apply, set: function (v) { store(v === 'dark' || v === 'light' ? v : ''); apply(); } };
+    apply();
+    if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', apply); }
+    window.addEventListener('storage', function (e) { if (!e.key || e.key === K) apply(); });
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<title>Computing · learnwithmrcedric</title>
+<style>
+  :root {
+    --ink: #1B1F3B; --ink-2: #474D6B; --muted: #5A607D; --line: #DCE2EE; --canvas: #EEF2F8; --card: #FFFFFF; --soft: #F5F7FB;
+    --blue: #2F5BFF; --blue-ink: #1F45D6; --blue-soft: #E6ECFF; --hl: #FFE45C; --ok: #0B7A4E; --ok-soft: #E2F6EC; --bad: #C62F36; --bad-soft: #FDECEA;
+    --amber: #8A5A00; --amber-soft: #FFF3CC; --navy: #26305C; --xl: #1D6F42;
+    --display: 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  [data-theme="dark"] {
+    --ink: #EEF1FA; --ink-2: #C9CEE6; --muted: #9AA1C2; --line: #2E3560; --canvas: #0F132B; --card: #1B2044; --soft: #222955;
+    --blue-soft: #263566; --blue-ink: #9FB4FF; --ok: #4CC38A; --ok-soft: #153C2E; --bad-soft: #4A1E22; --amber: #F2C35B; --amber-soft: #3B3015; --navy: #0B1030;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { font-family: var(--body); color: var(--ink); background: var(--canvas); -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; }
+  button, select, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .hidden { display: none !important; }
+  h1, h2, h3 { font-family: var(--display); letter-spacing: -.01em; margin: 0; }
+  .btn { height: 52px; padding: 0 22px; border-radius: 26px; border: none; background: var(--ink); color: var(--canvas); font-weight: 700; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; white-space: nowrap; }
+  [data-theme="dark"] .btn { background: #EEF1FA; color: #1B1F3B; }
+  .btn.blue, [data-theme="dark"] .btn.blue { background: var(--blue); color: #fff; }
+  .btn.ghost, [data-theme="dark"] .btn.ghost { background: var(--card); color: var(--ink); border: 2px solid var(--line); }
+  .btn.small { height: 42px; padding: 0 16px; font-size: 15px; border-radius: 21px; }
+  .btn.big { height: 64px; padding: 0 34px; font-size: 20px; border-radius: 32px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .msg { border-radius: 14px; padding: 12px 14px; font-size: 15px; background: var(--bad-soft); color: var(--bad); font-weight: 700; }
+  .msg.info { background: var(--blue-soft); color: var(--blue-ink); }
+  .card { background: var(--card); border-radius: 24px; padding: 20px 22px; }
+  .quiet { color: var(--muted); font-size: 16px; }
+  .link { border: none; background: transparent; color: var(--blue-ink); font-weight: 700; font-size: 16px; padding: 6px; text-decoration: none; }
+  .iconbtn { width: 44px; height: 44px; border-radius: 22px; border: 1px solid var(--line); background: var(--card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--ink); }
+
+  /* ---------- portal ---------- */
+  #v-portal { min-height: 100vh; display: flex; }
+  .po-art { width: 40%; max-width: 470px; min-width: 300px; position: relative; background: #1B1F3B; color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 36px; overflow: hidden; }
+  .po-art img.hero { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .po-art .fade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(27,31,59,.55) 0%, rgba(27,31,59,.05) 30%, rgba(27,31,59,.1) 55%, rgba(27,31,59,.85) 100%); }
+  .po-art .gridart { position: absolute; right: -40px; top: 120px; width: 360px; height: 360px; opacity: .14; }
+  .po-art > div { position: relative; }
+  .po-brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-size: 24px; }
+  .po-brand .mark { width: 56px; height: 56px; border-radius: 16px; background: var(--xl); display: flex; align-items: center; justify-content: center; }
+  .po-art h1 { font-size: 40px; line-height: 1.05; font-weight: 800; margin-bottom: 10px; }
+  .po-art .sub { font-size: 17px; color: #C9CEE6; }
+  .po-main { flex: 1 1 0; min-width: 0; padding: 36px 40px; display: flex; flex-direction: column; gap: 18px; }
+  .po-main h2 { font-size: 30px; font-weight: 800; }
+  .po-head { display: flex; align-items: center; gap: 12px; }
+  .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-content: start; max-width: 640px; }
+  .chip { height: 96px; border-radius: 22px; border: none; background: var(--card); font-family: var(--display); font-weight: 800; font-size: 32px; box-shadow: 0 4px 14px rgba(27,31,59,.08); }
+  .field { display: flex; flex-direction: column; gap: 8px; font-weight: 700; font-size: 15px; }
+  .field input, .field select { height: 56px; border-radius: 16px; border: 1px solid var(--line); background: var(--card); padding: 0 16px; font-size: 19px; font-weight: 400; width: 100%; }
+  .field .note { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .po-form { max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
+  .pinwrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .dots { display: flex; gap: 18px; }
+  .dots span { width: 22px; height: 22px; border-radius: 11px; border: 2px solid var(--muted); }
+  .dots span.on { background: var(--ink); border-color: var(--ink); }
+  .keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 330px; max-width: 100%; }
+  .keys button { height: 64px; border-radius: 18px; border: none; background: var(--card); font-family: var(--display); font-weight: 600; font-size: 26px; }
+  .keys button.del { background: transparent; }
+  .po-links { display: flex; flex-wrap: wrap; gap: 4px 18px; justify-content: center; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .tile { background: var(--card); border-radius: 22px; padding: 20px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; border: none; color: var(--ink); }
+  .tile .t { font-family: var(--display); font-weight: 800; font-size: 22px; }
+
+  /* ---------- app ---------- */
+  #v-app { min-height: 100vh; }
+  header.bar { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--line); }
+  .bar-in { max-width: 1120px; margin: 0 auto; padding: 12px 28px; display: flex; align-items: center; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-size: 20px; }
+  .brand .mark { width: 44px; height: 44px; border-radius: 14px; background: var(--xl); display: flex; align-items: center; justify-content: center; }
+  .spacer { flex: 1 1 0; }
+  .who { text-align: right; line-height: 1.2; font-size: 15px; color: var(--muted); }
+  .who b { color: var(--ink); font-size: 16px; }
+  .seg { display: flex; gap: 4px; padding: 4px; background: var(--canvas); border-radius: 22px; }
+  .seg button { height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: transparent; color: var(--ink-2); font-weight: 700; font-size: 14px; }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(27,31,59,.15); }
+  main.app { max-width: 1120px; margin: 0 auto; padding: 28px 28px 48px; display: flex; flex-direction: column; gap: 22px; }
+  .hero { background: #1B1F3B; color: #fff; border-radius: 28px; padding: 30px 34px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; position: relative; overflow: hidden; }
+  .hero .body { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .hero h1 { font-size: 38px; line-height: 1.05; font-weight: 800; }
+  .hero .lead { font-size: 18px; color: #E3EAFF; }
+  .hero .gridart { position: absolute; right: -30px; top: -40px; width: 260px; height: 260px; opacity: .12; }
+  .pill { align-self: flex-start; background: var(--hl); color: #1B1F3B; font-weight: 700; font-size: 15px; padding: 7px 14px; border-radius: 999px; }
+  h2.h { font-size: 26px; font-weight: 800; }
+  .coaches { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .coach { display: flex; flex-direction: column; gap: 14px; }
+  .coach-top { display: flex; align-items: center; gap: 14px; }
+  .badge { flex: none; width: 64px; height: 64px; border-radius: 18px; background: var(--blue-soft); color: var(--blue-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 20px; }
+  .coach-top h3 { font-size: 21px; line-height: 1.15; }
+  .coach-top .s { font-size: 15px; color: var(--muted); }
+  .meter { height: 12px; border-radius: 6px; background: var(--soft); overflow: hidden; }
+  .meter b { display: block; height: 100%; background: var(--ok); border-radius: 6px; }
+  .prog { font-size: 15px; color: var(--ink-2); margin-top: 6px; }
+  .tf { border-top: 2px dashed var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .tf .kicker { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
+  .tfl { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tfl button { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--soft); font-size: 14px; font-weight: 700; color: var(--ink); }
+  .tfl button i { width: 22px; height: 22px; border-radius: 6px; background: var(--xl); color: #fff; font-style: normal; font-size: 12px; display: flex; align-items: center; justify-content: center; font-family: var(--display); }
+  .howto { display: flex; gap: 12px; align-items: flex-start; background: var(--blue-soft); color: var(--blue-ink); border-radius: 18px; padding: 14px 16px; font-size: 15px; font-weight: 700; }
+  .files { display: flex; flex-direction: column; gap: 18px; }
+  .fgroup h3 { font-size: 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .fgroup h3 span { font-size: 14px; background: var(--blue-soft); color: var(--blue-ink); border-radius: 999px; padding: 3px 10px; }
+  .frow { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .frow:first-of-type { border-top: 0; }
+  .xl { width: 44px; height: 44px; border-radius: 12px; background: var(--xl); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; flex: none; }
+  .ftxt { flex: 1 1 0; min-width: 0; }
+  .ftxt .t { font-weight: 700; font-size: 17px; }
+  .ftxt .s { font-size: 14px; color: var(--muted); }
+  .score { border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 15px; background: var(--soft); color: var(--ink-2); white-space: nowrap; }
+  .score.full { background: var(--ok-soft); color: var(--ok); }
+  .score.part { background: var(--amber-soft); color: var(--amber); }
+  .score.low { background: var(--bad-soft); color: var(--bad); }
+  details.older summary { cursor: pointer; color: var(--blue-ink); font-weight: 700; font-size: 14px; padding: 2px 0 8px 58px; }
+  details.older .frow { padding-left: 58px; border-top: 1px dashed var(--line); }
+  .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 28px 16px; color: var(--muted); }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--canvas); padding: 12px 18px; border-radius: 999px; font-weight: 700; z-index: 90; max-width: 90vw; text-align: center; }
+  .lookcard { display: none; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .load { min-height: 100vh; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 18px; }
+
+  @media (max-width: 900px) {
+    #v-portal { flex-direction: column; }
+    .po-art { width: 100%; max-width: none; min-width: 0; min-height: 190px; padding: 24px; }
+    .po-art h1 { font-size: 28px; }
+    .po-main { padding: 20px 16px; }
+    .bar-in { padding: 10px 16px; }
+    .who, .bar .seg { display: none; }
+    .lookcard { display: flex !important; }
+    main.app { padding: 16px; gap: 16px; }
+    .hero { padding: 22px; } .hero h1 { font-size: 28px; }
+    .grid2, .two { grid-template-columns: 1fr; }
+    .frow { flex-wrap: wrap; }
+    .frow .ftxt { flex-basis: calc(100% - 60px); }
+  }
+</style>
+</head>
+<body>
+<div id="v-load" class="load">Opening…</div>
+
+<!-- ============ PORTAL ============ -->
+<div id="v-portal" class="hidden">
+  <aside class="po-art">
+    <img class="hero" alt="" id="po-hero">
+    <div class="fade"></div>
+    <svg class="gridart" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+    <div class="po-brand"><span class="mark"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></span><span>Computing</span></div>
+    <div><h1>Excel, one step at a time.</h1><div class="sub">Assumption English School · G1 Computing</div></div>
+  </aside>
+  <main class="po-main">
+    <div id="po-msg" class="msg hidden"></div>
+
+    <section id="po-student">
+      <div class="po-head"><button class="iconbtn hidden" id="po-back" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2 id="po-title">Tap your computing class</h2></div>
+      <div id="st-class" class="chips" style="margin-top:18px"></div>
+      <div id="st-name" class="po-form hidden" style="margin-top:18px">
+        <label class="field">Your name<input id="in-name" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your full name, as on the class list"><span class="note">Type it the way it is on the class list.</span></label>
+        <button class="btn" id="btn-name">Next</button>
+      </div>
+      <div id="st-pin" class="pinwrap hidden" style="margin-top:18px">
+        <div class="dots" id="pin-dots"><span></span><span></span><span></span><span></span></div>
+        <div class="keys" id="pin-keys"></div>
+        <button class="btn big" id="btn-signin" disabled>Sign in</button>
+      </div>
+      <div class="po-links" style="margin-top:22px">
+        <button class="link" id="lnk-first">First time here? Set up my PIN</button>
+        <button class="link" id="lnk-forgot">Forgot my PIN</button>
+      </div>
+      <p class="quiet" style="text-align:center;margin:6px 0 0">Your computing PIN is your own. It is not your Science PIN.</p>
+    </section>
+
+    <section id="po-form" class="hidden">
+      <div class="po-head"><button class="iconbtn" id="form-back" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2 id="form-title"></h2></div>
+      <div class="po-form" id="form-box" style="margin-top:18px"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="v-app" class="hidden">
+  <header class="bar"><div class="bar-in">
+    <div class="brand"><span class="mark"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></span><span>Computing</span></div>
+    <span class="spacer"></span>
+    <div class="seg look" aria-label="Look"><button data-v="light">Day</button><button data-v="dark">Night</button><button data-v="">Same as laptop</button></div>
+    <div class="who" id="who"></div>
+    <button class="iconbtn" id="btn-out" aria-label="Sign out" title="Sign out"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button>
+  </div></header>
+  <main class="app">
+    <section class="hero">
+      <svg class="gridart" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      <div class="body"><span class="pill" id="hero-pill"></span><h1 id="hero-h"></h1><div class="lead">Download a Coach, open it next to Excel, and every file you check is kept here.</div></div>
+    </section>
+    <h2 class="h">Your Coaches</h2>
+    <div class="howto"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg><span>Open the Coach you download, then sign in once inside it with this class, name and PIN. After that, each file you check is saved here.</span></div>
+    <div class="coaches" id="coaches"></div>
+    <h2 class="h">Your files</h2>
+    <div class="files" id="files"></div>
+    <section class="card lookcard"><b>Look</b><div class="seg look" aria-label="Look"><button data-v="light">Day</button><button data-v="dark">Night</button><button data-v="">Same as laptop</button></div></section>
+  </main>
+</div>
+<div id="toast" class="hidden" role="status"></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var K = 'cmp_ct', LAST = 'cmp_last';
+  var info = null, home = null, st = { cls: '', name: '', pin: '' }, last = load(LAST) || {};
+  var ART = 'https://cedricboi.github.io/science-decks/art/';
+  function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function call(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) { reject(new Error(String((e && e.message) || e || 'Something went wrong. Try again.').replace(/^Error:\s*/, ''))); });
+      r[fn].apply(r, args);
+    });
+  }
+  function toast(t) { var n = $('toast'); n.textContent = t; n.classList.remove('hidden'); clearTimeout(toast.t); toast.t = setTimeout(function () { n.classList.add('hidden'); }, 2600); }
+  function view(v) { ['v-load', 'v-portal', 'v-app'].forEach(function (x) { $(x).classList.toggle('hidden', x !== v); }); window.scrollTo(0, 0); }
+  function poMsg(t, inf) { var m = $('po-msg'); m.textContent = t || ''; m.className = 'msg' + (inf ? ' info' : '') + (t ? '' : ' hidden'); }
+  function firstName(n) { return String(n || '').trim().split(/\s+/)[0] || ''; }
+  function ago(t) {
+    var s = Math.max(0, (Date.now() - t) / 1000);
+    if (s < 60) return 'just now'; if (s < 3600) return Math.round(s / 60) + ' min ago'; if (s < 86400) return Math.round(s / 3600) + ' h ago';
+    return new Date(t).toLocaleDateString([], { day: 'numeric', month: 'short' }) + ', ' + new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  (function () { var h = $('po-hero'); h.addEventListener('error', function () { h.classList.add('hidden'); }); h.src = ART + 'computing-hero.webp'; })();
+  var DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
+
+  /* ---------- sign in: class, name, PIN keypad ---------- */
+  function stStep(step) {
+    poMsg('');
+    $('po-back').classList.toggle('hidden', step === 'class');
+    $('st-class').classList.toggle('hidden', step !== 'class');
+    $('st-name').classList.toggle('hidden', step !== 'name');
+    $('st-pin').classList.toggle('hidden', step !== 'pin');
+    if (step === 'class') {
+      $('po-title').textContent = 'Tap your computing class';
+      var box = $('st-class'); box.innerHTML = '';
+      (info.classes || []).forEach(function (c) { var b = el('button', 'chip', c); b.type = 'button'; b.addEventListener('click', function () { st.cls = c; stStep('name'); }); box.appendChild(b); });
+      if (!(info.classes || []).length) box.appendChild(el('p', 'quiet', 'No computing classes yet. Tell your teacher.'));
+    } else if (step === 'name') {
+      $('po-title').textContent = st.cls + ' · Type your name';
+      $('in-name').value = st.name || ''; setTimeout(function () { $('in-name').focus(); }, 60);
+    } else { $('po-title').textContent = 'Hi ' + firstName(st.name) + ', your PIN'; st.pin = ''; pinDraw(); }
+  }
+  function portal(note) {
+    view('v-portal'); $('po-student').classList.remove('hidden'); $('po-form').classList.add('hidden');
+    st = { cls: last.cls || '', name: last.name || '', pin: '' };
+    stStep('class'); if (note) poMsg(note, true);
+  }
+  $('po-back').addEventListener('click', function () { if (!$('st-pin').classList.contains('hidden')) stStep('name'); else stStep('class'); });
+  $('btn-name').addEventListener('click', function () { var n = $('in-name').value.trim(); if (!n) { poMsg('Type your name.'); return; } st.name = n; stStep('pin'); });
+  $('in-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btn-name').click(); });
+  (function () {
+    var k = $('pin-keys');
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].forEach(function (x) {
+      if (x === '') { k.appendChild(el('div')); return; }
+      var b = el('button', x === 'del' ? 'del' : '', x === 'del' ? '' : x); b.type = 'button';
+      if (x === 'del') { b.setAttribute('aria-label', 'Delete'); b.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>'; }
+      b.addEventListener('click', function () { if (x === 'del') st.pin = st.pin.slice(0, -1); else if (st.pin.length < 4) st.pin += x; pinDraw(); });
+      k.appendChild(b);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ($('st-pin').classList.contains('hidden') || $('v-portal').classList.contains('hidden')) return;
+      if (/^[0-9]$/.test(e.key) && st.pin.length < 4) { st.pin += e.key; pinDraw(); }
+      else if (e.key === 'Backspace') { st.pin = st.pin.slice(0, -1); pinDraw(); }
+      else if (e.key === 'Enter') siSend();
+    });
+  })();
+  function pinDraw() { var d = $('pin-dots').children; for (var i = 0; i < 4; i++) d[i].classList.toggle('on', i < st.pin.length); $('btn-signin').disabled = st.pin.length !== 4; }
+  function siSend() {
+    if (st.pin.length !== 4) return;
+    var b = $('btn-signin'); b.disabled = true; b.textContent = 'Signing in…'; poMsg('');
+    call('apiCmpSignIn', st.cls, st.name, st.pin).then(signedIn)
+      .catch(function (e) { poMsg(e.message.replace('First time here? Choose Set up my PIN.', 'First time here? Choose Set up my PIN below.')); st.pin = ''; pinDraw(); }).then(function () { b.textContent = 'Sign in'; pinDraw(); });
+  }
+  $('btn-signin').addEventListener('click', siSend);
+  function signedIn(r) { store(K, r.ct); last = { cls: r.cls, name: r.name }; store(LAST, last); openHome(); }
+
+  /* ---------- first time, forgot ---------- */
+  function field(box, label, input, note) { var f = el('label', 'field', label); f.appendChild(input); if (note) f.appendChild(el('span', 'note', note)); box.appendChild(f); return input; }
+  function pinInput() { var i = el('input'); i.type = 'password'; i.inputMode = 'numeric'; i.maxLength = 4; i.autocomplete = 'off'; i.addEventListener('input', function () { i.value = i.value.replace(/\D/g, '').slice(0, 4); }); return i; }
+  function textInput(ph) { var i = el('input'); i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph; return i; }
+  function who(box) {
+    var cls = el('select'); cls.appendChild(new Option('Choose your class', '')); (info.classes || []).forEach(function (c) { cls.appendChild(new Option(c, c)); }); if (st.cls || last.cls) cls.value = st.cls || last.cls;
+    field(box, 'Your computing class', cls);
+    var name = textInput('Your full name, as on the class list'); name.setAttribute('autocapitalize', 'words'); name.maxLength = 80; name.value = st.name || last.name || '';
+    field(box, 'Your name', name);
+    return { check: function () { if (!cls.value) { poMsg('Choose your class.'); return false; } if (!name.value.trim()) { poMsg('Type your name.'); return false; } return true; }, val: function () { return { cls: cls.value, name: name.value.trim() }; } };
+  }
+  function qSelect(label) { var q = el('select'); q.appendChild(new Option(label, '')); (info.questions || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); }); return q; }
+  function formOpen(title, build) { $('po-student').classList.add('hidden'); $('po-form').classList.remove('hidden'); $('form-title').textContent = title; poMsg(''); var box = $('form-box'); box.innerHTML = ''; build(box); var f = box.querySelector('select, input'); if (f) setTimeout(function () { f.focus(); }, 60); window.scrollTo(0, 0); }
+  $('form-back').addEventListener('click', function () { portal(); });
+  $('lnk-first').addEventListener('click', function () {
+    formOpen('Set up your PIN', function (box) {
+      box.appendChild(el('p', 'quiet', 'Type your name as it is on the class list, and your register number to show it is you.'));
+      var w = who(box);
+      var reg = field(box, 'Your register number', textInput()); reg.inputMode = 'numeric';
+      var two = el('div', 'two'); box.appendChild(two);
+      var p1 = field(two, 'PIN (4 numbers)', pinInput()), p2 = field(two, 'PIN again', pinInput());
+      var q = field(box, 'A question only you can answer', qSelect('Choose a question'), 'If you forget your PIN, you answer this to set a new one.');
+      var ans = field(box, 'Your answer', textInput('An answer you will remember'));
+      var go = el('button', 'btn', 'Save and sign in'); go.type = 'button'; box.appendChild(go);
+      box.appendChild(el('p', 'quiet', 'No register number, or stuck? Ask Mr Cedric to reset your PIN.'));
+      go.addEventListener('click', function () {
+        if (!w.check()) return;
+        if (!reg.value.trim()) { poMsg('Type your register number.'); return; }
+        if (p1.value.length !== 4) { poMsg('Your PIN is 4 numbers.'); return; }
+        if (p1.value !== p2.value) { poMsg('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        if (q.value === '') { poMsg('Choose a question.'); return; }
+        if (ans.value.trim().length < 2) { poMsg('Type an answer to your question.'); return; }
+        var x = w.val(); go.disabled = true; go.textContent = 'Saving…';
+        call('apiCmpSetup', x.cls, x.name, reg.value, p1.value, Number(q.value), ans.value).then(function (r) { toast('Your PIN is set'); signedIn(r); })
+          .catch(function (e) { poMsg(e.message); go.disabled = false; go.textContent = 'Save and sign in'; });
+      });
+    });
+  });
+  $('lnk-forgot').addEventListener('click', function () {
+    formOpen('Forgot your PIN?', function (box) {
+      box.appendChild(el('p', 'quiet', 'Choose the question you picked when you set up your PIN, type your answer, then choose a new PIN.'));
+      var w = who(box);
+      var q = field(box, 'Your question', qSelect('Choose your question'));
+      var ans = field(box, 'Your answer', textInput('Your answer'));
+      var two = el('div', 'two'); box.appendChild(two);
+      var p1 = field(two, 'New PIN', pinInput()), p2 = field(two, 'New PIN again', pinInput());
+      var go = el('button', 'btn', 'Set my new PIN'); go.type = 'button'; box.appendChild(go);
+      box.appendChild(el('p', 'quiet', 'Forgot the answer too? Ask Mr Cedric to reset your PIN.'));
+      go.addEventListener('click', function () {
+        if (!w.check()) return;
+        if (q.value === '') { poMsg('Choose your question.'); return; }
+        if (!ans.value.trim()) { poMsg('Type the answer to your question.'); return; }
+        if (p1.value.length !== 4) { poMsg('Your new PIN is 4 numbers.'); return; }
+        if (p1.value !== p2.value) { poMsg('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        var x = w.val(); go.disabled = true; go.textContent = 'Saving…';
+        call('apiCmpForgot', x.cls, x.name, Number(q.value), ans.value, p1.value).then(function (r) { toast('Your new PIN is set'); signedIn(r); })
+          .catch(function (e) { poMsg(e.message); go.disabled = false; go.textContent = 'Set my new PIN'; });
+      });
+    });
+  });
+
+  /* ---------- home ---------- */
+  function scoreChip(f) {
+    if (f.score == null || f.of == null) return '<span class="score">Saved</span>';
+    var k = f.score === f.of ? 'full' : f.score * 2 >= f.of ? 'part' : 'low';
+    return '<span class="score ' + k + '">' + f.score + ' of ' + f.of + (f.score === f.of ? ' ✓' : '') + '</span>';
+  }
+  function renderHome() {
+    $('who').innerHTML = '<b>' + esc(home.name) + '</b><br>' + esc(home.cls);
+    $('hero-h').textContent = 'Hi, ' + firstName(home.name);
+    var by = {};
+    home.files.forEach(function (f) { (by[f.coach] = by[f.coach] || []).push(f); });
+    var parts = 0, done = 0;
+    $('coaches').innerHTML = home.coaches.length ? home.coaches.map(function (c) {
+      var mine = by[c.id] || [], d = c.parts.filter(function (p) { return mine.some(function (f) { return f.part === p[0] && f.score != null && f.score === f.of; }); }).length;
+      parts += c.parts.length; done += d;
+      var pct = c.parts.length ? Math.round(100 * d / c.parts.length) : 0;
+      return '<article class="card coach"><div class="coach-top"><span class="badge">' + esc(c.id) + '</span><div><h3>' + esc(c.title) + '</h3><div class="s">' + esc(c.chapter) + '</div></div></div>' +
+        '<div><div class="meter" aria-hidden="true"><b style="width:' + pct + '%"></b></div><div class="prog">' + d + ' of ' + c.parts.length + ' practice parts fully correct</div></div>' +
+        '<div><button type="button" class="btn blue" data-get="' + esc(c.id) + '" data-name="' + esc(c.file) + '">' + DOWN + 'Download the Coach</button></div>' +
+        (c.files.length ? '<div class="tf"><span class="kicker">TASK FILES</span><div class="tfl">' + c.files.map(function (f) {
+          return '<button type="button" data-get="' + esc(c.id) + '" data-name="' + esc(f) + '"><i>X</i>' + esc(f.replace(/\.xlsx$/i, '')) + '</button>';
+        }).join('') + '</div></div>' : '') + '</article>';
+    }).join('') : '<div class="card empty"><b>No Coach yet</b><span>Your teacher has not opened a Coach to your class yet.</span></div>';
+    $('hero-pill').textContent = parts ? done + ' of ' + parts + ' practice parts fully correct' : 'Computing ' + home.cls;
+    var order = home.coaches.map(function (c) { return c.id; });
+    Object.keys(by).forEach(function (k) { if (order.indexOf(k) < 0) order.push(k); });
+    var groups = order.filter(function (k) { return by[k]; });
+    $('files').innerHTML = groups.length ? groups.map(function (k) {
+      var c = home.coaches.filter(function (x) { return x.id === k; })[0], pmap = {}, porder = [];
+      by[k].forEach(function (f) { if (!pmap[f.part]) { pmap[f.part] = []; porder.push(f.part); } pmap[f.part].push(f); });
+      if (c) { var ids = c.parts.map(function (p) { return p[0]; }); porder.sort(function (a, b) { var x = ids.indexOf(a), y = ids.indexOf(b); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y); }); }
+      var row = function (x, main) {
+        return '<div class="frow">' + (main ? '<span class="xl">X</span>' : '') + '<div class="ftxt"><div class="t">' + esc(main ? x.partName : 'Try ' + x.n) + '</div><div class="s">' + (main ? 'Try ' + x.n + ' · ' : '') + esc(ago(x.t)) + '</div></div>' +
+          scoreChip(x) + '<button class="btn ghost small" type="button" data-dl="' + esc(x.id) + '">' + DOWN + 'Download</button></div>';
+      };
+      return '<section class="card fgroup"><h3><span>' + esc(k) + '</span>' + esc(c ? c.title : 'Coach ' + k) + '</h3>' + porder.map(function (p) {
+        var list = pmap[p];
+        return row(list[0], true) + (list.length > 1 ? '<details class="older"><summary>Earlier tries (' + (list.length - 1) + ')</summary>' + list.slice(1).map(function (x) { return row(x, false); }).join('') + '</details>' : '');
+      }).join('') + '</section>';
+    }).join('') : '<div class="card empty"><b>No files yet</b><span>When you drop a file into a Coach\'s file checker, it is kept here too.</span></div>';
+    Array.prototype.forEach.call(document.querySelectorAll('.look button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === (msTheme.chosen() || ''))); });
+  }
+  function openHome() {
+    var ct = load(K);
+    if (!ct) { portal(); return; }
+    if (!home) view('v-load');
+    call('apiCmpHome', ct).then(function (r) { home = r; renderHome(); view('v-app'); })
+      .catch(function (e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your PIN.'); } else { $('v-load').textContent = e.message; view('v-load'); } });
+  }
+  function save(name, b64, type) {
+    var bin = atob(b64), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    var url = URL.createObjectURL(new Blob([u], { type: type })), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+  function busy(b) { var h = b.innerHTML; b.disabled = true; b.textContent = 'Getting it…'; return function () { b.disabled = false; b.innerHTML = h; }; }
+  function signedOutNow(e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your PIN.'); return true; } return false; }
+  document.addEventListener('click', function (e) {
+    var g = e.target.closest('[data-get]'), d = e.target.closest('[data-dl]'), lk = e.target.closest('.look button');
+    if (lk) { msTheme.set(lk.getAttribute('data-v')); renderHome(); return; }
+    if (g) {
+      var done = busy(g);
+      call('apiCmpAsset', load(K), g.getAttribute('data-get'), g.getAttribute('data-name')).then(function (r) { save(r.name, r.data, r.type); toast(/\.html?$/i.test(r.name) ? 'Open it from your Downloads, then sign in inside it' : 'Saved to your Downloads'); })
+        .catch(function (e2) { if (!signedOutNow(e2)) toast(e2.message); }).then(done);
+    } else if (d) {
+      var done2 = busy(d);
+      call('apiCmpFile', load(K), d.getAttribute('data-dl')).then(function (r) { save(r.name, r.data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); })
+        .catch(function (e2) { if (!signedOutNow(e2)) toast(e2.message); }).then(done2);
+    }
+  });
+  $('btn-out').onclick = function () { store(K, null); home = null; portal('You are signed out on this laptop.'); };
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && home && load(K)) openHome(); });
+
+  call('apiCmpInfo').then(function (r) { info = r; if (load(K)) openHome(); else portal(); })
+    .catch(function (e) { $('v-load').textContent = e.message; });
+})();
+</script>
+</body>
+</html>

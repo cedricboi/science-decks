@@ -1,42 +1,202 @@
 {
-  "build": "2026-10-16-privacy",
-  "seq": 26,
-  "ref": "f7b3d4f1a1ce245e5680d84326f234f3dac11c1b",
-  "title": "learnwithmrcedric: the new student page",
+  "build": "2026-10-21-computing",
+  "seq": 28,
+  "ref": "REF_PENDING",
+  "title": "learnwithmrcedric: Computing and the Spreadsheet Coaches",
   "notes": [
-    "Students sign in through a portal (class, name, PIN keypad), then see Now, My file and Me",
-    "My file is a ring binder: lessons and worksheets filed by chapter, red tabs for work not handed in, green once it is in",
-    "Nothing to paste: this release changes only Student.html"
+    "Computing: a Computing door on the portal opens the students' Computing page (class tiles, name, PIN keypad), with the Spreadsheet Coaches open to their class and every Excel file they have checked",
+    "Computing students are listed in their own tab, Computing students, in the Teacher Hub sheet, and have their own PINs, apart from Science",
+    "Each file a Coach checks is saved to Drive (Worksheet Hub > Computing > class > sub-chapter > student code), every try kept, named by code, never by name",
+    "The Teacher Hub's new Computing tab: open each Coach to a class, the grid of newest tries with Drive links, Reset PIN, and which Coach files are in Drive",
+    "The Coaches and task files stay private in Drive (Worksheet Hub > Computing > Coaches and task files)",
+    "Paste or install: App.gs (changed) and ComputingCode.gs (new). The pages update themselves"
   ],
   "files": [
-    { "name": "App", "type": "SERVER_JS", "path": "App.gs", "sha256": "04b623efdc7d5c08042ac61333ee7d5071a2bc0fa7f39a56163d38677915c712" },
-    { "name": "Code", "type": "SERVER_JS", "path": "Code.gs", "sha256": "5ba430623c4ca50accd4c5028c9ace622e0649dd2755932d60aff3bcc73159d1" },
-    { "name": "Guide", "type": "HTML", "path": "Guide.html", "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100" },
-    { "name": "Homework", "type": "HTML", "path": "Homework.html", "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7" },
-    { "name": "Hub", "type": "SERVER_JS", "path": "Hub.gs", "sha256": "b896282403ff0b116d5cb8e4bb3c5ec4e25f4c060502ada8486928f4a2f588e1" },
-    { "name": "HubTeacher", "type": "HTML", "path": "HubTeacher.html", "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b" },
-    { "name": "Ink", "type": "HTML", "path": "Ink.html", "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de" },
-    { "name": "Rewards", "type": "HTML", "path": "Rewards.html", "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331" },
-    { "name": "Student", "type": "HTML", "path": "Student.html", "sha256": "29f03ae047a05239d6331d2febb20a1247b67ac69aacf0833ac44a22ad023c87" },
-    { "name": "Styles", "type": "HTML", "path": "Styles.html", "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7" },
-    { "name": "Teacher", "type": "HTML", "path": "Teacher.html", "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d" },
-    { "name": "appsscript", "type": "JSON", "path": "appsscript.json", "sha256": "6b5aa20bc57879c07f931e1cfe964706b4aa9cd53a2efb578c82c71da83fc590" }
+    {
+      "name": "App",
+      "type": "SERVER_JS",
+      "path": "App.gs",
+      "sha256": "286b84975f09dc2e6805af2781ba61cd8cc94b59ca349525e8c3c69f801270c5"
+    },
+    {
+      "name": "appsscript",
+      "type": "JSON",
+      "path": "appsscript.json",
+      "sha256": "6b5aa20bc57879c07f931e1cfe964706b4aa9cd53a2efb578c82c71da83fc590"
+    },
+    {
+      "name": "Code",
+      "type": "SERVER_JS",
+      "path": "Code.gs",
+      "sha256": "5ba430623c4ca50accd4c5028c9ace622e0649dd2755932d60aff3bcc73159d1"
+    },
+    {
+      "name": "Computing",
+      "type": "HTML",
+      "path": "Computing.html",
+      "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
+    },
+    {
+      "name": "ComputingCode",
+      "type": "SERVER_JS",
+      "path": "ComputingCode.gs",
+      "sha256": "a373ce2635a5ead17b7aa5c72841ff60afc5597176664cb09f98aea2d50b8e71"
+    },
+    {
+      "name": "Guide",
+      "type": "HTML",
+      "path": "Guide.html",
+      "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+    },
+    {
+      "name": "Homework",
+      "type": "HTML",
+      "path": "Homework.html",
+      "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
+    },
+    {
+      "name": "Hub",
+      "type": "SERVER_JS",
+      "path": "Hub.gs",
+      "sha256": "b896282403ff0b116d5cb8e4bb3c5ec4e25f4c060502ada8486928f4a2f588e1"
+    },
+    {
+      "name": "HubTeacher",
+      "type": "HTML",
+      "path": "HubTeacher.html",
+      "sha256": "5b06bae965e55a4817911dffedafe237de9d82ac40eca4444fc869433570e7b1"
+    },
+    {
+      "name": "Ink",
+      "type": "HTML",
+      "path": "Ink.html",
+      "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
+    },
+    {
+      "name": "Rewards",
+      "type": "HTML",
+      "path": "Rewards.html",
+      "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+    },
+    {
+      "name": "Student",
+      "type": "HTML",
+      "path": "Student.html",
+      "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
+    },
+    {
+      "name": "Styles",
+      "type": "HTML",
+      "path": "Styles.html",
+      "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+    },
+    {
+      "name": "Teacher",
+      "type": "HTML",
+      "path": "Teacher.html",
+      "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+    }
   ],
   "pages": [
+    {
+      "seq": 28,
+      "build": "2026-10-21-computing",
+      "ref": "REF_PENDING",
+      "needsServer": 28,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "5b06bae965e55a4817911dffedafe237de9d82ac40eca4444fc869433570e7b1"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+        },
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
+        }
+      ]
+    },
     {
       "seq": 27,
       "build": "2026-10-21-student-file",
       "ref": "1cf376881e331faf6ec47f22a890d1324a8688f5",
       "needsServer": 26,
       "files": [
-        { "name": "Guide", "path": "Guide.html", "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100" },
-        { "name": "Homework", "path": "Homework.html", "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7" },
-        { "name": "HubTeacher", "path": "HubTeacher.html", "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b" },
-        { "name": "Ink", "path": "Ink.html", "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de" },
-        { "name": "Rewards", "path": "Rewards.html", "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331" },
-        { "name": "Student", "path": "Student.html", "sha256": "29f03ae047a05239d6331d2febb20a1247b67ac69aacf0833ac44a22ad023c87" },
-        { "name": "Styles", "path": "Styles.html", "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7" },
-        { "name": "Teacher", "path": "Teacher.html", "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d" }
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "29f03ae047a05239d6331d2febb20a1247b67ac69aacf0833ac44a22ad023c87"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+        }
       ]
     },
     {
@@ -45,24 +205,75 @@
       "ref": "f7b3d4f1a1ce245e5680d84326f234f3dac11c1b",
       "needsServer": 26,
       "files": [
-        { "name": "Guide", "path": "Guide.html", "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100" },
-        { "name": "Homework", "path": "Homework.html", "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7" },
-        { "name": "HubTeacher", "path": "HubTeacher.html", "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b" },
-        { "name": "Ink", "path": "Ink.html", "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de" },
-        { "name": "Rewards", "path": "Rewards.html", "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331" },
-        { "name": "Student", "path": "Student.html", "sha256": "3f33b4dba8986e683111fc3ff55171e7ddbe6284088309862425080534dd4351" },
-        { "name": "Styles", "path": "Styles.html", "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7" },
-        { "name": "Teacher", "path": "Teacher.html", "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d" }
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "3f33b4dba8986e683111fc3ff55171e7ddbe6284088309862425080534dd4351"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+        }
       ]
     }
   ],
   "server": [
     {
+      "seq": 28,
+      "files": [
+        "App.gs",
+        "ComputingCode.gs"
+      ],
+      "notes": [
+        "Computing: a Computing door on the portal opens the students' Computing page (class tiles, name, PIN keypad), with the Spreadsheet Coaches open to their class and every Excel file they have checked",
+        "Computing students are listed in their own tab, Computing students, in the Teacher Hub sheet, and have their own PINs, apart from Science",
+        "Each file a Coach checks is saved to Drive (Worksheet Hub > Computing > class > sub-chapter > student code), every try kept, named by code, never by name",
+        "The Teacher Hub's new Computing tab: open each Coach to a class, the grid of newest tries with Drive links, Reset PIN, and which Coach files are in Drive",
+        "The Coaches and task files stay private in Drive (Worksheet Hub > Computing > Coaches and task files)",
+        "Paste or install: App.gs (changed) and ComputingCode.gs (new). The pages update themselves"
+      ]
+    },
+    {
       "seq": 26,
-      "files": [ "App.gs", "Code.gs", "Hub.gs" ],
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs"
+      ],
       "notes": [
         "Students' names stay in your sheets: students sign in by typing their own name and PIN (no class list is sent to iPads, and the slides keep none)",
-        "Hand-ins are named by class and a student code (S001, S002…) instead of a name, and Claude marking sees only codes",
+        "Hand-ins are named by class and a student code (S001, S002\u2026) instead of a name, and Claude marking sees only codes",
         "Worksheets are checked for a Name line: students are told not to write there, and anything written on it is left out of the PDF they hand in; the Hub flags Name lines when you upload, with Cover it for me",
         "The Rewards leaderboard shows initials; and Setup check has a switch so the Teacher Hub needs your Google account, not only the PIN"
       ]

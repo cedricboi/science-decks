@@ -1247,6 +1247,37 @@
   .goal small { color: var(--muted); }
   .countfield { margin-top: 12px; }
   .countfield .row input { padding: 8px 10px; border: 1.5px solid var(--rule); border-radius: 10px; }
+  /* ---------- Computing (release 27) ---------- */
+  .cmp-head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+  .cmp-head p { margin: 4px 0 0; color: var(--muted); }
+  .cmp-cls { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+  .cmp-cls button { border: 0; border-radius: 999px; padding: 0 16px; min-height: 38px; font: 700 15px var(--display); background: var(--soft); color: var(--ink); cursor: pointer; }
+  .cmp-cls button[aria-pressed="true"] { background: var(--green-fill); color: #fff; }
+  .cmp-box { background: var(--surface); border-radius: var(--r-card, 18px); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px; }
+  .cmp-box > h3 { font-family: var(--display); font-size: 19px; margin: 0 0 4px; }
+  .cmp-box > .lead { margin: 0 0 12px; color: var(--muted); }
+  .cmp-coaches { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .cmp-coach { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--soft); }
+  .cmp-coach .bd { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--green-fill); color: #fff; display: grid; place-items: center; font: 800 15px var(--display); }
+  .cmp-coach .tt { flex: 1; min-width: 0; font-weight: 700; line-height: 1.25; }
+  .cmp-coach .tt small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .cmp-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table.cmp-grid { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: 14px; }
+  .cmp-grid th, .cmp-grid td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+  .cmp-grid th { font: 700 12.5px var(--display); color: var(--muted); position: sticky; top: 0; background: var(--surface); }
+  .cmp-grid th.cg { color: var(--ink); font-size: 13.5px; border-bottom: 0; }
+  .cmp-grid td.nm, .cmp-grid th.nm { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+  .cmp-grid td.nm { font-weight: 700; }
+  .cmp-grid td.nm small { font-weight: 400; color: var(--muted); }
+  .cmp-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: var(--track-off); vertical-align: middle; }
+  .cmp-dot.on { background: var(--green-fill); }
+  .cmp-sc { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; font-weight: 700; text-decoration: none; color: var(--ink); background: var(--soft); }
+  .cmp-sc.full { background: var(--green-soft); color: var(--green); }
+  .cmp-sc.part { background: var(--amber-soft); color: var(--amber); }
+  .cmp-sc.low { background: var(--red-soft); color: var(--red); }
+  .cmp-sc i { font-style: normal; font-weight: 400; font-size: 12px; opacity: .8; }
+  .cmp-none { color: var(--faint, #aaa); }
+  .cmp-name { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 </style>
 <style>
   .notes-list { list-style: none; margin: 0 0 8px; padding: 0; }
@@ -1452,6 +1483,7 @@
         <button id="tab-ls" class="hidden"><span class="ti" data-i="te"></span><span>Lessons</span></button>
         <button id="tab-hw"><span class="ti" data-i="ws"></span><span>Homework</span><i class="badge" id="bd-hw"></i></button>
         <button id="tab-st" class="hidden"><span class="ti" data-i="cl"></span><span>Students</span></button>
+        <button id="tab-cmp"><span class="ti" data-i="cmp"></span><span>Computing</span></button>
         <div class="hidden" aria-hidden="true" id="oldtabs">
         <button id="tab-ws" tabindex="-1"><i class="badge" id="bd-ws"></i></button>
         <button id="tab-tr" tabindex="-1"><i class="badge" id="bd-tr"></i></button>
@@ -1477,6 +1509,7 @@
     <section id="view-chap" class="hidden"></section>
     <section id="view-pg" class="hidden"></section>
     <section id="view-cl" class="hidden"></section>
+    <section id="view-cmp" class="hidden"></section>
   </main>
 </div>
 
@@ -1516,6 +1549,7 @@
     tabPg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M7 9h2M11 9h2M15 9h2M7 13h2M11 13h2M7 17h2"/></svg>',
     tabCl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.2c2.4.2 4 1.9 4.5 4.6"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg>',
+    tabCmp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
     tabTe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M10 8.5v4l3.5-2z"/></svg>',
     tabRw: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.3l6-.8z"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></svg>',
@@ -1783,7 +1817,9 @@
   function setView(v) {
     if (v === 'detail' && H.view !== 'detail') H.backTo = H.view;   // Back from a worksheet goes where it was opened from
     H.view = v;
-    if (v === 'home' || v === 'ws' || v === 'tr' || v === 'rw' || v === 'te' || v === 'chap' || v === 'pg' || v === 'cl') lsSet('wsh_view17', v);
+    if (v === 'home' || v === 'ws' || v === 'tr' || v === 'rw' || v === 'te' || v === 'chap' || v === 'pg' || v === 'cl' || v === 'cmp') lsSet('wsh_view17', v);
+    $('view-cmp').classList.toggle('hidden', v !== 'cmp');
+    $('tab-cmp').setAttribute('aria-current', v === 'cmp' ? 'page' : 'false');
     $('view-home').classList.toggle('hidden', v !== 'home');
     $('view-chap').classList.toggle('hidden', v !== 'chap');
     var md = modeOf(v);
@@ -1812,6 +1848,7 @@
   }
   function showTab(v) {
     setView(v);
+    if (v === 'cmp') { loadCmp(); return; }
     if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'te') loadTeach(); else if (v === 'pg' || v === 'cl') loadLbView(v);
     else if (v === 'chap') { sxLoad(false); if (!H.dash || Date.now() - (H.dashAt || 0) > 20000) loadDash(); }
     else loadDash();
@@ -1820,6 +1857,7 @@
   $('tab-ls').onclick = function () { showTab('te'); };
   $('tab-hw').onclick = function () { showTab(lsGet('wsh_hw') === 'tr' ? 'tr' : 'ws'); };
   $('tab-st').onclick = function () { showTab(lsGet('wsh_st') === 'cl' ? 'cl' : 'pg'); };
+  $('tab-cmp').onclick = function () { showTab('cmp'); };
   $('tab-ws').onclick = function () { showTab('ws'); };
   $('tab-tr').onclick = function () { showTab('tr'); };
   $('tab-rw').onclick = function () { showTab('rw'); };
@@ -1827,7 +1865,112 @@
   $('tab-pg').onclick = function () { showTab('pg'); };
   $('tab-cl').onclick = function () { showTab('cl'); };
   $('logo').innerHTML = ICON.logo;
-  Array.prototype.forEach.call(document.querySelectorAll('nav.tabs .ti'), function (el) { el.outerHTML = ICON[{ home: 'tabHome', ws: 'tabWs', tr: 'tabTr', rw: 'tabRw', te: 'tabTe', pg: 'tabPg', cl: 'tabCl' }[el.getAttribute('data-i')]]; });
+  Array.prototype.forEach.call(document.querySelectorAll('nav.tabs .ti'), function (el) { el.outerHTML = ICON[{ home: 'tabHome', ws: 'tabWs', tr: 'tabTr', rw: 'tabRw', te: 'tabTe', pg: 'tabPg', cl: 'tabCl', cmp: 'tabCmp' }[el.getAttribute('data-i')]]; });
+
+
+  /* ---------------- Computing (release 27) ----------------
+     The Spreadsheet Coaches: the computing classes (Computing students tab), which Coaches each class can open, and
+     every student's newest checked file for each part, with how many tries. Names come from the Hub; Drive and the
+     Computing files tab only hold codes. */
+  var CMP = { data: null, cls: lsGet('wsh_cmpcls') || '', grid: null };
+  function cmpPartShort(name) { var m = /^(P\d+|Exit)/i.exec(String(name || '')); return m ? m[1] : String(name || '').slice(0, 6); }
+  function loadCmp() {
+    var v = $('view-cmp');
+    if (!CMP.data) v.innerHTML = '<p class="muted" style="padding:20px 0">Opening Computing...</p>';
+    tcall('api_t_cmp').then(function (d) { CMP.data = d; renderCmp(); }).catch(function (e) { v.innerHTML = '<div class="cmp-box"><p>' + esc(msg(e)) + '</p></div>'; });
+  }
+  function renderCmp() {
+    var d = CMP.data, v = $('view-cmp'), list = d.classes.map(function (c) { return c.cls; });
+    if (CMP.cls && list.indexOf(CMP.cls) < 0) CMP.cls = '';
+    if (!CMP.cls && list.length) CMP.cls = list[0];
+    var h = '<div class="cmp-head"><div><h2 class="h">Computing</h2><p>Spreadsheet Coaches, and every file your students check in them.</p></div><span class="spacer"></span>' +
+      (d.studentUrl ? '<button class="btn ghost small" id="cmp-copy" type="button">' + ICON.copy + 'Copy the students\' link</button>' : '') +
+      (d.rosterUrl ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">' + ICON.sheet + 'Class lists</a>' : '') + '</div>';
+    if (!list.length) {
+      h += '<div class="cmp-box"><h3>Add your computing classes</h3><p class="lead">Computing students have their own tab, <b>Computing students</b>, in the Teacher Hub sheet: Class in column A, Reg No in B and Name in C, from row 2. They are kept apart from your science classes, and set up their own PIN on the Computing page.</p>' +
+        '<div class="row"><button class="btn green" id="cmp-setup" type="button">Make the tab</button>' + (d.rosterUrl ? '<a class="btn ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">Open the sheet</a>' : '') + '<button class="btn quiet" id="cmp-again" type="button">' + ICON.refresh + 'I have added them</button></div></div>';
+      v.innerHTML = h; cmpWire(); return;
+    }
+    h += '<div class="cmp-cls" role="group" aria-label="Computing class">' + d.classes.map(function (c) { return '<button type="button" data-cmpcls="' + esc(c.cls) + '" aria-pressed="' + (c.cls === CMP.cls) + '">' + esc(c.cls) + ' <span style="opacity:.7;font-weight:400">' + c.n + '</span></button>'; }).join('') + '</div>';
+    var open = d.open[CMP.cls] || [];
+    var A = d.assets || { total: 0, missing: [] };
+    if (A.url || A.error) h += '<div class="cmp-box"><div class="row"><div style="flex:1;min-width:240px"><h3 style="font-family:var(--display);font-size:19px;margin:0 0 4px">Coach files in your Drive</h3><p class="muted" style="margin:0">' +
+      (A.error ? esc(A.error) : A.missing.length ? (A.total - A.missing.length) + ' of ' + A.total + ' files are there. Students cannot download the missing ones: ' + esc(A.missing.slice(0, 8).join(', ')) + (A.missing.length > 8 ? ' and ' + (A.missing.length - 8) + ' more' : '') + '.' : 'All ' + A.total + ' Coaches and task files are there. They stay private: only students whose class has a Coach open can download it.') +
+      '</p></div>' + (A.url ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(A.url) + '">' + ICON.folder + 'Open the folder</a>' : '') + '<button class="btn quiet small" id="cmp-again2" type="button">' + ICON.refresh + 'Check again</button></div></div>';
+    h += '<div class="cmp-box"><h3>Coaches for ' + esc(CMP.cls) + '</h3><p class="lead">Turn a Coach on to show it on this class\'s Computing page, with its task files.</p>' +
+      (d.coaches.length ? '<div class="cmp-coaches">' + d.coaches.map(function (c) {
+        var on = open.indexOf(c.id) >= 0;
+        return '<div class="cmp-coach"><span class="bd">' + esc(c.id) + '</span><span class="tt">' + esc(c.title) + '<small>' + esc(c.chapter) + '</small></span>' +
+          '<label class="switch" title="Open to ' + esc(CMP.cls) + '"><input type="checkbox" data-cmpopen="' + esc(c.id) + '"' + (on ? ' checked' : '') + '><span class="track"></span><span class="sr">Open ' + esc(c.id) + ' to ' + esc(CMP.cls) + '</span></label></div>';
+      }).join('') + '</div>' : '<p class="muted">No Coaches on the lesson site yet (computing.json).</p>') + '</div>';
+    h += '<div class="cmp-box" id="cmp-gridbox"><p class="muted">Opening ' + esc(CMP.cls) + '...</p></div>';
+    v.innerHTML = h; cmpWire(); cmpLoadGrid();
+  }
+  function cmpLoadGrid() {
+    var cls = CMP.cls;
+    tcall('api_t_cmpClass', cls).then(function (g) { if (cls !== CMP.cls) return; CMP.grid = g; cmpRenderGrid(); })
+      .catch(function (e) { var b = $('cmp-gridbox'); if (b) b.innerHTML = '<p>' + esc(msg(e)) + '</p>'; });
+  }
+  function cmpRenderGrid() {
+    var g = CMP.grid, d = CMP.data, box = $('cmp-gridbox'); if (!box) return;
+    // the Coaches open to the class, and any other Coach a student has saved files from
+    var used = {};
+    Object.keys(g.cells).forEach(function (k) { used[k.split('|')[1]] = 1; });
+    var coaches = d.coaches.filter(function (c) { return g.open.indexOf(c.id) >= 0 || used[c.id]; });
+    var withPin = g.students.filter(function (s) { return s.pin; }).length;
+    var h = '<div class="row" style="margin-bottom:10px"><h3 style="font-family:var(--display);font-size:19px;margin:0">' + esc(g.cls) + ': files checked</h3><span class="spacer"></span>' +
+      '<span class="muted" style="font-size:14px">' + withPin + ' of ' + g.students.length + ' have set up a PIN</span>' +
+      (g.folder ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(g.folder) + '">' + ICON.folder + 'Drive folder</a>' : '') +
+      '<button class="btn quiet small" id="cmp-refresh" type="button">' + ICON.refresh + 'Refresh</button></div>';
+    if (!coaches.length) { box.innerHTML = h + '<p class="muted">Turn on a Coach above. Its parts show here once students check files.</p>'; cmpWireGrid(); return; }
+    h += '<div class="cmp-scroll"><table class="cmp-grid"><thead><tr><th class="nm cg"></th>' + coaches.map(function (c) { return '<th class="cg" colspan="' + c.parts.length + '">' + esc(c.id) + ' ' + esc(c.title) + '</th>'; }).join('') + '</tr>' +
+      '<tr><th class="nm">Student</th>' + coaches.map(function (c) { return c.parts.map(function (p) { return '<th title="' + esc(p[1]) + '">' + esc(cmpPartShort(p[1])) + '</th>'; }).join(''); }).join('') + '</tr></thead><tbody>';
+    h += g.students.map(function (s) {
+      return '<tr><td class="nm"><span class="cmp-dot' + (s.pin ? ' on' : '') + '" title="' + (s.pin ? 'PIN set up' : 'No PIN yet') + '"></span><button type="button" class="cmp-name" data-cmpst="' + esc(s.name) + '">' + esc(s.name) + '</button> <small>' + esc(s.code) + '</small></td>' +
+        coaches.map(function (c) {
+          return c.parts.map(function (p) {
+            var o = g.cells[s.code + '|' + c.id + '|' + p[0]];
+            if (!o) return '<td><span class="cmp-none">&middot;</span></td>';
+            var L = o.last, k = L.score == null || L.of == null ? '' : L.score === L.of ? 'full' : L.score * 2 >= L.of ? 'part' : 'low';
+            return '<td><a class="cmp-sc ' + k + '" target="_blank" rel="noopener" href="' + esc(L.url) + '" title="Newest try, ' + esc(new Date(L.t).toLocaleString()) + '. Open the file in Drive.">' +
+              (L.score == null ? 'Saved' : L.score + '/' + L.of) + (o.tries > 1 ? ' <i>&times;' + o.tries + '</i>' : '') + '</a></td>';
+          }).join('');
+        }).join('') + '</tr>';
+    }).join('') + '</tbody></table></div><p class="muted" style="font-size:13.5px;margin:10px 0 0">Each cell is the newest try (&times; the number of tries). Click it to open that file in Drive. Click a name to reset their PIN.</p>';
+    box.innerHTML = h; cmpWireGrid();
+  }
+  function cmpWire() {
+    var v = $('view-cmp');
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpcls]'), function (b) { b.onclick = function () { CMP.cls = b.getAttribute('data-cmpcls'); lsSet('wsh_cmpcls', CMP.cls); renderCmp(); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpopen]'), function (i) {
+      i.onchange = function () {
+        var id = i.getAttribute('data-cmpopen'), on = i.checked; i.disabled = true;
+        tcall('api_t_cmpOpen', CMP.cls, id, on).then(function (list) { CMP.data.open[CMP.cls] = list; toast((on ? 'Opened ' : 'Closed ') + id + ' to ' + CMP.cls); if (CMP.grid && CMP.grid.cls === CMP.cls) { CMP.grid.open = list; cmpRenderGrid(); } })
+          .catch(function (e) { i.checked = !on; toast(msg(e)); }).then(function () { i.disabled = false; });
+      };
+    });
+    var su = $('cmp-setup'); if (su) su.onclick = function () { su.disabled = true; tcall('api_t_cmpSetup').then(function (d) { CMP.data = d; toast('The Computing students tab is ready'); renderCmp(); }).catch(function (e) { su.disabled = false; toast(msg(e)); }); };
+    var ag = $('cmp-again'); if (ag) ag.onclick = loadCmp;
+    var ag2 = $('cmp-again2'); if (ag2) ag2.onclick = loadCmp;
+    var cp = $('cmp-copy'); if (cp) cp.onclick = function () {
+      var u = CMP.data.studentUrl;
+      (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast('Link copied'); }, function () { modal('<h2>The students\' link</h2><p style="word-break:break-all">' + esc(u) + '</p><div class="foot"><button class="btn" id="m-ok">OK</button></div>'); $('m-ok').onclick = closeModal; });
+    };
+  }
+  function cmpWireGrid() {
+    var r = $('cmp-refresh'); if (r) r.onclick = cmpLoadGrid;
+    Array.prototype.forEach.call($('view-cmp').querySelectorAll('[data-cmpst]'), function (b) {
+      b.onclick = function () {
+        var name = b.getAttribute('data-cmpst');
+        modal('<h2>' + esc(name) + '</h2><p>Reset the PIN when a student has forgotten it and their security answer. They set up a new one on the Computing page with their register number.</p>' +
+          '<div class="foot"><button class="btn ghost" id="m-out">Sign out everywhere</button><button class="btn ghost" id="m-cancel">Cancel</button><button class="btn" id="m-pin">Reset PIN</button></div>');
+        var go = function (kind) {
+          tcall('api_t_cmpReset', CMP.cls, name, kind).then(function () { closeModal(); toast(kind === 'pin' ? 'PIN reset for ' + name : name + ' is signed out everywhere'); cmpLoadGrid(); }).catch(function (e) { toast(msg(e)); });
+        };
+        $('m-pin').onclick = function () { go('pin'); }; $('m-out').onclick = function () { go('out'); }; $('m-cancel').onclick = closeModal;
+      };
+    });
+  }
 
   /* ---------- small menus that open under a button ---------- */
   function closePops(except) {
@@ -2925,7 +3068,7 @@
     renderTeachNext();
     if (!H.tn || Date.now() - (H.tnAt || 0) > 40000) loadTeachNext(false);
     renderWeekCard();
-    if (first && H.view === 'home') { var last = lsGet('wsh_view17'); if (last === 'ws' || last === 'tr' || last === 'rw' || ((last === 'te' || last === 'pg' || last === 'cl' || (last === 'chap' && SX.chap)) && H.links && H.links.liveboard)) showTab(last); else setView('home'); }
+    if (first && H.view === 'home') { var last = lsGet('wsh_view17'); if (last === 'ws' || last === 'tr' || last === 'rw' || last === 'cmp' || ((last === 'te' || last === 'pg' || last === 'cl' || (last === 'chap' && SX.chap)) && H.links && H.links.liveboard)) showTab(last); else setView('home'); }
     else if (H.view === 'chap') sxLoad(false);
   }
   function bindActs(root) {
