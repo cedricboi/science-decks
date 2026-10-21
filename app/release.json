@@ -1,7 +1,7 @@
 {
   "build": "2026-10-21-computing",
   "seq": 28,
-  "ref": "REF_PENDING",
+  "ref": "73f1d6742a52c746e317789029580bd77638c327",
   "title": "learnwithmrcedric: Computing and the Spreadsheet Coaches",
   "notes": [
     "Computing: a Computing door on the portal opens the students' Computing page (class tiles, name, PIN keypad), with the Spreadsheet Coaches open to their class and every Excel file they have checked",
@@ -101,7 +101,7 @@
     {
       "seq": 28,
       "build": "2026-10-21-computing",
-      "ref": "REF_PENDING",
+      "ref": "73f1d6742a52c746e317789029580bd77638c327",
       "needsServer": 28,
       "files": [
         {
