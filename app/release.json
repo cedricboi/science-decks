@@ -1,26 +1,21 @@
 {
-  "build": "2026-10-21-computing",
-  "seq": 28,
-  "ref": "73f1d6742a52c746e317789029580bd77638c327",
-  "title": "learnwithmrcedric: Computing and the Spreadsheet Coaches",
+  "build": "2026-10-24-streak",
+  "seq": 29,
+  "ref": "e90e4d261b772e5aa6fd87cc8c715da3d895d2d0",
+  "title": "learnwithmrcedric: the Streak Challenge",
   "notes": [
-    "Portal background (page release 32, nothing to paste): NASA's black hole simulation video",
-    "New portal (page release 31, nothing to paste): a glass sign-in card over a live night sky with a black hole, stars and drifting equations",
-    "Mark by page (page release 30, nothing to paste): in the checking screen, By page marks one page at a time across the whole class, saving each script in the background as you go",
-    "Palm guard (page release 29, nothing to paste): once an iPad has used an Apple Pencil, a resting palm no longer writes on worksheets or drops ticks on the checking screen, and a Pencil that lands while a palm is down takes over",
-    "Computing: a Computing door on the portal opens the students' Computing page (class tiles, name, PIN keypad), with the Spreadsheet Coaches open to their class and every Excel file they have checked",
-    "Computing students are listed in their own tab, Computing students, in the Teacher Hub sheet, and have their own PINs, apart from Science",
-    "Each file a Coach checks is saved to Drive (Worksheet Hub > Computing > class > sub-chapter > student code), every try kept, named by code, never by name",
-    "The Teacher Hub's new Computing tab: open each Coach to a class, the grid of newest tries with Drive links, Reset PIN, and which Coach files are in Drive",
-    "The Coaches and task files stay private in Drive (Worksheet Hub > Computing > Coaches and task files)",
-    "Paste or install: App.gs (changed) and ComputingCode.gs (new). The pages update themselves"
+    "Streak Challenge (release 29): on the chapter check slide, the projector runs the check as a class game, one question at a time. Speed gives nothing: a right answer is worth 100, each right answer in a row adds 50 more (up to 300 a question), and a wrong answer ends the streak",
+    "The projector shows how many have answered, then the answer, the class's choices, the top 5 and the longest streaks. Each iPad shows only the student's own result and place",
+    "At the end each score becomes Worksheet Hub points: the full score earns the Chapter check points in Settings (30), a lower score its share, once per lesson. The game counts as the student's chapter check",
+    "The chapter check done alone is scored the same way, so the pass mark is no longer used",
+    "Paste: Code.gs and App.gs. The lesson slides update themselves"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "286b84975f09dc2e6805af2781ba61cd8cc94b59ca349525e8c3c69f801270c5"
+      "sha256": "b1d87876a38280b2792f7a124015e074bcabbf933da8640ca9f4c382f079695b"
     },
     {
       "name": "appsscript",
@@ -32,7 +27,7 @@
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "5ba430623c4ca50accd4c5028c9ace622e0649dd2755932d60aff3bcc73159d1"
+      "sha256": "4b4e3ccf365aa8bccebbc01f7cfc05cb001c88a2302cd55f57f5085ab840e937"
     },
     {
       "name": "Computing",
@@ -56,7 +51,7 @@
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
+      "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
     },
     {
       "name": "Hub",
@@ -68,13 +63,13 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "5b06bae965e55a4817911dffedafe237de9d82ac40eca4444fc869433570e7b1"
+      "sha256": "6c792412f3a62548f52ed40eab785501515ce543153516104339daac7b7d258b"
     },
     {
       "name": "Ink",
       "type": "HTML",
       "path": "Ink.html",
-      "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
+      "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
     },
     {
       "name": "Rewards",
@@ -86,7 +81,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
+      "sha256": "e28f3506f77508aa2179defbc4f561352e5c72e8021de07bf5d544953fc08aba"
     },
     {
       "name": "Styles",
@@ -465,6 +460,20 @@
     }
   ],
   "server": [
+    {
+      "seq": 29,
+      "files": [
+        "App.gs",
+        "Code.gs"
+      ],
+      "notes": [
+        "Streak Challenge (release 29): on the chapter check slide, the projector runs the check as a class game, one question at a time. Speed gives nothing: a right answer is worth 100, each right answer in a row adds 50 more (up to 300 a question), and a wrong answer ends the streak",
+        "The projector shows how many have answered, then the answer, the class's choices, the top 5 and the longest streaks. Each iPad shows only the student's own result and place",
+        "At the end each score becomes Worksheet Hub points: the full score earns the Chapter check points in Settings (30), a lower score its share, once per lesson. The game counts as the student's chapter check",
+        "The chapter check done alone is scored the same way, so the pass mark is no longer used",
+        "Paste: Code.gs and App.gs. The lesson slides update themselves"
+      ]
+    },
     {
       "seq": 28,
       "files": [
