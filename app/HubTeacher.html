@@ -350,6 +350,26 @@
     .rv-panelbtn { display: inline-flex; }
     .rv-side .rv-close-panel { display: inline-flex; }
   }
+
+  /* Mark by page */
+  .rv-strip { background: var(--surface); border-top: 1px solid var(--rule); padding: 6px 10px 8px; flex: none; }
+  .pm-ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pm-page { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; color: var(--muted); }
+  .pm-page b { color: var(--ink); }
+  .pm-stat { flex: 1 1 160px; font-size: 13px; color: var(--muted); text-align: right; }
+  .pm-bad { color: var(--red); }
+  .pm-next { min-height: 44px; padding: 0 18px; font-size: 15px; }
+  .pm-acc { color: var(--green); }
+  .pm-chips { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 8px 2px 2px; }
+  .pm-chip { flex: none; min-width: 44px; height: 36px; padding: 0 10px; border-radius: 18px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .pm-chip.done { background: var(--green-soft); border-color: var(--green); color: var(--green-ink); }
+  .pm-chip.wait { box-shadow: inset 0 -3px 0 var(--amber); }
+  .pm-chip.bad { background: var(--red-soft); border-color: var(--red); color: var(--red); }
+  .pm-chip.cur { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .pm-chip.out { opacity: .45; cursor: default; border-style: dashed; }
+  .pm-miss { padding: 40px 16px; text-align: center; color: var(--muted); font-size: 15px; }
+  .rv-pages.pm-loading, .rv-side.pm-loading, .rv-strip.pm-loading { opacity: .45; pointer-events: none; }
+  body:has(#rv-strip) .toast { bottom: 170px; }
   @media (prefers-reduced-motion: reduce) { .rv-side { transition: none; } }
 
   @media (max-width: 720px) {
@@ -4424,7 +4444,12 @@
 
   function loadReview(r) {
     R.row = r; R.dirty = false; R.undo = []; R.redo = []; R.pages = []; R.data = null;
-    $('review').innerHTML = '<div class="rv-loading"><div class="spinner"></div>Opening ' + esc(r.name) + '...</div>';
+    if (R.pm && $('rv-pages')) {
+      // The last student's marks are in the save line: let go of them so nothing tapped now can change them.
+      R.objects = []; R.items = {}; R.layout = null; R.tickN = null;
+      ['rv-pages', 'rv-side', 'rv-strip'].forEach(function (id) { if ($(id)) $(id).classList.add('pm-loading'); });
+    }
+    else $('review').innerHTML = '<div class="rv-loading"><div class="spinner"></div>Opening ' + esc(r.name) + '...</div>';
     Promise.all([loadPdfLibs(), fetchReview(r)]).then(function (res) {
       var d = res[1];
       if (!R || R.row !== r) return null;
@@ -4441,18 +4466,23 @@
       if (!pages) return;
       R.pages = pages.map(function (p) { var vp = p.getViewport({ scale: 1 }); return { p: p, vp: vp, w: vp.width, h: vp.height }; });
       setupMarks();
+      R.data.__row = r;
       drawReviewFrame();
       prefetchNext();
     }).catch(function (e) {
       if (/TEACHER_SIGNED_OUT/.test(e.message)) { closeReview(true); return; }
       $('review').innerHTML = '<div class="rv-loading"><p>' + esc(msg(e)) + '</p><button class="btn" id="rv-x">Back</button></div>';
-      $('rv-x').onclick = function () { closeReview(true); };
+      $('rv-x').onclick = function () { if (R && R.pm) pmFlush(function () { closeReview(true); }); else closeReview(true); };
     });
   }
 
   function prefetchNext() {
     var q = R.queue, at = q.indexOf(R.row);
-    if (at >= 0 && at + 1 < q.length) fetchReview(q[at + 1]).catch(function () {});
+    var ahead = R.pm ? 2 : 1;
+    for (var j = 1; j <= ahead; j++) {
+      var nx = q[at + j];
+      if (at >= 0 && nx && !(R.pm && R.pm.stash[pmKey(nx)])) fetchReview(nx).catch(function () {});
+    }
   }
 
   // The marks as the checking screen keeps them.
@@ -4464,6 +4494,7 @@
     if (lay) lay.items.forEach(function (it) {
       var v = rv.items && rv.items[it.q];
       R.items[it.q] = { got: v && v.got != null ? Number(v.got) : 0, note: v && v.note ? String(v.note) : '' };
+      if (v && v.manual) R.items[it.q].manual = true;
     });
     R.comment = rv.comment != null ? String(rv.comment) : (d.comment || '');
     R.score = d.score || '';
@@ -4473,9 +4504,10 @@
     R.hadMarks = !!(d.review || d.markedUrl);
   }
 
-  function totals() {
+  function totals(st) {
+    st = st || R;
     var got = 0, max = 0;
-    (R.layout ? R.layout.items : []).forEach(function (it) { got += Number(R.items[it.q].got) || 0; max += Number(it.max) || 0; });
+    (st.layout ? st.layout.items : []).forEach(function (it) { got += Number(st.items[it.q].got) || 0; max += Number(it.max) || 0; });
     return { got: got, max: max };
   }
 
@@ -4490,9 +4522,10 @@
       '<div class="rv-nav"><button class="btn ghost small" id="rv-prev" aria-label="Previous student"' + (at <= 0 ? ' disabled' : '') + '>&lsaquo;<span class="lbl"> Previous</span></button>' +
       '<span class="n">' + (at + 1) + ' of ' + q.length + '</span>' +
       '<button class="btn ghost small" id="rv-next" aria-label="Next student"' + (at >= q.length - 1 ? ' disabled' : '') + '><span class="lbl">Next </span>&rsaquo;</button></div>' +
+      (R.solution ? '' : '<button class="btn ghost small" id="rv-bypage" aria-pressed="' + !!R.pm + '" title="Mark one page at a time across the whole class">' + (R.pm ? 'All pages' : 'By page') + '</button>') +
       '<button class="btn ghost small rv-panelbtn" id="rv-panel">' + RICON.list + (R.solution ? 'Notes' : 'Marks') + '</button>' +
       '<button class="btn" id="rv-save">' + (R.solution ? 'Save as marked solution' : 'Save') + '</button>' +
-      (at < q.length - 1 ? '<button class="btn" id="rv-savenext">Save and next</button>' : '') +
+      (at < q.length - 1 && !R.pm ? '<button class="btn" id="rv-savenext">Save and next</button>' : '') +
       '</div>';
     h += '<div class="rv-tools" role="toolbar" aria-label="Marking tools">' +
       tb('tick', RICON.tick, 'Tick (T)') + tb('cross', RICON.cross, 'Cross (X)') + tb('pen', RICON.pen, 'Pen (P)') + tb('text', RICON.text, 'Text') + tb('erase', RICON.erase, 'Eraser (E)') + tb('move', RICON.move, 'Move marks (M)') +
@@ -4508,6 +4541,7 @@
       '<button class="tb" id="rv-claude" aria-pressed="' + R.showClaude + '" title="Show or hide Claude\'s ticks and crosses">' + RICON.eye + 'Claude\'s marks</button>' +
       '</div>';
     h += '<div class="rv-body"><div class="rv-pages" id="rv-pages" data-palm-guard></div><aside class="rv-side" id="rv-side"></aside></div>';
+    if (R.pm) h += '<div class="rv-strip" id="rv-strip"></div>';
     $('review').innerHTML = h;
     if (R.solution) $('review').querySelector('.rv-nav').classList.add('hidden');
     R.pages.forEach(function (pg, i) {
@@ -4521,8 +4555,10 @@
     bindReviewTop();
     setRvTool(R.tool);
     if (R.zoom == null) R.zoom = fitZoom();
+    if (R.pm) { R.pages.forEach(function (p, i) { p.el.style.display = i + 1 === R.pm.page ? '' : 'none'; }); }
     layoutPages();
     $('rv-pages').classList.toggle('finger', R.finger);
+    if (R.pm) pmAfterFrame();
   }
 
   function tb(tool, icon, title) {
@@ -4531,7 +4567,7 @@
 
   function fitZoom() {
     var box = $('rv-pages'), wmax = 0;
-    R.pages.forEach(function (p) { wmax = Math.max(wmax, p.w); });
+    R.pages.forEach(function (p, i) { if (!R.pm || i + 1 === R.pm.page) wmax = Math.max(wmax, p.w); });
     var z = (box.clientWidth - 32) / (wmax || 595);
     return Math.max(0.5, Math.min(2, z));
   }
@@ -4539,7 +4575,8 @@
   function layoutPages() {
     var z = R.zoom, dpr = window.devicePixelRatio || 1;
     $('rv-zl').textContent = Math.round(z * 100) + '%';
-    R.pages.forEach(function (pg) {
+    R.pages.forEach(function (pg, i) {
+      if (R.pm && i + 1 !== R.pm.page) return;
       var cw = pg.w * z, ch = pg.h * z;
       pg.el.style.width = cw + 'px'; pg.el.style.height = ch + 'px';
       var k = Math.min(dpr, Math.sqrt(MAX_PX / (cw * ch)));
@@ -4581,12 +4618,13 @@
   }
 
   // Everything drawn from the marks panel: the margin marks, the MCQ box marks and the circled total.
-  function derived(pageNo, pg) {
+  function derived(pageNo, pg, st) {
+    st = st || R;
     var out = [];
-    if (!R.layout || !R.margin) return out;
-    var blank = R.data.review && R.data.review.blank;
-    R.layout.items.forEach(function (it) {
-      var g = Number(R.items[it.q].got) || 0, mx = Number(it.max) || 0;
+    if (!st.layout || !st.margin) return out;
+    var blank = st.data.review && st.data.review.blank;
+    st.layout.items.forEach(function (it) {
+      var g = Number(st.items[it.q].got) || 0, mx = Number(it.max) || 0;
       if (it.page === pageNo) {
         var x = pg.w - 36, T = it.top + 9;
         out.push({ lines: marginLines(g, mx, x - 18, T), w: 2 });
@@ -4595,7 +4633,7 @@
       if (it.box && it.box.page === pageNo && !blank) out.push({ lines: g >= mx ? tickLines(it.box.x, it.box.y) : crossLines(it.box.x, it.box.y), w: MARK_W });
     });
     if (pageNo === 1) {
-      var t = totals();
+      var t = totals(st);
       out.push({ lines: [ellipseLine(pg.w - 63, 33, 45, 19)], w: 2.2 });
       out.push({ text: fmtN(t.got) + '/' + t.max, cx: pg.w - 63, y: 39, size: 16, bold: true });
     }
@@ -4651,13 +4689,14 @@
     R.objects.forEach(function (o) {
       if (o.page !== i + 1) return;
       if (o.by === 'claude' && !R.showClaude) return;
+      if (R.pm && o.by === 'claude') { ctx.save(); ctx.globalAlpha = 0.35; drawObj(ctx, o); ctx.restore(); return; }
       drawObj(ctx, o);
     });
     if (R.live && R.live.page === i + 1) drawObj(ctx, R.live);
   }
 
-  function redrawPage(n) { var pg = R.pages[n - 1]; if (pg) drawInk(pg); }
-  function redrawAll() { R.pages.forEach(drawInk); }
+  function redrawPage(n) { var pg = R.pages[n - 1]; if (pg) drawInk(pg); if (R.pm) { pmAutoMarks(); pmStrip(); } }
+  function redrawAll() { R.pages.forEach(function (pg, i) { if (!R.pm || i + 1 === R.pm.page) drawInk(pg); }); if (R.pm) pmAutoMarks(); }
 
   /* ----- input ----- */
 
@@ -4944,7 +4983,9 @@
     if (R.layout) {
       var t = totals();
       h += '<div class="rv-total"><b id="rv-tot">' + fmtN(t.got) + '/' + t.max + '</b><span>Total, added up from the questions</span></div>';
+      if (R.pm) h += '<h4 style="margin:4px 0 6px">Questions on page ' + R.pm.page + '</h4>' + (R.layout.items.some(function (it) { return it.page === R.pm.page; }) ? '<p class="rv-note" style="margin-top:0">Each tick on a question adds a mark, until you change that mark here.</p>' : '<p class="rv-note">No questions start on this page.</p>');
       R.layout.items.forEach(function (it) {
+        if (R.pm && it.page !== R.pm.page) return;
         var v = R.items[it.q];
         h += '<div class="rv-q" data-q="' + esc(it.q) + '"><div class="row"><span class="lab">' + esc(it.label || it.q) + '</span>' +
           '<button class="stp" data-d="-1" aria-label="One mark less for ' + esc(it.label || it.q) + '">&minus;</button>' +
@@ -4988,7 +5029,7 @@
       var inp = qel.querySelector('input.got');
       var setGot = function (v) {
         v = Math.max(0, Math.min(Number(it.max) || 0, Math.round(v * 2) / 2));
-        R.items[q].got = v; inp.value = fmtN(v); setDirty(); updateTotal();
+        R.items[q].got = v; R.items[q].manual = true; inp.value = fmtN(v); setDirty(); updateTotal();
       };
       Array.prototype.forEach.call(qel.querySelectorAll('.stp'), function (b) {
         b.onclick = function () { setGot((Number(R.items[q].got) || 0) + Number(b.getAttribute('data-d'))); };
@@ -5015,10 +5056,15 @@
   }
 
   function bindReviewTop() {
-    $('rv-back').onclick = function () { leaveReview(function () { closeReview(); }); };
+    $('rv-back').onclick = function () { if (R.pm) pmFlush(function () { closeReview(); }); else leaveReview(function () { closeReview(); }); };
+    if ($('rv-bypage')) $('rv-bypage').onclick = function () { if (R.pm) pmStop(); else pmStart(); };
     $('rv-prev').onclick = function () { go(-1); };
     $('rv-next').onclick = function () { go(1); };
-    $('rv-save').onclick = function () { saveReview(); };
+    $('rv-save').onclick = function () {
+      if (!R.pm) { saveReview(); return; }
+      if (!pmReady()) return;
+      var was = R.dirty; pmLeave(); toast(was ? 'Saving ' + (R.pm.hide ? 'this script' : R.row.name) + '.' : 'Nothing new to save.');
+    };
     if ($('rv-savenext')) $('rv-savenext').onclick = function () { saveReview(function () { go(1, true); }); };
     $('rv-panel').onclick = function () { $('review').classList.toggle('panel-open'); };
     Array.prototype.forEach.call($('review').querySelectorAll('[data-tool]'), function (b) { b.onclick = function () { setRvTool(b.getAttribute('data-tool')); }; });
@@ -5060,14 +5106,23 @@
     box.scrollLeft = cx * next - box.clientWidth / 2; box.scrollTop = cy * next - box.clientHeight / 2;
   }
 
+  // An undo step is the marks on the page, or (for Same as last) the marks and the question marks together.
+  function pmUndoState(withItems) { return withItems ? JSON.stringify({ __pm: 1, o: R.objects, i: R.items }) : JSON.stringify(R.objects); }
+  function applyUndo(str) {
+    var v = JSON.parse(str);
+    if (v && v.__pm) { R.objects = v.o; R.items = v.i; if (R.pm) R.tickN = pmBase(); return; }
+    R.objects = v;
+  }
   function rvUndo() {
-    if (!R.undo.length) return;
-    R.redo.push(JSON.stringify(R.objects)); R.objects = JSON.parse(R.undo.pop());
+    if (!R.undo.length || (R.pm && !pmReady())) return;
+    var top = R.undo.pop();
+    R.redo.push(pmUndoState(top.indexOf('{"__pm"') === 0)); applyUndo(top);
     setDirty(); redrawAll(); renderSide();
   }
   function rvRedo() {
-    if (!R.redo.length) return;
-    R.undo.push(JSON.stringify(R.objects)); R.objects = JSON.parse(R.redo.pop());
+    if (!R.redo.length || (R.pm && !pmReady())) return;
+    var top = R.redo.pop();
+    R.undo.push(pmUndoState(top.indexOf('{"__pm"') === 0)); applyUndo(top);
     setDirty(); redrawAll(); renderSide();
   }
 
@@ -5079,10 +5134,288 @@
     if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); if (e.shiftKey) rvRedo(); else rvUndo(); return; }
     if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); rvRedo(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (R.pm && !pmReady()) return;
+    if (R.pm && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); if (e.key === 'ArrowRight') pmNext(); else go(-1); return; }
+    if (R.pm && k === 'a') { pmAccept(); return; }
     if (k === 't') setRvTool('tick'); else if (k === 'x') setRvTool('cross'); else if (k === 'p') setRvTool('pen'); else if (k === 'e') setRvTool('erase'); else if (k === 'm') setRvTool('move');
   });
 
+
+  /* ----- Mark by page: one page at a time across the whole class (like Kami) -----
+     R.pm holds the mode: the page, the class's progress on each page, and scripts waiting to save.
+     Moving to another student saves the one you leave in the background (one save at a time), so marking
+     never waits for Drive. Claude's marks show faintly until you accept them. A tick on a question fills in
+     its mark (one tick, one mark) until you change that mark yourself. */
+  var pmSaves = { q: [], busy: false };
+
+  // True once the script on screen has loaded (not while the next one is on its way).
+  function pmReady() { return !!(R && R.pm && R.data && R.data.__row === R.row); }
+  function pmBase() { var n = pmTickCounts(); Object.defineProperty(n, '__row', { value: R.row, enumerable: false }); return n; }
+  function pmKey(r) { return r.cls + '|' + (r.reg != null && r.reg !== '' ? r.reg : r.name); }
+  function pmStore() { try { return JSON.parse(localStorage.getItem('wsh_pm_' + R.id) || '{}') || {}; } catch (e) { return {}; } }
+  function pmPersist() {
+    if (!R || !R.pm) return;
+    try { localStorage.setItem('wsh_pm_' + R.id, JSON.stringify({ done: R.pm.done, hide: R.pm.hide, page: R.pm.page })); } catch (e) { /* this visit only */ }
+  }
+
+  function pmStart() {
+    var saved = pmStore();
+    R.pm = { page: saved.page || 1, n: R.pages.length || 1, hide: !!saved.hide, done: saved.done || {}, stash: {}, failed: {}, last: {} };
+    R.zoom = null;
+    drawReviewFrame();
+    toast('Marking page ' + R.pm.page + ' for the whole class. Next keeps your place on the page.', 3200);
+  }
+  function pmStop() {
+    if (!pmReady()) return;
+    pmFlush(function () { R.pm = null; R.zoom = null; drawReviewFrame(); });
+  }
+
+  // The marks of the student on screen, kept apart so they can save while the next student is marked.
+  function pmSnapshot() {
+    return { row: R.row, data: R.data, bytes: R.bytes, layout: R.layout, objects: R.objects, items: R.items,
+      comment: R.comment, score: R.score, margin: R.margin, feedback: R.feedback, fromClaude: R.fromClaude, hadMarks: R.hadMarks,
+      undo: R.undo, redo: R.redo, tickN: R.tickN, dirty: R.dirty,
+      pages: R.pages.map(function (p) { return { p: p.p, vp: p.vp, w: p.w, h: p.h }; }) };
+  }
+  function pmRestore(st) {
+    ['row', 'data', 'bytes', 'layout', 'objects', 'items', 'comment', 'score', 'margin', 'feedback', 'fromClaude', 'hadMarks', 'undo', 'redo', 'tickN', 'dirty']
+      .forEach(function (k) { R[k] = st[k]; });
+    R.pages = st.pages.map(function (p) { return { p: p.p, vp: p.vp, w: p.w, h: p.h }; });
+    // Already in the save line: only a script whose save failed still counts as unsaved.
+    R.dirty = !!R.pm.failed[pmKey(st.row)];
+  }
+
+  // Leaving the student on screen: the page counts as done, and their marks go into the save line.
+  function pmLeave() {
+    if (!R.pm || !R.data || R.row !== R.data.__row) return;
+    var k = pmKey(R.row), pg = R.pm.page;
+    (R.pm.done[pg] = R.pm.done[pg] || {})[k] = 1;
+    var mine = R.objects.filter(function (o) { return o.page === pg && o.by !== 'claude'; });
+    var got = {};
+    if (R.layout) R.layout.items.forEach(function (it) { if (it.page === pg) got[it.q] = { g: R.items[it.q].got, m: !!R.items[it.q].manual }; });
+    if (mine.length || Object.keys(got).length) R.pm.last[pg] = { objs: JSON.parse(JSON.stringify(mine)), got: got };
+    if (R.dirty) {
+      var st = pmSnapshot();
+      R.pm.stash[k] = st; delete R.pm.failed[k]; delete R.cache[R.row.cls + '|' + R.row.name];
+      pmSaves.q.push({ st: st, id: R.id, pm: R.pm });
+      R.dirty = false;
+      pmPump();
+    }
+    pmPersist();
+  }
+
+  function pmPump() {
+    if (pmSaves.busy || !pmSaves.q.length) { pmStrip(); return; }
+    var job = pmSaves.q.shift(), st = job.st, r = st.row, k = pmKey(r);
+    pmSaves.busy = job; pmStrip();
+    buildReviewPdf(st).then(function (bytes) {
+      var review = { v: 1, by: 'teacher', score: reviewScore(st), comment: String(st.comment || '').trim(), margin: st.margin, feedback: st.feedback,
+        blank: !!(st.data.review && st.data.review.blank), items: st.layout ? JSON.parse(JSON.stringify(st.items)) : {}, objects: st.objects };
+      return tcall('api_t_saveReview', job.id, r.cls, r.name, bytesB64(bytes), review);
+    }).then(function (res) {
+      r.score = res.score; r.checked = res.checked; r.markedUrl = res.markedUrl; r.comment = String(st.comment || '').trim();
+      st.data.checked = res.checked; st.data.markedUrl = res.markedUrl; st.dirty = false;
+      if (job.pm.stash[k] === st) delete job.pm.stash[k];
+      delete job.pm.failed[k];
+      if (R && R.cache) delete R.cache[r.cls + '|' + r.name];
+    }).catch(function (e) {
+      job.pm.failed[k] = msg(e);
+    }).then(function () {
+      pmSaves.busy = false;
+      pmPump();
+    });
+  }
+
+  // Waits for every save, then runs then(). Scripts that would not save stay here to try again.
+  function pmFlush(then) {
+    pmLeave();
+    var wait = function () {
+      if (pmSaves.busy || pmSaves.q.length) {
+        busy('Saving ' + plural(pmSaves.q.length + (pmSaves.busy ? 1 : 0), 'script', 'scripts') + '...');
+        setTimeout(wait, 400); return;
+      }
+      closeModal();
+      var bad = Object.keys(R.pm.failed);
+      if (bad.length) {
+        modal('<h2>' + plural(bad.length, 'script was', 'scripts were') + ' not saved</h2><p>Your marks are still here. Check the connection and try again.</p>' +
+          '<div class="foot"><button class="btn ghost" id="pm-drop">Leave without saving them</button><button class="btn" id="pm-retry">Try again</button></div>');
+        $('pm-drop').onclick = function () { closeModal(); R.pm.failed = {}; R.pm.stash = {}; then(); };
+        $('pm-retry').onclick = function () {
+          closeModal();
+          bad.forEach(function (k) { var st = R.pm.stash[k]; if (st) pmSaves.q.push({ st: st, id: R.id, pm: R.pm }); });
+          R.pm.failed = {}; R.dirty = false; pmPump(); pmFlush(then);
+        };
+        return;
+      }
+      then();
+    };
+    wait();
+  }
+
+  function pmOpen(r) {
+    var box = $('rv-pages');
+    if (box) R.pm.scroll = [box.scrollLeft, box.scrollTop];
+    pmLeave();
+    var st = R.pm.stash[pmKey(r)];
+    if (st) { pmRestore(st); R.data.__row = r; drawReviewFrame(); prefetchNext(); }
+    else loadReview(r);
+  }
+
+  function pmGo(i) {
+    if (!pmReady()) return;
+    var q = R.queue;
+    if (i < 0 || i >= q.length) return;
+    pmOpen(q[i]);
+  }
+
+  // Next student; after the last one, the next page for everyone, starting with the first not done.
+  function pmNext() {
+    if (!pmReady()) return;
+    var q = R.queue, at = q.indexOf(R.row);
+    if (at < q.length - 1) { pmGo(at + 1); return; }
+    if (R.pm.page >= R.pm.n) { pmFlush(function () { toast('Every page is marked. Well done.'); closeReview(); }); return; }
+    pmSetPage(R.pm.page + 1, true);
+  }
+
+  function pmSetPage(n, fromStart) {
+    if (!pmReady()) return;
+    n = Math.max(1, Math.min(R.pm.n, n));
+    if (n === R.pm.page && !fromStart) return;
+    pmLeave();
+    R.pm.page = n; R.pm.scroll = [0, 0]; pmPersist();
+    var done = R.pm.done[n] || {}, q = R.queue;
+    var first = fromStart ? (q.filter(function (r) { return !done[pmKey(r)]; })[0] || q[0]) : R.row;
+    if (first === R.row) { R.data.__row = R.row; drawReviewFrame(); }
+    else { R.pm.scroll = null; var st = R.pm.stash[pmKey(first)]; if (st) { pmRestore(st); R.data.__row = first; drawReviewFrame(); } else loadReview(first); }
+  }
+
+  // Ticks on a question fill in its mark, until the mark is changed by hand.
+  function pmRegions() {
+    var out = [];
+    if (!R.layout) return out;
+    var byPage = {};
+    R.layout.items.forEach(function (it) { (byPage[it.page] = byPage[it.page] || []).push(it); });
+    Object.keys(byPage).forEach(function (p) {
+      var list = byPage[p].slice().sort(function (a, b) { return a.top - b.top; });
+      list.forEach(function (it, j) {
+        out.push({ it: it, page: Number(p), y0: it.top - 12, y1: j + 1 < list.length ? list[j + 1].top - 12 : 1e9 });
+      });
+    });
+    return out;
+  }
+  function pmTickCounts() {
+    var n = {};
+    pmRegions().forEach(function (g) {
+      n[g.it.q] = R.objects.filter(function (o) { return o.k === 'tick' && o.page === g.page && o.y >= g.y0 && o.y < g.y1; }).length;
+    });
+    return n;
+  }
+  function pmAutoMarks() {
+    if (!R || !R.pm || !R.layout || !R.tickN || R.tickN.__row !== R.row) return;
+    var now = pmTickCounts(), changed = false;
+    R.layout.items.forEach(function (it) {
+      var q = it.q, c = now[q] || 0;
+      if (c === (R.tickN[q] || 0)) return;
+      R.tickN[q] = c;
+      if (R.items[q].manual) return;
+      var v = Math.min(Number(it.max) || 0, c);
+      if (v !== R.items[q].got) { R.items[q].got = v; changed = true; }
+    });
+    if (!changed) return;
+    setDirty();
+    R.layout.items.forEach(function (it) {
+      var inp = $('rv-side') && $('rv-side').querySelector('.rv-q[data-q="' + (window.CSS && CSS.escape ? CSS.escape(it.q) : it.q) + '"] input.got');
+      if (inp) inp.value = fmtN(R.items[it.q].got);
+    });
+    updateTotal();
+  }
+
+  function pmAccept() {
+    if (!pmReady()) return;
+    var pg = R.pm.page, n = 0;
+    R.objects.forEach(function (o) { if (o.page === pg && o.by === 'claude') n++; });
+    if (!n) return;
+    record();
+    R.objects.forEach(function (o) { if (o.page === pg && o.by === 'claude') o.by = 'teacher'; });
+    setDirty(); redrawAll(); pmStrip(); renderSide();
+    toast('Accepted Claude\'s ' + plural(n, 'mark', 'marks') + ' on this page.');
+  }
+
+  function pmSame() {
+    if (!pmReady()) return;
+    var pg = R.pm.page, last = R.pm.last[pg];
+    if (!last) return;
+    R.undo.push(pmUndoState(true)); if (R.undo.length > 200) R.undo.shift(); R.redo = [];
+    last.objs.forEach(function (o) { var c = JSON.parse(JSON.stringify(o)); c.by = 'teacher'; R.objects.push(c); });
+    // Copied marks keep following the ticks, unless the mark was typed by hand on the last script.
+    Object.keys(last.got).forEach(function (q) { if (R.items[q]) { R.items[q].got = last.got[q].g; if (last.got[q].m) R.items[q].manual = true; } });
+    R.tickN = pmBase();
+    setDirty(); redrawAll(); renderSide();
+    toast('Copied the marks from the last script on this page.');
+  }
+
+  // After a script is drawn in page mode: only this page shows, at the same place as the last script.
+  function pmAfterFrame() {
+    var pg = R.pm.page;
+    R.data.__row = R.row;
+    R.pm.n = Math.max(R.pm.n || 1, R.pages.length);
+    if (!R.tickN || R.tickN.__row !== R.row) R.tickN = pmBase();
+    R.pages.forEach(function (p, i) { p.el.style.display = i + 1 === pg ? '' : 'none'; });
+    if (pg > R.pages.length) {
+      var miss = document.createElement('div'); miss.className = 'pm-miss';
+      miss.textContent = 'This script has no page ' + pg + '.';
+      $('rv-pages').appendChild(miss);
+    }
+    if (R.pm.hide) {
+      var at = R.queue.indexOf(R.row);
+      $('review').querySelector('.rv-who b').textContent = 'Script ' + (at + 1);
+      var sub = $('review').querySelector('.rv-who span'); if (sub) sub.textContent = R.data.title || '';
+    }
+    var box = $('rv-pages'), sc = R.pm.scroll;
+    if (sc) { box.scrollLeft = sc[0]; box.scrollTop = sc[1]; }
+    pmStrip();
+  }
+
+  function pmStrip() {
+    var el = $('rv-strip');
+    if (!R || !R.pm || !el) return;
+    var pg = R.pm.page, done = R.pm.done[pg] || {}, q = R.queue, at = q.indexOf(R.row);
+    var nDone = q.filter(function (r) { return done[pmKey(r)]; }).length;
+    var nClaude = R.objects ? R.objects.filter(function (o) { return o.page === pg && o.by === 'claude'; }).length : 0;
+    var saving = pmSaves.q.length + (pmSaves.busy ? 1 : 0), bad = Object.keys(R.pm.failed).length;
+    var out = (H.marks.rows || []).filter(function (r) { return !r.handedAt; });
+    var h = '<div class="pm-ctl">' +
+      '<div class="pm-page"><button class="tb" id="pm-pprev" aria-label="Previous page"' + (pg <= 1 ? ' disabled' : '') + '>&lsaquo;</button>' +
+      '<span>Page <b>' + pg + '</b> of ' + R.pm.n + '</span>' +
+      '<button class="tb" id="pm-pnext" aria-label="Next page"' + (pg >= R.pm.n ? ' disabled' : '') + '>&rsaquo;</button></div>' +
+      (nClaude ? '<button class="tb pm-acc" id="pm-acc" title="Make Claude\'s marks on this page yours (A)">' + RICON.tick + 'Accept Claude\'s marks (' + nClaude + ')</button>' : '') +
+      (R.pm.last[pg] ? '<button class="tb" id="pm-same" title="Copy your marks and marks for this page from the last script">Same as last</button>' : '') +
+      '<button class="tb" id="pm-hide" aria-pressed="' + R.pm.hide + '" title="Hide names while you mark">Hide names</button>' +
+      '<span class="pm-stat">' + nDone + ' of ' + q.length + ' done on this page' +
+      (saving ? ' &middot; saving ' + saving : '') + (bad ? ' &middot; <b class="pm-bad">' + bad + ' not saved</b>' : '') + '</span>' +
+      '<button class="btn pm-next" id="pm-next">' + (at < q.length - 1 ? 'Next script &rsaquo;' : pg < R.pm.n ? 'Page ' + (pg + 1) + ' &rsaquo;' : 'Finish') + '</button>' +
+      '</div><div class="pm-chips" id="pm-chips">' +
+      q.map(function (r, i) {
+        var k = pmKey(r), cls = 'pm-chip' + (i === at ? ' cur' : '') + (done[k] ? ' done' : '') + (R.pm.stash[k] ? ' wait' : '') + (R.pm.failed[k] ? ' bad' : '');
+        var lab = R.pm.hide ? String(i + 1) : esc(String(r.name).split(' ')[0]);
+        return '<button class="' + cls + '" data-i="' + i + '" title="' + (R.pm.hide ? 'Script ' + (i + 1) : esc(r.name)) + (R.pm.failed[k] ? ' (not saved)' : '') + '">' + lab + '</button>';
+      }).join('') +
+      out.map(function (r) { return '<span class="pm-chip out" title="' + (R.pm.hide ? 'Not handed in' : esc(r.name) + ': not handed in') + '">' + (R.pm.hide ? '&ndash;' : esc(String(r.name).split(' ')[0])) + '</span>'; }).join('') +
+      '</div>';
+    el.innerHTML = h;
+    $('pm-pprev').onclick = function () { pmSetPage(pg - 1); };
+    $('pm-pnext').onclick = function () { pmSetPage(pg + 1); };
+    if ($('pm-acc')) $('pm-acc').onclick = pmAccept;
+    if ($('pm-same')) $('pm-same').onclick = pmSame;
+    $('pm-hide').onclick = function () { if (!pmReady()) return; R.pm.hide = !R.pm.hide; pmPersist(); R.data.__row = R.row; R.pm.scroll = [$('rv-pages').scrollLeft, $('rv-pages').scrollTop]; drawReviewFrame(); };
+    $('pm-next').onclick = pmNext;
+    Array.prototype.forEach.call(el.querySelectorAll('button.pm-chip'), function (b) { b.onclick = function () { pmGo(Number(b.getAttribute('data-i'))); }; });
+    var cur = el.querySelector('.pm-chip.cur');
+    if (cur && cur.scrollIntoView) { var ch = $('pm-chips'); ch.scrollLeft = cur.offsetLeft - ch.clientWidth / 2 + cur.offsetWidth / 2; }
+  }
+
   function go(d, saved) {
+    if (R.pm) { pmGo(R.queue.indexOf(R.row) + d); return; }
     var q = R.queue, at = q.indexOf(R.row), r = q[at + d];
     if (!r) { if (saved) closeReview(); return; }
     var doGo = function () { loadReview(r); };
@@ -5135,12 +5468,13 @@
     return lines.length ? lines : [''];
   }
 
-  function buildReviewPdf() {
+  function buildReviewPdf(st) {
+    st = st || R;
     var L = PDFLib;
-    return L.PDFDocument.load(R.bytes, { ignoreEncryption: true }).then(function (doc) {
+    return L.PDFDocument.load(st.bytes, { ignoreEncryption: true }).then(function (doc) {
       return Promise.all([doc.embedFont(L.StandardFonts.Helvetica), doc.embedFont(L.StandardFonts.HelveticaBold)]).then(function (f) {
         var font = f[0], bold = f[1];
-        R.pages.forEach(function (pg, i) {
+        st.pages.forEach(function (pg, i) {
           var page = doc.getPage(i), conv = function (x, y) { return pg.vp.convertToPdfPoint(x, y); };
           var o0 = conv(0, 0), o1 = conv(1, 0), ang = Math.atan2(o1[1] - o0[1], o1[0] - o0[0]) * 180 / Math.PI;
           var ops = [];
@@ -5155,11 +5489,11 @@
             ops.push(L.stroke(), L.popGraphicsState());
           };
           var texts = [];
-          derived(i + 1, pg).forEach(function (d) {
+          derived(i + 1, pg, st).forEach(function (d) {
             if (d.lines) addLines(d.lines, d.w, MARK_RED);
             else texts.push({ t: d.text, x: d.x, cx: d.cx, y: d.y, size: d.size, font: bold, c: MARK_RED });
           });
-          R.objects.forEach(function (o) {
+          st.objects.forEach(function (o) {
             if (o.page !== i + 1) return;
             if (o.k === 'tick' || o.k === 'cross') addLines(objLines(o), MARK_W, o.c || MARK_RED);
             else if (o.k === 'ink') {
@@ -5177,27 +5511,27 @@
             page.drawText(s, { x: q[0], y: q[1], size: t.size, font: t.font, color: rgbOf(t.c), rotate: L.degrees(ang) });
           });
         });
-        if (R.layout && R.feedback) feedbackPages(doc, font, bold);
+        if (st.layout && st.feedback) feedbackPages(doc, font, bold, st);
         return doc.save();
       });
     });
   }
 
   // "Your marking": the same page Claude adds, one row per question with the mark and the feedback.
-  function feedbackPages(doc, font, bold) {
+  function feedbackPages(doc, font, bold, st) {
     var L = PDFLib, RED = L.rgb(0.80, 0.11, 0.11), INK = L.rgb(0.11, 0.14, 0.2), GREY = L.rgb(0.36, 0.40, 0.47);
     var GREEN = L.rgb(0.12, 0.54, 0.3), PINKC = L.rgb(1, 0.95, 0.95), LINE = L.rgb(0.84, 0.87, 0.92), FAINT = L.rgb(0.93, 0.95, 0.97);
-    var w = R.pages[0].w, h = R.pages[0].h;
+    var w = st.pages[0].w, h = st.pages[0].h;
     if (w > h) { var tmp = w; w = h; h = tmp; }
-    var m = 56, page = doc.addPage([w, h]), y = h - 64, t = totals();
+    var m = 56, page = doc.addPage([w, h]), y = h - 64, t = totals(st);
     var S = function (f, s) { return pdfSafe(f, s); };
     page.drawText('Your marking', { x: m, y: y, size: 18, font: bold, color: INK });
-    page.drawText(S(font, (R.layout.worksheet || R.data.id + ' ' + R.data.title) + '   ' + R.data.cls + '   ' + (R.data.code || '')), { x: m, y: y - 18, size: 10.5, font: font, color: GREY });
+    page.drawText(S(font, (st.layout.worksheet || st.data.id + ' ' + st.data.title) + '   ' + st.data.cls + '   ' + (st.data.code || '')), { x: m, y: y - 18, size: 10.5, font: font, color: GREY });
     page.drawEllipse({ x: w - m - 46, y: y - 7, xScale: 46, yScale: 23, borderColor: RED, borderWidth: 2.2 });
     var tt = fmtN(t.got) + '/' + t.max;
     page.drawText(tt, { x: w - m - 46 - bold.widthOfTextAtSize(tt, 17) / 2, y: y - 13, size: 17, font: bold, color: RED });
     y -= 44;
-    var anyMarks = R.objects.some(function (o) { return o.k === 'tick' || o.k === 'cross'; });
+    var anyMarks = st.objects.some(function (o) { return o.k === 'tick' || o.k === 'cross'; });
     if (anyMarks) {
       var base = y - 5;
       // tick and cross drawn as short lines, the same shapes as on the worksheet
@@ -5215,8 +5549,8 @@
     page.drawText('Marks', { x: cm, y: y, size: 9.5, font: bold, color: GREY });
     page.drawText('Feedback', { x: cf, y: y, size: 9.5, font: bold, color: GREY });
     y -= 8; page.drawLine({ start: { x: m, y: y }, end: { x: w - m, y: y }, thickness: 0.8, color: LINE }); y -= 15;
-    R.layout.items.forEach(function (it) {
-      var v = R.items[it.q], lines = wrapText(font, 10.5, S(font, v.note || ''), fw), need = 15 * Math.max(1, lines.length) + 8;
+    st.layout.items.forEach(function (it) {
+      var v = st.items[it.q], lines = wrapText(font, 10.5, S(font, v.note || ''), fw), need = 15 * Math.max(1, lines.length) + 8;
       if (y - need < 90) { page = doc.addPage([w, h]); y = h - 64; }
       page.drawText(S(bold, it.label || it.q), { x: cq, y: y, size: 10.5, font: bold, color: INK });
       page.drawText(fmtN(v.got) + '/' + it.max, { x: cm, y: y, size: 10.5, font: bold, color: v.got < it.max ? RED : GREEN });
@@ -5224,8 +5558,8 @@
       y -= need;
       page.drawLine({ start: { x: m, y: y + 10 }, end: { x: w - m, y: y + 10 }, thickness: 0.8, color: FAINT });
     });
-    if (R.comment.trim()) {
-      var cl = wrapText(font, 11, S(font, R.comment.trim()), w - 2 * m - 24), bh = 30 + 15 * cl.length;
+    if (st.comment.trim()) {
+      var cl = wrapText(font, 11, S(font, st.comment.trim()), w - 2 * m - 24), bh = 30 + 15 * cl.length;
       if (y - bh < 60) { page = doc.addPage([w, h]); y = h - 64; }
       y -= 6;
       page.drawRectangle({ x: m, y: y - bh, width: w - 2 * m, height: bh, color: PINKC });
@@ -5235,9 +5569,10 @@
     }
   }
 
-  function reviewScore() {
-    if (R.layout) { var t = totals(); return fmtN(t.got) + '/' + t.max; }
-    return (R.score || '').trim();
+  function reviewScore(st) {
+    st = st || R;
+    if (st.layout) { var t = totals(st); return fmtN(t.got) + '/' + t.max; }
+    return (st.score || '').trim();
   }
 
   function saveReview(then) {
