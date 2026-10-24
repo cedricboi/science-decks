@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Lesson phone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+/* Teacher phone (release 34, WP14). Light by default, the navy board in dark mode, following the device. */
+:root{
+  --bg:#F3F4FA;--card:#FFFFFF;--card2:#E7E9F4;--ink:#1B1F3B;--mut:#4A5072;--faint:#6B718F;--line:#C3C8DD;
+  --acc:#FFE45C;--accInk:#1B1F3B;--btn:#E1E4F2;--btnInk:#1B1F3B;--bar:#E9B800;--barOff:#C9CEE6;--barPrev:rgba(27,31,59,.14);
+  --good:#0B7A4E;--goodBg:#E2F6EC;--goodInk:#0B6E47;--warnBg:#FFF1F0;--warnInk:#A12A1F;
+  --together:#2F6BDB;--own:#0B8A57;--eyes:#D9352B;
+  --disp:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1B1F3B;--card:#2A3160;--card2:#232951;--ink:#FFFFFF;--mut:#C9CEE6;--faint:#8A90AA;--line:#5A607D;
+    --btn:#2A3160;--btnInk:#FFFFFF;--bar:#FFE45C;--barOff:#5A607D;--barPrev:rgba(255,255,255,.16);
+    --goodBg:#E2F6EC;--goodInk:#0B6E47;--warnBg:#4A2330;--warnInk:#FFD3CF;
+    --together:#7FB2FF;--own:#6EE7A8;--eyes:#FF7A7A;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow-x:hidden}
+body{font-family:'Atkinson Hyperlegible',system-ui,sans-serif;font-size:15px;line-height:1.35;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.5;cursor:default}
+#app{height:100%;height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top,0px) + 12px) 14px calc(env(safe-area-inset-bottom,0px) + 12px);gap:10px;overflow:hidden}
+.hd{display:flex;align-items:center;gap:10px;min-height:44px}
+.dot{width:10px;height:10px;border-radius:5px;background:var(--acc);box-shadow:0 0 0 4px rgba(255,228,92,.3);flex-shrink:0}
+.dot.together{background:var(--together);box-shadow:0 0 0 4px rgba(127,178,255,.25)}
+.dot.own{background:var(--own);box-shadow:0 0 0 4px rgba(110,231,168,.25)}
+.dot.eyes{background:var(--eyes);box-shadow:0 0 0 4px rgba(255,122,122,.3)}
+.who{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;background:none;border:0;padding:0}
+.who b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:13px;color:var(--mut)}
+.pill{height:38px;padding:0 14px;border-radius:19px;border:1px solid var(--line);background:transparent;font-weight:700;font-size:14px;flex-shrink:0}
+.undo{display:flex;align-items:center;gap:10px;background:var(--warnBg);color:var(--warnInk);border-radius:16px;padding:8px 8px 8px 14px;font-weight:700}
+.undo span{flex:1}
+.undo button{height:44px;padding:0 20px;border-radius:22px;border:0;background:var(--ink);color:var(--bg);font-weight:700;font-size:16px}
+.stale,.eyesb{background:var(--warnBg);color:var(--warnInk);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:700}
+.main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.card{background:var(--card);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.lbl{font-size:13px;color:var(--mut);font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.big{font-family:var(--disp);font-weight:800;font-size:22px;line-height:1.15}
+.mut{color:var(--mut);font-size:14px}
+.note{color:var(--faint);font-size:13px}
+.row{display:flex;align-items:center;gap:8px;min-width:0}
+.row>.grow{flex:1;min-width:0}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:flex;flex-direction:column;gap:4px}
+.bar .row{gap:10px}
+.lt{min-width:34px;height:34px;padding:0 8px;border-radius:17px;background:var(--btn);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:16px;flex-shrink:0;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lt.wide{font-family:inherit;font-size:13px;font-weight:700}
+.bars.wl .lt{width:36%;max-width:none;justify-content:flex-start;padding:0 10px}
+.bars.wl .names{padding-left:10px}
+.lt.ok{background:var(--good);color:#fff}
+.track{flex:1;min-width:30px;height:24px;border-radius:12px;background:var(--card2);overflow:hidden;position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:12px;background:var(--bar)}
+.track i.prev{background:var(--barPrev)}
+.track i.off{background:var(--barOff)}
+.track i.ok{background:var(--good)}
+.n{width:30px;text-align:right;font-weight:700;font-size:16px;flex-shrink:0}
+.names{display:flex;flex-wrap:wrap;gap:4px;padding-left:44px}
+.nm{border:0;background:transparent;color:var(--mut);font-size:13px;padding:3px 6px;border-radius:8px;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.names.flat{padding-left:0}
+.marks{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:8px}
+.marks.col{grid-template-columns:1fr}
+.qt{font-size:19px}
+.qtime{white-space:nowrap;flex-shrink:0}
+.marks .b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;padding:0 4px}
+.b{height:48px;border-radius:14px;border:1px solid var(--line);background:transparent;font-weight:700;font-size:15px;padding:0 10px;min-width:0}
+.b.solid{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.b.acc{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+.b.full{width:100%}
+.res{background:var(--goodBg);color:var(--goodInk);border-radius:16px;padding:12px 14px;font-size:15px;font-weight:700}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.dock{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.k{border:0;border-radius:16px;background:var(--btn);color:var(--btnInk);font-weight:700;font-size:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0 6px;min-width:0;line-height:1.15}
+.k small{font-size:12px;font-weight:400;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.k.go{height:58px;font-size:19px}
+.k.qc{height:56px;background:var(--acc);color:var(--accInk);font-size:20px;font-family:var(--disp);font-weight:800}
+.k.sm{height:52px;font-size:15px;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.k.on{background:var(--eyes);border-color:var(--eyes);color:#fff}
+.k.wait{background:var(--acc);border-color:var(--acc);color:var(--accInk)}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--card2);border-radius:14px;padding:3px;gap:3px}
+.seg button{height:42px;border:0;border-radius:11px;background:transparent;font-weight:700;font-size:15px;color:var(--mut);display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.seg small{font-weight:400;font-size:12px}
+.code{font-family:var(--disp);font-weight:800;font-size:72px;letter-spacing:.12em;text-align:center;line-height:1}
+.ov{position:fixed;inset:0;background:rgba(10,12,30,.55);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+.sh{background:var(--bg);width:100%;max-width:560px;max-height:88%;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 16px);display:flex;flex-direction:column;gap:10px}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pick button{height:84px;border-radius:20px;border:0;background:var(--card);font-family:var(--disp);font-weight:800;font-size:19px;padding:0 10px;line-height:1.1}
+.pick button.acc{background:var(--acc);color:var(--accInk)}
+.pick button.wide{grid-column:1/-1}
+.li{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;padding:10px 12px;min-width:0}
+.li .grow{flex:1;min-width:0}
+.li b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .b{height:40px}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-weight:700;font-size:14px;z-index:9;max-width:calc(100% - 32px);text-align:center}
+.words{display:flex;flex-direction:column;gap:8px}
+.hidden{display:none!important}
+@media (max-height:760px){.k.go{height:52px}.k.qc{height:50px}.k.sm{height:48px}.seg button{height:38px}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"></div>
+<div id="ov" class="ov hidden"></div>
+<div id="toast" class="toast hidden" role="status"></div>
+<script>
+(function () {
+  'use strict';
+  var LIVE_MS = 20000, STALE_GRACE = 4000;
+  var TYPE = { abcd: 'A B C D', tf: 'True or false', gotit: 'Got it, Nearly, Lost', word: 'Type a word', slide: 'Question on this slide' };
+  var OPTS = { abcd: ['A', 'B', 'C', 'D'], tf: ['True', 'False'], gotit: ['Got it', 'Nearly', 'Lost'], word: [], slide: [] };
+  var MODE = { together: 'Together', own: 'Own pace', eyes: 'Eyes on me' };
+
+  var S = {
+    key: '', view: 'boot', cls: '', deck: '', sig: '', gen: 0, doSeq: 0,
+    lesson: null, ctl: null, slide: null, quick: null, running: [], letin: [], stuck: [], needs: null, next: undefined, home: null,
+    inflight: false, inflightAt: 0, heldMs: 0, lastOk: 0, errN: 0, pollMs: 0, shortUntil: 0, timer: 0,
+    ov: {}, q: [], qBusy: false, sent: {}, bst: {}, sheet: null, pick: false,
+    ending: null, left: {}, ended: '', quickSeen: {}, pair: null
+  };
+  window.__PH = S;   // read by the tests only
+
+  /* ---------- small helpers ---------- */
+  function $(id) { return document.getElementById(id); }
+  function h(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function btn(cls, text, fn, sub) {
+    var b = h('button', cls); b.type = 'button';
+    b.appendChild(document.createTextNode(text));
+    if (sub) b.appendChild(h('small', '', sub));
+    if (fn) b.addEventListener('click', fn);
+    return b;
+  }
+  function load(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+  function store(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { /* private mode */ } }
+  function jit(ms) { return Math.round(ms * (0.85 + Math.random() * 0.3)); }
+  function now() { return Date.now(); }
+  function cmdId() { return 'c' + now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  var toastT = 0;
+  function toast(t) { var e = $('toast'); e.textContent = t; e.classList.remove('hidden'); clearTimeout(toastT); toastT = setTimeout(function () { e.classList.add('hidden'); }, 2600); }
+  function clock(ms) { var d = new Date(ms); return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  function dayAt(ms) { var d = new Date(ms), n = new Date(); return (d.toDateString() === n.toDateString() ? 'today' : d.toLocaleDateString([], { weekday: 'long' })) + ' at ' + clock(ms); }
+  function deviceName() {
+    var u = navigator.userAgent || '';
+    if (/iPhone/.test(u)) return 'An iPhone';
+    if (/Android/.test(u)) return /Mobile/.test(u) ? 'An Android phone' : 'An Android tablet';
+    if (/iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1)) return 'An iPad';
+    return 'A computer';
+  }
+  /* google.script.run as a promise. */
+  function run(name) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (ok, bad) {
+      try {
+        var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { bad(e instanceof Error ? e : new Error(String((e && e.message) || e))); });
+        r[name].apply(r, args);
+      } catch (e) { bad(e); }
+    });
+  }
+  function errText(e) { return String((e && e.message) || e || ''); }
+  function authLost(e) {
+    if (!/not paired any more|has run out|Sign in again|Wrong key|not signed in/i.test(errText(e))) return false;
+    store('lb_dev_key', ''); S.key = ''; S.view = 'nopair'; S.lostWhy = 'This phone is not paired any more.';
+    clearTimeout(S.timer); draw();
+    return true;
+  }
+
+  /* ---------- names: the first name, then a last initial when two share it ---------- */
+  function shortNames(list) {
+    // Three words or more (Jia Hui Wong, Muhammad Hafiz bin Rahman): the first two words are the given name.
+    var first = function (n) { var w = String(n).trim().split(/\s+/); return w.length > 2 ? w[0] + ' ' + w[1] : w[0]; };
+    var two = function (n) { var w = String(n).trim().split(/\s+/), k = w.length > 2 ? 2 : 1; return w.length > k ? w.slice(0, k).join(' ') + ' ' + w[k].charAt(0) + '.' : w.join(' '); };
+    var c1 = {}, c2 = {}, out = {};
+    list.forEach(function (n) { var a = first(n).toLowerCase(), b = two(n).toLowerCase(); c1[a] = (c1[a] || 0) + 1; c2[b] = (c2[b] || 0) + 1; });
+    list.forEach(function (n) { out[n] = c1[first(n).toLowerCase()] === 1 ? first(n) : c2[two(n).toLowerCase()] === 1 ? two(n) : n; });
+    return out;
+  }
+  function allNames() {
+    var seen = {}, add = function (a) { (a || []).forEach(function (n) { if (n) seen[n] = 1; }); };
+    var q = S.quick;
+    if (q) { Object.keys(q.tally || {}).forEach(function (k) { add(q.tally[k]); }); add(q.notAnswered); (q.words || []).forEach(function (w) { add(w.names); }); }
+    if (S.slide) (S.slide.questions || []).forEach(function (x) { add(x.missing); (x.choices || []).forEach(function (c) { add(c.names); }); if (x.byOk) { add(x.byOk.right); add(x.byOk.wrong); } });
+    S.stuck.forEach(function (x) { seen[x.name] = 1; });
+    return shortNames(Object.keys(seen));
+  }
+  function nameRow(list, short, flat) {
+    var w = h('div', 'names' + (flat ? ' flat' : ''));
+    (list || []).forEach(function (n) {
+      var b = btn('nm', short[n] || n, function () { openSheet({ kind: 'name', name: n }); });
+      b.setAttribute('aria-label', n); b.title = n; w.appendChild(b);
+    });
+    return w;
+  }
+
+  /* ---------- optimistic overlays ----------
+     A tap changes the phone at once. The overlay stays until the server agrees, or 6 s after the server acked it. */
+  function setOv(name, val) { S.ov[name] = { v: val, ack: 0 }; }
+  function ovGet(name) {
+    var o = S.ov[name];
+    if (!o) return undefined;
+    if (o.ack && now() - o.ack > 6000) { delete S.ov[name]; return undefined; }
+    return o.v;
+  }
+  function ovAck(name) { if (S.ov[name]) S.ov[name].ack = now(); }
+  function curSlide() {
+    var L = S.lesson; if (!L || !L.slide) return null;
+    var w = ovGet('go'), s = L.slide;
+    return w ? { n: w.slide, step: w.step, total: s.total, steps: w.steps, kind: s.kind } : s;
+  }
+  function curMode() { var m = ovGet('mode'); return m || (S.lesson && S.lesson.mode) || 'own'; }
+  function curQuick() { var q = ovGet('quick'); return q === undefined ? S.quick : q; }
+
+  /* ---------- live data: one t_live in flight at a time ---------- */
+  function liveNext(ms) { clearTimeout(S.timer); S.timer = setTimeout(liveGo, Math.max(0, ms || 0)); }
+  function refreshNow() { S.gen++; S.sig = ''; if (!S.inflight) liveNext(0); }
+  function liveGo() {
+    if (S.inflight || !S.key || document.hidden) return;
+    var short = !!S.pollMs || now() < S.shortUntil;
+    var maxMs = short ? 0 : LIVE_MS, gen = S.gen, seq = S.doSeq, sent = now();
+    S.inflight = true; S.inflightAt = sent; S.heldMs = maxMs;
+    run('t_live', S.key, S.cls, S.deck, S.sig, maxMs).then(function (r) {
+      S.inflight = false; S.lastOk = now(); S.errN = 0;
+      r = r || {};
+      if (gen === S.gen) applyLive(r, seq !== S.doSeq); else S.sig = '';
+      S.pollMs = Number(r.poll) || 0;
+      var wait = S.pollMs ? jit(S.pollMs) : now() < S.shortUntil ? jit(3000) : 0;
+      if (!wait && now() - sent < 300 && r.changed === false) wait = 400;   // a server that answers at once with nothing new
+      liveNext(wait);
+    }, function (e) {
+      S.inflight = false;
+      if (authLost(e)) return;
+      if (/too many simultaneous|simultaneous invocations/i.test(errText(e))) { S.shortUntil = now() + 120000; liveNext(jit(3000)); }
+      else { S.errN++; liveNext(jit(Math.min(30000, 2000 * Math.pow(2, S.errN - 1)))); }
+      drawStale();
+    });
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { clearTimeout(S.timer); return; }
+    if (S.key && S.view !== 'pair') { if (!S.inflight) liveNext(0); draw(); }
+  });
+  function has(r, k) { return Object.prototype.hasOwnProperty.call(r, k); }
+  /* old: a t_do was acked while this call was out, so its lesson view may be older than the phone's. */
+  function applyLive(r, old) {
+    if (r.sig != null) S.sig = old ? '' : r.sig;
+    if (has(r, 'running')) S.running = (r.running || []).slice().sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    if (has(r, 'letin')) S.letin = r.letin || [];
+    if (has(r, 'stuck')) S.stuck = r.stuck || [];
+    if (has(r, 'needs') && r.needs) S.needs = r.needs;
+    if (has(r, 'next')) S.next = r.next;
+    if (r.changed !== false && !old) applyLesson(r);
+    if (!S.cls) autoJoin();
+    draw();
+  }
+  function applyLesson(r) {
+    if (!S.cls) { S.lesson = null; return; }
+    if (has(r, 'lesson')) {
+      var was = S.lesson;
+      S.lesson = r.lesson || null;
+      if (!S.lesson && (was || S.ending)) {
+        S.ended = S.cls; S.left[S.cls + '|' + S.deck] = 0; leave(true); return;
+      }
+      if (S.lesson) {
+        var w = S.ov.go && S.ov.go.v, s = S.lesson.slide;
+        if (w && s && s.n === w.slide && (s.step || 0) === w.step) delete S.ov.go;
+        if (S.ov.mode && S.lesson.mode === S.ov.mode.v) delete S.ov.mode;
+        if (S.ending && !S.lesson.undoUntil && S.ending.acked && now() < S.ending.until) S.ending = null;   // undone elsewhere
+      }
+    }
+    if (has(r, 'ctl')) S.ctl = r.ctl;
+    if (has(r, 'slide')) S.slide = r.slide;
+    if (has(r, 'quick')) {
+      S.quick = r.quick || null;
+      var o = S.ov.quick;
+      if (o) {
+        var q = S.quick, v = o.v;
+        if (v === null ? !q : q && v && q.type === v.type && ((v.open && q.open && (q.round || 1) >= (v.round || 1)) || (!v.open && !q.open))) delete S.ov.quick;
+      }
+      if (S.quick && S.quick.id && !S.quickSeen[S.quick.id]) S.quickSeen[S.quick.id] = now();
+    }
+  }
+  function autoJoin() {
+    var top = S.running.filter(function (x) { return !S.left[x.cls + '|' + x.deckId]; })[0];
+    if (top) join(top);
+  }
+  function join(x) {
+    S.cls = x.cls; S.deck = x.deckId; S.ended = '';
+    S.lesson = { cls: x.cls, deckId: x.deckId, title: x.title, at: x.at, mode: 'own', slide: null, inCount: 0, of: 0 };
+    S.slide = null; S.quick = null; S.ov = {}; S.ending = null;
+    store('lb_ph_sel', JSON.stringify({ cls: S.cls, deck: S.deck }));
+    S.view = 'lesson'; closeSheet(); refreshNow(); draw();
+  }
+  function leave(auto) {
+    if (!auto && S.cls) S.left[S.cls + '|' + S.deck] = 1;
+    S.cls = ''; S.deck = ''; S.lesson = null; S.slide = null; S.quick = null; S.ov = {}; S.ending = null; S.q = [];
+    store('lb_ph_sel', '');
+    S.view = 'idle'; S.pick = false; closeSheet(); refreshNow(); loadHome();
+  }
+
+  /* ---------- lesson commands: t_do, in order, one at a time, each id sent once ---------- */
+  function cmd(op, args, tag) {
+    var c = { op: op, args: args || {}, id: cmdId(), tag: tag || op };
+    if (op === 'go') S.q = S.q.filter(function (x) { return x.op !== 'go'; });   // only the newest target matters
+    S.q.push(c); setBst(c.tag, 'Sending'); pump(); return c;
+  }
+  function setBst(tag, t, ms) { S.bst[tag] = { t: t, until: ms ? now() + ms : 0 }; draw(); }
+  function bst(tag) { var b = S.bst[tag]; if (!b) return ''; if (b.until && now() > b.until) { delete S.bst[tag]; return ''; } return b.t; }
+  function pump() {
+    if (S.qBusy) return;
+    var c = S.q.shift();
+    if (!c) return;
+    if (S.sent[c.id]) { pump(); return; }
+    S.sent[c.id] = 1; S.qBusy = true;
+    var cls = S.cls, deck = S.deck;
+    run('t_do', S.key, cls, deck, c.op, c.args, c.id).then(function (r) {
+      S.qBusy = false; S.doSeq++;
+      if (cls === S.cls && deck === S.deck && r) {
+        if (c.op === 'go') ovAck('go');
+        if (c.op === 'mode') ovAck('mode');
+        if (/^(quick|mark|again|close)$/.test(c.op)) ovAck('quick');
+        if (c.op === 'end') { if (S.ending) S.ending.acked = true; }
+        applyLesson(r);
+        if (S.ending && S.ending.acked && c.op === 'end' && r.undoUntil === undefined && r.lesson === null) S.ending = null;
+      }
+      if (r && r.ok === false) setBst(c.tag, 'Not sent', 3000); else setBst(c.tag, 'Done', 1400);
+      if (S.inflight) S.sig = '';   // ask again straight after the held call, with the new state
+      pump();
+    }, function (e) {
+      S.qBusy = false;
+      if (authLost(e)) return;
+      if (c.op === 'go' && !c.retry && !S.q.some(function (x) { return x.op === 'go'; })) {
+        // A named target is safe to send again: a new id, the same slide.
+        var again = { op: 'go', args: c.args, id: cmdId(), tag: c.tag, retry: 1 };
+        setTimeout(function () { if (!S.q.some(function (x) { return x.op === 'go'; })) { S.q.unshift(again); pump(); } }, 1200);
+      } else {
+        if (c.op === 'go') delete S.ov.go;
+        if (c.op === 'mode') delete S.ov.mode;
+        if (/^(quick|mark|again|close)$/.test(c.op)) delete S.ov.quick;
+        if (c.op === 'end') S.ending = null;
+        toast(/simultaneous/i.test(errText(e)) ? 'The server is busy. Tap again.' : 'Not sent. Tap again.');
+      }
+      setBst(c.tag, 'Not sent', 3000);
+      pump();
+    });
+  }
+
+  /* Next and Back: the phone works out the named target and moves its own counter at once. */
+  function stepTarget(dir) {
+    var s = curSlide(); if (!s) return null;
+    var steps = Math.max(1, Number(s.steps) || 1), n = s.n, st = s.step || 0;
+    if (dir > 0) {
+      if (st + 1 < steps) return { slide: n, step: st + 1, steps: steps };
+      if (s.total && n >= s.total) return null;
+      return { slide: n + 1, step: 0, steps: 0 };
+    }
+    if (st > 0) return { slide: n, step: st - 1, steps: steps };
+    if (n <= 1) return null;
+    return { slide: n - 1, step: 0, steps: 0 };
+  }
+  function go(dir) {
+    var t = stepTarget(dir);
+    if (!t) { toast(dir > 0 ? 'This is the last slide.' : 'This is the first slide.'); return; }
+    setOv('go', t);
+    cmd('go', { slide: t.slide, step: t.step }, dir > 0 ? 'next' : 'back');
+  }
+  function setMode(v) {
+    if (v === 'release') { setOv('mode', S.lesson && S.lesson.slide && /^(cover|section)$/.test(S.lesson.slide.kind) ? 'together' : 'own'); }
+    else setOv('mode', v);
+    cmd('mode', { v: v }, v === 'eyes' || v === 'release' ? 'eyes' : 'mode');
+  }
+  function startQuick(type) {
+    S.pick = false; closeOv();
+    var task = '';
+    if (type === 'slide') { var q0 = slideQs()[0]; task = q0 ? q0.taskId : ''; }
+    var opts = OPTS[type].slice();
+    if (type === 'slide') { var q1 = slideQs()[0]; opts = q1 && q1.choices ? q1.choices.map(function (c) { return c.t; }) : []; }
+    setOv('quick', { id: '', type: type, prompt: '', options: opts, open: true, round: 1, tally: {}, notAnswered: [], words: [], at: now() });
+    cmd('quick', type === 'slide' ? { type: type, taskId: task } : { type: type }, 'quick');
+  }
+  function markQuick(correct) {
+    var q = curQuick(); if (!q) return;
+    var counts = {}, total = 0;
+    (q.options || []).forEach(function (o) { var n = ((q.tally || {})[o] || []).length; counts[o] = n; total += n; });
+    var m = {}; Object.keys(q).forEach(function (k) { m[k] = q[k]; });
+    m.open = false; m.result = { correct: correct, counts: counts, total: total };
+    setOv('quick', m);
+    cmd('mark', { correct: correct }, 'mark');
+  }
+  function againQuick() {
+    var q = curQuick(); if (!q) return;
+    var prev = {}; (q.options || []).forEach(function (o) { prev[o] = ((q.tally || {})[o] || []).length; });
+    setOv('quick', { id: q.id, type: q.type, prompt: q.prompt, options: q.options, open: true, round: (q.round || 1) + 1, tally: {}, notAnswered: [], words: [], prev: prev, at: now() });
+    cmd('again', {}, 'again');
+  }
+  function doneQuick() { setOv('quick', null); cmd('close', {}, 'close'); }
+  function showQuick(on) { S.showOn = on; cmd('show', { on: on }, 'show'); }
+
+  /* End: one tap, then 4 s to undo. The server ends the lesson after 4 s by itself. */
+  function endLesson() {
+    if (S.ending) return;
+    var c = cmd('end', {}, 'end');
+    S.ending = { until: now() + 4000, id: c.id, acked: false };
+    draw();
+  }
+  function undoEnd() {
+    var e = S.ending; if (!e) return;
+    S.ending = null;
+    var queued = S.q.filter(function (x) { return x.id === e.id; })[0];
+    if (queued) { S.q = S.q.filter(function (x) { return x !== queued; }); delete S.bst.end; draw(); return; }
+    cmd('undo', {}, 'undo');
+    toast('The lesson goes on.');
+  }
+
+  /* ---------- pairing ---------- */
+  function pair(k) {
+    S.view = 'pair'; S.pair = { k: k, code: '', state: 'join', at: now() }; draw();
+    run('t_pairJoin', k, deviceName()).then(function (r) {
+      if (!r || r.ok === false || !r.code) { S.pair.state = r && r.why ? 'why' : 'gone'; S.pair.why = (r && r.why) || ''; draw(); return; }
+      S.pair.code = String(r.code); S.pair.w = r.w || ''; S.pair.state = 'wait'; draw();
+      setTimeout(pairWait, 2000);
+    }, function (e) { S.pair.state = /run out|expired|gone|old/i.test(errText(e)) ? 'gone' : 'err'; draw(); });
+  }
+  function pairWait() {
+    if (!S.pair || S.view !== 'pair') return;
+    if (now() - S.pair.at > 5 * 60000) { S.pair.state = 'gone'; draw(); return; }
+    run('t_pairWait', S.pair.k, S.pair.w).then(function (r) {
+      if (r && r.ok && r.state === 'ok' && r.key) {
+        store('lb_dev_key', r.key); S.key = r.key; S.pair = null;
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* sandboxed */ }
+        toast('This phone is paired.'); startLive(); return;
+      }
+      if (r && (r.ok === false || r.gone)) { S.pair.state = r.why && !r.gone ? 'why' : 'gone'; S.pair.why = r.why || ''; draw(); return; }
+      setTimeout(pairWait, 2000);
+    }, function () { setTimeout(pairWait, 3000); });
+  }
+
+  /* ---------- the no-lesson screen: next lesson and Needs you ---------- */
+  function loadHome() {
+    if (!S.key || S.next !== undefined || S.homeBusy || now() - (S.homeAt || 0) < 60000) return;
+    S.homeBusy = true;
+    run('apiPhoneHome', S.key).then(function (r) { S.homeBusy = false; S.homeAt = now(); S.home = r || null; draw(); },
+      function (e) { S.homeBusy = false; S.homeAt = now(); authLost(e); });
+  }
+  function homeNext() {
+    if (S.next) return S.next;
+    var list = (S.home && S.home.tn && S.home.tn.classes) || [], best = null;
+    list.forEach(function (x) {
+      if (!x.next) return;
+      var at = x.nextAt || (x.onNow ? now() : 0);
+      if (!best || (at && (!best.at || at < best.at))) best = { cls: x.cls, title: x.next.title, at: at };
+    });
+    return best;
+  }
+
+  /* ---------- drawing ---------- */
+  function draw() {
+    var A = $('app'), keep = A.querySelector('.main'), top = keep ? keep.scrollTop : 0;
+    A.innerHTML = '';
+    if (S.view === 'boot') { A.appendChild(h('p', 'mut', 'Opening.')); return; }
+    if (S.view === 'pair') { drawPair(A); return; }
+    if (S.view === 'nopair') { drawNoPair(A); return; }
+    if (S.cls && S.lesson) drawLesson(A); else drawIdle(A);
+    var m = A.querySelector('.main'); if (m) m.scrollTop = top;
+    drawStale();
+    if (S.sheet) drawSheet();
+  }
+  function staleText() {
+    if (!S.key || S.view === 'pair' || S.view === 'nopair' || !S.lastOk && !S.inflight) return '';
+    var t = now();
+    if (S.inflight && t - S.inflightAt < S.heldMs + STALE_GRACE) return '';
+    var age = Math.round((t - (S.lastOk || S.bootAt)) / 1000);
+    return age >= 10 ? 'Live data is ' + age + ' s old.' : '';
+  }
+  function drawStale() {
+    var e = document.querySelector('.stale'); if (!e) return;
+    var t = staleText(); e.textContent = t; e.classList.toggle('hidden', !t);
+  }
+  function drawPair(A) {
+    var p = S.pair || {}, c = h('div', 'card');
+    c.style.marginTop = '24px';
+    c.appendChild(h('span', 'big', 'Pair this phone'));
+    if (p.state === 'wait') {
+      c.appendChild(h('p', 'mut', 'Type this code on the laptop.'));
+      var code = h('div', 'code', p.code); code.setAttribute('aria-label', 'Code ' + p.code.split('').join(' ')); c.appendChild(code);
+      c.appendChild(h('p', 'note', 'Waiting for the laptop. This page carries on by itself.'));
+    } else if (p.state === 'join') c.appendChild(h('p', 'mut', 'Connecting.'));
+    else if (p.state === 'why') c.appendChild(h('p', 'mut', p.why));
+    else if (p.state === 'gone') c.appendChild(h('p', 'mut', 'This code has run out. On the laptop, press Pair my phone again.'));
+    else c.appendChild(h('p', 'mut', 'This phone could not reach the server. Check the connection, then scan the code again.'));
+    A.appendChild(c);
+  }
+  function drawNoPair(A) {
+    var c = h('div', 'card'); c.style.marginTop = '24px';
+    c.appendChild(h('span', 'big', S.lostWhy || 'This phone is not paired yet.'));
+    c.appendChild(h('p', 'mut', 'On the laptop, open the Teacher Hub. On Today, press Pair my phone, then scan the code with this phone.'));
+    A.appendChild(c);
+  }
+  function header(A, title, sub, dotCls, end) {
+    var hd = h('header', 'hd');
+    hd.appendChild(h('span', 'dot ' + (dotCls || '')));
+    var who = btn('who', '', function () { openSheet({ kind: 'menu' }); });
+    who.innerHTML = '';
+    who.appendChild(h('b', '', title)); who.appendChild(h('span', '', sub));
+    who.setAttribute('aria-label', title + '. ' + sub + '. Lesson menu');
+    hd.appendChild(who);
+    if (end) hd.appendChild(end);
+    A.appendChild(hd);
+    var st = h('div', 'stale hidden'); st.setAttribute('role', 'status'); A.appendChild(st);
+  }
+  function drawIdle(A) {
+    header(A, 'No lesson running', S.running.length ? plural(S.running.length, 'lesson', 'lessons') + ' running now' : 'This phone joins the lesson when you press Teach', '');
+    var M = h('div', 'main');
+    if (S.ended) { var e = h('div', 'res', 'The lesson for ' + S.ended + ' has ended. Answers are saved and the debrief is on Today.'); M.appendChild(e); }
+    if (S.letin.length) M.appendChild(letinCard());
+    if (S.running.length) {
+      var rc = h('div', 'card'); rc.appendChild(h('span', 'lbl', 'Running now'));
+      S.running.forEach(function (x) {
+        var li = h('div', 'li'), g = h('div', 'grow');
+        g.appendChild(h('b', '', x.cls + ' · ' + (x.title || ''))); g.appendChild(h('span', 'note', 'Started at ' + clock(x.at || now())));
+        li.appendChild(g); li.appendChild(btn('b solid', 'Join', function () { delete S.left[x.cls + '|' + x.deckId]; join(x); }));
+        rc.appendChild(li);
+      });
+      M.appendChild(rc);
+    }
+    var nx = homeNext(), c1 = h('div', 'card');
+    c1.appendChild(h('span', 'lbl', 'Next lesson'));
+    if (nx) {
+      c1.appendChild(h('span', 'big', nx.cls + ' · ' + (nx.title || '')));
+      if (nx.at) c1.appendChild(h('span', 'mut', 'Starts ' + dayAt(nx.at) + '.'));
+    } else c1.appendChild(h('span', 'mut', S.home || S.next === null ? 'No lesson is planned yet.' : 'Loading the next lesson.'));
+    c1.appendChild(h('span', 'note', 'Press Teach on the laptop. This phone joins the lesson by itself in about a second.'));
+    M.appendChild(c1);
+    var c2 = h('div', 'card'), n = S.needs ? S.needs.count : (S.home && S.home.needs ? S.home.needs.length : null);
+    c2.appendChild(h('span', 'lbl', 'Needs you'));
+    c2.appendChild(h('span', 'big', n == null ? 'Loading.' : n ? plural(n, 'thing needs', 'things need') + ' you' : 'Nothing needs you right now.'));
+    var items = (S.home && S.home.needs) || [];
+    items.slice(0, 4).forEach(function (x) { c2.appendChild(h('span', 'mut', x.title + (x.sub ? '. ' + x.sub : ''))); });
+    if (n) c2.appendChild(h('span', 'note', 'Open Today in the Teacher Hub to deal with them.'));
+    M.appendChild(c2);
+    A.appendChild(M);
+  }
+  function slideQs() { var s = S.slide; return (s && s.questions) || []; }
+  function drawLesson(A) {
+    var L = S.lesson, s = curSlide(), mode = curMode();
+    var sub = [];
+    if (s) sub.push('Slide ' + s.n + (s.total ? ' of ' + s.total : '') + ((Number(s.steps) > 1 || s.step) ? ', step ' + ((s.step || 0) + 1) : ''));
+    if (L.of) sub.push(L.inCount + ' of ' + L.of + ' in');
+    var endB = null;
+    if (!S.ending) { endB = btn('pill', bst('end') === 'Sending' ? 'Sending' : 'End', endLesson); endB.setAttribute('aria-label', 'End the lesson'); }
+    header(A, L.cls + ' · ' + (L.title || 'Lesson'), sub.join(' · ') || 'Loading the slide', mode, endB);
+    if (S.ending) {
+      var left = Math.max(0, Math.ceil((S.ending.until - now()) / 1000)), u = h('div', 'undo');
+      u.appendChild(h('span', 'udt', left ? 'Ending the lesson in ' + left + ' s.' : 'Ending the lesson.'));
+      if (left) u.appendChild(btn('', 'Undo', undoEnd));
+      A.appendChild(u);
+    }
+    var M = h('div', 'main'), q = curQuick();
+    if (mode === 'eyes') M.appendChild(h('div', 'eyesb', 'Eyes on me is on. The iPads are paused.'));
+    if (q) drawQuick(M, q); else drawSlideQs(M);
+    A.appendChild(M);
+    drawDock(A, s, mode, q);
+  }
+  function bars(M, opts, counts, prev, total, correct, names, short) {
+    var wrap = h('div', 'bars' + (opts.some(function (o) { return String(o).length > 2; }) ? ' wl' : '')), max = Math.max(1, total);
+    opts.forEach(function (o) {
+      var n = counts[o] || 0, b = h('div', 'bar'), r = h('div', 'row');
+      var lt = h('span', 'lt' + (o.length > 2 ? ' wide' : '') + (correct != null && o === correct ? ' ok' : ''), o); lt.title = o;
+      r.appendChild(lt);
+      var tr = h('div', 'track');
+      if (prev && prev[o] != null) { var pv = h('i', 'prev'); pv.style.width = Math.round(100 * prev[o] / Math.max(1, sum(prev))) + '%'; tr.appendChild(pv); }
+      var fill = h('i', correct == null ? '' : o === correct ? 'ok' : 'off'); fill.style.width = Math.round(100 * n / max) + '%'; tr.appendChild(fill);
+      r.appendChild(tr); r.appendChild(h('span', 'n', String(n)));
+      b.appendChild(r);
+      if (names && names[o] && names[o].length) b.appendChild(nameRow(names[o], short));
+      wrap.appendChild(b);
+    });
+    M.appendChild(wrap);
+  }
+  function sum(o) { var t = 0; Object.keys(o).forEach(function (k) { t += Number(o[k]) || 0; }); return t; }
+  function notAnswered(M, list, short, all) {
+    var c = h('div', 'card');
+    c.appendChild(h('span', 'lbl', 'Not answered' + (list && list.length ? ' (' + list.length + ')' : '')));
+    if (!list || !list.length) c.appendChild(h('span', 'mut', all ? 'Everyone has answered.' : 'Nobody yet.'));
+    else c.appendChild(nameRow(list, short, true));
+    M.appendChild(c);
+  }
+  function drawQuick(M, q) {
+    var short = allNames(), opts = q.options && q.options.length ? q.options : OPTS[q.type] || [];
+    var tally = q.tally || {}, counts = {}, total = 0;
+    opts.forEach(function (o) { counts[o] = (tally[o] || []).length; total += counts[o]; });
+    if (q.type === 'word') total = (q.words || []).reduce(function (a, w) { return a + (w.n || 0); }, 0);
+    var res = !q.open && q.result ? q.result : null;
+    if (res && res.counts) { counts = res.counts; total = res.total != null ? res.total : sum(res.counts); }
+    var c = h('div', 'card'), hr = h('div', 'row');
+    hr.appendChild(h('span', 'big qt grow', TYPE[q.type] || 'Quick check'));
+    var of = (S.lesson && S.lesson.of) || (total + (q.notAnswered || []).length);
+    var t0 = q.at || S.quickSeen[q.id] || now();
+    var tm = h('span', 'mut qtime', total + ' of ' + of + ' in' + (q.open ? ', ' + Math.max(0, Math.floor((now() - t0) / 1000)) + ' s' : ''));
+    tm.setAttribute('data-t0', String(t0)); tm.setAttribute('data-txt', total + ' of ' + of + ' in');
+    hr.appendChild(tm); c.appendChild(hr);
+    if (q.round > 1) c.appendChild(h('span', 'note', 'Round ' + q.round + '. Round ' + (q.round - 1) + ' is shown faint.'));
+    if (q.prompt) c.appendChild(h('span', 'mut', q.prompt));
+    if (q.type === 'word') {
+      var ws = h('div', 'words bars wl'), list = (q.words || []).slice().sort(function (a, b) { return b.n - a.n; });
+      if (!list.length) ws.appendChild(h('span', 'mut', 'The words show here as they come in.'));
+      list.forEach(function (w) {
+        var b = h('div', 'bar'), r = h('div', 'row');
+        var lt = h('span', 'lt wide', w.text); lt.title = w.text; r.appendChild(lt);
+        var tr = h('div', 'track'), f = h('i'); f.style.width = Math.round(100 * w.n / Math.max(1, total)) + '%'; tr.appendChild(f);
+        r.appendChild(tr); r.appendChild(h('span', 'n', String(w.n))); b.appendChild(r);
+        if (w.names && w.names.length) b.appendChild(nameRow(w.names, short));
+        ws.appendChild(b);
+      });
+      c.appendChild(ws);
+    } else if (opts.length) bars(c, opts, counts, q.prev, total, res ? res.correct : null, res ? null : tally, short);
+    else c.appendChild(h('span', 'mut', 'Answers show here as they come in.'));
+    if (res && res.correct != null) {
+      var right = counts[res.correct] || 0;
+      c.appendChild(h('div', 'res', res.correct + ' is correct. ' + right + ' of ' + total + ' got it. Students see this now.'));
+    } else if (res) c.appendChild(h('div', 'res', 'The check is closed. Students see the counts now.'));
+    if (q.open) {
+      var markable = (q.type === 'abcd' || q.type === 'tf' || q.type === 'slide') && opts.length;
+      if (markable) {
+        var mk = h('div', 'marks' + (opts.some(function (o) { return String(o).length > 5; }) ? ' col' : ''));
+        opts.forEach(function (o) { var b = btn('b', o + ' is right', function () { markQuick(o); }); b.setAttribute('aria-label', 'Mark ' + o + ' as correct'); mk.appendChild(b); });
+        c.appendChild(mk);
+      } else c.appendChild(btn('b solid full', bst('mark') === 'Sending' ? 'Sending' : 'Stop the check', function () { markQuick(null); }));
+    } else {
+      var two = h('div', 'two');
+      var on = !!(q.shown != null ? q.shown : S.showOn);
+      two.appendChild(btn('b solid', bst('show') || (on ? 'Take it off the screen' : 'Show on screen'), function () { showQuick(!on); }));
+      two.appendChild(btn('b', bst('again') || 'Ask again', againQuick));
+      c.appendChild(two);
+      c.appendChild(btn('b full', 'Done, back to the slide', doneQuick));
+    }
+    M.appendChild(c);
+    if (q.open || (q.notAnswered || []).length) notAnswered(M, q.notAnswered, short, true);
+  }
+  function drawSlideQs(M) {
+    var s = S.slide, qs = slideQs(), short = allNames(), cur = curSlide();
+    if (!s || !qs.length) {
+      var c0 = h('div', 'card'); c0.appendChild(h('span', 'lbl', "This slide's question"));
+      c0.appendChild(h('span', 'mut', s ? 'There is no question on this slide or the slides before it yet.' : 'Loading the answers.'));
+      c0.appendChild(h('span', 'note', 'Quick check asks the class something now.'));
+      M.appendChild(c0);
+    }
+    qs.forEach(function (q) {
+      var c = h('div', 'card');
+      c.appendChild(h('span', 'lbl', cur && s.n !== cur.n ? 'Question on slide ' + s.n : "This slide's question"));
+      if (q.title) c.appendChild(h('span', '', String(q.title).replace(/\s+/g, ' ').trim()));
+      var right = q.right || 0;
+      c.appendChild(h('span', 'mut', q.answered + ' of ' + q.size + ' answered' + (q.pct != null ? ', ' + right + ' right' : '')));
+      if (q.choices && q.choices.length) {
+        var opts = q.choices.map(function (x) { return x.t; }), counts = {}, names = {}, ok = null, tot = 0;
+        q.choices.forEach(function (x) { counts[x.t] = x.n; names[x.t] = x.names || []; tot += x.n; if (x.ok) ok = x.t; });
+        bars(c, opts, counts, null, tot, ok, names, short);
+      } else if (q.firsts) {
+        var by = q.byOk || {}, cn = { Right: right, Wrong: Math.max(0, (q.firsts || 0) - right) };
+        if (q.pct == null) cn = { Answered: q.firsts };
+        bars(c, Object.keys(cn), cn, null, q.firsts, q.pct == null ? null : 'Right', { Right: by.right, Wrong: by.wrong, Answered: by.unmarked }, short);
+      }
+      if (q.wrong && q.wrong[1] && !(q.choices && q.choices.length)) c.appendChild(h('span', 'note', q.wrong[1] + ' wrote ' + q.wrong[0]));
+      if (s.held && !q.released) c.appendChild(btn('b solid full', bst('rel' + q.taskId) || 'Show answers on iPads', function () { q.released = true; cmd('release', { taskId: q.taskId }, 'rel' + q.taskId); }));
+      M.appendChild(c);
+      notAnswered(M, q.missing, short, q.answered > 0);
+    });
+  }
+  function drawDock(A, s, mode, q) {
+    var D = h('div', 'dock'), two = h('div', 'two');
+    var nt = stepTarget(1), bt = stepTarget(-1);
+    var lab = function (t) { return t ? (t.step && t.slide === (s && s.n) ? 'Step ' + (t.step + 1) : 'Slide ' + t.slide + (t.step ? ', step ' + (t.step + 1) : '')) : 'None'; };
+    var back = btn('k go', 'Back', function () { go(-1); }, bst('back') || lab(bt)); back.disabled = !bt;
+    var next = btn('k go', 'Next', function () { go(1); }, bst('next') || lab(nt)); next.disabled = !nt;
+    back.setAttribute('aria-label', 'Back to ' + lab(bt)); next.setAttribute('aria-label', 'Next, ' + lab(nt));
+    two.appendChild(back); two.appendChild(next); D.appendChild(two);
+    D.appendChild(btn('k qc', bst('quick') === 'Sending' ? 'Sending' : q && q.open ? 'New quick check' : 'Quick check', function () { S.pick = true; drawPicker(); }));
+    var seg = h('div', 'seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Lesson state');
+    ['together', 'own'].forEach(function (m) {
+      var b = btn(mode === m ? 'on' : '', MODE[m], function () { if (curMode() !== m) setMode(m); });
+      b.setAttribute('aria-pressed', String(mode === m));
+      if (mode === m && bst('mode')) b.appendChild(h('small', '', bst('mode')));
+      seg.appendChild(b);
+    });
+    D.appendChild(seg);
+    var row = h('div', S.letin.length ? 'three' : 'two');
+    var eyes = mode === 'eyes';
+    row.appendChild(btn('k sm' + (eyes ? ' on' : ''), eyes ? 'Let them go on' : 'Eyes on me', function () { setMode(eyes ? 'release' : 'eyes'); }, bst('eyes') || (eyes ? 'iPads are paused' : 'Pause the iPads')));
+    row.appendChild(btn('k sm', 'Who is stuck (' + S.stuck.length + ')', function () { openSheet({ kind: 'stuck' }); }));
+    if (S.letin.length) row.appendChild(btn('k sm wait', 'Let in (' + S.letin.length + ')', function () { openSheet({ kind: 'letin' }); }));
+    D.appendChild(row);
+    A.appendChild(D);
+  }
+
+  /* ---------- overlays: the check picker and the sheets ---------- */
+  function closeOv() { var o = $('ov'); o.classList.add('hidden'); o.innerHTML = ''; }
+  function openSheet(x) { S.sheet = x; S.pick = false; drawSheet(); }
+  function closeSheet() { S.sheet = null; closeOv(); }
+  function ovShell() {
+    var o = $('ov'); o.innerHTML = ''; o.classList.remove('hidden');
+    o.onclick = function (e) { if (e.target === o) { S.pick = false; closeSheet(); } };
+    var sh = h('div', 'sh'); sh.setAttribute('role', 'dialog'); o.appendChild(sh); return sh;
+  }
+  function drawPicker() {
+    S.sheet = null;
+    var sh = ovShell();
+    sh.appendChild(h('span', 'big', 'Ask the class'));
+    sh.appendChild(h('span', 'mut', 'Say the question out loud, or point at the slide. Students answer with one tap.'));
+    var g = h('div', 'pick');
+    var hasQ = slideQs().length > 0;
+    [['abcd', 'A B C D'], ['tf', 'True or false'], ['gotit', 'Got it, Nearly, Lost'], ['word', 'Type a word']].forEach(function (t) {
+      g.appendChild(btn('', t[1], function () { startQuick(t[0]); }));
+    });
+    var sq = btn('acc wide', 'Question on this slide', function () { startQuick('slide'); });
+    sq.disabled = !hasQ; if (!hasQ) sq.title = 'This slide has no question.';
+    g.appendChild(sq); sh.appendChild(g);
+    if (!hasQ) sh.appendChild(h('span', 'note', 'Question on this slide works on a slide with a question.'));
+    sh.appendChild(btn('b full', 'Cancel', function () { S.pick = false; closeOv(); }));
+  }
+  function letinCard() {
+    var c = h('div', 'card'); c.appendChild(h('span', 'lbl', 'Waiting to be let in'));
+    S.letin.forEach(function (x) {
+      var li = h('div', 'li'), g = h('div', 'grow');
+      g.appendChild(h('b', '', x.name)); g.appendChild(h('span', 'note', x.cls + ', asked at ' + clock(x.at || now())));
+      li.appendChild(g);
+      var yes = btn('b solid', 'Let in', function () { answerLetin(x, true, yes, no); }), no = btn('b', 'No', function () { answerLetin(x, false, yes, no); });
+      li.appendChild(yes); li.appendChild(no); c.appendChild(li);
+    });
+    c.appendChild(h('span', 'note', 'Let in only if that is the student holding the iPad.'));
+    return c;
+  }
+  function answerLetin(x, allow, yes, no) {
+    yes.disabled = no.disabled = true; yes.textContent = 'Sending';
+    var done = function () { S.letin = S.letin.filter(function (y) { return y.id !== x.id; }); toast(allow ? x.name + ' is in.' : 'Not let in.'); if (S.sheet && S.sheet.kind === 'letin' && !S.letin.length) closeSheet(); draw(); };
+    var fail = function (e) { yes.disabled = no.disabled = false; yes.textContent = 'Let in'; if (!authLost(e)) toast('Not sent. Tap again.'); };
+    if (S.cls) {
+      var c = cmd('letin', { id: x.id, allow: allow }, 'letin' + x.id);
+      done(); return c;
+    }
+    // No lesson chosen: the same command for the student's own class.
+    var id = cmdId(); S.sent[id] = 1;
+    run('t_do', S.key, x.cls, '', 'letin', { id: x.id, allow: allow }, id).then(done, fail);
+  }
+  function drawSheet() {
+    var x = S.sheet; if (!x) return;
+    var sh = ovShell();
+    if (x.kind === 'stuck') {
+      sh.appendChild(h('span', 'big', 'Who is stuck'));
+      if (!S.stuck.length) sh.appendChild(h('span', 'mut', 'Nobody is stuck right now.'));
+      S.stuck.forEach(function (s) {
+        var li = btn('li', '', function () { openSheet({ kind: 'name', name: s.name }); }); li.innerHTML = '';
+        var g = h('div', 'grow'); g.appendChild(h('b', '', s.name)); g.appendChild(h('span', 'note', s.why || '')); li.appendChild(g);
+        li.style.border = '0'; li.style.textAlign = 'left'; sh.appendChild(li);
+      });
+      sh.appendChild(h('span', 'note', 'Stuck means 3 minutes on one step, or 2 wrong tries on this task.'));
+    } else if (x.kind === 'letin') {
+      sh.appendChild(letinCard());
+    } else if (x.kind === 'name') {
+      drawNameSheet(sh, x);
+    } else if (x.kind === 'menu') {
+      sh.appendChild(h('span', 'big', S.lesson ? S.lesson.cls + ' · ' + (S.lesson.title || '') : 'This phone'));
+      var others = S.running.filter(function (r) { return !(r.cls === S.cls && r.deckId === S.deck); });
+      if (others.length) {
+        sh.appendChild(h('span', 'lbl', 'Other lessons running'));
+        others.forEach(function (r) { var li = h('div', 'li'), g = h('div', 'grow'); g.appendChild(h('b', '', r.cls + ' · ' + (r.title || ''))); li.appendChild(g); li.appendChild(btn('b solid', 'Switch', function () { join(r); })); sh.appendChild(li); });
+      }
+      if (S.lesson) {
+        var fun = !!(S.ctl && S.ctl.fun);
+        sh.appendChild(btn('b full', bst('avatars') || (fun ? 'Close avatars and the night market' : 'Open avatars and the night market'), function () { S.ctl = S.ctl || {}; S.ctl.fun = !fun; cmd('avatars', { on: !fun }, 'avatars'); drawSheet(); }));
+        sh.appendChild(btn('b full', 'Stop following this lesson on the phone', function () { leave(false); }));
+      }
+      if (x.forget) {
+        sh.appendChild(h('span', 'mut', 'Forget this phone? You will need to pair it again from the Teacher Hub.'));
+        var t = h('div', 'two');
+        t.appendChild(btn('b solid', 'Yes, forget it', function () { store('lb_dev_key', ''); store('lb_ph_sel', ''); S.key = ''; S.lostWhy = ''; S.view = 'nopair'; clearTimeout(S.timer); closeSheet(); draw(); }));
+        t.appendChild(btn('b', 'Cancel', function () { x.forget = false; drawSheet(); }));
+        sh.appendChild(t);
+      } else sh.appendChild(btn('b full', 'Forget this phone', function () { x.forget = true; drawSheet(); }));
+      sh.appendChild(btn('b full', 'Close', closeSheet));
+    }
+    if (x.kind !== 'menu') sh.appendChild(btn('b full', 'Close', closeSheet));
+  }
+  function drawNameSheet(sh, x) {
+    var n = x.name, cls = S.cls || '';
+    sh.appendChild(h('span', 'big', n));
+    sh.appendChild(h('span', 'lbl', 'Points'));
+    var pts = h('div', 'three');
+    [1, 2, 5].forEach(function (p) {
+      var b = btn('b', '+' + p, function () {
+        b.disabled = true; b.textContent = 'Sending';
+        run('apiGivePoints', S.key, cls, n, p, 'Good work in class').then(function () { b.textContent = 'Done'; toast(n + ' has ' + plural(p, 'more point', 'more points') + '.'); setTimeout(function () { b.disabled = false; b.textContent = '+' + p; }, 1400); },
+          function (e) { b.disabled = false; b.textContent = '+' + p; if (!authLost(e)) toast(errText(e) || 'Not sent. Tap again.'); });
+      });
+      b.setAttribute('aria-label', 'Give ' + n + ' ' + plural(p, 'point', 'points')); pts.appendChild(b);
+    });
+    sh.appendChild(pts);
+    sh.appendChild(h('span', 'lbl', 'Sign-in'));
+    if (x.confirm) {
+      var pin = x.confirm === 'pin';
+      sh.appendChild(h('span', 'mut', pin ? 'Reset the password for ' + n + '? They set a new one the next time they sign in.' : 'Sign out ' + n + ' on this iPad? They will need their password to sign in again.'));
+      var t = h('div', 'two');
+      var yes = btn('b solid', pin ? 'Yes, reset it' : 'Yes, sign out', function () {
+        yes.disabled = true; yes.textContent = 'Sending';
+        run('apiStReset', S.key, cls, n, pin ? 'pin' : 'out').then(function () { toast(pin ? 'The password for ' + n + ' is reset.' : n + ' is signed out.'); closeSheet(); },
+          function (e) { yes.disabled = false; yes.textContent = pin ? 'Yes, reset it' : 'Yes, sign out'; if (!authLost(e)) toast(errText(e) || 'Not sent. Tap again.'); });
+      });
+      t.appendChild(yes); t.appendChild(btn('b', 'Cancel', function () { x.confirm = ''; drawSheet(); }));
+      sh.appendChild(t);
+    } else {
+      var t2 = h('div', 'two');
+      t2.appendChild(btn('b', 'Sign out this iPad', function () { x.confirm = 'out'; drawSheet(); }));
+      t2.appendChild(btn('b', 'Reset password', function () { x.confirm = 'pin'; drawSheet(); }));
+      sh.appendChild(t2);
+    }
+  }
+
+  /* ---------- a light tick for timers, Undo and the stale line ---------- */
+  setInterval(function () {
+    if (document.hidden) return;
+    var u = document.querySelector('.udt');
+    if (S.ending) {
+      var left = Math.ceil((S.ending.until - now()) / 1000);
+      if (left <= 0 && !S.ending.done) { S.ending.done = true; refreshNow(); draw(); }
+      else if (u) u.textContent = left > 0 ? 'Ending the lesson in ' + left + ' s.' : 'Ending the lesson.';
+    }
+    var qt = document.querySelector('.qtime');
+    if (qt) { var q = curQuick(); if (q && q.open) qt.textContent = qt.getAttribute('data-txt') + ', ' + Math.max(0, Math.floor((now() - Number(qt.getAttribute('data-t0'))) / 1000)) + ' s'; }
+    var b = Object.keys(S.bst).some(function (k) { return S.bst[k].until && now() > S.bst[k].until; });
+    if (b) draw(); else drawStale();
+    if (S.ov.go && S.ov.go.ack && now() - S.ov.go.ack > 6000) draw();
+  }, 1000);
+
+  /* ---------- start ---------- */
+  function startLive() {
+    S.view = S.cls ? 'lesson' : 'idle'; S.bootAt = now();
+    draw(); liveNext(0); loadHome();
+  }
+  function boot(hash) {
+    S.bootAt = now();
+    var m = /(?:^|[#&])pair=([\w-]+)/.exec(hash || '');
+    S.key = load('lb_dev_key');
+    if (S.key) {
+      try { var sel = JSON.parse(load('lb_ph_sel') || 'null'); if (sel && sel.cls) { S.cls = sel.cls; S.deck = sel.deck; S.lesson = { cls: sel.cls, deckId: sel.deck, title: '', mode: 'own', slide: null }; } } catch (e) { /* none */ }
+      startLive(); return;
+    }
+    if (m) { pair(m[1]); return; }
+    S.view = 'nopair'; draw();
+  }
+  var booted = false;
+  function bootOnce(hash) { if (booted) return; booted = true; boot(hash); }
+  try {
+    google.script.url.getLocation(function (loc) { bootOnce((loc && loc.hash) || location.hash); });
+    setTimeout(function () { bootOnce(location.hash); }, 2000);
+  } catch (e) { bootOnce(location.hash); }
+})();
+</script>
+</body>
+</html>

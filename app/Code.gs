@@ -2832,8 +2832,11 @@ function hubClass_(cls, fresh, map) {
     var bad = cache.get(key + '_err');
     if (bad) return { error: bad };
   }
-  // When a whole class opens the home page at once, one request asks the Hub and the rest wait for it.
+  // When a whole class opens the home page at once, one request asks the Hub. The rest use the last good copy at
+  // once (release 34), and wait only when there is none yet.
   if (!fresh && cache.get(key + '_busy')) {
+    var lastGood = getBig_(key + '_last');
+    if (lastGood) return JSON.parse(lastGood);
     for (var w = 0; w < 12; w++) {
       Utilities.sleep(500);
       var h2 = getBig_(key);
@@ -2845,7 +2848,7 @@ function hubClass_(cls, fresh, map) {
   var msg = '';
   try {
     var j = lbClass_({ api: 'lb_class', key: INPROC_, cls: cls });
-    if (j && j.ok) { putBig_(key, JSON.stringify(j), 120); cache.remove(key + '_busy'); return j; }
+    if (j && j.ok) { var js = JSON.stringify(j); putBig_(key, js, 120); putBig_(key + '_last', js, 21600); cache.remove(key + '_busy'); return j; }
     msg = 'The Teacher Hub did not answer as expected.';
   } catch (err) {
     msg = /HUB_NOT_MOVED/.test(err.message) ? 'Homework and points are being moved into learnwithmrcedric. They will be back soon.' : 'The Teacher Hub could not be read: ' + err.message;
