@@ -4010,6 +4010,7 @@ function apiGivePoints(pin, cls, name, points, note) {
    when the presenter view reaches it. End lesson takes it all off, so students can finish at home. */
 function apiStartLesson(pin, deckId, cls, from, to, title) {
   checkPin_(pin);
+  try { ensureDeckKnown_(deckId); } catch (err) { /* it registers with its first answer */ }
   endOtherLessons_(deckId, cls);
   try { endOtherClasses_(cls); } catch (err) { /* they end by themselves */ }
   try { noteStart_(deckId, cls, Math.round(Number(from) || 0), Math.round(Number(to) || 0)); } catch (err) { /* only for the timetable */ }
@@ -4024,6 +4025,21 @@ function apiStartLesson(pin, deckId, cls, from, to, title) {
   cachePut_('wtr_' + String(deckId).slice(0, 80) + '_' + normClass_(cls), '1', 21600);
   try { verBump_('today'); verBump_('cls_' + normClass_(cls)); } catch (err) { /* only stamps */ }
   return apiGetControl(pin, deckId, cls, c);
+}
+/* Release 34: a deck taught for the first time is listed at Start (from the lesson site's list), so the phone and the
+   students' Join see the lesson at once. Its questions arrive with the first answer, as before. */
+function ensureDeckKnown_(deckId) {
+  if (!deckId || findDeck_(deckId)) return;
+  var info = null;
+  try { chaptersAll_().forEach(function (c) { c.decks.forEach(function (d) { if (d.id === deckId) info = d; }); }); } catch (err) { info = null; }
+  var site = '';
+  try { site = lessonSite_(); } catch (err) { site = ''; }
+  withLock_(function () {
+    if (findDeck_(deckId)) return;
+    var sh = sheet_(TAB.decks), row = [deckId, info ? info.title : deckId, '', 0, new Date(), info && info.file ? site + info.file : '', '', ''];
+    sh.getRange(sh.getLastRow() + 1, 1, 1, DECK_COLS.length).setValues([row.slice(0, DECK_COLS.length)]);
+    CacheService.getScriptCache().remove('decks');
+  }, 15000);
 }
 /* A class has one lesson at a time: starting one ends any other lesson still running for that class, so
    learnwithmrcedric shows the right lesson in class now. */

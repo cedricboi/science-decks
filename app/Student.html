@@ -533,7 +533,7 @@
   function isSignedOut(e) { return /SIGNED_OUT/.test((e && e.message) || ''); }
   function firstName(n) { return String(n || '').trim().split(/\s+/)[0] || ''; }
   function greet() { var h = new Date().getHours(); return h < 12 ? 'Good morning' : (h < 18 ? 'Good afternoon' : 'Good evening'); }
-  function fmtDay(ts) { var d = new Date(ts); return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }); }
+  function fmtDay(ts) { var d = new Date(ts); return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
   function shortDue(h) { if (!h.dueTs) return 'Due'; var d = new Date(h.dueTs), now = new Date(); if (d < now) return 'Overdue'; if (d.toDateString() === now.toDateString()) return 'Due today'; var tm = new Date(now); tm.setDate(tm.getDate() + 1); if (d.toDateString() === tm.toDateString()) return 'Due tomorrow'; return 'Due ' + d.toLocaleDateString([], { weekday: 'short' }); }
   function fmtDue(h) {
     if (!h.dueTs) return h.due ? 'Due ' + h.due : '';
@@ -886,7 +886,7 @@
     var tm = new Date(now); tm.setDate(tm.getDate() + 1);
     if (d.toDateString() === tm.toDateString()) return 'tomorrow at ' + t;
     if (d - now > 0 && d - now < 6 * 864e5) return d.toLocaleDateString([], { weekday: 'long' }) + ' at ' + t;
-    return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   }
   function dueText(it) {
     var c = it.status === 'corrDue', ts = dueOf(it), what = c ? 'Corrections are due' : 'Due';
@@ -945,7 +945,7 @@
     if (!me) return;
     var n = (D && D.now) || {};
     if (panel === 'now' && n.lesson) { $('h1').textContent = 'Science lesson'; $('hsub').textContent = me.name + ' · ' + me.cls; }
-    else if (panel === 'now') { $('h1').textContent = greet() + ', ' + firstName(me.name); $('hsub').textContent = me.cls + ' · ' + new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }); }
+    else if (panel === 'now') { $('h1').textContent = greet() + ', ' + firstName(me.name); $('hsub').textContent = me.cls + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); }
     else if (panel === 'file') { $('h1').textContent = 'My Science file'; $('hsub').textContent = me.name + ' · ' + me.cls; }
     else { $('h1').textContent = 'Me'; $('hsub').textContent = me.name + ' · ' + me.cls; }
     drawFresh();
@@ -1104,9 +1104,10 @@
     var b = backItem();
     if (b && b.id !== heroId) {
       var ring = el('div', 'ring', b.score ? shortScore(b.score) : 'New');
-      out.push(rowCard('BACK FROM MR CEDRIC', b.title, b.status === 'corrDue' ? dueText(b) : (b.score ? 'Marked, ' + scoreText(b.score) + '.' : 'Marked.'), 'Open', function () { openSheet(b, 'now', 'marked'); }, ring));
+      out.push(rowCard('BACK FROM MR CEDRIC', b.title, b.status === 'corrDue' ? dueText(b) : (b.score ? 'Marked, ' + scoreText(b.score) + '.' : 'Marked.'), b.status === 'corrDue' ? 'Do corrections' : 'Open', function () { openSheet(b, 'now', b.status === 'corrDue' ? 'corrections' : 'marked'); }, ring));
     }
-    var more = (L.rest || [])[0];
+    // a sheet already shown above (the hero, or Back from Mr Cedric) is not shown twice
+    var more = (L.rest || []).filter(function (x) { return x.id !== heroId && !(b && x.id === b.id); })[0];
     if (more) out.push(rowCard('ALSO TO DO', more.title, dueText(more), more.status === 'corrDue' ? 'Do corrections' : more.status === 'started' ? 'Carry on' : 'Start', function () { openSheet(more, 'now', more.status === 'corrDue' ? 'corrections' : 'write'); }));
     var pz = D.puzzle;
     if (L.k !== 7 && funOpen() && pz) out.push(rowCard('TODAY\'S PUZZLE', pz.left > 0 ? (pz.left === 1 ? '1 puzzle left' : pz.left + ' puzzles left') : 'All done today', pz.streak ? pz.streak + '-day streak' : '', 'Play', function () { openPanel('arcade', 'now'); }));
