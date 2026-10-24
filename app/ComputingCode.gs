@@ -117,7 +117,7 @@ function cmpCheck_(ct) {
 }
 function cmpWho_(ct) {
   var who = cmpCheck_(ct);
-  if (!who) throw new Error('SIGNED_OUT: Sign in again with your PIN.');
+  if (!who) throw new Error('SIGNED_OUT: Sign in again with your name and password.');
   return who;
 }
 function cmpOut_(who, v) { return { ok: true, ct: cmpIssue_(who, v), cls: who.plain, name: who.name }; }
@@ -132,9 +132,35 @@ function apiCmpSignIn(cls, typed, pin) {
   stClear_('stf_', id);
   return cmpOut_(who, a.v);
 }
-/* The first time: the name and the register number, then a PIN and a security question. */
+/* Release 33: the name and a password, without the class, as for Science (see apiStSignIn2). */
+var CMP_NOMATCH_PASS = 'That name and computing password do not match. Type your full name as it is on the class list. First time here? Choose First time or forgot password.';
+function apiCmpSignIn2(typed, pass, cls) {
+  if (!nameWords_(typed).length) throw new Error('Type your name.');
+  if (!String(pass == null ? '' : pass).trim()) throw new Error('Type your password.');
+  var all = cls ? [cmpTyped_(cls, typed)].filter(Boolean) : cmpClasses_().map(function (c) { return cmpTyped_(c, typed); }).filter(Boolean);
+  var m = stMatchPass_(all, typed, pass, CMP_NOMATCH_PASS, 'CMP:*');
+  if (m.needClass) return { needClass: m.needClass };
+  var out = cmpOut_(m.hit, acctGet_(acctId_(m.hit.cls, m.hit.name)).v);
+  out.weak = m.weak;
+  return out;
+}
+function apiCmpChangePass(ct, oldPass, newPass) {
+  var w = cmpWho_(ct), id = w.id;
+  newPass = stPassOk_(newPass, w.name);
+  var left = stTry_('stf_', id), a = acctGet_(id);
+  if (!a || !a.ph || stHash_(a.s, String(oldPass == null ? '' : oldPass).trim()) !== a.ph) throw new Error(stNoMatch_('stf_', left, 'Your current password is not right.'));
+  return withLock_(function () {
+    var b = acctGet_(id) || a;
+    b.ph = stHash_(b.s, newPass); b.v = (Number(b.v) || 0) + 1; b.at = Date.now();
+    acctPut_(id, b);
+    stClear_('stf_', id);
+    cachePut_('sv_' + id, String(b.v), 21600);
+    return cmpOut_({ cls: 'CMP:' + w.cls, plain: w.cls, name: w.name }, b.v);
+  }, 10000);
+}
+/* The first time: the name and the register number, then a password and a security question. */
 function apiCmpSetup(cls, typed, reg, pin, q, answer) {
-  pin = stPinOk_(pin);
+  pin = stPassOk_(pin, typed);
   q = Math.round(Number(q));
   if (!(q >= 0 && q < ST_QUESTIONS.length)) throw new Error('Choose a question.');
   var ans = stAnswer_(answer);
@@ -145,12 +171,12 @@ function apiCmpSetup(cls, typed, reg, pin, q, answer) {
   if (!regTyped) throw new Error('Type your register number. No register number? Ask your teacher.');
   var left = stTryAny_('srf_', who, 'CMP:' + cmpNormClass_(cls), typed);
   if (!who || !who.reg || regTyped !== String(who.reg).trim().replace(/^0+(?=\d)/, '')) {
-    throw new Error(left > 0 ? 'That name and register number do not match the class list. ' + left + (left === 1 ? ' try' : ' tries') + ' left.' : 'That name and register number do not match. Ask your teacher to reset your PIN.');
+    throw new Error(left > 0 ? 'That name and register number do not match the class list. ' + left + (left === 1 ? ' try' : ' tries') + ' left.' : 'That name and register number do not match. Ask your teacher to reset your password.');
   }
   var id = acctId_(who.cls, who.name);
   return withLock_(function () {
     var a = acctGet_(id);
-    if (a && a.ph) throw new Error('You already have a PIN. Go back and sign in, or use Forgot my PIN.');
+    if (a && a.ph) throw new Error('You already have a computing password. Go back and sign in, or use Forgot password.');
     var s = Utilities.getUuid().replace(/-/g, ''), v = (a ? Number(a.v) || 0 : 0) + 1;
     acctPut_(id, { c: who.cls, n: who.name, s: s, ph: stHash_(s, pin), q: q, ah: stHash_(s, 'a|' + ans), v: v, at: Date.now() });
     stClear_('srf_', id); stClear_('stf_', id); stClear_('saf_', id);
@@ -158,7 +184,7 @@ function apiCmpSetup(cls, typed, reg, pin, q, answer) {
   }, 10000);
 }
 function apiCmpForgot(cls, typed, q, answer, pin) {
-  pin = stPinOk_(pin);
+  pin = stPassOk_(pin, typed);
   var who = cmpTyped_(cls, typed);
   var left = stTryAny_('saf_', who, 'CMP:' + cmpNormClass_(cls), typed);
   var id = who ? acctId_(who.cls, who.name) : '', a = who ? acctGet_(id) : null;
@@ -317,7 +343,7 @@ function apiCmpFile(ct, id) { return cmpFileOf_(cmpWho_(ct), id); }
 function cmpPost_(d) {
   try {
     if (d.op === 'info') return { ok: true, classes: cmpClasses_() };
-    if (d.op === 'signin') return apiCmpSignIn(d.cls, d.name, d.pin);
+    if (d.op === 'signin') return apiCmpSignIn2(d.name, d.pin, d.cls);
     if (d.op === 'me') return apiCmpMe(d.ct);
     if (d.op === 'save') return cmpSave_(d);
     if (d.op === 'files') return { ok: true, files: cmpFilesOf_(cmpWho_(d.ct)) };

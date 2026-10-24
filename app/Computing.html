@@ -177,7 +177,15 @@
   <main class="po-main">
     <div id="po-msg" class="msg hidden"></div>
 
-    <section id="po-student">
+    <!-- Release 33: Computing signs in on the main learnwithmrcedric page, with its name and password -->
+    <section id="po-goto" class="hidden">
+      <h2>Sign in to Computing</h2>
+      <p class="quiet" style="margin:10px 0 18px">Computing now signs in on the learnwithmrcedric page, with your name and password. Choose Computing at the top of the sign-in card.</p>
+      <a class="btn big" id="goto-signin" href="#" style="text-decoration:none">Go to sign in</a>
+      <p class="quiet" style="margin:14px 0 0">Your old computing PIN still works as your password the first time.</p>
+    </section>
+
+    <section id="po-student" class="hidden">
       <div class="po-head"><button class="iconbtn hidden" id="po-back" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2 id="po-title">Tap your computing class</h2></div>
       <div id="st-class" class="chips" style="margin-top:18px"></div>
       <div id="st-name" class="po-form hidden" style="margin-top:18px">
@@ -275,7 +283,10 @@
     } else { $('po-title').textContent = 'Hi ' + firstName(st.name) + ', your PIN'; st.pin = ''; pinDraw(); }
   }
   function portal(note) {
-    view('v-portal'); $('po-student').classList.remove('hidden'); $('po-form').classList.add('hidden');
+    view('v-portal'); $('po-student').classList.add('hidden'); $('po-form').classList.add('hidden'); $('po-goto').classList.remove('hidden');
+    $('goto-signin').href = location.href.split('?')[0].split('#')[0] + '?signin=computing';
+    if (note) poMsg(note, true);
+    return;
     st = { cls: last.cls || '', name: last.name || '', pin: '' };
     stStep('class'); if (note) poMsg(note, true);
   }
@@ -416,7 +427,7 @@
     if (!ct) { portal(); return; }
     if (!home) view('v-load');
     call('apiCmpHome', ct).then(function (r) { home = r; renderHome(); view('v-app'); })
-      .catch(function (e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your PIN.'); } else { $('v-load').textContent = e.message; view('v-load'); } });
+      .catch(function (e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your name and password.'); } else { $('v-load').textContent = e.message; view('v-load'); } });
   }
   function save(name, b64, type) {
     var bin = atob(b64), u = new Uint8Array(bin.length);
@@ -426,7 +437,7 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   }
   function busy(b) { var h = b.innerHTML; b.disabled = true; b.textContent = 'Getting it…'; return function () { b.disabled = false; b.innerHTML = h; }; }
-  function signedOutNow(e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your PIN.'); return true; } return false; }
+  function signedOutNow(e) { if (/SIGNED_OUT/.test(e.message)) { store(K, null); home = null; portal('Sign in again with your name and password.'); return true; } return false; }
   document.addEventListener('click', function (e) {
     var g = e.target.closest('[data-get]'), d = e.target.closest('[data-dl]'), lk = e.target.closest('.look button');
     if (lk) { msTheme.set(lk.getAttribute('data-v')); renderHome(); return; }

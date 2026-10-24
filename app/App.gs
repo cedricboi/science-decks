@@ -332,6 +332,7 @@ function devOk_(tk) {
 function apiPairDevice(pin, kind, name) {
   checkPin_(pin);
   var k = /^(phone|laptop|projector|hub)$/.test(String(kind)) ? String(kind) : 'laptop';
+  if (k === 'hub' && tAcct_()) k = 'laptop';     // a Hub laptop is paired only by the username and password
   return devIssue_(k, name);
 }
 function unpairAll_() {
@@ -1017,7 +1018,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 29;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 33;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;

@@ -4065,6 +4065,62 @@ function apiStSignIn(cls, typed, pin) {
   return { ok: true, st: stIssue_(who, a.v), cls: who.cls, name: who.name };
 }
 
+
+/* Release 33: students sign in with their name and a password. The class is not asked: every student whose name
+   matches the one typed is checked against the password, so two students with the same name in different classes
+   still each get in. A 4-number PIN from before is simply a short password and keeps working; the page then asks the
+   student to choose a proper one. Tries are counted on every account the name matches, as before. */
+var ST_NOMATCH_PASS = 'That name and password do not match. Type your full name as it is on the class list. First time here? Choose First time or forgot password.';
+function typedAll_(typed) {
+  return Object.keys(readRoster_()).sort().map(function (c) { return typedStudent_(c, typed); }).filter(Boolean);
+}
+/* Checks a name and password against the students whose name matches. Under the lock: accounts that are waiting
+   out wrong tries are left out; if exactly one of the rest has this password it signs in (and only its own count is
+   cleared); if none does, one try is counted on every account the name matches, so guessing a same-name student's
+   password through your own account is counted on theirs. Returns { hit }, { needClass } (two matching accounts share
+   the password) or throws. A name on no list costs the same hashing, so the answer time says nothing about the list. */
+function stMatchPass_(all, typed, pass, nomatch, scopeCls) {
+  pass = String(pass == null ? '' : pass).trim();
+  if (!all.length) {
+    stHash_('no-such-account', pass);
+    throw new Error(stNoMatch_('stf_', stTryAny_('stf_', null, scopeCls, typed), nomatch));
+  }
+  return withLock_(function () {
+    var open = all.filter(function (w) { return !stBlocked_('stf_', acctId_(w.cls, w.name)); });
+    var hits = open.filter(function (w) { var a = acctGet_(acctId_(w.cls, w.name)); return a && a.ph && stHash_(a.s, pass) === a.ph; });
+    if (hits.length > 1) return { needClass: hits.map(function (w) { return w.plain || w.cls; }) };
+    if (hits.length === 1) { stClear_('stf_', acctId_(hits[0].cls, hits[0].name)); return { hit: hits[0], weak: /^\d{4}$/.test(pass) }; }
+    if (!open.length) { var why = stBlocked_('stf_', acctId_(all[0].cls, all[0].name)); throw new Error(why === 'teacher' ? stTeacherMsg_('stf_') : stWaitMsg_(ST_LIMITS.stf_.mins)); }
+    var left = Infinity;
+    all.forEach(function (w) { try { left = Math.min(left, stTryIn_('stf_', acctId_(w.cls, w.name))); } catch (err) { left = 0; } });
+    throw new Error(stNoMatch_('stf_', left === Infinity ? 0 : left, nomatch));
+  }, 10000);
+}
+function apiStSignIn2(typed, pass, cls) {
+  if (!nameWords_(typed).length) throw new Error('Type your name.');
+  if (!String(pass == null ? '' : pass).trim()) throw new Error('Type your password.');
+  var all = cls ? [typedStudent_(cls, typed)].filter(Boolean) : typedAll_(typed);
+  var m = stMatchPass_(all, typed, pass, ST_NOMATCH_PASS, '*');
+  if (m.needClass) return { needClass: m.needClass };
+  var who = m.hit, a = acctGet_(acctId_(who.cls, who.name));
+  return { ok: true, st: stIssue_(who, a.v), cls: who.cls, name: who.name, weak: m.weak };
+}
+/* A new password, from inside learnwithmrcedric. Every other sign-in of theirs ends; this one carries on. */
+function apiStChangePass(st, oldPass, newPass) {
+  var who = stWho_(st), id = acctId_(who.cls, who.name);
+  newPass = stPassOk_(newPass, who.name);
+  var left = stTry_('stf_', id), a = acctGet_(id);
+  if (!a || !a.ph || stHash_(a.s, String(oldPass == null ? '' : oldPass).trim()) !== a.ph) throw new Error(stNoMatch_('stf_', left, 'Your current password is not right.'));
+  return withLock_(function () {
+    var b = acctGet_(id) || a;
+    b.ph = stHash_(b.s, newPass); b.v = (Number(b.v) || 0) + 1; b.at = Date.now();
+    acctPut_(id, b);
+    stClear_('stf_', id);
+    cachePut_('sv_' + id, String(b.v), 21600);
+    return { ok: true, st: stIssue_({ cls: who.cls, name: who.name }, b.v), cls: who.cls, name: who.name };
+  }, 10000);
+}
+
 /* The student on the class list, or an error. */
 function rosterStudent_(cls, name) {
   var who = matchStudent_(cls, name);
@@ -4108,7 +4164,7 @@ function stCheck_(st, ver) {
 /* For the student pages: the student, or an error the page recognises (it shows the sign-in again). */
 function stWho_(st) {
   var who = stCheck_(st);
-  if (!who) throw new Error('SIGNED_OUT: Sign in again with your PIN.');
+  if (!who) throw new Error('SIGNED_OUT: Sign in again with your name and password.');
   return who;
 }
 function stHash_(salt, text) {
@@ -4117,6 +4173,18 @@ function stHash_(salt, text) {
   return h;
 }
 function stAnswer_(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9À-￿]+/g, ''); }
+/* A password: at least 6 characters, not one character over and over, not a well-known one, and not the student's
+   own name. Spaces at either end are dropped, as they are when signing in. */
+var ST_WEAK_PASS = ['password', 'password1', '123456', '1234567', '12345678', '123456789', '1234567890', 'qwerty', 'qwertyuiop', 'abcdef', 'abc123', 'abcd1234', 'iloveyou', 'science', 'computing', 'assumption'];
+function stPassOk_(pass, name) {
+  pass = String(pass == null ? '' : pass).trim();
+  if (pass.length < 6) throw new Error('Your password needs at least 6 letters or numbers.');
+  if (pass.length > 60) throw new Error('That password is too long. Use 60 characters or fewer.');
+  var low = pass.toLowerCase();
+  if (/^(.)\1+$/.test(pass) || ST_WEAK_PASS.indexOf(low) >= 0) throw new Error('That password is too easy to guess. Choose another one.');
+  if (name && nameWords_(name).some(function (w) { return w.length >= 3 && low.replace(/[^a-z0-9]/g, '') === w; })) throw new Error('Do not use your name as your password.');
+  return pass;
+}
 function stPinOk_(pin) {
   pin = String(pin == null ? '' : pin).trim();
   if (!/^\d{4}$/.test(pin)) throw new Error('Your PIN is 4 numbers.');
@@ -4139,12 +4207,14 @@ function stBlocked_(kind, id) {
   if (L.mins && f.n >= L.max && Date.now() - f.w < L.mins * 60000) return 'wait';
   return '';
 }
-function stTeacherMsg_(kind) { return kind === 'srf_' ? 'Ask your teacher to let you in.' : 'Too many wrong tries. Ask your teacher to reset your PIN.'; }
+function stTeacherMsg_(kind) { return kind === 'srf_' ? 'Ask your teacher to let you in.' : 'Too many wrong tries. Ask your teacher to reset your password.'; }
 function stWaitMsg_(mins) { return 'Too many wrong tries. Wait ' + mins + ' minutes, or ask your teacher.'; }
 /* Counts one try now. Returns how many are left after it (0: the next one is refused), or refuses this one. */
-function stTry_(kind, id) {
+function stTry_(kind, id) { return withLock_(function () { return stTryIn_(kind, id); }, 10000); }
+// The same, for a caller that already holds the lock.
+function stTryIn_(kind, id) {
   var L = ST_LIMITS[kind];
-  return withLock_(function () {
+  return (function () {
     var f = stFails_(kind, id), now = Date.now();
     if (f.t >= L.hard) throw new Error(stTeacherMsg_(kind));
     if (!f.w || (L.mins && now - f.w >= L.mins * 60000)) { f.n = 0; f.w = now; }
@@ -4152,7 +4222,7 @@ function stTry_(kind, id) {
     f.n++; f.t++;
     PropertiesService.getScriptProperties().setProperty(kind + id, JSON.stringify(f));
     return Math.max(0, Math.min(L.mins ? L.max - f.n : L.hard - f.t, L.hard - f.t));
-  }, 10000);
+  })();
 }
 function stMissMsg_(kind, left, what) {
   if (left > 0) return what + ' ' + left + (left === 1 ? ' try' : ' tries') + ' left.';
@@ -4166,7 +4236,7 @@ function apiStLogin(cls, name, pin) { return apiStSignIn(cls, name, pin); }
 /* The first time: the name as typed and the register number (or the teacher's Let in, key; or nothing in the
    class's own lesson), then the PIN and the question. A wrong name and a wrong register number get the same answer. */
 function apiStSetup(cls, typed, proof, pin, q, answer) {
-  pin = stPinOk_(pin);
+  pin = stPassOk_(pin, typed);
   q = Math.round(Number(q));
   if (!(q >= 0 && q < ST_QUESTIONS.length)) throw new Error('Choose a question.');
   var ans = stAnswer_(answer);
@@ -4197,7 +4267,7 @@ function apiStSetup(cls, typed, proof, pin, q, answer) {
   var id = acctId_(who.cls, who.name);
   return withLock_(function () {
     var a = acctGet_(id);
-    if (a && a.ph) throw new Error('You already have a PIN. Go back and sign in, or use Forgot my PIN.');
+    if (a && a.ph) throw new Error('You already have a password. Go back and sign in, or use Forgot password.');
     var s = Utilities.getUuid().replace(/-/g, '');
     var v = (a ? Number(a.v) || 0 : 0) + 1;
     acctPut_(id, { c: who.cls, n: who.name, s: s, ph: stHash_(s, pin), q: q, ah: stHash_(s, 'a|' + ans), v: v, at: Date.now() });
@@ -4208,7 +4278,7 @@ function apiStSetup(cls, typed, proof, pin, q, answer) {
 /* Forgot my PIN: the name as typed, the question they chose and its answer, then a new PIN. The question is not shown
    (that would say the name is on the list): they pick it from the list. Every other sign-in of theirs ends. */
 function apiStForgot(cls, typed, q, answer, pin) {
-  pin = stPinOk_(pin);
+  pin = stPassOk_(pin, typed);
   var who = typedStudent_(cls, typed);
   var left = stTryAny_('saf_', who, cls, typed);
   var id = who ? acctId_(who.cls, who.name) : '', a = who ? acctGet_(id) : null;
@@ -4253,7 +4323,7 @@ function apiStStatus(pin, cls) {
 /* The student pages' calls through doPost (the slides): { api: 'st', op, ... }. */
 function stRequest_(d) {
   try {
-    if (d.op === 'signin' || d.op === 'login') return apiStSignIn(d.cls, d.name, d.pin);
+    if (d.op === 'signin' || d.op === 'login') return apiStSignIn2(d.name, d.pin, d.cls);
     if (d.op === 'start') return { ok: false, error: 'Reload this page to sign in.' };
     if (d.op === 'setup') return apiStSetup(d.cls, d.name, { reg: d.reg, key: d.key }, d.pin, d.q, d.answer);
     if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.q, d.answer, d.pin);

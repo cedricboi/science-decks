@@ -4070,16 +4070,16 @@ window.KIT=KIT;
     }
     // Version 13: Live Board release 26 sends no names. The student types their own name and PIN, checked together.
     function typedForm() {
-      p.querySelector('p').textContent = 'Choose your class, type your name, then your own PIN.';
+      p.querySelector('p').textContent = 'Choose your class, type your name, then your password.';
       var nm = el('input', 'lbx-name'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = 'Your full name, as on the class list';
       nm.setAttribute('autocapitalize', 'words'); nm.spellcheck = false;
       l2.replaceChild(nm, s2);
-      var l3 = el('label', '', 'PIN'), pin = el('input', 'lbx-pin'); pin.type = 'password'; pin.inputMode = 'numeric'; pin.maxLength = 4; pin.autocomplete = 'off';
+      var l3 = el('label', '', 'Password'), pin = el('input', 'lbx-pin lbx-pass'); pin.type = 'password'; pin.maxLength = 60; pin.autocomplete = 'current-password'; pin.spellcheck = false; pin.setAttribute('autocapitalize', 'none');
       l3.appendChild(pin); p.insertBefore(l3, row);
       var go2 = el('button', 'lbx-go', 'Sign in'); go2.type = 'button'; go2.disabled = true; row.replaceChild(go2, go); go = go2;
-      var more = el('a', 'lbx-ms', 'First time, or forgot your PIN? Open learnwithmrcedric'); more.href = MS_URL; more.target = '_blank'; more.rel = 'noopener';
+      var more = el('a', 'lbx-ms', 'First time, or forgot your password? Open learnwithmrcedric'); more.href = MS_URL; more.target = '_blank'; more.rel = 'noopener';
       var links = el('div', 'lbx-links'); links.appendChild(more); p.insertBefore(links, msg.nextSibling);
-      var ready = function () { go.disabled = !(s1.value && nm.value.trim() && pin.value.length === 4); };
+      var ready = function () { go.disabled = !(s1.value && nm.value.trim() && pin.value.trim().length >= 1); };
       var send = function () {
         if (go.disabled) return;
         go.disabled = true; msg.textContent = '';
@@ -4091,7 +4091,7 @@ window.KIT=KIT;
       s1.addEventListener('change', ready);
       nm.addEventListener('input', ready);
       nm.addEventListener('keydown', function (e) { if (e.key === 'Enter') pin.focus(); });
-      pin.addEventListener('input', function () { pin.value = pin.value.replace(/\D/g, '').slice(0, 4); ready(); if (pin.value.length === 4 && !go.disabled) send(); });
+      pin.addEventListener('input', ready);   // release 33: a password (an old 4-number PIN still works)
       pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
       go.addEventListener('click', send);
       setTimeout(function () { (s1.value ? nm : s1).focus(); }, 50);

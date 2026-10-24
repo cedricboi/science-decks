@@ -1309,6 +1309,8 @@ function tIssue_() {
 function teacher_(token) {
   var v = token ? CacheService.getScriptCache().get('ttok_' + token) : null;
   if (!v) throw new Error('TEACHER_SIGNED_OUT');
+  // Release 33: a new username or password ends every Hub sign-in made before it.
+  if (Number(v) < Number(PropertiesService.getScriptProperties().getProperty('T_AT') || 0)) throw new Error('TEACHER_SIGNED_OUT');
   // Release 26: with the Google lock on, a sign-in from before it was turned on is over.
   if (glockOn_() && Number(v) < Number(PropertiesService.getScriptProperties().getProperty('GLOCK_AT') || 0)) throw new Error('TEACHER_SIGNED_OUT');
 }
@@ -1317,9 +1319,9 @@ function teacher_(token) {
 function api_t_auto() {
   var me = '', owner = '';
   try { me = Session.getActiveUser().getEmail(); owner = Session.getEffectiveUser().getEmail(); } catch (e) { /* not available */ }
-  var hasPass = true;   // the teacher PIN (Live Board's Settings tab)
-  if (me && owner && me.toLowerCase() === owner.toLowerCase()) return { token: tIssue_(), hasPass: hasPass };
-  return { token: null, hasPass: hasPass };
+  var hasPass = true, hasAccount = !!tAcct_();   // the teacher PIN (Live Board's Settings tab); the username and password
+  if (me && owner && me.toLowerCase() === owner.toLowerCase()) return { token: tIssue_(), hasPass: hasPass, hasAccount: hasAccount };
+  return { token: null, hasPass: hasPass, hasAccount: hasAccount };
 }
 
 // The setup guide (the Guide file), for the Teacher Hub's sign-in page. It holds nothing private, so it is
@@ -1329,9 +1331,102 @@ function api_guide() {
   catch (e) { return ''; }      // the Guide file has not been added to the project yet
 }
 
-// One teacher PIN for everything: the Teacher Hub signs in with Live Board's teacher PIN (Settings tab).
+/* Release 33: the Teacher Hub signs in with a username and a password, set once with the teacher PIN and kept
+   hashed in the script's properties. Once they are set, the PIN on its own no longer opens the Hub (it still works
+   for the slides and Live, and to pair them). This laptop's key (dv_) and Google sign-in as the script's owner
+   still open it. Forgot the password: sign in with Google as the owner and set a new one in the Hub, or run
+   resetTeacherSignIn in the Apps Script editor. */
+function tAcct_() {
+  var p = PropertiesService.getScriptProperties(), u = p.getProperty('T_USER');
+  return u ? { u: u, s: p.getProperty('T_SALT'), h: p.getProperty('T_HASH') } : null;
+}
+function tUserOk_(u) {
+  u = String(u == null ? '' : u).trim().toLowerCase();
+  if (!/^[a-z0-9._-]{3,40}$/.test(u)) throw new Error('A username is 3 to 40 letters or numbers (dots, dashes and underscores are fine), with no spaces.');
+  return u;
+}
+function tPassOk_(pass) {
+  pass = String(pass == null ? '' : pass);
+  if (pass.length < 8) throw new Error('Use at least 8 characters for your password.');
+  if (pass.length > 100) throw new Error('That password is too long.');
+  if (/^\d+$/.test(pass)) throw new Error('Use letters as well as numbers, so it is not just a PIN.');
+  return pass;
+}
+function tSetAcct_(u, pass) {
+  var salt = Utilities.getUuid().replace(/-/g, '');
+  PropertiesService.getScriptProperties().setProperties({ T_USER: u, T_SALT: salt, T_HASH: stHash_(salt, 't|' + pass), T_AT: String(Date.now()) });
+  PropertiesService.getScriptProperties().deleteProperty('T_FAILS');
+}
+function tPassRight_(a, pass) { return !!a && stHash_(a.s, 't|' + String(pass == null ? '' : pass)) === a.h; }
+// The first time: the teacher PIN proves it is the teacher, then the username and password are saved.
+function api_t_setupAccount(pin, user, pass) {
+  if (tAcct_()) throw new Error('Your username and password are already set. Sign in with them.');
+  checkPin_(String(pin == null ? '' : pin));
+  user = tUserOk_(user); pass = tPassOk_(pass);
+  withLock_(function () { if (tAcct_()) throw new Error('Your username and password are already set. Sign in with them.'); tSetAcct_(user, pass); }, 10000);
+  Utilities.sleep(5);
+  return { token: tIssue_(), dv: devIssue_('hub', 'Teacher Hub') };
+}
+/* Wrong passwords for the real username are counted in the script's properties, under the lock (10 in 15 minutes),
+   so only tries at the teacher's own account count against it. Wrong usernames have their own count, which never
+   blocks the right username. */
+function api_t_login2(user, pass) {
+  var a = tAcct_();
+  if (!a) throw new Error('NO_ACCOUNT: Set up your username and password first.');
+  var u = String(user == null ? '' : user).trim().toLowerCase(), cache = CacheService.getScriptCache();
+  if (u !== a.u) {
+    stHash_(a.s, 't|' + String(pass == null ? '' : pass));
+    var bad = Number(cache.get('tl_bad') || 0);
+    if (bad >= 30) throw new Error('Too many wrong tries. Wait 15 minutes.');
+    cache.put('tl_bad', String(bad + 1), 900);
+    throw new Error('That username and password do not match.');
+  }
+  var right = withLock_(function () {
+    var p = PropertiesService.getScriptProperties(), f = null;
+    try { f = JSON.parse(p.getProperty('T_FAILS') || 'null'); } catch (err) { f = null; }
+    f = f || { n: 0, w: 0 };
+    if (Date.now() - f.w > 900000) f = { n: 0, w: Date.now() };
+    if (f.n >= 10) throw new Error('Too many wrong tries. Wait 15 minutes, or sign in with Google as the owner.');
+    var ok = tPassRight_(a, pass);
+    if (ok) p.deleteProperty('T_FAILS'); else { f.n++; p.setProperty('T_FAILS', JSON.stringify(f)); }
+    return ok;
+  }, 10000);
+  if (!right) throw new Error('That username and password do not match.');
+  if (glockOn_() && !isOwner_()) throw new Error(GLOCK_MSG);
+  return { token: tIssue_(), dv: devIssue_('hub', 'Teacher Hub') };
+}
+// Changing them from inside the Hub. The current password is needed, unless none is set yet.
+// The owner, signed in with Google, does not need the old password (that is how a forgotten one is replaced).
+// Every other Hub sign-in and paired laptop ends; this one gets a new sign-in.
+function api_t_changeAccount(token, oldPass, user, newPass) {
+  teacher_(token);
+  var a = tAcct_();
+  if (a && !isOwner_() && !tPassRight_(a, oldPass)) throw new Error('Your current password is not right.');
+  user = tUserOk_(user); newPass = tPassOk_(newPass);
+  withLock_(function () { tSetAcct_(user, newPass); }, 10000);
+  Utilities.sleep(5);
+  return { ok: true, user: user, token: tIssue_(), dv: devIssue_('hub', 'Teacher Hub') };
+}
+function api_t_account(token) { teacher_(token); var a = tAcct_(); return { set: !!a, user: a ? a.u : '', owner: isOwner_() }; }
+// Run this in the Apps Script editor if the teacher password is forgotten: the Hub then asks to set it up again.
+function resetTeacherSignIn() {
+  needOwner_('Clearing the Teacher Hub username and password');
+  var p = PropertiesService.getScriptProperties();
+  ['T_USER', 'T_SALT', 'T_HASH', 'T_FAILS'].forEach(function (k) { p.deleteProperty(k); });
+  return 'The Teacher Hub username and password are cleared. Open the Hub to set new ones with the teacher PIN.';
+}
+// Before release 33 the Hub signed in with the teacher PIN alone. This laptop's key still works here; once a
+// username and password are set, a PIN on its own is refused.
 function api_t_login(pass) {
-  checkPin_(String(pass == null ? '' : pass));
+  var given = String(pass == null ? '' : pass).trim();
+  if (tAcct_()) {
+    // Only a laptop key made by signing in with the username and password (not one paired with the PIN).
+    var since = Number(PropertiesService.getScriptProperties().getProperty('T_AT') || 0);
+    var d = /^dv_[a-f0-9]{24,}$/.test(given) ? devList_().filter(function (x) { return x.tk === given; })[0] : null;
+    if (!d || d.kind !== 'hub' || !(d.at >= since) || !devOk_(given)) throw new Error('Sign in with your username and password. Reload the page if it still asks for a PIN.');
+    return { token: tIssue_() };
+  }
+  checkPin_(given);
   return { token: tIssue_() };
 }
 

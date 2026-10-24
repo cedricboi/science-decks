@@ -63,67 +63,78 @@
   .card { background: var(--card); border-radius: 24px; padding: 20px 22px; }
   .kicker { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
 
-  /* ---------- portal: a glass sign-in card over a live night sky ---------- */
-  #v-portal { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; gap: 40px; padding: 40px 56px; position: relative; isolation: isolate; color: #EEF2FF; background: #040714;
-    --ink: #EEF2FF; --ink-2: #C9D2F0; --muted: #9EA9CF; --line: rgba(160,185,255,.22); --card: rgba(255,255,255,.07); --soft: rgba(255,255,255,.05);
-    --blue-soft: rgba(80,140,255,.18); --blue-ink: #9CC2FF; --bad-soft: rgba(255,110,110,.16); --bad: #FF9A9A; --canvas: #070B1F; --sky: #5CC8FF; }
-  #po-video { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; object-fit: cover; object-position: 100% 50%; background: #000; pointer-events: none; }
-  .po-credit { position: fixed; left: 16px; bottom: 10px; margin: 0; font-size: 11px; color: rgba(200,210,240,.55); z-index: 1; pointer-events: none; }
-  .po-veil { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(0deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,0) 45%), linear-gradient(90deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 40%); }
-  .po-art { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
-  .po-brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-size: 22px; color: #fff; }
-  .po-brand .mark { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--sky); background: rgba(92,200,255,.12); box-shadow: inset 0 0 0 1px rgba(92,200,255,.35); }
-  .po-hero-text { margin-bottom: 6vh; text-shadow: 0 2px 4px rgba(0,0,0,.55), 0 4px 30px rgba(0,0,0,.85); }
-  .po-art h1 { font-size: clamp(44px, 6.4vw, 92px); line-height: .98; font-weight: 800; letter-spacing: -.02em; color: #fff; }
-  .po-art h1 span { color: var(--sky); }
-  .po-tag { font-family: var(--display); font-size: clamp(22px, 2.6vw, 36px); font-weight: 500; color: #E4EAFF; margin: 10px 0 18px; }
-  .po-art .sub { font-size: 17px; line-height: 1.5; color: #C9D2F0; margin: 0; max-width: 520px; }
-  .po-main { width: 500px; max-width: 100%; flex: none; display: flex; flex-direction: column; gap: 16px; padding: 30px 34px 26px; border-radius: 30px;
-    background: linear-gradient(160deg, rgba(120,150,230,.20), rgba(30,45,100,.28) 55%, rgba(10,16,40,.42)); border: 1px solid rgba(170,195,255,.28);
-    box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18); -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); }
-  .po-cardtop { display: flex; align-items: center; gap: 12px; }
-  .po-orb { color: var(--sky); display: flex; filter: drop-shadow(0 0 10px rgba(92,200,255,.6)); margin-right: auto; }
-  .po-newq { font-size: 14px; color: var(--ink-2); }
-  .po-newbtn { height: 44px; padding: 0 16px; border-radius: 14px; background: transparent; color: #fff; border: 1.5px solid rgba(140,200,255,.7); font-weight: 700; font-size: 15px; }
-  .po-welcome { font-size: clamp(34px, 3.6vw, 46px); font-weight: 800; color: #fff; margin: 6px 0 0; }
-  .po-lead { margin: 0 0 6px; font-size: 18px; color: var(--ink-2); }
-  .po-primary { width: 100%; height: 64px; border: 0; border-radius: 18px; color: #fff; font-family: var(--display); font-weight: 700; font-size: 22px; display: flex; align-items: center; justify-content: center; gap: 12px;
-    background: linear-gradient(90deg, #2F7BFF, #4FC3FF); box-shadow: 0 10px 30px rgba(47,123,255,.45), inset 0 1px 0 rgba(255,255,255,.35); }
-  .po-primary:active, .po-door:active, .po-newbtn:active { transform: scale(.98); }
-  .po-or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
-  .po-or::before, .po-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .po-alt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .po-door { min-height: 64px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.06); color: #fff; text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
-  .po-door svg { color: var(--sky); flex: none; }
-  .po-door b { display: block; font-family: var(--display); font-size: 18px; }
-  .po-door small { display: block; font-size: 13px; color: var(--muted); }
-  .po-remember { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0 0; font-size: 14px; color: var(--ink-2); }
+  /* ---------- portal: a glass sign-in card over NASA's black hole ---------- */
+  #v-portal { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: flex-end; gap: 40px; padding: 48px 7vw 48px 56px; position: relative; isolation: isolate; color: #EEF2FF; background: #000;
+    --ink: #EEF2FF; --ink-2: #CDD4EE; --muted: #9EA6C6; --line: rgba(255,200,160,.18); --card: rgba(255,255,255,.06); --soft: rgba(255,255,255,.04);
+    --blue-soft: rgba(255,170,110,.14); --blue-ink: #FFC08F; --bad-soft: rgba(255,110,110,.16); --bad: #FFA4A4; --canvas: #07070d; --warm: #FF9A4D; --warm-2: #FFC46B; }
+  .po-art { position: absolute; left: 40px; top: 32px; right: 40px; pointer-events: none; }
+  .po-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-size: 20px; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
+  .po-brand .mark { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; color: var(--warm-2); background: rgba(255,160,90,.12); box-shadow: inset 0 0 0 1px rgba(255,180,120,.35); }
+  .po-main { width: 480px; max-width: 100%; flex: none; display: flex; flex-direction: column; gap: 22px; padding: 34px 36px 26px; border-radius: 30px; position: relative;
+    background: linear-gradient(170deg, rgba(48,30,26,.50) 0%, rgba(16,14,24,.70) 45%, rgba(6,7,14,.82) 100%);
+    border: 1px solid rgba(255,190,140,.20);
+    box-shadow: 0 40px 100px rgba(0,0,0,.65), 0 0 0 1px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,220,190,.14), inset 0 0 60px rgba(255,120,40,.05);
+    -webkit-backdrop-filter: blur(22px) saturate(125%); backdrop-filter: blur(22px) saturate(125%); }
+  .po-main::before { content: ""; position: absolute; left: 28px; right: 28px; top: -1px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,170,100,.9), transparent); }
+  .po-subj { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 16px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.06); }
+  .po-subj-b { height: 44px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .po-subj-b[aria-checked="true"] { background: linear-gradient(180deg, rgba(255,170,100,.24), rgba(255,130,60,.14)); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,180,120,.4); }
+  .po-subj-b[aria-checked="true"] svg { color: var(--warm-2); }
+  .po-welcome { font-size: 38px; font-weight: 800; color: #fff; margin: 0; letter-spacing: -.01em; }
+  .po-lead { margin: -14px 0 0; font-size: 16px; color: var(--ink-2); }
+  #po-doors, #po-cmpgo { display: flex; flex-direction: column; gap: 22px; }
+  #po-doors > div:first-child { display: block; }
+  .po-signin { display: flex; flex-direction: column; gap: 18px; }
+  .po-f { display: flex; flex-direction: column; gap: 8px; }
+  .po-f > span:first-child { font-size: 14px; font-weight: 700; color: var(--ink-2); letter-spacing: .01em; }
+  .po-in { position: relative; display: block; }
+  .po-in > svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #8C92B0; pointer-events: none; }
+  .po-in input { width: 100%; height: 58px; border-radius: 16px; border: 1px solid rgba(220,225,255,.16); background: rgba(255,255,255,.06); color: #fff; padding: 0 52px 0 48px; font-size: 18px; transition: border-color .15s, box-shadow .15s, background .15s; }
+  .po-in input::placeholder { color: #7D84A3; }
+  .po-in input:focus { outline: none; border-color: rgba(255,170,100,.8); background: rgba(255,255,255,.09); box-shadow: 0 0 0 4px rgba(255,140,60,.18); }
+  .po-in input:focus + svg, .po-in:focus-within > svg { color: var(--warm-2); }
+  .po-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border: 0; border-radius: 12px; background: transparent; color: #8C92B0; display: flex; align-items: center; justify-content: center; }
+  .po-eye[aria-pressed="true"] { color: var(--warm-2); }
+  .po-primary { width: 100%; height: 62px; margin-top: 4px; border: 0; border-radius: 18px; color: #1b0c03; font-family: var(--display); font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; gap: 12px; text-decoration: none;
+    background: linear-gradient(90deg, #FF7A30, #FFB45C 60%, #FFD08A); box-shadow: 0 14px 34px rgba(255,120,40,.35), inset 0 1px 0 rgba(255,255,255,.5); }
+  .po-primary:disabled { opacity: .7; }
+  .po-primary:active { transform: scale(.985); }
+  .po-cls { padding: 14px; border-radius: 16px; background: rgba(255,170,100,.08); border: 1px solid var(--line); }
+  .po-cls p { margin: 0 0 10px; font-weight: 700; color: #fff; }
+  .po-links { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); margin-top: -4px; }
+  .po-links .link { font-size: 15px; color: var(--blue-ink); padding: 8px 4px; }
+  .po-remember { display: flex; align-items: center; justify-content: center; gap: 8px; margin: -8px 0 0; font-size: 13px; color: var(--muted); }
   .po-remember svg { color: #6EE7B7; }
-  .po-quote { margin: 8px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 15px; color: var(--ink-2); font-style: italic; }
-  .po-quote cite { display: block; font-style: normal; font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .po-quote cite::before { content: "\2014\00a0"; }
-  #v-portal h2 { font-size: 28px; font-weight: 800; color: #fff; }
-  #v-portal .po-welcome { font-size: clamp(34px, 3.6vw, 46px); }
+  .po-teacher { display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07); font-size: 13px; color: var(--muted); }
+  .po-teacher a { color: var(--ink-2); font-weight: 700; text-decoration: none; padding: 6px 2px; }
+  .po-teacher a:hover { color: #fff; text-decoration: underline; }
+  .po-credit { position: fixed; left: 16px; bottom: 10px; margin: 0; font-size: 11px; color: rgba(200,210,240,.45); z-index: 1; pointer-events: none; }
+  #v-portal h2 { font-size: 26px; font-weight: 800; color: #fff; }
+  #v-portal .po-welcome { font-size: 38px; }
   .po-head { display: flex; align-items: center; gap: 12px; }
-  #v-portal .iconbtn { background: rgba(255,255,255,.08); border-color: var(--line); color: #fff; }
-  #v-portal .chips { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  #v-portal .chip { height: 76px; font-size: 28px; color: #fff; background: rgba(255,255,255,.08); border: 1px solid var(--line); box-shadow: none; }
-  #v-portal .field input, #v-portal .field select { background: rgba(255,255,255,.08); border-color: var(--line); color: #fff; }
-  #v-portal .field input::placeholder { color: #8E9AC4; }
-  #v-portal .keys button { background: rgba(255,255,255,.09); color: #fff; border: 1px solid rgba(170,195,255,.16); }
-  #v-portal .keys button.del { background: transparent; border-color: transparent; }
-  #v-portal .dots span { border-color: #8E9AC4; }
-  #v-portal .dots span.on { background: var(--sky); border-color: var(--sky); box-shadow: 0 0 12px rgba(92,200,255,.7); }
-  #v-portal .btn { background: linear-gradient(90deg, #2F7BFF, #4FC3FF); color: #fff; box-shadow: 0 8px 24px rgba(47,123,255,.35); }
-  #v-portal .btn.ghost { background: rgba(255,255,255,.08); color: #fff; border: 1px solid var(--line); box-shadow: none; }
-  #v-portal .btn:disabled { opacity: .45; box-shadow: none; }
-  #v-portal .card { background: rgba(255,255,255,.07); border: 1px solid var(--line); color: #fff; }
-  #v-portal .grid2 { grid-template-columns: 1fr; gap: 12px; }
-  #v-portal .after { flex-direction: column; align-items: stretch; background: rgba(255,255,255,.04); border-color: var(--line); color: var(--ink-2); }
+  #v-portal .iconbtn { background: rgba(255,255,255,.07); border-color: var(--line); color: #fff; }
+  #v-portal .chips { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  #v-portal .chip { height: 56px; font-size: 20px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--line); box-shadow: none; }
+  #v-portal .field { color: var(--ink-2); }
+  #v-portal .field input, #v-portal .field select { height: 52px; background: rgba(255,255,255,.06); border-color: rgba(220,225,255,.16); color: #fff; font-size: 17px; }
+  #v-portal .field select option { color: #111; }
+  #v-portal .field input:focus, #v-portal .field select:focus { outline: none; border-color: rgba(255,170,100,.8); box-shadow: 0 0 0 4px rgba(255,140,60,.18); }
+  #v-portal .field input::placeholder { color: #7D84A3; }
+  #v-portal .btn { background: linear-gradient(90deg, #FF7A30, #FFB45C); color: #1b0c03; box-shadow: 0 8px 24px rgba(255,120,40,.3); }
+  #v-portal .btn.ghost { background: rgba(255,255,255,.07); color: #fff; border: 1px solid var(--line); box-shadow: none; }
+  #v-portal .btn:disabled { opacity: .5; box-shadow: none; }
   #v-portal .link { color: var(--blue-ink); }
-  #v-portal .po-form { max-width: none; }
-  @media (max-width: 1100px) { #v-portal { padding: 32px; gap: 28px; } .po-main { width: 460px; } }
-  @media (max-width: 480px) { .po-newq { display: none; } .po-newbtn { font-size: 14px; padding: 0 12px; } .po-door { padding: 10px; gap: 8px; } }
+  #v-portal .quiet { color: var(--muted); font-size: 14px; margin: 0; }
+  #v-portal .po-form { max-width: none; gap: 16px; }
+  #v-portal .wait { background: rgba(255,170,100,.12); color: var(--blue-ink); }
+  #v-portal .msg { background: rgba(255,90,90,.14); color: #FFB4B4; border: 1px solid rgba(255,120,120,.25); }
+  #v-portal .msg.info { background: rgba(255,170,100,.12); color: var(--blue-ink); border-color: var(--line); }
+  @media (max-width: 1100px) { #v-portal { padding: 40px 32px; } .po-main { width: 450px; } }
+  @media (max-width: 480px) { .po-main { padding: 24px 20px 20px; gap: 18px; border-radius: 24px; margin-top: 30vh; } .po-welcome, #v-portal .po-welcome { font-size: 30px; } .po-art { left: 16px; top: 18px; } }
+  #po-sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; }
+  body.po-lensed #po-video { opacity: 0; }
+  #po-video { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; object-fit: cover; object-position: 100% 50%; background: #000; pointer-events: none; }
+  .po-veil { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(0deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,0) 45%), linear-gradient(90deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 40%); }
   .iconbtn { width: 44px; height: 44px; border-radius: 22px; border: 1px solid var(--line); background: var(--card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-content: start; }
   .chip { height: 96px; border-radius: 22px; border: none; background: var(--card); font-family: var(--display); font-weight: 800; font-size: 32px; box-shadow: 0 4px 14px rgba(27,31,59,.08); }
@@ -243,14 +254,13 @@
   .modal .box { background: var(--card); border-radius: 24px; padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
 
   @media (max-width: 900px) {
-    #v-portal { flex-direction: column; align-items: stretch; padding: 22px 16px 34px; gap: 18px; }
+    #v-portal { flex-direction: column; align-items: stretch; justify-content: flex-end; padding: 0 16px 34px; gap: 0; min-height: 100dvh; }
+    .po-art { left: 18px; top: 20px; }
+    .po-main { width: 100%; max-width: 520px; align-self: center; margin-top: 40vh; }
+    body.po-lensed .po-veil { background: linear-gradient(180deg, rgba(0,0,0,0) 30vh, rgba(0,0,0,.45) 70vh); }
+    .po-credit { position: static; margin: 14px auto 0; text-align: center; max-width: 520px; }
     #po-video { height: 52vh; object-position: 50% 50%; }
     .po-veil { background: linear-gradient(180deg, rgba(0,0,0,0) 28vh, rgba(0,0,0,1) 52vh); }
-    .po-art { gap: 14px; align-self: auto; }
-    .po-hero-text { margin: 0; }
-    .po-art .sub { display: none; }
-    .po-tag { margin: 6px 0 0; }
-    .po-main { width: 100%; max-width: 560px; align-self: center; padding: 24px 20px 20px; }
     #v-app { flex-direction: column; }
     nav.side { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 8px 0; position: sticky; top: 0; z-index: 10; border-right: 0; border-bottom: 1px solid var(--line); }
     nav.side .logo { display: none; }
@@ -278,71 +288,48 @@
 
 <!-- ============ PORTAL ============ -->
 <div id="v-portal" class="hidden">
-  <video id="po-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true" poster="https://cedricboi.github.io/science-decks/media/portal-blackhole.jpg"><source src="https://cedricboi.github.io/science-decks/media/portal-blackhole.mp4" type="video/mp4"></video>
+  <video id="po-video" autoplay muted loop playsinline preload="auto" crossorigin="anonymous" disablepictureinpicture aria-hidden="true" poster="https://cedricboi.github.io/science-decks/media/portal-blackhole.jpg"><source src="https://cedricboi.github.io/science-decks/media/portal-blackhole.mp4" type="video/mp4"></video>
   <div class="po-veil" aria-hidden="true"></div>
   <aside class="po-art">
     <div class="po-brand"><span class="mark" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6"><ellipse cx="24" cy="24" rx="20" ry="7.5"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.6" fill="currentColor" stroke="none"/></svg></span><span>learnwithmrcedric</span></div>
-    <div class="po-hero-text">
-      <h1>Science <span>Portal</span></h1>
-      <p class="po-tag">Explore. Discover. Learn.</p>
-      <p class="sub">Lessons, worksheets and your file, all in one place.<br>Assumption English School &middot; Lower Secondary Science</p>
-    </div>
   </aside>
-  <p class="po-credit">Black hole simulation: NASA&rsquo;s Goddard Space Flight Center / Jeremy Schnittman</p>
   <main class="po-main">
-    <div class="po-cardtop">
-      <span class="po-orb" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4"><ellipse cx="24" cy="24" rx="20" ry="7.5"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.6" fill="currentColor" stroke="none"/></svg></span>
-      <span class="po-newq">New here?</span>
-      <button class="po-newbtn" id="door-new">First time or forgot PIN</button>
+    <div class="po-subj" role="radiogroup" aria-label="Subject">
+      <button type="button" role="radio" class="po-subj-b" id="subj-sci" aria-checked="true"><svg width="20" height="20" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="24" cy="24" rx="20" ry="7.5"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.6" fill="currentColor" stroke="none"/></svg>Science</button>
+      <button type="button" role="radio" class="po-subj-b" id="subj-cmp" aria-checked="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Computing</button>
     </div>
-    <div id="po-msg" class="msg hidden"></div>
+    <div id="po-msg" class="msg hidden" role="alert"></div>
 
-    <!-- doors -->
+    <!-- sign in: name and password -->
     <section id="po-doors">
       <h2 class="po-welcome">Welcome back</h2>
-      <p class="po-lead">Sign in to carry on with Science.</p>
-      <button class="po-primary" id="door-student"><span>I'm a student</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <div class="po-or"><span>or</span></div>
-      <div class="po-alt">
-        <a class="po-door" id="door-teacher" href="#"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span><b>Teacher</b><small>Your teacher PIN</small></span></a>
-        <a class="po-door" id="door-cmp" href="#"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span><b>Computing</b><small>Coaches and Excel files</small></span></a>
-      </div>
+      <p class="po-lead" id="po-lead">Sign in with your name and password.</p>
+      <form class="po-signin" id="po-signin" onsubmit="return false" autocomplete="on">
+        <label class="po-f"><span>Your name</span><span class="po-in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><input id="in-name" name="username" type="text" autocomplete="username" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your full name, as on the class list"></span></label>
+        <label class="po-f"><span>Password</span><span class="po-in"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><input id="in-pass" name="password" type="password" autocomplete="current-password" maxlength="60" placeholder="Your password"><button type="button" class="po-eye" id="pass-eye" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+        <div id="po-cls" class="po-cls hidden"><p>Two students have this name. Tap your class.</p><div class="chips" id="po-cls-chips"></div></div>
+        <button class="po-primary" id="btn-signin" type="submit"><span>Sign in</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+      <div class="po-links"><button type="button" class="link" id="door-new">First time here?</button><span aria-hidden="true">&middot;</span><button type="button" class="link" id="lnk-forgot">Forgot password?</button></div>
       <p class="po-remember"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>This iPad remembers you after the first time.</p>
-      <blockquote class="po-quote">&ldquo;The important thing is not to stop questioning.&rdquo;<cite>Albert Einstein</cite></blockquote>
     </section>
 
-    <!-- student: class, name, pin -->
-    <section id="po-student" class="hidden">
-      <div class="po-head"><button class="iconbtn" id="po-back" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2 id="po-title">Tap your class</h2></div>
-      <div id="st-class" class="chips" style="margin-top:18px"></div>
-      <div id="st-name" class="po-form hidden" style="margin-top:18px">
-        <label class="field">Your name<input id="in-name" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your full name, as on the class list"><span class="note">Type it the way it is on the class list.</span></label>
-        <button class="btn" id="btn-name">Next</button>
-      </div>
-      <div id="st-pin" class="pinwrap hidden" style="margin-top:18px">
-        <div class="dots" id="pin-dots"><span></span><span></span><span></span><span></span></div>
-        <div class="keys" id="pin-keys"></div>
-        <button class="btn big" id="btn-signin" disabled>Sign in</button>
-        <button class="link" id="lnk-forgot">Forgot my PIN</button>
-      </div>
+    <!-- signed in to Computing: open its page -->
+    <section id="po-cmpgo" class="hidden">
+      <h2 class="po-welcome" id="cmpgo-hi">You are in</h2>
+      <p class="po-lead">Your Spreadsheet Coaches and Excel files are on the Computing page.</p>
+      <a class="po-primary" id="cmpgo-link" href="#"><span>Open Computing</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </section>
 
-    <!-- new here -->
-    <section id="po-new" class="hidden">
-      <div class="po-head"><button class="iconbtn po-back2" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2>New here</h2></div>
-      <div class="grid2" style="margin-top:18px">
-        <button class="card tile" id="new-first" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="t" style="font-family:var(--display);font-weight:800;font-size:22px">First time here</span><span class="s muted" style="font-size:15px">Tap your class and type your name, then choose a 4-number PIN and a question only you can answer.</span></button>
-        <button class="card tile" id="new-forgot" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="t" style="font-family:var(--display);font-weight:800;font-size:22px">Forgot my PIN</span><span class="s muted" style="font-size:15px">Answer your question and set a new PIN.</span></button>
-      </div>
-      <div class="after" style="margin-top:16px"><span>Name not on the list, or stuck? Ask Mr Cedric to let you in. He sees your name on his phone.</span><button class="btn ghost" id="new-gate">Ask to be let in</button></div>
-    </section>
-
-    <!-- set up / forgot / gate forms -->
+    <!-- set up / forgot / gate / new password forms -->
     <section id="po-form" class="hidden">
       <div class="po-head"><button class="iconbtn po-back2" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><h2 id="form-title"></h2></div>
-      <div class="po-form" id="form-box" style="margin-top:18px"></div>
+      <div class="po-form" id="form-box"></div>
     </section>
+
+    <div class="po-teacher"><span>Teacher?</span><a id="door-teacher" href="#">Sign in to the Teacher Hub</a></div>
   </main>
+  <p class="po-credit">Black hole simulation: NASA&rsquo;s Goddard Space Flight Center / Jeremy Schnittman</p>
 </div>
 
 <!-- ============ APP ============ -->
@@ -468,143 +455,167 @@
   (function () { var m = $('nav-mark'); m.src = ART + 'app-mark.webp'; m.addEventListener('load', function () { m.classList.remove('hidden'); $('nav-mark-text').classList.add('hidden'); }); })();
 
   /* ---------- portal ---------- */
+  /* Release 33: students sign in with their name and password, for Science or for Computing (chosen at the top of
+     the card). The class is asked only when two students with the same name share a password. An old 4-number PIN
+     still signs in, and the student is then asked to choose a proper password. */
   var DEV = load('lb_dev');
   if (!DEV) { DEV = 'm' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store('lb_dev', DEV); }
-  var last = load('lb_last') || {}, st = { cls: '', name: '', pin: '' };
-  function poShow(id) { ['po-doors', 'po-student', 'po-new', 'po-form'].forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); $('door-new').classList.toggle('hidden', id !== 'po-doors'); document.querySelector('.po-newq').classList.toggle('hidden', id !== 'po-doors'); poMsg(''); window.scrollTo(0, 0); }
+  var last = load('lb_last') || {}, cmpInfo = null, subj = load('lb_subj') === 'cmp' ? 'cmp' : 'sci';
+  function base() { return location.href.split('?')[0].split('#')[0]; }
+  function poShow(id) { ['po-doors', 'po-cmpgo', 'po-form'].forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); document.querySelector('.po-subj').classList.toggle('hidden', id === 'po-cmpgo'); poMsg(''); window.scrollTo(0, 0); }
   function poMsg(t, info) { var m = $('po-msg'); m.textContent = t || ''; m.className = 'msg' + (info ? ' info' : '') + (t ? '' : ' hidden'); }
-  function siInfoLoad() { if (siInfo) return Promise.resolve(siInfo); return call('apiSignInInfo').then(function (r) { siInfo = r; return r; }); }
-  function classList() { var c = (siInfo && siInfo.classes) || []; return c.filter(function (x) { return x !== 'TEST'; }).concat(c.filter(function (x) { return x === 'TEST'; })); }
+  function siInfoLoad() {
+    if (subj === 'cmp') { if (cmpInfo) return Promise.resolve(cmpInfo); return call('apiCmpInfo').then(function (r) { cmpInfo = r; return r; }); }
+    if (siInfo) return Promise.resolve(siInfo); return call('apiSignInInfo').then(function (r) { siInfo = r; return r; });
+  }
+  function info() { return subj === 'cmp' ? cmpInfo : siInfo; }
+  function classList() { var c = (info() && info().classes) || []; return c.filter(function (x) { return x !== 'TEST'; }).concat(c.filter(function (x) { return x === 'TEST'; })); }
+  function setSubj(s, quiet) {
+    subj = s === 'cmp' ? 'cmp' : 'sci'; store('lb_subj', subj);
+    $('subj-sci').setAttribute('aria-checked', String(subj === 'sci')); $('subj-cmp').setAttribute('aria-checked', String(subj === 'cmp'));
+    $('po-lead').textContent = subj === 'cmp' ? 'Sign in with your name and your computing password.' : 'Sign in with your name and password.';
+    var l = subj === 'cmp' ? (load('cmp_last') || {}) : last;
+    if (!quiet || !$('in-name').value) $('in-name').value = l.name || '';
+    $('in-pass').value = ''; $('po-cls').classList.add('hidden');
+    if (!quiet) poMsg('');
+    siInfoLoad().catch(function (e) { poMsg(e.message); });
+  }
   function startPortal(note) {
     stopPolling(); clearTimeout(gateTimer);
     $('v-app').classList.add('hidden'); $('v-portal').classList.remove('hidden'); hwHide();
-    poShow('po-doors'); if (note) poMsg(note, true);
-    $('door-teacher').href = (location.href.split('?')[0].split('#')[0]) + '?teacher';
-    $('door-cmp').href = (location.href.split('?')[0].split('#')[0]) + '?computing';
-    siInfoLoad().catch(function (e) { poMsg(e.message); });
+    poShow('po-doors'); setSubj(subj, true); if (note) poMsg(note, true);
+    $('door-teacher').href = base() + '?teacher';
+    $('cmpgo-link').href = base() + '?computing';
+    // Signed out of the Computing page: it sends the student here with ?signin=computing.
+    try { google.script.url.getLocation(function (loc) { if (loc && loc.parameter && loc.parameter.signin === 'computing') setSubj('cmp', true); }); } catch (e) { /* not in Apps Script */ }
+    if (!$('in-name').value) setTimeout(function () { $('in-name').focus(); }, 80);
   }
-  $('door-student').addEventListener('click', function () { stStart(); });
-  $('door-new').addEventListener('click', function () { poShow('po-new'); });
-  $('po-back').addEventListener('click', function () {
-    if (!$('st-pin').classList.contains('hidden')) stStep('name');
-    else if (!$('st-name').classList.contains('hidden')) stStep('class');
-    else poShow('po-doors');
+  $('subj-sci').addEventListener('click', function () { setSubj('sci'); $('in-name').focus(); });
+  $('subj-cmp').addEventListener('click', function () { setSubj('cmp'); $('in-name').focus(); });
+  $('pass-eye').addEventListener('click', function () {
+    var on = $('in-pass').type === 'password';
+    $('in-pass').type = on ? 'text' : 'password'; this.setAttribute('aria-pressed', String(on)); this.setAttribute('aria-label', on ? 'Hide password' : 'Show password');
   });
+  $('door-new').addEventListener('click', function () { formSetup(null, { name: $('in-name').value.trim() }); });
+  $('lnk-forgot').addEventListener('click', function () { formForgot({ name: $('in-name').value.trim() }); });
   Array.prototype.forEach.call(document.querySelectorAll('.po-back2'), function (b) { b.addEventListener('click', function () { clearTimeout(gateTimer); poShow('po-doors'); }); });
+  $('in-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('in-pass').focus(); } });
+  $('btn-signin').addEventListener('click', function () { siSend(''); });
 
-  function stStart() {
-    st = { cls: last.cls || '', name: last.name || '', pin: '' };
-    poShow('po-student');
-    siInfoLoad().then(function () { stStep('class'); }).catch(function (e) { poMsg(e.message); });
+  function siSend(cls) {
+    var n = $('in-name').value.trim(), p = $('in-pass').value;
+    if (!n) { poMsg('Type your name.'); $('in-name').focus(); return; }
+    if (!p) { poMsg('Type your password.'); $('in-pass').focus(); return; }
+    var b = $('btn-signin'), s = subj; b.disabled = true; b.querySelector('span').textContent = 'Signing in…'; poMsg('');
+    call(s === 'cmp' ? 'apiCmpSignIn2' : 'apiStSignIn2', n, p, cls || '').then(function (r) {
+      if (r.needClass) { pickClass(r.needClass); return; }
+      $('po-cls').classList.add('hidden');
+      var done = function (x) { if (s === 'cmp') cmpDone(x); else { remember(x.cls, x.name); signedIn(x); } };
+      if (r.weak) askNewPass(s, p, r, done); else done(r);
+    }).catch(function (e) { poMsg(e.message); $('in-pass').value = ''; $('in-pass').focus(); })
+      .then(function () { b.disabled = false; b.querySelector('span').textContent = 'Sign in'; });
   }
-  function stStep(step) {
-    poMsg('');
-    $('st-class').classList.toggle('hidden', step !== 'class');
-    $('st-name').classList.toggle('hidden', step !== 'name');
-    $('st-pin').classList.toggle('hidden', step !== 'pin');
-    if (step === 'class') {
-      $('po-title').textContent = 'Tap your class';
-      var box = $('st-class'); box.innerHTML = '';
-      classList().forEach(function (c) { var b = el('button', 'chip', c); b.addEventListener('click', function () { st.cls = c; stStep('name'); }); box.appendChild(b); });
-      if (!classList().length) box.appendChild(el('p', 'quiet', 'No classes yet. Tell your teacher.'));
-    } else if (step === 'name') {
-      $('po-title').textContent = st.cls + ' · Type your name';
-      $('in-name').value = st.name || ''; setTimeout(function () { $('in-name').focus(); }, 60);
-    } else {
-      $('po-title').textContent = 'Hi ' + firstName(st.name) + ', your PIN';
-      st.pin = ''; pinDraw();
-    }
+  function pickClass(list) {
+    var box = $('po-cls-chips'); box.innerHTML = '';
+    list.forEach(function (c) { var b = el('button', 'chip', c); b.type = 'button'; b.addEventListener('click', function () { siSend(c); }); box.appendChild(b); });
+    $('po-cls').classList.remove('hidden');
   }
-  $('btn-name').addEventListener('click', function () { var n = $('in-name').value.trim(); if (!n) { poMsg('Type your name.'); return; } st.name = n; stStep('pin'); });
-  $('in-name').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btn-name').click(); });
-  (function () {
-    var k = $('pin-keys'), keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'];
-    keys.forEach(function (x) {
-      if (x === '') { k.appendChild(el('div')); return; }
-      var b = el('button', x === 'del' ? 'del' : '', x === 'del' ? '' : x); b.type = 'button';
-      if (x === 'del') { b.setAttribute('aria-label', 'Delete'); b.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11v12H9l-6-6z"/><path d="M13 10l4 4M17 10l-4 4"/></svg>'; }
-      b.addEventListener('click', function () { if (x === 'del') st.pin = st.pin.slice(0, -1); else if (st.pin.length < 4) st.pin += x; pinDraw(); });
-      k.appendChild(b);
-    });
-    document.addEventListener('keydown', function (e) {
-      if ($('st-pin').classList.contains('hidden') || $('v-portal').classList.contains('hidden')) return;
-      if (/^[0-9]$/.test(e.key) && st.pin.length < 4) { st.pin += e.key; pinDraw(); }
-      else if (e.key === 'Backspace') { st.pin = st.pin.slice(0, -1); pinDraw(); }
-      else if (e.key === 'Enter') siSend();
-    });
-  })();
-  function pinDraw() { var d = $('pin-dots').children; for (var i = 0; i < 4; i++) d[i].classList.toggle('on', i < st.pin.length); $('btn-signin').disabled = st.pin.length !== 4; }
-  function siSend() {
-    if (st.pin.length !== 4) return;
-    var b = $('btn-signin'); b.disabled = true; b.textContent = 'Signing in…'; poMsg('');
-    call('apiStSignIn', st.cls, st.name, st.pin).then(function (r) { remember(st.cls, st.name); signedIn(r); })
-      .catch(function (e) { poMsg(e.message); st.pin = ''; pinDraw(); }).then(function () { b.textContent = 'Sign in'; pinDraw(); });
-  }
-  $('btn-signin').addEventListener('click', siSend);
-  $('lnk-forgot').addEventListener('click', function () { formForgot({ cls: st.cls, name: st.name }); });
   function remember(cls, name) { last = { cls: cls, name: name }; store('lb_last', last); }
+  // Computing keeps its ticket where the Computing page reads it, then the student opens that page.
+  function cmpDone(r) {
+    store('cmp_ct', r.ct); store('cmp_last', { cls: r.cls, name: r.name });
+    $('cmpgo-hi').textContent = 'Hi ' + firstName(r.name) + ', you are in';
+    poShow('po-cmpgo');
+    try { $('cmpgo-link').click(); } catch (e) { /* the button is there to tap */ }
+  }
+  // Signed in with an old 4-number PIN: choose a proper password now (or later).
+  function askNewPass(s, oldPass, r, done) {
+    formOpen('Choose a new password', function (box) {
+      box.appendChild(el('p', 'quiet', 'You signed in with your old 4-number PIN. Choose a password with at least 6 letters or numbers. You will use it from now on.'));
+      var p1 = field(box, 'New password', passInput()), p2 = field(box, 'New password again', passInput());
+      var go = el('button', 'btn', 'Save my password'); go.type = 'button'; box.appendChild(go);
+      var later = el('button', 'link', 'Not now'); later.type = 'button'; box.appendChild(later);
+      later.addEventListener('click', function () { done(r); });
+      go.addEventListener('click', function () {
+        if (p1.value.trim().length < 6) { poMsg('Your password needs at least 6 letters or numbers.'); return; }
+        if (p1.value !== p2.value) { poMsg('The two passwords are not the same. Type them again.'); p2.value = ''; return; }
+        go.disabled = true;
+        call(s === 'cmp' ? 'apiCmpChangePass' : 'apiStChangePass', s === 'cmp' ? r.ct : r.st, oldPass, p1.value).then(function (r2) { toast('Your new password is saved'); done(r2); })
+          .catch(function (e) { poMsg(e.message); go.disabled = false; });
+      });
+    }, true);
+  }
 
   /* forms: set up, forgot, gate */
-  function formOpen(title, build) { clearTimeout(gateTimer); poShow('po-form'); $('form-title').textContent = title; var box = $('form-box'); box.innerHTML = ''; siInfoLoad().then(function () { build(box); var f = box.querySelector('input:not([disabled]), select:not([disabled])'); if (f) setTimeout(function () { f.focus(); }, 60); }).catch(function (e) { poMsg(e.message); }); }
+  function formOpen(title, build, noInfo) { clearTimeout(gateTimer); poShow('po-form'); $('form-title').textContent = title; var box = $('form-box'); box.innerHTML = ''; (noInfo ? Promise.resolve() : siInfoLoad()).then(function () { build(box); var f = box.querySelector('input:not([disabled]), select:not([disabled])'); if (f) setTimeout(function () { f.focus(); }, 60); }).catch(function (e) { poMsg(e.message); }); }
   function field(box, label, input, note) { var f = el('label', 'field', label); f.appendChild(input); if (note) f.appendChild(el('span', 'note', note)); box.appendChild(f); return input; }
-  function pinInput() { var i = el('input'); i.type = 'password'; i.inputMode = 'numeric'; i.maxLength = 4; i.autocomplete = 'off'; i.setAttribute('pattern', '[0-9]*'); i.addEventListener('input', function () { i.value = i.value.replace(/\D/g, '').slice(0, 4); }); return i; }
+  function passInput() { var i = el('input'); i.type = 'password'; i.autocomplete = 'new-password'; i.maxLength = 60; i.spellcheck = false; return i; }
   function textInput(ph) { var i = el('input'); i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph; return i; }
   function who(box, v, fixed) {
-    var cls = el('select'); cls.appendChild(new Option('Choose your class', '')); classList().forEach(function (c) { cls.appendChild(new Option(c, c)); }); if (v.cls) cls.value = v.cls;
-    field(box, 'Your class', cls);
-    var name = textInput('Your full name, as on the class list'); name.autocomplete = 'name'; name.setAttribute('autocapitalize', 'words'); name.maxLength = 80; name.value = v.name || '';
+    var cls = el('select'); cls.appendChild(new Option('Choose your class', '')); classList().forEach(function (c) { cls.appendChild(new Option(c, c)); });
+    var l = subj === 'cmp' ? (load('cmp_last') || {}) : last; if (v.cls || l.cls) cls.value = v.cls || l.cls;
+    field(box, subj === 'cmp' ? 'Your computing class' : 'Your class', cls);
+    var name = textInput('Your full name, as on the class list'); name.autocomplete = 'name'; name.setAttribute('autocapitalize', 'words'); name.maxLength = 80; name.value = v.name || l.name || '';
     field(box, 'Your name', name);
     if (fixed) { cls.disabled = true; name.disabled = true; }
     return { check: function () { if (!cls.value) { poMsg('Choose your class.'); return false; } if (!name.value.trim()) { poMsg('Type your name.'); return false; } return true; }, val: function () { return { cls: cls.value, name: name.value.trim() }; }, cls: cls, name: name };
   }
-  function questionSelect(label) { var q = el('select'); q.appendChild(new Option(label, '')); ((siInfo && siInfo.questions) || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); }); return q; }
-  $('new-first').addEventListener('click', function () { formSetup(null, { cls: last.cls, name: last.name }); });
-  $('new-forgot').addEventListener('click', function () { formForgot({ cls: last.cls, name: last.name }); });
-  $('new-gate').addEventListener('click', function () { formGate({ cls: last.cls, name: last.name }); });
+  function questionSelect(label) { var q = el('select'); q.appendChild(new Option(label, '')); ((info() && info().questions) || []).forEach(function (t, i) { q.appendChild(new Option(t, String(i))); }); return q; }
+  function checkPass(p1, p2) {
+    if (p1.value.trim().length < 6) { poMsg('Your password needs at least 6 letters or numbers.'); return false; }
+    if (p1.value !== p2.value) { poMsg('The two passwords are not the same. Type them again.'); p2.value = ''; return false; }
+    return true;
+  }
+  function afterSetup(x, r, note) {
+    toast(note);
+    if (subj === 'cmp') cmpDone(r); else { remember(x.cls, x.name); signedIn(r); }
+  }
 
   function formSetup(key, v) {
-    formOpen('Set up your PIN', function (box) {
-      if (key) { var ok = el('div', 'wait'); ok.style.background = 'var(--ok-soft)'; ok.style.color = 'var(--ok)'; ok.textContent = 'Mr Cedric let you in. Now choose your PIN.'; box.appendChild(ok); }
+    var cmp = subj === 'cmp';
+    formOpen(cmp ? 'Set up your computing password' : 'Set up your password', function (box) {
+      if (key) { var ok = el('div', 'wait'); ok.style.background = 'var(--ok-soft)'; ok.style.color = 'var(--ok)'; ok.textContent = 'Mr Cedric let you in. Now choose your password.'; box.appendChild(ok); }
       else box.appendChild(el('p', 'quiet', 'Type your name as it is on the class list, and your register number to show it is you.'));
       var w = who(box, v || {}, !!key), reg = null;
-      if (!key) { reg = field(box, 'Your register number', textInput(), 'In your class\'s own Science lesson you can leave this empty.'); reg.inputMode = 'numeric'; }
+      if (!key) { reg = field(box, 'Your register number', textInput(), cmp ? '' : 'In your class\'s own Science lesson you can leave this empty.'); reg.inputMode = 'numeric'; }
       var two = el('div', 'two'); box.appendChild(two);
-      var p1 = field(two, 'PIN (4 numbers)', pinInput()), p2 = field(two, 'PIN again', pinInput());
-      var q = field(box, 'A question only you can answer', questionSelect('Choose a question'), 'If you forget your PIN, you answer this to set a new one.');
+      var p1 = field(two, 'Password', passInput()), p2 = field(two, 'Password again', passInput());
+      box.appendChild(el('p', 'quiet', 'At least 6 letters or numbers. Not your name, and not something easy to guess.'));
+      var q = field(box, 'A question only you can answer', questionSelect('Choose a question'), 'If you forget your password, you answer this to set a new one.');
       var ans = field(box, 'Your answer', textInput('An answer you will remember'));
-      var go = el('button', 'btn', 'Save and sign in'); box.appendChild(go);
-      if (!key) { var l = el('button', 'link', 'No register number? Ask Mr Cedric to let me in'); l.addEventListener('click', function () { formGate(w.val()); }); box.appendChild(l); }
+      var go = el('button', 'btn', 'Save and sign in'); go.type = 'button'; box.appendChild(go);
+      if (!key && !cmp) { var l = el('button', 'link', 'No register number? Ask Mr Cedric to let me in'); l.type = 'button'; l.addEventListener('click', function () { formGate(w.val()); }); box.appendChild(l); }
+      if (cmp) box.appendChild(el('p', 'quiet', 'Your computing password is your own. It does not have to be your Science password.'));
       go.addEventListener('click', function () {
-        if (!w.check()) return;
-        if (p1.value.length !== 4) { poMsg('Your PIN is 4 numbers.'); return; }
-        if (p1.value !== p2.value) { poMsg('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        if (!w.check() || !checkPass(p1, p2)) return;
         if (q.value === '') { poMsg('Choose a question.'); return; }
         if (ans.value.trim().length < 2) { poMsg('Type an answer to your question.'); return; }
         var x = w.val(); go.disabled = true;
-        call('apiStSetup', x.cls, x.name, key ? { key: key } : { reg: reg ? reg.value : '' }, p1.value, Number(q.value), ans.value)
-          .then(function (r) { remember(x.cls, x.name); toast('Your PIN is set'); signedIn(r); })
-          .catch(function (e) { poMsg(e.message); go.disabled = false; if (/let you in/.test(e.message) && !key) gateTimer = setTimeout(function () { formGate(x); }, 2200); });
+        var req = cmp ? call('apiCmpSetup', x.cls, x.name, reg ? reg.value : '', p1.value, Number(q.value), ans.value)
+          : call('apiStSetup', x.cls, x.name, key ? { key: key } : { reg: reg ? reg.value : '' }, p1.value, Number(q.value), ans.value);
+        req.then(function (r) { afterSetup(x, r, 'Your password is set'); })
+          .catch(function (e) { poMsg(e.message); go.disabled = false; if (!cmp && /let you in/.test(e.message) && !key) gateTimer = setTimeout(function () { formGate(x); }, 2200); });
       });
     });
   }
   function formForgot(v) {
-    formOpen('Forgot your PIN?', function (box) {
-      box.appendChild(el('p', 'quiet', 'Choose the question you picked when you set up your PIN, type your answer, then choose a new PIN.'));
+    var cmp = subj === 'cmp';
+    formOpen(cmp ? 'Forgot your computing password?' : 'Forgot your password?', function (box) {
+      box.appendChild(el('p', 'quiet', 'Choose the question you picked when you set up your password, type your answer, then choose a new password.'));
       var w = who(box, v || {});
       var q = field(box, 'Your question', questionSelect('Choose your question'));
       var ans = field(box, 'Your answer', textInput('Your answer'));
       var two = el('div', 'two'); box.appendChild(two);
-      var p1 = field(two, 'New PIN', pinInput()), p2 = field(two, 'New PIN again', pinInput());
-      var go = el('button', 'btn', 'Set my new PIN'); box.appendChild(go);
-      box.appendChild(el('p', 'quiet', 'Forgot the answer too? Ask Mr Cedric to reset your PIN.'));
+      var p1 = field(two, 'New password', passInput()), p2 = field(two, 'New password again', passInput());
+      var go = el('button', 'btn', 'Set my new password'); go.type = 'button'; box.appendChild(go);
+      box.appendChild(el('p', 'quiet', 'Forgot the answer too? Ask Mr Cedric to reset your password.'));
       go.addEventListener('click', function () {
         if (!w.check()) return;
         if (q.value === '') { poMsg('Choose your question.'); return; }
         if (!ans.value.trim()) { poMsg('Type the answer to your question.'); return; }
-        if (p1.value.length !== 4) { poMsg('Your new PIN is 4 numbers.'); return; }
-        if (p1.value !== p2.value) { poMsg('The two PINs are not the same. Type them again.'); p2.value = ''; return; }
+        if (!checkPass(p1, p2)) return;
         var x = w.val(); go.disabled = true;
-        call('apiStForgot', x.cls, x.name, Number(q.value), ans.value, p1.value).then(function (r) { remember(x.cls, x.name); toast('Your new PIN is set'); signedIn(r); })
+        call(cmp ? 'apiCmpForgot' : 'apiStForgot', x.cls, x.name, Number(q.value), ans.value, p1.value).then(function (r) { afterSetup(x, r, 'Your new password is set'); })
           .catch(function (e) { poMsg(e.message); go.disabled = false; });
       });
     });
@@ -955,21 +966,243 @@
 })();
 </script>
 <script>
-/* The portal's background: NASA's black hole simulation as a looping video. It plays only while the portal
-   shows; with reduced motion switched on, or in Low Power Mode, the still poster frame shows instead. */
+/* The portal's background. NASA's black hole simulation (a looping video) is drawn over a sky of stars, a band of
+   the galaxy and small distant galaxies, and that sky is bent by the black hole's gravity the way light really is.
+   For every pixel the light ray is traced back from the viewer, past a non-spinning (Schwarzschild) black hole of
+   mass M, to the sky far away: the bending comes from the exact photon orbit, integrated numerically once, not from
+   the weak-field formula. Rays that come closer than b = 3*sqrt(3) M fall in, which is the black shadow, and it is
+   lined up with the edge of the shadow in NASA's video. Close to the edge, stars appear as arcs, twice, or more.
+   The viewer is at 30 M; the sky turns slowly so stars drift behind the hole and swirl round it.
+   WebGL draws it; without WebGL, or if the video cannot be used, the plain video shows. */
 (function () {
   var v = document.getElementById('po-video'), portal = document.getElementById('v-portal');
   if (!v) return;
   var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function sync() {
-    var on = !portal.classList.contains('hidden') && !document.hidden && !still;
-    if (on) { var p = v.play(); if (p && p.catch) p.catch(function () { /* autoplay refused: the poster stays */ }); }
-    else v.pause();
+  // NASA's frame: 1920 x 1080, the black hole's centre and the edge of its shadow (measured from the video).
+  var VW = 1920, VH = 1080, VCX = 960, VCY = 539, VRS = 173;
+  var D = 30, BC = Math.sqrt(27);                      // viewer's distance and the critical impact parameter, in units of M
+  var cv = document.createElement('canvas'); cv.id = 'po-sky'; cv.setAttribute('aria-hidden', 'true');
+  var gl = null;
+  try { gl = cv.getContext('webgl', { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true }) || cv.getContext('experimental-webgl'); } catch (e) { gl = null; }
+
+  function playSync() {
+    var on = !portal.classList.contains('hidden') && !document.hidden;
+    if (on && !still) { var p = v.play(); if (p && p.catch) p.catch(function () { /* autoplay refused: the poster frame stays */ }); } else v.pause();
+    if (gl) { if (on) start(); else stop(); }
   }
   if (still) v.removeAttribute('autoplay');
-  document.addEventListener('visibilitychange', sync);
-  if (window.MutationObserver) new MutationObserver(sync).observe(portal, { attributes: true, attributeFilter: ['class'] });
-  sync();
+  document.addEventListener('visibilitychange', playSync);
+  if (window.MutationObserver) new MutationObserver(playSync).observe(portal, { attributes: true, attributeFilter: ['class'] });
+  if (!gl) { playSync(); return; }
+
+  /* ---- the bending: beta(theta), where theta is a ray's angle from the black hole as the viewer sees it and beta
+     the direction it really came from, measured from straight behind the black hole ---- */
+  var N = 1024, THC = Math.asin(BC * Math.sqrt(1 - 2 / D) / D), THMAX = 3.0;
+  function deflectTable() {
+    var u0 = 1 / D, out = new Float32Array(N);
+    function f(u, ib2) { return ib2 - u * u + 2 * u * u * u; }
+    // integral of du / sqrt(f) from a to the turning point up (or to a top end with no turning point), with u = up(1 - s^2)
+    function legToTurn(a, up, ib2, n) {
+      var smax = Math.sqrt(Math.max(0, 1 - a / up)), h = smax / n, sum = 0;
+      for (var i = 0; i <= n; i++) {
+        var s = i * h, u = up * (1 - s * s), fv = f(u, ib2), g;
+        if (i === 0) { var d1 = -(-2 * up + 6 * up * up); g = 2 * up / Math.sqrt(Math.max(1e-12, 2 * up * d1)); }   // the limit at the turning point
+        else g = 2 * up * s / Math.sqrt(Math.max(1e-15, fv));
+        sum += g * (i === 0 || i === n ? 1 : (i % 2 ? 4 : 2));
+      }
+      return sum * h / 3;
+    }
+    function legOut(a, ib2, n) {   // no turning point: from u = 0 to a, plain Simpson
+      var h = a / n, sum = 0;
+      for (var i = 0; i <= n; i++) { var u = i * h; sum += (1 / Math.sqrt(Math.max(1e-15, f(u, ib2)))) * (i === 0 || i === n ? 1 : (i % 2 ? 4 : 2)); }
+      return sum * h / 3;
+    }
+    for (var k = 0; k < N; k++) {
+      var x = k / (N - 1), th = THC + (THMAX - THC) * x * x;
+      if (k === 0) th = THC + 1e-6;
+      var b = D * Math.sin(th) / Math.sqrt(1 - 2 / D), ib2 = 1 / (b * b), dphi;
+      if (th > Math.PI / 2) dphi = legOut(u0, ib2, 400);           // heading away from the hole: straight out, bent a little
+      else {
+        var lo = 0, hi = 1 / 3;                                     // the turning point: the root of f in (0, 1/3)
+        for (var it = 0; it < 80; it++) { var mid = (lo + hi) / 2; if (f(mid, ib2) > 0) lo = mid; else hi = mid; }
+        var up = lo, steps = th - THC < 0.01 ? 4000 : 800;
+        dphi = legToTurn(u0, up, ib2, steps) + legToTurn(0, up, ib2, steps);
+      }
+      var beta = Math.PI - Math.min(dphi, 4 * Math.PI);
+      out[k] = beta;
+    }
+    return out;
+  }
+
+  /* ---- the sky: stars, a band of the galaxy and small galaxies, on a 4096 x 2048 map of every direction ---- */
+  var SW = 4096, SH = 2048;
+  function skyCanvas() {
+    var c = document.createElement('canvas'); c.width = SW; c.height = SH;
+    var g = c.getContext('2d');
+    g.fillStyle = '#000'; g.fillRect(0, 0, SW, SH);
+    var seed = 7; function r() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    function lonlat(lon, lat) { return [((lon / (2 * Math.PI)) + 0.5) * SW, (0.5 - lat / Math.PI) * SH]; }
+    function bandLat(lon) { return Math.atan(Math.tan(0.42) * Math.sin(lon + 0.35)); }   // a great circle tilted 24 degrees
+    // the band of the galaxy: soft glow, crowded faint stars, and dark dust along it
+    g.globalCompositeOperation = 'lighter';
+    for (var i = 0; i < 1400; i++) {
+      var lon = (r() * 2 - 1) * Math.PI, w = 0.10 + r() * 0.10, lat = bandLat(lon) + (r() - .5) * w * 1.2, p = lonlat(lon, lat), rad = 30 + r() * 80;
+      var grd = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad), warm = r() < .35;
+      grd.addColorStop(0, warm ? 'rgba(255,214,170,.032)' : 'rgba(170,190,255,.028)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grd; g.fillRect(p[0] - rad, p[1] - rad, rad * 2, rad * 2);
+    }
+    for (i = 0; i < 26000; i++) {
+      lon = (r() * 2 - 1) * Math.PI; lat = bandLat(lon) + (r() + r() + r() - 1.5) * 0.16; p = lonlat(lon, lat);
+      var a = .15 + r() * .45; g.fillStyle = 'rgba(225,230,255,' + a.toFixed(2) + ')'; g.fillRect(p[0], p[1], 1, 1);
+    }
+    g.globalCompositeOperation = 'source-over';
+    for (i = 0; i < 340; i++) {
+      lon = (r() * 2 - 1) * Math.PI; lat = bandLat(lon) + (r() - .5) * 0.05; p = lonlat(lon, lat); rad = 8 + r() * 26;
+      grd = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], rad); grd.addColorStop(0, 'rgba(0,0,0,.22)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grd; g.fillRect(p[0] - rad, p[1] - rad, rad * 2, rad * 2);
+    }
+    // stars all over the sky, a few bright ones with a glow, coloured by temperature
+    g.globalCompositeOperation = 'lighter';
+    var COL = ['155,176,255', '170,191,255', '202,215,255', '248,247,255', '255,244,234', '255,210,161', '255,204,111'];
+    for (i = 0; i < 16000; i++) {
+      var z = r() * 2 - 1; lon = (r() * 2 - 1) * Math.PI; lat = Math.asin(z); p = lonlat(lon, lat);
+      var m = Math.pow(r(), 3.2), col = COL[Math.floor(r() * COL.length)];
+      g.fillStyle = 'rgba(' + col + ',' + (0.25 + 0.75 * m).toFixed(2) + ')';
+      if (m > 0.78) {
+        grd = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], 5 + m * 4); grd.addColorStop(0, 'rgba(' + col + ',.9)'); grd.addColorStop(.25, 'rgba(' + col + ',.35)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = grd; g.fillRect(p[0] - 9, p[1] - 9, 18, 18);
+      } else g.fillRect(p[0], p[1], m > .4 ? 2 : 1, m > .4 ? 2 : 1);
+    }
+    // small distant galaxies: spirals seen at an angle and smooth ellipticals; a few close to the hole's direction
+    function galaxy(lon, lat, size, kind, tilt, incl) {
+      var p = lonlat(lon, lat), ci = Math.cos(tilt), si = Math.sin(tilt);
+      var core = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], size * .5);
+      core.addColorStop(0, 'rgba(255,236,205,.95)'); core.addColorStop(.35, 'rgba(255,214,170,.35)'); core.addColorStop(1, 'rgba(0,0,0,0)');
+      g.save(); g.translate(p[0], p[1]); g.rotate(tilt); g.scale(1, kind === 'e' ? 0.6 + incl * .3 : incl);
+      if (kind === 'e') {
+        var e = g.createRadialGradient(0, 0, 0, 0, 0, size); e.addColorStop(0, 'rgba(255,225,190,.75)'); e.addColorStop(.4, 'rgba(255,205,160,.22)'); e.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = e; g.beginPath(); g.arc(0, 0, size, 0, 6.2832); g.fill();
+      } else {
+        for (var arm = 0; arm < 2; arm++) for (var t = 0; t < 1; t += 0.004) {
+          var ang = arm * Math.PI + t * 9.5, rr = size * (0.12 + 0.88 * t), j = (r() - .5) * size * .14;
+          var x = Math.cos(ang) * rr + j, y = Math.sin(ang) * rr + j;
+          g.fillStyle = r() < .18 ? 'rgba(255,170,190,.55)' : 'rgba(175,200,255,' + (0.55 * (1 - t) + .12).toFixed(2) + ')';
+          g.fillRect(x, y, 1.3, 1.3);
+        }
+        var halo = g.createRadialGradient(0, 0, 0, 0, 0, size); halo.addColorStop(0, 'rgba(200,215,255,.22)'); halo.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = halo; g.beginPath(); g.arc(0, 0, size, 0, 6.2832); g.fill();
+      }
+      g.restore();
+      g.fillStyle = core; g.fillRect(p[0] - size, p[1] - size, size * 2, size * 2);
+    }
+    for (i = 0; i < 70; i++) galaxy((r() * 2 - 1) * Math.PI, Math.asin(r() * 1.6 - .8), 6 + r() * 16, r() < .35 ? 'e' : 's', r() * 3.14, .3 + r() * .7);
+    var near = [[0.20, 0.06, 20, 's'], [-0.28, -0.10, 14, 'e'], [0.05, 0.30, 16, 's'], [-0.12, 0.18, 11, 's'], [0.40, -0.22, 13, 'e'], [-0.45, 0.02, 18, 's'], [0.62, 0.12, 12, 's'], [-0.70, -0.25, 15, 'e']];
+    near.forEach(function (q) { galaxy(q[0], q[1], q[2], q[3], r() * 3.14, .35 + r() * .5); });
+    g.globalCompositeOperation = 'source-over';
+    return c;
+  }
+
+  /* ---- WebGL ---- */
+  var VS = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+  var FS = [
+    'precision highp float;',
+    'uniform sampler2D sky, vid, tab;',
+    'uniform vec2 res; uniform vec4 vrect; uniform vec2 bh; uniform float k, thc, thmax, spin, hasVid, ntab;',
+    'const float PI = 3.14159265;',
+    'float beta(float th){',
+    '  float x = sqrt(clamp((th - thc) / (thmax - thc), 0.0, 1.0)) * (ntab - 1.0);',
+    '  float i0 = floor(x), f = x - i0;',
+    '  vec4 a = texture2D(tab, vec2((i0 + 0.5) / ntab, 0.5)), b = texture2D(tab, vec2((min(i0 + 1.0, ntab - 1.0) + 0.5) / ntab, 0.5));',
+    '  float va = (a.r * 255.0 * 256.0 + a.g * 255.0) / 65535.0, vb = (b.r * 255.0 * 256.0 + b.g * 255.0) / 65535.0;',
+    '  return mix(va, vb, f) * 4.0 * PI - 3.0 * PI;',
+    '}',
+    'void main(){',
+    '  vec2 q = vec2(gl_FragCoord.x, res.y - gl_FragCoord.y);',
+    '  vec2 dv = q - bh; float th = length(dv) * k;',
+    '  vec3 col = vec3(0.0);',
+    '  if (th > thc) {',
+    '    float b = beta(th); vec2 e = length(dv) > 0.0 ? normalize(dv) : vec2(1.0, 0.0);',
+    '    vec3 s = vec3(sin(b) * e.x, -sin(b) * e.y, -cos(b));',
+    '    float cs = cos(spin), sn = sin(spin); s = vec3(cs * s.x + sn * s.z, s.y, -sn * s.x + cs * s.z);',
+    '    float lon = atan(s.x, -s.z), lat = asin(clamp(s.y, -1.0, 1.0));',
+    '    col = texture2D(sky, vec2(lon / (2.0 * PI) + 0.5, 0.5 - lat / PI)).rgb;',
+    '  }',
+    '  vec2 uv = (q - vrect.xy) / vrect.zw;',
+    '  if (hasVid > 0.5 && uv.x >= 0.0 && uv.y >= 0.0 && uv.x <= 1.0 && uv.y <= 1.0) {',
+    '    vec3 d = texture2D(vid, uv).rgb;',
+    '    col = 1.0 - (1.0 - col) * (1.0 - d);',
+    '  }',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'].join('\n');
+
+  function shader(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  var prog, U = {}, tex = {}, ready = false, vidOk = true, failed = false;
+  function tx(unit, wrapS, minf) {
+    var t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrapS); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minf); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, minf === gl.NEAREST ? gl.NEAREST : gl.LINEAR);
+    return t;
+  }
+  function init() {
+    prog = gl.createProgram(); gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link');
+    gl.useProgram(prog);
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ['sky', 'vid', 'tab', 'res', 'vrect', 'bh', 'k', 'thc', 'thmax', 'spin', 'hasVid', 'ntab'].forEach(function (n) { U[n] = gl.getUniformLocation(prog, n); });
+    tex.sky = tx(0, gl.REPEAT, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, skyCanvas());
+    tex.tab = tx(2, gl.CLAMP_TO_EDGE, gl.NEAREST);
+    var t = deflectTable(), bytes = new Uint8Array(N * 4);
+    for (var i = 0; i < N; i++) { var val = Math.round(Math.max(0, Math.min(1, (t[i] + 3 * Math.PI) / (4 * Math.PI))) * 65535); bytes[i * 4] = val >> 8; bytes[i * 4 + 1] = val & 255; bytes[i * 4 + 3] = 255; }
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, N, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
+    tex.vid = tx(1, gl.CLAMP_TO_EDGE, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+    gl.uniform1i(U.sky, 0); gl.uniform1i(U.vid, 1); gl.uniform1i(U.tab, 2);
+    gl.uniform1f(U.thc, THC); gl.uniform1f(U.thmax, THMAX); gl.uniform1f(U.ntab, N);
+    ready = true;
+  }
+  // Where the video sits on the screen, as CSS object-fit: cover would put it (the narrow layout keeps it to the top).
+  var DPR = 1, W = 0, H = 0, vr = [0, 0, 0, 0];
+  function layout() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.5); W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    var narrow = W <= 900, bw = W, bh = narrow ? H * 0.52 : H, sc = Math.max(bw / VW, bh / VH), w = VW * sc, h = VH * sc;
+    var x = narrow ? (bw - w) / 2 : bw - w, y = (bh - h) / 2;      // object-position: 100% 50% when wide, centred when narrow
+    vr = [x * DPR, y * DPR, w * DPR, h * DPR];
+    gl.viewport(0, 0, cv.width, cv.height);
+    gl.uniform2f(U.res, cv.width, cv.height);
+    gl.uniform4f(U.vrect, vr[0], vr[1], vr[2], vr[3]);
+    gl.uniform2f(U.bh, vr[0] + vr[2] * VCX / VW, vr[1] + vr[3] * VCY / VH);
+    gl.uniform1f(U.k, THC / (vr[3] * VRS / VH));                 // radians per pixel, so the shadow matches NASA's
+  }
+  var running = false, raf = 0, t0 = 0, lastDraw = 0, spin = 0;
+  function draw(now) {
+    if (vidOk && v.readyState >= 2) {
+      try { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tex.vid); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, v); gl.uniform1f(U.hasVid, 1); }
+      catch (e) { vidOk = false; fallback(); return; }                  // the video cannot be used here: show it plainly
+    } else gl.uniform1f(U.hasVid, 0);
+    gl.uniform1f(U.spin, spin);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  function loop(now) {
+    if (!running) return;
+    raf = requestAnimationFrame(loop);
+    if (now - lastDraw < 1000 / 30) return;                      // 30 frames a second
+    if (!still) spin = 0.35 + (now - t0) / 1000 * 0.004;            // the sky turns once in about 26 minutes
+    lastDraw = now; draw(now);
+  }
+  function start() {
+    if (failed) return;
+    try { if (!ready) { init(); layout(); portal.insertBefore(cv, portal.firstChild); document.body.classList.add('po-lensed'); } } catch (e) { fallback(); return; }
+    if (running) return;
+    running = true; t0 = performance.now(); raf = requestAnimationFrame(loop);
+  }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+  function fallback() { failed = true; stop(); if (cv.parentNode) cv.parentNode.removeChild(cv); document.body.classList.remove('po-lensed'); }
+  window.addEventListener('resize', function () { if (ready && !failed) { layout(); if (!running) draw(performance.now()); } });
+  v.addEventListener('loadeddata', function () { if (ready && !failed && !running) draw(performance.now()); });
+  playSync();
+  window.__poLens = { state: function () { return { ready: ready, failed: failed, running: running, vidOk: vidOk, thc: THC, W: W, H: H }; }, table: deflectTable, draw: function () { draw(performance.now()); } };   // for testing
 })();
 </script>
 </body>

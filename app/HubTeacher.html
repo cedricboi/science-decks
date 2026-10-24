@@ -47,8 +47,36 @@
   html, body { margin: 0; min-height: 100%; color: var(--ink); font-family: var(--text); font-size: 16px; -webkit-text-size-adjust: 100%; }
   body { background: var(--paper); }
 
-  /* ---------- Sign in ---------- */
-  #signin { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px 16px; }
+
+  /* ---------- Sign in: the same night sky and glass card as the students' portal ---------- */
+  #signin { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px 16px; position: relative; isolation: isolate; background: #000; color: #EEF2FF; }
+  #signin.hidden { display: none; }
+  .si-video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; background: #000; pointer-events: none; }
+  .si-veil { position: fixed; inset: 0; z-index: -1; background: radial-gradient(70% 60% at 50% 50%, rgba(0,0,0,.25), rgba(0,0,0,.7)); pointer-events: none; }
+  .si-card { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; padding: 30px 30px 26px; border-radius: 26px;
+    background: linear-gradient(165deg, rgba(40,32,48,.55), rgba(10,12,24,.72)); border: 1px solid rgba(255,190,140,.22);
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12); -webkit-backdrop-filter: blur(22px) saturate(130%); backdrop-filter: blur(22px) saturate(130%); }
+  .si-kicker { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #FFB27A; font-weight: 700; }
+  .si-card h1 { margin: 0; font-family: var(--display); font-size: 32px; color: #fff; }
+  .si-lead { margin: 0 0 4px; color: #C9D2F0; font-size: 15px; }
+  #si-checking { color: #C9D2F0; }
+  #si-form { display: flex; flex-direction: column; gap: 14px; }
+  .si-f { display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 14px; color: #DDE3F7; }
+  .si-f > span { font-weight: 400; font-size: 13px; color: #9EA9CF; }
+  .si-f input { height: 50px; border-radius: 14px; border: 1px solid rgba(190,205,255,.24); background: rgba(255,255,255,.07); color: #fff; padding: 0 14px; font: inherit; font-size: 17px; font-weight: 400; width: 100%; box-sizing: border-box; }
+  .si-f input:focus { outline: none; border-color: #FFB27A; box-shadow: 0 0 0 3px rgba(255,150,80,.25); }
+  .si-pw { position: relative; display: block; }
+  .si-pw input { padding-right: 50px; }
+  .si-eye { position: absolute; right: 4px; top: 4px; width: 42px; height: 42px; border: 0; border-radius: 10px; background: transparent; color: #9EA9CF; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .si-eye[aria-pressed="true"] { color: #FFB27A; }
+  #signin .err { color: #FF9A9A; font-size: 14px; font-weight: 700; min-height: 0; }
+  #signin #si-go { width: 100%; height: 52px; border-radius: 14px; border: 0; font-size: 17px; font-weight: 800; color: #1a0d05; background: linear-gradient(90deg, #FF8A3D, #FFC46B); box-shadow: 0 10px 28px rgba(255,130,50,.35); }
+  #signin .note { margin: 0; color: #9EA9CF; font-size: 13px; text-align: center; }
+  #signin .guide-link { background: rgba(10,12,24,.6); border-color: rgba(190,205,255,.2); color: #EEF2FF; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  #signin .guide-link b { color: #FFB27A; }
+  #signin .guide-link svg { color: #FFB27A; }
+  .si-credit { position: fixed; left: 12px; bottom: 8px; margin: 0; font-size: 11px; color: rgba(200,210,240,.5); }
+
   /* The setup guide, for anyone new, under the sign-in card */
   .guide-link { width: 100%; max-width: 460px; display: flex; align-items: center; gap: 14px; text-align: left; border: 1.5px solid var(--rule); background: var(--surface);
     color: var(--ink); border-radius: 14px; padding: 14px 16px; font: inherit; cursor: pointer; box-shadow: 0 6px 18px -12px rgba(21,42,110,.45); }
@@ -1456,24 +1484,28 @@
 
 <!-- Sign in -->
 <div id="signin">
-  <div class="cover">
-    <p class="school" id="si-school">Worksheet Hub</p>
-    <div class="label">
-      <h1>Teacher Hub</h1>
-      <div id="si-checking">Checking your Google account...</div>
-      <div id="si-form" class="hidden">
-        <label for="si-pass">Teacher PIN</label>
-        <input id="si-pass" type="password" autocomplete="current-password">
-        <div class="err" id="si-err"></div>
-      </div>
+  <video class="si-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true" poster="https://cedricboi.github.io/science-decks/media/portal-blackhole.jpg"><source src="https://cedricboi.github.io/science-decks/media/portal-blackhole.mp4" type="video/mp4"></video>
+  <div class="si-veil" aria-hidden="true"></div>
+  <form class="si-card" id="si-card" onsubmit="return false" autocomplete="on">
+    <p class="si-kicker" id="si-school">learnwithmrcedric</p>
+    <h1 id="si-title">Teacher Hub</h1>
+    <div id="si-checking">Checking your Google account...</div>
+    <div id="si-form" class="hidden">
+      <p class="si-lead" id="si-lead">Sign in with your username and password.</p>
+      <label class="si-f hidden" id="si-pinrow">Teacher PIN<input id="si-pin" type="password" inputmode="numeric" autocomplete="off"><span>Your current PIN, from the Live Board sheet (Settings tab). It shows this is you.</span></label>
+      <label class="si-f">Username<input id="si-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="40"></label>
+      <label class="si-f">Password<span class="si-pw"><input id="si-pass" type="password" autocomplete="current-password" maxlength="100"><button type="button" class="si-eye" id="si-eye" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+      <label class="si-f hidden" id="si-pass2row">Password again<input id="si-pass2" type="password" autocomplete="new-password" maxlength="100"><span>At least 8 characters, with letters as well as numbers.</span></label>
+      <div class="err" id="si-err" role="alert"></div>
     </div>
-    <button class="btn yellow hidden" id="si-go">Open the Hub</button>
+    <button class="btn yellow hidden" id="si-go" type="submit">Open the Hub</button>
     <p class="note hidden" id="si-note">Your teacher PIN is in the Live Board sheet, Settings tab.</p>
-  </div>
+  </form>
   <button class="guide-link" id="si-guide" type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5v-15z"/><path d="M4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z"/><path d="M8 7h8M8 10.5h6"/></svg>
     <span><b>New to the Hub? Read the setup guide</b><span>How to set it up, set worksheets, mark with Claude, track homework and more.</span></span>
   </button>
+  <p class="si-credit">Black hole simulation: NASA&rsquo;s Goddard Space Flight Center / Jeremy Schnittman</p>
 </div>
 
 <!-- The setup guide (the Guide file), opened from the sign-in page or the T menu -->
@@ -1717,29 +1749,83 @@
 
   /* ---------------- sign in ---------------- */
 
+  /* Release 33: a username and password. The first time (none set yet), the teacher PIN proves it is the teacher,
+     then the username and password are saved. Each sign-in also pairs this laptop, so it opens by itself next time. */
+  H.hasAccount = true;
+  function siMode(setup) {
+    H.siSetup = !!setup;
+    $('si-pinrow').classList.toggle('hidden', !setup); $('si-pass2row').classList.toggle('hidden', !setup);
+    $('si-note').classList.toggle('hidden', !setup);
+    $('si-title').textContent = setup ? 'Set up your sign-in' : 'Teacher Hub';
+    $('si-lead').textContent = setup ? 'Choose a username and password for the Teacher Hub. You only do this once.' : 'Sign in with your username and password.';
+    $('si-pass').setAttribute('autocomplete', setup ? 'new-password' : 'current-password');
+    $('si-go').textContent = setup ? 'Save and open the Hub' : 'Open the Hub';
+  }
+  function siVideo(on) {
+    var v = document.querySelector('.si-video'); if (!v) return;
+    if (on && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause();
+  }
   function showSignin(expired) {
-    $('app').classList.add('hidden'); $('signin').classList.remove('hidden');
+    $('app').classList.add('hidden'); $('signin').classList.remove('hidden'); siVideo(true);
     $('si-checking').classList.add('hidden'); $('si-form').classList.remove('hidden'); $('si-go').classList.remove('hidden');
-    $('si-err').textContent = expired ? 'You were signed out. Type your teacher PIN to carry on.' : '';
-    $('si-pass').value = ''; $('si-pass').focus();
+    siMode(!H.hasAccount);
+    $('si-err').textContent = expired ? 'You were signed out. Sign in again to carry on.' : '';
+    $('si-pass').value = ''; $('si-pass2').value = ''; $('si-pin').value = '';
+    var u = lsGet('wsh_tu'); if (u && !$('si-user').value) $('si-user').value = u;
+    (H.siSetup ? $('si-pin') : ($('si-user').value ? $('si-pass') : $('si-user'))).focus();
+  }
+  // Changing the Teacher Hub username and password, from the menu.
+  function openAccount() {
+    busy('Opening...');
+    tcall('api_t_account').then(function (a) {
+      modal('<h2>Username and password</h2><p class="muted small" style="margin-top:0">For signing in to the Teacher Hub. Students never see these.</p>' +
+        (a.set && !a.owner ? '<div class="field"><label for="ac-old">Current password</label><input id="ac-old" type="password" autocomplete="current-password"></div>' : '') +
+        '<div class="field"><label for="ac-user">Username</label><input id="ac-user" type="text" autocapitalize="none" spellcheck="false" autocomplete="username" maxlength="40" value="' + esc(a.user || '') + '"></div>' +
+        '<div class="field"><label for="ac-new">New password</label><input id="ac-new" type="password" autocomplete="new-password" maxlength="100"></div>' +
+        '<div class="field"><label for="ac-new2">New password again</label><input id="ac-new2" type="password" autocomplete="new-password" maxlength="100"></div>' +
+        '<p class="muted small">At least 8 characters, with letters as well as numbers.</p><div class="err" id="ac-err" style="color:var(--bad)"></div>' +
+        '<div class="foot"><button class="btn ghost" id="ac-cancel">Cancel</button><button class="btn" id="ac-save">Save</button></div>');
+      $('ac-cancel').onclick = closeModal;
+      $('ac-save').onclick = function () {
+        var n = $('ac-new').value;
+        if (n !== $('ac-new2').value) { $('ac-err').textContent = 'The two new passwords are not the same.'; return; }
+        this.disabled = true;
+        tcall('api_t_changeAccount', a.set && !a.owner ? $('ac-old').value : '', $('ac-user').value, n).then(function (r) {
+          lsSet('wsh_tu', r.user); if (r.token) { H.token = r.token; lsSet('wsh_tt', r.token); } if (r.dv) lsSet('wsh_dv', r.dv);
+          closeModal(); toast('Saved. Every other device is signed out. Sign in as ' + r.user + ' next time.');
+        }).catch(function (e) { $('ac-err').textContent = msg(e); $('ac-save').disabled = false; });
+      };
+    }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Could not open', msg(e)); });
   }
   function startApp(token) {
     H.token = token; lsSet('wsh_tt', token);
-    $('signin').classList.add('hidden'); $('app').classList.remove('hidden');
+    $('signin').classList.add('hidden'); $('app').classList.remove('hidden'); siVideo(false);
     loadDash();
   }
-  $('si-go').onclick = function () {
-    var p = $('si-pass').value;
-    if (!p) { $('si-err').textContent = 'Type your teacher PIN.'; return; }
-    var b = $('si-go'); b.disabled = true; b.textContent = 'Opening...';
-    call('api_t_login', p).then(function (r) {
-      startApp(r.token);
-      if (!/^(tk|dv)_/.test(p)) call('apiPairDevice', p, 'hub', 'Teacher Hub').then(function (dv) { if (dv) lsSet('wsh_dv', dv); }).catch(function () { /* the PIN next time */ });
-    })
-      .catch(function (e) { $('si-err').textContent = msg(e); })
-      .then(function () { b.disabled = false; b.textContent = 'Open the Hub'; });
+  $('si-eye').onclick = function () {
+    var on = $('si-pass').type === 'password';
+    $('si-pass').type = on ? 'text' : 'password'; this.setAttribute('aria-pressed', String(on)); this.setAttribute('aria-label', on ? 'Hide password' : 'Show password');
   };
-  $('si-pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('si-go').click(); });
+  $('si-go').onclick = function () {
+    var u = $('si-user').value.trim(), p = $('si-pass').value, b = $('si-go'), label = b.textContent;
+    $('si-err').textContent = '';
+    if (H.siSetup && !$('si-pin').value) { $('si-err').textContent = 'Type your teacher PIN.'; return; }
+    if (!u) { $('si-err').textContent = 'Type your username.'; return; }
+    if (!p) { $('si-err').textContent = 'Type your password.'; return; }
+    if (H.siSetup && p !== $('si-pass2').value) { $('si-err').textContent = 'The two passwords are not the same. Type them again.'; $('si-pass2').value = ''; return; }
+    b.disabled = true; b.textContent = 'Opening...';
+    var req = H.siSetup ? call('api_t_setupAccount', $('si-pin').value, u, p) : call('api_t_login2', u, p);
+    req.then(function (r) {
+      lsSet('wsh_tu', u.toLowerCase()); if (r.dv) lsSet('wsh_dv', r.dv);
+      H.hasAccount = true; startApp(r.token);
+      if (H.siSetup) toast('Your username and password are saved. Use them next time.');
+    }).catch(function (e) {
+      if (/NO_ACCOUNT/.test(e.message)) { H.hasAccount = false; siMode(true); $('si-err').textContent = 'Set up your username and password first, with your teacher PIN.'; return; }
+      if (/already set/.test(e.message)) { H.hasAccount = true; siMode(false); }
+      $('si-err').textContent = msg(e);
+    }).then(function () { b.disabled = false; b.textContent = H.siSetup ? 'Save and open the Hub' : 'Open the Hub'; });
+  };
+  ['si-user', 'si-pass', 'si-pass2', 'si-pin'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('si-go').click(); } }); });
 
   /* ---------- The setup guide ---------- */
   // The Guide file is fetched the first time it is opened, so the sign-in page stays quick.
@@ -1806,10 +1892,12 @@
     var saved = lsGet('wsh_tt');
     var tryAuto = function () {
       call('api_t_auto').then(function (r) {
+        if (r.hasAccount === false) H.hasAccount = false;
         if (r.token) { startApp(r.token); return; }
         var dv = lsGet('wsh_dv');
         if (dv) { call('api_t_login', dv).then(function (x) { startApp(x.token); }).catch(function () { lsDel('wsh_dv'); showSignin(false); }); return; }
-        showSignin(false); if (!r.hasPass) $('si-note').classList.remove('hidden');
+        if (r.hasAccount === false) H.hasAccount = false;
+        showSignin(false);
       }).catch(function () { showSignin(false); });
     };
     if (saved) {
@@ -2107,6 +2195,7 @@
       '<button role="menuitem" id="me-news">' + ICON.gift + 'What\'s new</button>' +
       '<button role="menuitem" id="me-keys">' + ICON.keys + 'Keyboard shortcuts</button>' +
       '<button role="menuitem" id="me-guide">' + ICON.sheet + 'Setup guide</button>' +
+      '<button role="menuitem" id="me-acct">' + ICON.keys + 'Username and password</button>' +
       '<button role="menuitem" id="me-setup">' + ICON.keys + 'Setup check and updates</button>' +
       '<button role="menuitem" id="me-nudge">' + ICON.spark + 'Ask Claude for students</button><hr>' +
       '<div class="cap">Look</div><div class="seg" role="group" aria-label="Look">' + THEMES.map(function (t) {
@@ -2124,6 +2213,7 @@
     $('me-points').onclick = function () { closePops(); showTab('rw'); };
     $('me-keys').onclick = function () { closePops(); shortcutsBox(); };
     $('me-guide').onclick = function () { closePops(); openGuide(); };
+    $('me-acct').onclick = function () { closePops(); openAccount(); };
     $('me-setup').onclick = function () { closePops(); openSetup(); };
     $('me-nudge').onclick = function () { closePops(); nudgeSettings(); };
     Array.prototype.forEach.call($('pop-me').querySelectorAll('[data-theme-pick]'), function (b) {
