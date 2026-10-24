@@ -1180,7 +1180,7 @@ function receiveDeckBatch_(d) {
   var evKey = function (ev) { return 'ev_' + String(d.recordId || '').slice(0, 50) + '_' + String(ev.id || '').slice(0, 60); };
   var checkRes = null, award = null;
   var visits = who.matched && counts && Array.isArray(d.visits) && d.visits.length;
-  var fresh = [], saving = {};
+  var fresh = [], saving = {}, posted = false;
   if (answers.length) {
     // A deck that gave up waiting sends the same answers again: skip the ones already saved, and claim the
     // rest straight away, so a resend that arrives while this one is still saving does not save them twice.
@@ -1244,20 +1244,29 @@ function receiveDeckBatch_(d) {
         touched[id] = true;
       });
       appendPosts_(rows);
+      posted = true;
       var saved = {};
       Object.keys(claim).forEach(function (k) { saved[k] = 's'; });
-      try { if (Object.keys(saved).length) cache.putAll(saved, 21600); } catch (err) { /* only used to skip resent answers */ }
+      if (Object.keys(saved).length) { try { cache.putAll(saved, 21600); } catch (err) { try { cache.putAll(saved, 21600); } catch (e3) { /* the 'p' claims still hold for 400 s */ } } }
       if (fresh.length) {
-        var sc = scoreChapterCheck_(deckId, who, fresh);
-        if (sc) { checkRes = sc.result; award = sc.award; }
+        // Scored after saving: if scoring fails, the answers stay saved (and are not saved again). The answers to
+        // score are kept for 6 hours and scored with this deck's next batch.
+        var redoKey = 'ckr_' + String(d.recordId || '').slice(0, 50) + '_' + acctId_(who.cls, who.name);
+        try { var sc = scoreChapterCheck_(deckId, who, fresh); if (sc) { checkRes = sc.result; award = sc.award; } }
+        catch (err) { checkRes = null; award = null; try { cachePut_(redoKey, JSON.stringify(fresh.slice(0, 60)), 21600); } catch (e4) { /* too big: not scored */ } }
       }
     } catch (err) {
-      // Not saved (or not scored): let the deck send these again.
-      try { cache.removeAll(Object.keys(claim)); } catch (e2) { /* the claims run out in 6 hours */ }
-      throw err;
+      // Not saved: let the deck send these again.
+      if (!posted) { try { cache.removeAll(Object.keys(claim)); } catch (e2) { /* the claims run out by themselves */ } throw err; }
     }
     Object.keys(touched).forEach(bumpCache_);
     if (counts && lessonCtl.lesson && lessonCtl.hold && !lessonCtl.keep) { try { autoReleaseAnswered_(deckId, who.cls, Object.keys(touched)); } catch (err) { /* shown when the teacher moves on */ } }
+  }
+  // Answers saved earlier whose scoring failed are scored now.
+  if (tk && !award) {
+    var rk = 'ckr_' + String(d.recordId || '').slice(0, 50) + '_' + acctId_(who.cls, who.name), redo = null;
+    try { redo = JSON.parse(cache.get(rk) || 'null'); } catch (err) { redo = null; }
+    if (redo && redo.length) { try { var sc2 = scoreChapterCheck_(deckId, who, redo); cache.remove(rk); if (sc2) { checkRes = sc2.result; award = sc2.award; } } catch (err) { /* tried again with the next batch */ } }
   }
   if (who.matched && (fresh.length || visits)) {
     try { updateProgress_(deckId, who, d, fresh, lb); } catch (err) {
@@ -3304,7 +3313,7 @@ function liveCheck_(d) {
     // An End whose Undo time has passed is finished here too (the laptop may have been closed straight after End).
     var due = Number(got[endKey_(deckId, cls)] || 0);
     if (due && Date.now() >= due) {
-      try { if (finishEnds_(deckId, cls, String(due))) { got[ctlKey_(deckId, cls)] = cache.get(ctlKey_(deckId, cls)); got[leadKey_(deckId, cls)] = cache.get(leadKey_(deckId, cls)); } } catch (err) { /* the next call finishes it */ }
+      try { if (finishEnds_(deckId, cls, String(due), 250)) { got[ctlKey_(deckId, cls)] = cache.get(ctlKey_(deckId, cls)); got[leadKey_(deckId, cls)] = cache.get(leadKey_(deckId, cls)); } } catch (err) { /* the next call finishes it */ }
     }
   }
   var old = null, c0 = who ? getCtl_(deckId, cls, got[ctlKey_(deckId, cls)], got[leadKey_(deckId, cls)] || null) : null;
@@ -4063,6 +4072,8 @@ function apiGivePoints(pin, cls, name, points, note) {
    when the presenter view reaches it. End lesson takes it all off, so students can finish at home. */
 function apiStartLesson(pin, deckId, cls, from, to, title) {
   checkPin_(pin);
+  // An End still waiting from an earlier lesson of this deck and class must not end this one.
+  try { CacheService.getScriptCache().remove(endKey_(deckId, cls)); endsDue_(deckId, cls, false); } catch (err) { /* fine */ }
   try { ensureDeckKnown_(deckId); } catch (err) { /* it registers with its first answer */ }
   endOtherLessons_(deckId, cls);
   try { endOtherClasses_(cls); } catch (err) { /* they end by themselves */ }
@@ -4124,6 +4135,8 @@ function presentInfo_(d) {
 function presentStart_(d) {
   var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase();
   if (!deckId || !cls || !readRoster_()[cls]) return { ok: false, error: 'That class is not on the class list.' };
+  // An End whose Undo time has passed is finished first, so this Start begins a new lesson instead of keeping that one.
+  try { finishEnds_(deckId, cls); } catch (err) { /* fine */ }
   var c = getCtl_(deckId, cls), from = Math.round(Number(d.from) || 0), to = Math.round(Number(d.to) || 0);
   // force: the part was chosen in the Teacher Hub, so a different part still running is replaced.
   if (c.lesson && Date.now() - (c.lesson.at || 0) < 3 * 3600000 && (!d.force || ((c.from || 0) === from && (c.to || 0) === to))) { checkPin_(d.pin); return { ok: true, ctl: c, kept: true }; }
@@ -5154,7 +5167,7 @@ function modeForSlide_(deckId, cls, c, slideId, kind, n) {
 /* ---------- End with Undo ---------- */
 function endKey_(deckId, cls) { return 'endat_' + String(deckId).slice(0, 80) + '_' + normClass_(cls); }
 /* A lesson whose Undo time has passed is ended now. Called by every lesson call, so it ends within a second or two. */
-function finishEnds_(deckId, cls, raw) {
+function finishEnds_(deckId, cls, raw, waitMs) {
   var cache = CacheService.getScriptCache(), k = endKey_(deckId, cls);
   if (raw === undefined) raw = cache.get(k);
   var at = Number(raw || 0);
@@ -5162,7 +5175,7 @@ function finishEnds_(deckId, cls, raw) {
   // Only one caller finishes it: the key is read again and taken away under the lock (two callers a moment apart
   // would otherwise both end the lesson and write two debriefs).
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) return false;
+  if (!lock.tryLock(waitMs === undefined ? 5000 : waitMs)) return false;
   try {
     var now = Number(cache.get(k) || 0);
     if (!now || Date.now() < now) return false;

@@ -1129,7 +1129,7 @@ function assignsForClass_(assigns, cls) {
   return assigns.filter(function (a) { return a.classes.length === 0 || a.classes.indexOf(cls) >= 0; });
 }
 
-function buildTracker() { guardJob_('buildTracker'); return buildTracker_(); }
+function buildTracker() { guardJob_('buildTracker'); if (frozen_()) return; return oneTimerRun_('tracker', buildTracker_); }
 function buildTracker_() {
   if (frozen_()) return;   // the move to one sheet is running: the next hour's run does it
   ensureSubmissionCols_();
@@ -2207,6 +2207,9 @@ function hubTick() {
   guardJob_('hubTick');
   try { sweepEnds_(); } catch (e) { /* tried again next time */ }
   if (frozen_()) return [];
+  return oneTimerRun_('tick', hubTickRun_);
+}
+function hubTickRun_() {
   var done = [];
   try { oneDrain_(); } catch (e) { /* tried again next time */ }
   try { done = done.concat(syncTaught_().map(function (m) { return m.id + ' set for ' + m.cls; })); } catch (e) { /* Live Board asked again next time */ }

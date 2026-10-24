@@ -1888,9 +1888,24 @@ function oneQuietWhy_() {
     if (recent(src.hub, 'Rewards log', 1)) why.push('points were given in the last 15 minutes');
     if (recent(src.hub, 'Submissions', 13)) why.push('work was handed in in the last 15 minutes');
   } catch (err) { /* the switch checks again */ }
-  // The hourly tracker writes the Tracker tabs: not in the 10 minutes before the hour.
-  try { if (Number(Utilities.formatDate(new Date(), TZ, 'mm')) >= 50 && ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'buildTracker'; })) why.push('the tracker updates itself on the hour'); } catch (err) { /* none */ }
   return why.length ? 'Wait for a quiet time: ' + why.join(', ') + '.' : '';
+}
+/* The Hub's timers (hubTick: hand-ins and marking; the hourly tracker) take the document lock, not the script lock,
+   so they say when they are running. The switch and Go back wait for them (up to 90 s), and they do not start while
+   the move runs (they check the freeze first). */
+function oneTimerRun_(name, fn) {
+  var cache = CacheService.getScriptCache();
+  cachePut_('tmr_' + name, String(Date.now()), 360);
+  try { return fn(); } finally { try { cache.remove('tmr_' + name); } catch (err) { /* runs out in 6 minutes */ } }
+}
+function oneWaitTimers_() {
+  var cache = CacheService.getScriptCache(), end = Date.now() + 90000;
+  while (Date.now() < end) {
+    var got = cache.getAll(['tmr_tick', 'tmr_tracker']);
+    if (!got['tmr_tick'] && !got['tmr_tracker']) return true;
+    Utilities.sleep(2000);
+  }
+  return false;
 }
 /* Both locks: the script's (answers, sign-ins, lessons) and the Hub's (hand-ins, marking, the tracker). */
 function oneLocks_(fn) {
@@ -1909,7 +1924,9 @@ function oneSwitch_(force) {
   var st = oneState_();
   if (oneSsId_()) throw new Error('The app already uses the one sheet.');
   if (!st || !st.newId || !st.verified || st.rolledBackAt) throw new Error('Make the one sheet first (it must check out).');
+  if (Object.keys(st.tabs || {}).some(function (k) { return String(st.tabs[k].hash || '').length !== 32; })) { st.verified = false; oneSave_(st); return { ok: false, why: 'Press Make the one sheet again first (it was made by an older version), then switch.' }; }
   if (!force) { var q = oneQuietWhy_(); if (q) return { ok: false, why: q }; }
+  if (!oneWaitTimers_()) return { ok: false, why: 'The marking or tracker timer is running. Try again in a few minutes.' };
   var cache = CacheService.getScriptCache();
   cache.put(ONE_FREEZE, String(Date.now() + 15 * 60000), 900);
   var out;
@@ -1918,10 +1935,13 @@ function oneSwitch_(force) {
     out = oneLocks_(function () {
       var src = oneSources_(), ss = SpreadsheetApp.openById(st.newId), p = onePlan_(src), report = [], bad = 0;
       if (p.problems.length) return { ok: false, why: p.problems.join(' ') };
-      var from = { lb: src.lb, hub: src.hub }, last = {};
+      var from = { lb: src.lb, hub: src.hub }, last = {}, t0 = Date.now(), slow = false;
       p.plan.forEach(function (it) {
+        if (slow) return;
         var sh = from[it.from].getSheetByName(it.name), rec = st.tabs[it.to], h = oneHash_(sh), copy = ss.getSheetByName(it.to);
         var again = !copy || !rec || rec.hash !== h;
+        // Copying many changed tabs again could pass the 6-minute limit: stop, and ask for Make first (it carries on).
+        if (again && Date.now() - t0 > 120000) { slow = true; return; }
         if (again) { if (copy) ss.deleteSheet(copy); copy = sh.copyTo(ss); copy.setName(it.to); oneDress_(sh, copy, it.hide); }
         var s0 = oneShape_(sh), miss = oneSame_(it.hide ? oneUnhide_(s0) : s0, oneShape_(copy));
         if (oneHash_(copy) !== h) miss.push('values');
@@ -1931,6 +1951,7 @@ function oneSwitch_(force) {
         st.tabs[it.to] = { from: it.from, name: it.name, hash: h, rows: s0.rows, cols: s0.cols, ok: !miss.length, bad: miss.join(', ') };
         report.push({ tab: it.to, from: it.from === 'lb' ? 'Live Board' : 'Teacher Hub', rows: s0.rows, cols: s0.cols, ok: !miss.length, note: again ? 'Copied again (it changed)' + (miss.length ? '. Does not match: ' + miss.join(', ') : '') : (miss.length ? 'Does not match: ' + miss.join(', ') : '') });
       });
+      if (slow) { st.verified = false; oneSave_(st); oneLog_(ss, 'Switch stopped (many tabs changed)', report); return { ok: false, why: 'Many tabs changed since the one sheet was made. Press Make the one sheet again (it brings the copy up to date), then switch. Nothing was switched.', report: report }; }
       if (bad) { st.verified = false; oneSave_(st); oneLog_(ss, 'Switch stopped', report); return { ok: false, why: bad + ' tab(s) did not match after copying again. Nothing was switched.', report: report }; }
       var priv = onePrivate_(st.newId);
       if (priv) return { ok: false, why: priv };
@@ -1998,8 +2019,9 @@ function oneRollback_() {
   if (Date.now() > (st.rollbackUntil || 0)) throw new Error('Going back was possible until the end of the first school day after the switch. Mistakes are now fixed in the one sheet.');
   var cache = CacheService.getScriptCache();
   cache.put(ONE_FREEZE, String(Date.now() + 15 * 60000), 900);
-  var back = [];
+  var back = [], kept = [];
   try {
+    oneWaitTimers_();
     Utilities.sleep(4000);
     oneLocks_(function () {
       var src = oneSources_(), ss = SpreadsheetApp.openById(st.newId), last = st.lastRows || {};
@@ -2019,6 +2041,25 @@ function oneRollback_() {
         writeBelow_(old, rows, added.cols);
         back.push({ tab: k, rows: rows.length });
       });
+      // Every other tab that changed in the one sheet since the switch (chapter checks, Progress, marks, the decks)
+      // is put back as it is now, values only, so the old sheets carry on from where the one sheet is. Settings stays
+      // as it was in the old sheet (its class list link and PIN were changed in the copy). A tab with formulas is
+      // left, and named, so it can be checked by hand.
+      kept = [];
+      Object.keys(st.tabs || {}).forEach(function (k) {
+        var rec = st.tabs[k];
+        if (ONE_APPEND_TABS.indexOf(k) >= 0 || k === TAB.settings || k === ONE_OLD_STUDENTS || k === ONE_LOG) return;
+        var to = ss.getSheetByName(k), oldFile = rec.from === 'lb' ? src.lb : src.hub, old = oldFile.getSheetByName(rec.name);
+        if (!to || !old || oneHash_(to) === rec.hash) return;
+        var rng = to.getDataRange(), f = rng.getFormulas();
+        if (f.some(function (r) { return r.some(String); })) { kept.push(k); return; }
+        var v = rng.getValues(), rows = v.length, cols = v[0].length;
+        if (old.getMaxRows() < rows) old.insertRowsAfter(old.getMaxRows(), rows - old.getMaxRows());
+        if (old.getMaxColumns() < cols) old.insertColumnsAfter(old.getMaxColumns(), cols - old.getMaxColumns());
+        old.getRange(1, 1, Math.max(old.getLastRow(), 1), Math.max(old.getLastColumn(), 1)).clearContent();
+        old.getRange(1, 1, rows, cols).setValues(v);
+        back.push({ tab: k, rows: rows - 1, all: true });
+      });
       PropertiesService.getScriptProperties().deleteProperty('ONE_SS_ID');
       ONE_ = { id: null, ss: null, hub: null };
       st.rolledBackAt = Date.now(); st.back = back;
@@ -2030,8 +2071,9 @@ function oneRollback_() {
   try { ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'onEditOne') ScriptApp.deleteTrigger(t); }); } catch (err) { /* fine */ }
   oneForget_();
   try { verBump_('today'); verBump_('work'); } catch (err) { /* fine */ }
-  return { ok: true, back: back, why: 'Back on the old sheets. ' + (back.length ? 'Copied back into them: ' + back.map(function (x) { return x.tab + ' (' + x.rows + ' rows)'; }).join(', ') + '. ' : 'Nothing new had been saved since the switch. ') +
-    'Marks or scores changed since the switch are only in the one sheet, which is kept (renamed "gone back from"). Making the one sheet again starts a new one.' };
+  return { ok: true, back: back, kept: kept, why: 'Back on the old sheets. ' + (back.length ? 'Copied back into them: ' + back.map(function (x) { return x.tab + (x.all ? ' (the whole tab)' : ' (' + x.rows + ' new rows)'); }).join(', ') + '. ' : 'Nothing had changed since the switch. ') +
+    (kept.length ? 'These tabs have formulas and changed in the one sheet, so check them by hand: ' + kept.join(', ') + '. ' : '') +
+    'The one sheet is kept (renamed "gone back from"). Making the one sheet again starts a new one.' };
 }
 /* Anything saved to an old sheet in the seconds around the switch (by a request that started before it) is added
    to the one sheet. Runs from hubTick and from the Hub's Settings, under both locks, so it never adds a row twice. */
@@ -2047,10 +2089,13 @@ function oneDrain_() {
       if (!old || !to) return;
       var got = oneRowsAfter_(old, rec.old);
       if (!got.rows.length) return;
-      rec.old += got.rows.length;
-      oneSave_(st);   // counted first: a failure after this cannot add the same rows twice
-      writeBelow_(to, got.rows, got.cols);
-      moved.push({ tab: k, rows: got.rows.length });
+      // One row at a time, each counted as soon as it is in: a failure part-way leaves the rest for the next drain
+      // and never adds a row twice. appendRow, as answers use, so a row added at the same moment is never overwritten.
+      var n = 0;
+      try {
+        got.rows.forEach(function (r) { to.appendRow(r); n++; rec.old++; });
+      } finally { if (n) oneSave_(st); }
+      moved.push({ tab: k, rows: n });
     });
     if (moved.length) { try { oneLog_(ss, 'Added from the old sheets after the switch', moved.map(function (m) { return { tab: m.tab, rows: m.rows, cols: '', ok: true, note: '' }; })); } catch (err) { /* fine */ } }
     return moved;
