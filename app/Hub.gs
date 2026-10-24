@@ -402,6 +402,26 @@ function pdfVer_(file) {
   return file.getId() + '@' + t;
 }
 
+// Release 34: the blank worksheet, also once it has closed (Clean copy and Try it again in the student app).
+function api_clean(token, id) {
+  var s = who_(token);
+  var a = findAssignment_(id);
+  if (!a || !canSee_(a, s) || !a.fileId) throw new Error('This worksheet was not found.');
+  var file = DriveApp.getFileById(a.fileId);
+  return { id: a.id, title: a.title, ver: pdfVer_(file), pdf: Utilities.base64Encode(file.getBlob().getBytes()) };
+}
+// Release 34: the copy the student handed in, read only (after the worksheet has closed).
+function api_handed(token, id) {
+  var s = who_(token);
+  var a = findAssignment_(id);
+  if (!a || !canSee_(a, s)) throw new Error('This worksheet was not found.');
+  var sub = submissionIndex_()[a.id + '|' + studentKey_(s)];
+  var fid = sub ? fileIdFromLink_(sub.file) : '';
+  if (!fid) throw new Error('Your handed-in copy was not found.');
+  var f = DriveApp.getFileById(fid);
+  if (f.isTrashed()) throw new Error('Your handed-in copy was not found.');
+  return { id: a.id, title: a.title, at: sub.at, pdf: Utilities.base64Encode(f.getBlob().getBytes()) };
+}
 // One worksheet PDF on its own, so the iPad can keep a copy of each open worksheet before it is needed.
 function api_pdf(token, id) {
   var s = who_(token);
@@ -4954,7 +4974,7 @@ function classModel_(cls) {
       work: work.map(function (a) {
         return { id: a.id, title: a.title, due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open, practice: !!a.practice, chapter: chapterOfWs_(a),
           key: !!a.answerLink, showAnswers: !!a.showAnswers, after: !!a.answersAfter, shown: !!a.showMarked, corrDays: a.corrDays || 0,
-          rel: a.releasedAt ? a.releasedAt.getTime() : 0, corrClosed: !!a.correctionsClosed };
+          rel: a.releasedAt ? a.releasedAt.getTime() : 0, corrClosed: !!a.correctionsClosed, auto: !!(a.autoHandIn && a.dueAt) };
       }),
       students: {} };
     studs.forEach(function (s) {
@@ -4993,7 +5013,7 @@ function itemFor_(w, sub, started, now) {
   var keyOpen = !!(w.key && (sub || !w.open) && (w.showAnswers || (w.after && released && corrDone)));
   return { id: w.id, title: w.title, chapter: w.chapter || '', practice: w.practice, status: status, due: w.due, dueTs: w.dueTs,
     handedTs: sub && sub.f ? sub.f : null, late: !!(sub && sub.late), score: released ? sub.sc : '', comment: released ? sub.cm : '', hasMarked: released && !!sub.mk,
-    corr: corr, keyOpen: keyOpen, rel: released ? w.rel : 0, seen: true,
+    corr: corr, keyOpen: keyOpen, rel: released ? w.rel : 0, seen: true, autoHandIn: !!w.auto,
     owed: !w.practice && (status === 'new' || status === 'started' || status === 'corrDue') };
 }
 /* Worksheets the student has started (a draft saved): known from the cache, and from Drive at most every 30 minutes. */
@@ -5062,7 +5082,9 @@ function s_home(st, have) {
   var back = items.filter(function (it) { return it.hasMarked && !it.seen; }).sort(function (x, y) { return (y.rel || 0) - (x.rel || 0); })[0] || null;
   var fun = { open: true, why: '' };
   try { var csx = classState_(cls); fun = { open: !csx.live || !!csx.fun, why: csx.live && !csx.fun ? 'Opens after the lesson.' : '' }; } catch (e) { fun = { open: true, why: '' }; }
-  var out = { ok: true, me: { cls: who.cls, name: name, first: String(name).split(' ')[0] },
+  var hubUrl = '';
+  try { hubUrl = getSetting_('Worksheet Hub link') || selfUrl_(); } catch (e) { hubUrl = ''; }
+  var out = { ok: true, hub: hubUrl, me: { cls: who.cls, name: name, first: String(name).split(' ')[0] },
     now: { lesson: run ? { deckId: run.id, title: run.title, url: run.url, at: run.at } : null, ask: run ? ask : null, quick: quick, before: before },
     wallet: me ? { points: me.points, tokens: me.tokens } : { points: 0, tokens: 0 }, fun: fun,
     binder: { chapters: chapters, loose: loose }, back: back, puzzle: null, remind: [] };
@@ -5071,6 +5093,15 @@ function s_home(st, have) {
   if (have && have.v === v) return { ok: true, v: v, same: true, poll: out.poll };
   out.v = v;
   return out;
+}
+/* Where my points came from (Me), newest first. */
+function s_points(st) {
+  var who = stWho_(st), s = hubFindStudent_(hubNormClass_(who.cls), who.name);
+  if (!s) return { recent: [] };
+  var rules = rwRules_(), L = rwLedger_(s, getAssignments_(), submissionIndex_(), rwLog_(), rules, rwItems_(rules));
+  return { points: L.points, tokens: L.tokens, recent: L.events.filter(function (e) { return e.points && !e.floor; }).slice(-30).reverse().map(function (e) {
+    return { when: e.t && e.t.getTime() > 0 ? Utilities.formatDate(e.t, TZ, 'd MMM') : '', text: e.text, points: e.points };
+  }) };
 }
 /* A marked copy was opened: Back from Mr Cedric moves on to the next one. */
 function s_seen(st, id) {

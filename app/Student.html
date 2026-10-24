@@ -105,9 +105,6 @@
   .po-links .link { font-size: 15px; color: var(--blue-ink); padding: 8px 4px; }
   .po-remember { display: flex; align-items: center; justify-content: center; gap: 8px; margin: -8px 0 0; font-size: 13px; color: var(--muted); }
   .po-remember svg { color: #6EE7B7; }
-  .po-teacher { display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.07); font-size: 13px; color: var(--muted); }
-  .po-teacher a { color: var(--ink-2); font-weight: 700; text-decoration: none; padding: 6px 2px; }
-  .po-teacher a:hover { color: #fff; text-decoration: underline; }
   .po-credit { position: fixed; left: 16px; bottom: 10px; margin: 0; font-size: 11px; color: rgba(200,210,240,.45); z-index: 1; pointer-events: none; }
   #v-portal h2 { font-size: 26px; font-weight: 800; color: #fff; }
   #v-portal .po-welcome { font-size: 38px; }
@@ -155,103 +152,186 @@
   @keyframes pulse { 50% { opacity: .3; } }
   .po-form { max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
 
-  /* ---------- app ---------- */
-  #v-app { min-height: 100vh; display: flex; }
-  nav.side { width: 108px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 22px 0; gap: 10px; position: sticky; top: 0; height: 100vh; }
+  /* ---------- the app: one frame (a rail in landscape, a bar along the bottom under 900 px), one header, one Back ---------- */
+  :root { --green: #0B7A4E; --red: #C62F36; --grey: #8A90AA; --purple: #6B48C8; --amber: #FFE45C; }
+  #v-app { position: fixed; inset: 0; display: flex; background: var(--canvas); }
+  nav.side { width: 108px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding: 22px 0; gap: 10px; z-index: 20; }
   nav.side .logo { width: 52px; height: 52px; border-radius: 16px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 22px; margin-bottom: 18px; overflow: hidden; }
   nav.side .logo img { width: 100%; height: 100%; display: block; }
   nav.side button { width: 88px; height: 76px; border-radius: 18px; border: none; background: transparent; color: var(--ink-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; position: relative; }
   nav.side button[aria-current="page"] { background: var(--blue-soft); color: var(--blue-ink); }
   nav.side .badge { position: absolute; top: 6px; right: 16px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--bad); color: #fff; font-size: 13px; display: flex; align-items: center; justify-content: center; }
-  main.app { flex: 1 1 0; min-width: 0; padding: 30px 40px 32px; display: flex; flex-direction: column; gap: 22px; }
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-  .top h1 { font-size: 36px; font-weight: 800; letter-spacing: -.5px; }
-  .top .sub { font-size: 17px; color: var(--muted); margin-top: 4px; }
-  .wallet { height: 52px; padding: 0 20px; border-radius: 26px; background: var(--card); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--ink); white-space: nowrap; }
-  .hero { background: #1B1F3B; color: #fff; border-radius: 28px; padding: 32px 36px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .stage { flex: 1 1 0; min-width: 0; height: 100%; display: flex; flex-direction: column; position: relative; }
+  header.top { flex: none; display: flex; align-items: center; gap: 18px; padding: 26px 40px 16px; min-height: 104px; }
+  header.top .ht { flex: 1 1 0; min-width: 0; }
+  header.top h1 { font-size: 34px; font-weight: 800; letter-spacing: -.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header.top .sub { font-size: 16px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header.top .fresh { font-size: 13px; color: var(--muted); margin-top: 3px; min-height: 16px; }
+  header.top .fresh.bad { color: var(--bad); font-weight: 700; }
+  body.inlayer header.top { min-height: 0; padding-top: 18px; padding-bottom: 12px; }
+  body.inlayer header.top h1 { font-size: 22px; }
+  body.inlayer header.top .sub { font-size: 15px; }
+  .backpill { height: 48px; padding: 0 20px 0 12px; border-radius: 24px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-weight: 700; font-size: 16px; display: inline-flex; align-items: center; gap: 6px; flex: none; box-shadow: 0 1px 3px rgba(27,31,59,.08); }
+  .wallet { height: 52px; padding: 0 20px; border-radius: 26px; background: var(--card); border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--ink); white-space: nowrap; flex: none; }
+  .panel { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px 40px 28px; display: flex; flex-direction: column; gap: 18px; }
+  #p-now { overflow: hidden; }
+
+  /* ---------- Now: one hero, at most three cards ---------- */
+  .hero { background: #1B1F3B; color: #fff; border-radius: 28px; padding: 30px 36px; display: flex; align-items: center; gap: 28px; flex: none; }
   .hero.blue { background: var(--blue); }
-  .hero .body { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-  .hero h2 { font-size: 38px; line-height: 1.05; font-weight: 800; }
-  .hero .lead { font-size: 19px; color: #E3EAFF; }
+  .hero.calm { background: var(--card); color: var(--ink); border: 2px solid var(--line); }
+  .hero .body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .hero h2 { font-size: 36px; line-height: 1.08; font-weight: 800; overflow-wrap: anywhere; }
+  .hero .lead { font-size: 18px; color: #E3EAFF; }
+  .hero.calm .lead { color: var(--ink-2); }
+  .hero .btn.big { flex: none; }
   .pill { align-self: flex-start; background: var(--hl); color: #1B1F3B; font-weight: 700; font-size: 15px; padding: 7px 14px; border-radius: 999px; }
+  .pill.red { background: var(--red); color: #fff; }
+  .pill.blue { background: var(--blue-soft); color: var(--blue-ink); }
+  .pill.green { background: var(--ok-soft); color: var(--ok); }
   .live { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
   .live i { width: 12px; height: 12px; border-radius: 6px; background: var(--hl); box-shadow: 0 0 0 5px rgba(255,228,92,.35); }
   .bar { height: 12px; border-radius: 6px; background: #3A4066; overflow: hidden; max-width: 460px; }
   .bar b { display: block; height: 100%; background: var(--hl); }
-  .ask { border: 3px solid var(--hl); display: flex; flex-direction: column; gap: 16px; padding: 28px 36px; }
-  .ask .q { font-family: var(--display); font-weight: 600; font-size: 26px; line-height: 1.25; }
-  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .hero.calm .bar { background: var(--line); }
+  .ask { border: 3px solid var(--hl); display: flex; flex-direction: column; gap: 14px; padding: 24px 32px; flex: none; }
+  .ask .q { font-family: var(--display); font-weight: 600; font-size: 24px; line-height: 1.25; }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; flex: none; }
+  .cards > :only-child { grid-column: 1 / -1; }
   .row { display: flex; align-items: center; gap: 16px; }
-  .row .sq { width: 64px; height: 64px; border-radius: 18px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .row .ring { width: 64px; height: 64px; border-radius: 32px; border: 6px solid var(--ok); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 17px; flex-shrink: 0; }
+  .row .sq { width: 60px; height: 60px; border-radius: 18px; background: var(--blue-soft); color: var(--blue); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .row .ring { width: 64px; height: 64px; border-radius: 32px; border: 6px solid var(--ok); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 16px; flex-shrink: 0; }
   .row .txt { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .row .t { font-weight: 700; font-size: 18px; }
+  .row .t { font-weight: 700; font-size: 18px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .row .s { font-size: 15px; color: var(--muted); }
-  .after { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 22px; border-radius: 20px; background: var(--soft); border: 1px dashed var(--line); font-size: 16px; color: var(--ink-2); }
+  .row .btn { height: 48px; flex: none; }
+  .strip { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 22px; border-radius: 20px; background: var(--soft); border: 1px dashed var(--line); font-size: 16px; color: var(--ink-2); flex: none; }
+  .now-end { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
   .quiet { color: var(--muted); font-size: 16px; }
   .muted { color: var(--muted); }
 
-  /* ---------- binder ---------- */
-  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; background: var(--card); border-radius: 16px; padding: 12px 18px; font-size: 15px; }
+  /* ---------- My file: the binder ---------- */
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; background: var(--card); border-radius: 16px; padding: 12px 18px; font-size: 15px; flex: none; }
   .legend span { display: flex; align-items: center; gap: 10px; }
-  .tabc { width: 34px; height: 18px; border-radius: 6px 6px 0 0; flex-shrink: 0; }
-  @keyframes redglow { 0%,100% { box-shadow: 0 0 0 2px rgba(198,47,54,.55), 0 0 10px rgba(229,72,77,.35); } 50% { box-shadow: 0 0 0 3px rgba(198,47,54,.8), 0 0 22px rgba(229,72,77,.7); } }
-  .glow { animation: redglow 1.8s ease-in-out infinite; }
-  .binderwrap { display: flex; padding-right: 74px; min-height: 0; }
-  .binder { flex: 1 1 0; min-width: 0; background: var(--navy); border-radius: 26px 10px 10px 26px; padding: 14px 0 14px 14px; display: flex; position: relative; box-shadow: 0 10px 24px rgba(27,31,59,.25); }
+  .tabc { width: 34px; height: 18px; border-radius: 6px 6px 0 0; flex-shrink: 0; position: relative; }
+  /* The red glow: only the opacity of a layer on top changes, so the browser does not repaint (Ruling A14). */
+  .glow { position: relative; }
+  .glow::after { content: ""; position: absolute; inset: -4px; border-radius: inherit; pointer-events: none; box-shadow: 0 0 0 3px rgba(198,47,54,.85), 0 0 18px 2px rgba(229,72,77,.75); opacity: .2; animation: owedglow 2.4s ease-in-out infinite; will-change: opacity; }
+  @keyframes owedglow { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+  body.paused .glow::after { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) { .glow::after { animation: none; opacity: .75; } }
+  .filelay { display: flex; gap: 20px; align-items: flex-start; }
+  .binderwrap { flex: 1 1 0; min-width: 0; padding-right: 74px; }
+  .binder { background: var(--navy); border-radius: 26px 10px 10px 26px; padding: 14px 0 14px 14px; display: flex; position: relative; box-shadow: 0 10px 24px rgba(27,31,59,.25); min-height: 420px; }
+  [data-theme="dark"] .binder { box-shadow: 0 0 0 1px #3A4378, 0 10px 24px rgba(0,0,0,.4); }
   .rings { width: 30px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: space-around; align-items: flex-end; position: relative; z-index: 2; }
   .rings i { width: 50px; height: 22px; border-radius: 999px; border: 5px solid #C9CFDA; margin-right: -26px; }
-  .pages { flex: 1 1 0; min-width: 0; background: var(--paper); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
-  .chhead { color: #fff; padding: 12px 22px 12px 40px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .pages { flex: 1 1 0; min-width: 0; background: var(--paper); border-radius: 8px; display: flex; flex-direction: column; }
+  .chhead { color: #fff; padding: 12px 22px 12px 40px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; border-radius: 8px 8px 0 0; }
   .chhead b { font-family: var(--display); font-weight: 800; font-size: 22px; }
-  .rowsec { padding: 14px 22px 14px 40px; display: flex; flex-direction: column; gap: 8px; }
+  .rowsec { padding: 14px 22px 18px 40px; display: flex; flex-direction: column; gap: 8px; }
   .rowsec + .rowsec { border-top: 2px dashed var(--line); }
   .rowsec h3 { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: .5px; font-family: var(--body); }
-  .shelf { display: flex; gap: 18px; padding-top: 26px; min-height: 200px; overflow-x: auto; }
-  .sheet { position: relative; width: 120px; flex-shrink: 0; text-decoration: none; color: var(--ink); border: none; background: transparent; padding: 0; text-align: left; font: inherit; }
-  .sheet .tab { position: absolute; top: -26px; left: 0; width: 112px; height: 28px; border-radius: 9px 9px 0 0; background: var(--hl); color: #1B1F3B; font-size: 13px; font-weight: 700; padding: 6px 9px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sheet .tab.g { background: var(--ok); color: #fff; } .sheet .tab.r { background: var(--bad); color: #fff; } .sheet .tab.p { background: var(--grey-tab); color: #fff; } .sheet .tab.l { background: #C4CCDD; color: #1B1F3B; }
-  .sheet .page { position: relative; display: block; height: 170px; background: #fff; border: 1px solid #E3E1D6; border-radius: 3px; box-shadow: 0 2px 6px rgba(27,31,59,.12); overflow: hidden; }
-  .sheet .page .lines { position: absolute; inset: 12px 10px 12px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .rowsec .note { font-size: 15px; color: var(--ink-2); margin: 0; }
+  .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 40px 18px; padding-top: 28px; }
+  .sheet { position: relative; text-decoration: none; color: var(--ink); border: none; background: transparent; padding: 0; text-align: left; font: inherit; min-width: 0; }
+  .sheet .tab { position: absolute; top: -26px; left: 0; max-width: 100%; height: 28px; border-radius: 9px 9px 0 0; background: var(--hl); color: #1B1F3B; font-size: 13px; font-weight: 700; padding: 6px 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sheet .tab.g { background: var(--ok); color: #fff; } .sheet .tab.r { background: var(--bad); color: #fff; } .sheet .tab.p { background: var(--grey-tab); color: #fff; } .sheet .tab.l { background: #C4CCDD; color: #1B1F3B; } .sheet .tab.m { background: #5A607D; color: #fff; }
+  .sheet .page { position: relative; display: block; height: 160px; background: #fff; border: 1px solid #E3E1D6; border-radius: 3px; box-shadow: 0 2px 6px rgba(27,31,59,.12); }
+  .sheet.owes .page { border-color: var(--bad); }
+  .sheet .page .lines { position: absolute; inset: 12px 10px 12px 18px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
   .sheet .page .lines i { display: block; height: 4px; border-radius: 2px; background: #D6DAE4; } .sheet .page .lines i.h { height: 7px; width: 70%; background: #3A4066; margin-bottom: 6px; }
-  .sheet .page .stamp { position: absolute; right: 6px; bottom: 8px; width: 50px; height: 50px; border-radius: 25px; border: 3px solid var(--bad); color: var(--bad); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; transform: rotate(-10deg); background: rgba(255,255,255,.9); }
-  .sheet .page .flag { position: absolute; left: 7px; right: 7px; bottom: 8px; height: 30px; border-radius: 15px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .sheet .page .stamp { position: absolute; right: 6px; bottom: 8px; width: 52px; height: 52px; border-radius: 26px; border: 3px solid var(--bad); color: var(--bad); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; transform: rotate(-10deg); background: rgba(255,255,255,.9); }
+  .sheet .page .flag { position: absolute; left: 7px; right: 7px; bottom: 8px; min-height: 30px; padding: 4px 8px; border-radius: 15px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.15; }
   .sheet .page .flag.r { background: var(--bad); color: #fff; } .sheet .page .flag.g { background: #E2F6EC; color: #0B6E47; } .sheet .page .flag.l { background: #E3E8F2; color: #5A607D; }
-  .sheet .meta { display: block; padding-top: 5px; font-size: 13px; line-height: 1.25; color: var(--muted); }
-  .sheet .meta.r { color: var(--bad); font-weight: 700; }
+  .sheet .newdot { position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 999px; background: var(--blue); color: #fff; font-size: 12px; font-weight: 700; }
+  .sheet .meta { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-top: 6px; font-size: 14px; line-height: 1.25; color: var(--ink-2); font-weight: 700; }
+  .sheet .meta2 { display: block; font-size: 13px; line-height: 1.25; color: var(--muted); padding-top: 2px; }
+  .sheet .meta2.r { color: var(--bad); font-weight: 700; }
   .dividers { position: absolute; right: -74px; top: 22px; width: 80px; display: flex; flex-direction: column; gap: 6px; }
-  .divider { position: relative; width: 62px; height: 98px; border: none; border-radius: 0 14px 14px 0; color: #fff; font-family: var(--display); font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .divider { position: relative; width: 62px; height: 98px; border: none; border-radius: 0 14px 14px 0; color: #fff; font-family: var(--display); font-weight: 800; font-size: 17px; display: flex; align-items: center; justify-content: center; padding: 0; }
   .divider[aria-selected="true"] { width: 80px; box-shadow: 0 4px 10px rgba(27,31,59,.3); }
-  .divider span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .divider span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 90px; }
   .divider .dotr { position: absolute; top: 8px; right: 8px; width: 14px; height: 14px; border-radius: 7px; background: #FF6B70; border: 2px solid #fff; }
-  .filelay { display: flex; gap: 20px; flex-grow: 1; min-height: 0; }
-  .owed { width: 220px; flex-shrink: 0; }
-  .owed .it { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .owed { width: 240px; flex-shrink: 0; }
+  .owed .it { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border: 0; border-top: 1px solid var(--line); background: none; width: 100%; text-align: left; color: var(--ink); }
+  .owed .it b { font-size: 16px; }
+  .owed .it span { color: var(--bad); font-weight: 700; font-size: 14px; }
+  .owed .none { color: var(--ok); font-weight: 700; padding-top: 8px; }
 
-  /* ---------- me ---------- */
-  .melay { display: flex; gap: 24px; flex-grow: 1; }
+  /* ---------- Me ---------- */
+  .melay { display: flex; gap: 24px; flex: 1 1 auto; min-height: 0; }
   .mecard { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-  .avatarbox { width: 220px; height: 220px; border-radius: 24px; background: var(--blue-soft); display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted); font-size: 14px; padding: 16px; border: none; }
+  .avatarbox { width: 220px; height: 260px; border-radius: 24px; background: var(--blue-soft); display: flex; align-items: center; justify-content: center; border: none; padding: 0; overflow: hidden; position: relative; }
+  .avatarbox img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .avatarbox .ini { width: 128px; height: 128px; border-radius: 64px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 48px; }
+  .avatarbox .tap { position: absolute; left: 10px; right: 10px; bottom: 10px; padding: 6px; border-radius: 12px; background: rgba(255,255,255,.88); color: #1B1F3B; font-size: 14px; font-weight: 700; }
+  .mecol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
   .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .tile { background: var(--card); border-radius: 22px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; text-align: left; border: none; color: var(--ink); }
+  .tile { background: var(--card); border-radius: 22px; padding: 20px 22px; display: flex; align-items: center; gap: 16px; text-align: left; border: none; color: var(--ink); min-height: 96px; }
   .tile .ic { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--blue-soft); color: var(--blue-ink); }
-  .seg { display: flex; gap: 4px; padding: 4px; background: var(--canvas); border-radius: 22px; }
+  .tile .t { font-weight: 700; font-size: 18px; display: block; }
+  .tile .s { font-size: 15px; color: var(--muted); display: block; margin-top: 2px; }
+  .tile.closed { opacity: .6; }
+  .seg { display: inline-flex; gap: 4px; padding: 4px; background: var(--canvas); border-radius: 22px; }
   .seg button { height: 40px; padding: 0 16px; border-radius: 20px; border: none; background: transparent; color: var(--ink-2); font-weight: 700; font-size: 15px; }
   .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(27,31,59,.15); }
   .stat { background: var(--soft); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .stat b { font-family: var(--display); font-weight: 800; font-size: 24px; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .mefoot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .hist .it { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; }
 
-  /* ---------- homework pane (the Worksheet Hub page) ---------- */
-  #pane-hw { position: fixed; inset: 0; z-index: 50; background: var(--canvas); display: flex; flex-direction: column; }
-  #pane-hw .bar { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; max-width: none; }
-  #pane-hw iframe { flex: 1 1 0; width: 100%; border: 0; background: var(--canvas); }
-  #hw-wait { padding: 16px; text-align: center; color: var(--muted); }
+  /* ---------- a sheet taken out of the file ---------- */
+  #p-sheet { padding-bottom: 20px; }
+  .sheetlay { flex: 1 1 0; min-height: 0; display: flex; gap: 22px; }
+  .sheetlay .left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .sheetlay .side { width: 330px; flex: none; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+  .slot { flex: 1 1 0; min-height: 0; border-radius: 18px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; color: var(--muted); font-size: 17px; flex-direction: column; gap: 14px; }
+  .sheetlay.edit .slot { border-radius: 14px; }
+  .side .card { padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .side .kick { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  .side h2 { font-size: 24px; font-weight: 800; }
+  .side .score { color: var(--ok); font-weight: 700; font-size: 17px; }
+  .side p { margin: 0; font-size: 15px; color: var(--ink-2); line-height: 1.4; }
+  .side .btn { width: 100%; }
+  .btn.corr { background: var(--ok); color: #fff; }
+  .btn.line { background: transparent; color: var(--blue-ink); border: 2px solid var(--blue); }
+  #hwhost { position: fixed; z-index: 30; left: 0; top: 0; width: 10px; height: 10px; border-radius: 14px; overflow: hidden; background: var(--canvas); }
+  #hwhost.off { visibility: hidden; pointer-events: none; }
+  #hwhost iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--canvas); }
+
+  /* ---------- the quick check, full screen ---------- */
+  #qc { position: fixed; inset: 0; z-index: 70; background: #1B1F3B; color: #fff; display: flex; flex-direction: column; padding: 36px 48px 40px; gap: 24px; }
+  #qc header { display: flex; align-items: center; gap: 14px; }
+  #qc header .dot { width: 12px; height: 12px; border-radius: 6px; background: #FFE45C; box-shadow: 0 0 0 5px rgba(255,228,92,.3); flex: none; }
+  #qc header b { font-size: 18px; }
+  #qc header .st { margin-left: auto; font-size: 17px; color: #C9CEE6; }
+  #qc .qlead { font-size: 16px; color: #C9CEE6; }
+  #qc h2 { margin: 6px 0 0; font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1.1; }
+  #qc .opts { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 18px; }
+  #qc .opts.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #qc .opt { border-radius: 28px; border: none; background: #fff; color: #1B1F3B; font-family: var(--display); font-weight: 800; font-size: 96px; display: flex; align-items: center; justify-content: center; min-height: 0; }
+  #qc .opt.word { font-size: 48px; }
+  #qc .opt[aria-pressed="true"] { background: #FFE45C; box-shadow: 0 0 0 8px rgba(255,228,92,.35); }
+  #qc .hint { text-align: center; font-size: 18px; color: #C9CEE6; min-height: 28px; }
+  #qc .wordbox { display: flex; gap: 14px; align-items: center; }
+  #qc .wordbox input { flex: 1; height: 72px; border-radius: 20px; border: 0; padding: 0 22px; font-size: 28px; color: #1B1F3B; }
+  #qc .res { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+  #qc .res .mark { width: 170px; height: 170px; border-radius: 85px; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 80px; color: #fff; }
+  #qc .res .ttl { font-family: var(--display); font-weight: 800; font-size: 34px; }
+  #qc .res .sub { font-size: 18px; color: #C9CEE6; }
+  #qc .counts { display: flex; flex-direction: column; gap: 8px; width: min(520px, 100%); }
+  #qc .counts div { display: grid; grid-template-columns: 90px 1fr 48px; align-items: center; gap: 10px; font-weight: 700; }
+  #qc .counts i { display: block; height: 16px; border-radius: 8px; background: #8A90AA; }
+  #qc .counts .ok i { background: #3DDC97; }
 
   /* ---------- small bits ---------- */
-  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--canvas); padding: 12px 18px; border-radius: 999px; font-weight: 700; z-index: 90; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--canvas); padding: 12px 18px; border-radius: 999px; font-weight: 700; z-index: 90; max-width: calc(100vw - 32px); text-align: center; }
   .modal { position: fixed; inset: 0; background: rgba(27,31,59,.45); display: flex; align-items: center; justify-content: center; z-index: 80; padding: 20px; }
-  .modal .box { background: var(--card); border-radius: 24px; padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+  .modal .box { background: var(--card); border-radius: 24px; padding: 24px; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; max-height: 86vh; overflow-y: auto; }
+  .modal .box p { margin: 0; color: var(--ink-2); font-size: 16px; line-height: 1.4; }
+  .modal .acts { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
   @media (max-width: 900px) {
     #v-portal { flex-direction: column; align-items: stretch; justify-content: flex-end; padding: 0 16px 34px; gap: 0; min-height: 100dvh; }
@@ -262,25 +342,42 @@
     #po-video { height: 52vh; object-position: 50% 50%; }
     .po-veil { background: linear-gradient(180deg, rgba(0,0,0,0) 28vh, rgba(0,0,0,1) 52vh); }
     #v-app { flex-direction: column; }
-    nav.side { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 8px 0; position: sticky; top: 0; z-index: 10; border-right: 0; border-bottom: 1px solid var(--line); }
+    nav.side { order: 2; width: 100%; height: 72px; flex-direction: row; justify-content: space-around; padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--line); gap: 0; }
     nav.side .logo { display: none; }
-    nav.side button { width: auto; height: 60px; padding: 0 14px; }
-    main.app { padding: 16px; gap: 16px; }
-    .top h1 { font-size: 26px; }
-    .hero { padding: 22px; } .hero h2 { font-size: 26px; }
-    .grid2 { grid-template-columns: 1fr; }
-    .filelay, .melay { flex-direction: column; }
-    .owed, .mecard { width: auto; }
-    .binderwrap { padding-right: 0; flex: 0 0 auto !important; }
-    .binder { flex-direction: column; border-radius: 22px; padding: 12px; }
+    nav.side button { width: auto; height: 58px; padding: 0 22px; flex-direction: row; gap: 8px; font-size: 16px; }
+    nav.side .badge { top: 2px; right: 4px; }
+    body.inlayer nav.side { display: none; }
+    .stage { order: 1; height: auto; flex: 1 1 0; min-height: 0; }
+    header.top { padding: 18px 20px 12px; min-height: 88px; }
+    header.top h1 { font-size: 28px; }
+    .panel { padding: 2px 20px 20px; gap: 16px; }
+    .hero { padding: 24px; gap: 18px; flex-wrap: wrap; } .hero h2 { font-size: 30px; }
+    .hero .btn.big { width: 100%; }
+    .cards { grid-template-columns: minmax(0, 1fr); }
+    .filelay { flex-direction: column; align-items: stretch; }
+    .owed { width: auto; order: -1; }
+    .binderwrap { padding-right: 0; }
+    .binder { flex-direction: column; border-radius: 22px; padding: 12px; min-height: 0; }
     .rings { display: none; }
-    .pages { flex: 0 0 auto; }
+    .chhead, .rowsec { padding-left: 18px; padding-right: 18px; }
     .dividers { position: static; width: auto; flex-direction: row; flex-wrap: wrap; gap: 8px; order: -1; margin-bottom: 12px; }
     .divider, .divider[aria-selected="true"] { width: auto; height: 44px; padding: 0 14px; border-radius: 12px; font-size: 15px; }
-    .divider span { writing-mode: horizontal-tb; transform: none; }
+    .divider[aria-selected="true"] { box-shadow: 0 0 0 3px #fff; }
+    .divider span { writing-mode: horizontal-tb; transform: none; max-height: none; }
     .divider .dotr { top: -4px; right: -4px; }
-    .shelf { min-height: 0; }
-    .tiles { grid-template-columns: 1fr; }
+    .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sheet .page { height: 128px; }
+    #toast { bottom: 96px; }
+    .melay { flex-direction: column; }
+    .mecard { width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; }
+    .avatarbox { width: 150px; height: 180px; }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sheetlay { flex-direction: column; gap: 14px; }
+    .sheetlay .side { width: auto; flex-direction: row; flex-wrap: wrap; overflow: visible; }
+    .sheetlay .side .card { flex: 1 1 240px; }
+    #qc { padding: 26px 22px 30px; }
+    #qc .opt { font-size: 80px; }
+    #qc h2 { font-size: 30px; }
   }
 </style>
 </head>
@@ -327,7 +424,6 @@
       <div class="po-form" id="form-box"></div>
     </section>
 
-    <div class="po-teacher"><span>Teacher?</span><a id="door-teacher" href="#">Sign in to the Teacher Hub</a></div>
   </main>
   <p class="po-credit">Black hole simulation: NASA&rsquo;s Goddard Space Flight Center / Jeremy Schnittman</p>
 </div>
@@ -336,85 +432,89 @@
 <div id="v-app" class="hidden">
   <nav class="side" aria-label="Main">
     <div class="logo"><img id="nav-mark" alt="" class="hidden"><span id="nav-mark-text">lw</span></div>
-    <button id="nav-now" aria-current="page"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
-    <button id="nav-file"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M3 7h4M3 12h4M3 17h4"/></svg>My file<span class="badge hidden" id="file-badge"></span></button>
-    <button id="nav-me"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Me</button>
+    <button id="nav-now" aria-current="page"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
+    <button id="nav-file"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M3 7h4M3 12h4M3 17h4"/></svg>My file<span class="badge hidden" id="file-badge"></span></button>
+    <button id="nav-me"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Me</button>
   </nav>
 
-  <!-- NOW -->
-  <main class="app" id="p-now">
-    <header class="top">
-      <div><h1 id="now-h1">Hi</h1><div class="sub" id="now-sub"></div></div>
-      <a class="wallet" href="#" id="wallet"><svg width="22" height="22" viewBox="0 0 24 24" fill="#F5B400" stroke="#C98F00" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span id="wallet-n">…</span></a>
+  <div class="stage">
+    <!-- the one header: the page title, or a Back pill that says where it goes -->
+    <header class="top" id="hdr">
+      <button class="backpill hidden" id="backpill" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span id="backpill-t">Back</span></button>
+      <div class="ht"><h1 id="h1">Hi</h1><div class="sub" id="hsub"></div><div class="fresh" id="fresh" aria-live="polite"></div></div>
+      <a class="wallet" href="#" id="wallet"><svg width="22" height="22" viewBox="0 0 24 24" fill="#F5B400" stroke="#C98F00" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span id="wallet-n">points</span></a>
     </header>
-    <div id="now-body"></div>
-  </main>
 
-  <!-- MY FILE -->
-  <main class="app hidden" id="p-file">
-    <h1 style="font-size:34px;font-weight:800">My Science file</h1>
-    <div class="legend">
-      <span><i class="tabc glow" style="background:var(--bad)"></i>Not handed in yet</span>
-      <span><i class="tabc" style="background:var(--ok)"></i>Handed in</span>
-      <span><i class="tabc" style="background:var(--hl)"></i>Lesson, tap to open the slides</span>
-      <span><i class="tabc" style="background:var(--grey-tab)"></i>Practice, never due</span>
-      <span><i style="width:26px;height:26px;border-radius:13px;border:3px solid var(--bad)"></i>Marked, with your score</span>
-    </div>
-    <div class="filelay">
-      <div class="binderwrap" style="flex:1 1 0;min-width:0">
-        <div class="binder">
-          <div class="rings"><i></i><i></i><i></i></div>
-          <div class="pages" id="pages"></div>
-          <div class="dividers" id="dividers" role="tablist" aria-label="Chapter dividers"></div>
-        </div>
+    <!-- NOW -->
+    <main class="panel" id="p-now"></main>
+
+    <!-- MY FILE -->
+    <main class="panel hidden" id="p-file">
+      <div class="legend">
+        <span><i class="tabc glow" style="background:var(--bad)"></i>I still owe it</span>
+        <span><i class="tabc" style="background:var(--ok)"></i>It is in</span>
+        <span><i class="tabc" style="background:var(--hl)"></i>Lesson slides</span>
+        <span><i class="tabc" style="background:var(--grey-tab)"></i>Practice, never due</span>
+        <span><i style="width:24px;height:24px;border-radius:12px;border:3px solid var(--bad)"></i>Marked, with my score</span>
       </div>
-      <aside class="owed card" id="owed"></aside>
-    </div>
-  </main>
-
-  <!-- ME -->
-  <main class="app hidden" id="p-me">
-    <div class="melay">
-      <section class="card mecard">
-        <button class="avatarbox" id="btn-avatar" style="flex-direction:column;gap:6px"><span style="font-weight:700;font-size:18px;color:var(--ink)">My avatar</span><span class="muted">Tap to dress it</span></button>
-        <div style="text-align:center"><div style="font-family:var(--display);font-weight:800;font-size:26px" id="me-name"></div><div class="muted" id="me-class"></div></div>
-        <div class="two" style="width:100%"><div class="stat" style="background:#FFF6D6;color:#1B1F3B"><b id="me-points">…</b><span style="font-size:14px;font-weight:700;color:#5C4A00">points</span></div><div class="stat" style="background:var(--blue-soft)"><b id="me-tokens">…</b><span style="font-size:14px;font-weight:700;color:var(--blue-ink)">tokens</span></div></div>
-        <div class="muted" style="text-align:center;font-size:15px" id="me-earned"></div>
-      </section>
-      <div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:18px">
-        <h1 style="font-size:34px;font-weight:800">Me</h1>
-        <div class="tiles">
-          <button class="tile" id="t-shop"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 12h-13z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg></span><span class="txt"><span class="t" style="font-weight:700;font-size:18px">Avatar shop and night market</span><br><span class="s muted" style="font-size:15px">Hair, clothes, colours and the stalls</span></span></button>
-          <button class="tile" id="t-arcade"><span class="ic" style="background:#E2F6EC;color:#0B6E47"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 11v3M6.5 12.5h3M15 12h.01M17 14h.01"/></svg></span><span class="txt"><span class="t" style="font-weight:700;font-size:18px">Arcade</span><br><span class="s muted" style="font-size:15px" id="t-arcade-s">Puzzles, quests and revision rush</span></span></button>
-          <button class="tile" id="t-badges"><span class="ic" style="background:#EFE7FF;color:#5B3BB0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></span><span class="txt"><span class="t" style="font-weight:700;font-size:18px">Badges, quests and colours</span><br><span class="s muted" style="font-size:15px">In the Arcade tab of Homework</span></span></button>
-          <button class="tile" id="t-notes"><span class="ic" style="background:#FFF1C2;color:#8A6400"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/></svg></span><span class="txt"><span class="t" style="font-weight:700;font-size:18px">My own notes</span><br><span class="s muted" style="font-size:15px">Your folders in Homework</span></span></button>
+      <div class="filelay">
+        <div class="binderwrap">
+          <div class="binder">
+            <div class="rings" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="pages" id="pages"></div>
+            <div class="dividers" id="dividers" role="tablist" aria-label="Chapter dividers"></div>
+          </div>
         </div>
-        <section class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px">
-          <span style="font-weight:700;font-size:17px">Look</span>
-          <div class="seg" id="look"><button data-v="light">Day</button><button data-v="dark">Night</button><button data-v="">Same as iPad</button></div>
+        <aside class="owed card" id="owed"></aside>
+      </div>
+    </main>
+
+    <!-- ME -->
+    <main class="panel hidden" id="p-me">
+      <div class="melay">
+        <section class="card mecard">
+          <button class="avatarbox" id="btn-avatar" type="button" aria-label="My avatar. Tap to dress it."><span class="ini" id="me-ini"></span><img id="me-pic" alt="" class="hidden"><span class="tap">Tap to dress my avatar</span></button>
+          <div style="text-align:center"><div style="font-family:var(--display);font-weight:800;font-size:26px" id="me-name"></div><div class="muted" id="me-class"></div></div>
+          <div class="two" style="width:100%;max-width:300px"><div class="stat" style="background:#FFF6D6;color:#1B1F3B"><b id="me-points">0</b><span style="font-size:14px;font-weight:700;color:#5C4A00">points</span></div><div class="stat" style="background:var(--blue-soft)"><b id="me-tokens">0</b><span style="font-size:14px;font-weight:700;color:var(--blue-ink)">tokens</span></div></div>
         </section>
-        <section class="card hist" id="hist"><div class="kicker">WHERE MY POINTS CAME FROM</div><div id="hist-list"></div></section>
-        <div style="margin-top:auto;display:flex;justify-content:flex-end"><button class="btn ghost" id="btn-notme" style="height:48px;font-size:15px">Not you? Sign out (asks for Mr Cedric's PIN)</button></div>
+        <div class="mecol">
+          <div class="tiles">
+            <button class="tile" id="t-shop" type="button"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12h-13z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg></span><span><span class="t">Avatar shop</span><span class="s" id="t-shop-s">Hair, clothes and colours for your avatar</span></span></button>
+            <button class="tile" id="t-market" type="button"><span class="ic" style="background:#FFF1C2;color:#8A6400"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></span><span><span class="t">Night market</span><span class="s" id="t-market-s">Spend your tokens at the stalls</span></span></button>
+            <button class="tile" id="t-arcade" type="button"><span class="ic" style="background:#E2F6EC;color:#0B6E47"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 11v3M6.5 12.5h3M15 12h.01M17 14h.01"/></svg></span><span><span class="t">Arcade</span><span class="s" id="t-arcade-s">Puzzles, quests and revision rush</span></span></button>
+            <button class="tile" id="t-badges" type="button"><span class="ic" style="background:#EFE7FF;color:#5B3BB0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></span><span><span class="t">Badges</span><span class="s" id="t-badges-s">The badges you have earned</span></span></button>
+          </div>
+          <section class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px">
+            <span style="font-weight:700;font-size:17px">Look</span>
+            <div class="seg" id="look"><button type="button" data-v="light">Day</button><button type="button" data-v="dark">Night</button><button type="button" data-v="">Same as iPad</button></div>
+          </section>
+          <div class="mefoot">
+            <button class="link" id="btn-hist" type="button">See where my points came from</button>
+            <button class="btn ghost" id="btn-signout" type="button" style="height:48px;font-size:16px">Sign out</button>
+          </div>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+
+    <!-- A SHEET TAKEN OUT (or a panel: Arcade, Badges, My notes) -->
+    <main class="panel hidden" id="p-sheet"></main>
+  </div>
 </div>
 
-<!-- homework pane -->
-<div id="pane-hw" class="hidden">
-  <div class="bar"><button class="btn ghost" id="hw-back" style="height:40px;font-size:15px">‹ Put it back in my file</button><span class="muted" id="hw-title"></span></div>
-  <div id="hw-wait">Opening your homework…</div>
-</div>
+<!-- the Homework engine sits here, over the slot of the sheet that is out -->
+<div id="hwhost" class="off" aria-hidden="true"></div>
 
-<div id="pinbox" class="modal hidden"><div class="box"><h2 style="font-size:20px">Mr Cedric's PIN</h2><input id="pin-in" type="password" inputmode="numeric" style="height:52px;border-radius:14px;border:1px solid var(--line);padding:0 14px;font-size:20px;background:var(--canvas)"><div class="msg hidden" id="pin-msg"></div><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn ghost" id="pin-no">Cancel</button><button class="btn" id="pin-yes">Sign out</button></div></div></div>
-<div id="toast" class="hidden"></div>
+<!-- the quick check, full screen -->
+<div id="qc" class="hidden" role="dialog" aria-modal="true" aria-label="Mr Cedric is asking"></div>
+
+<div id="dlg" class="modal hidden" role="dialog" aria-modal="true"><div class="box" id="dlg-box"></div></div>
+<div id="toast" class="hidden" role="status"></div>
 
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var ART = 'https://cedricboi.github.io/science-decks/art/';
-  var me = null, siInfo = null, home = null, overview = null, arcade = null;
-  var homeTimer = null, overTimer = null, gateTimer = null;
+  var me = null, siInfo = null, gateTimer = null;
 
   /* ---------- server ---------- */
   function call(fn) {
@@ -484,7 +584,6 @@
     stopPolling(); clearTimeout(gateTimer);
     $('v-app').classList.add('hidden'); $('v-portal').classList.remove('hidden'); hwHide();
     poShow('po-doors'); setSubj(subj, true); if (note) poMsg(note, true);
-    $('door-teacher').href = base() + '?teacher';
     $('cmpgo-link').href = base() + '?computing';
     // Signed out of the Computing page: it sends the student here with ?signin=computing.
     try { google.script.url.getLocation(function (loc) { if (loc && loc.parameter && loc.parameter.signin === 'computing') setSubj('cmp', true); }); } catch (e) { /* not in Apps Script */ }
@@ -523,7 +622,9 @@
   function remember(cls, name) { last = { cls: cls, name: name }; store('lb_last', last); }
   // Computing keeps its ticket where the Computing page reads it, then the student opens that page.
   function cmpDone(r) {
-    store('cmp_ct', r.ct); store('cmp_last', { cls: r.cls, name: r.name });
+    // the ticket lives only as long as this tab: Computing runs on shared laptops
+    try { sessionStorage.setItem('cmp_ct', JSON.stringify(r.ct)); } catch (e) { /* the Computing page asks again */ }
+    store('cmp_ct', null); store('cmp_last', { cls: r.cls, name: r.name });
     $('cmpgo-hi').textContent = 'Hi ' + firstName(r.name) + ', you are in';
     poShow('po-cmpgo');
     try { $('cmpgo-link').click(); } catch (e) { /* the button is there to tap */ }
@@ -648,263 +749,813 @@
   }
 
   /* ---------- session ---------- */
-  function signedIn(r) { me = { cls: r.cls, name: r.name, st: r.st }; store('lb_me', me); hwReset(); openApp(); }
-  function signedOutNow() { store('lb_me', null); me = null; hwReset(); startPortal('You have been signed out. Sign in again.'); }
-  function signOut() { stopPolling(); store('lb_me', null); me = null; hwReset(); startPortal(); }
-  $('btn-notme').addEventListener('click', function () { $('pin-in').value = ''; $('pin-msg').classList.add('hidden'); $('pinbox').classList.remove('hidden'); setTimeout(function () { $('pin-in').focus(); }, 50); });
-  $('pin-no').addEventListener('click', function () { $('pinbox').classList.add('hidden'); });
-  $('pin-yes').addEventListener('click', function () {
-    var v = $('pin-in').value.trim(); if (!v) return;
-    call('apiUnlock', v).then(function (ok) { if (!ok) { $('pin-msg').textContent = 'That PIN is not right.'; $('pin-msg').classList.remove('hidden'); return; } $('pinbox').classList.add('hidden'); signOut(); })
-      .catch(function (e) { $('pin-msg').textContent = e.message; $('pin-msg').classList.remove('hidden'); });
+  /* Release 34. Signing out is the student's own choice, after one confirm (Ruling A11). It ends the ticket on the
+     server and clears what this iPad keeps for the student: lb_me, the snapshot, the drafts, the worksheet PDFs and the
+     Rewards token. */
+  var SNAP = 'lb_snap';
+  function who() { return me ? me.cls + '|' + me.name : ''; }
+  function signedIn(r) { me = { cls: r.cls, name: r.name, st: r.st }; store('lb_me', me); D = null; V = ''; local = freshLocal(); hwReset(); openApp(); }
+  function signedOutNow() { clearLocal(me); startPortal('You have been signed out. Sign in again.'); }
+  function clearLocal(m) {
+    stopPolling();
+    if (hw.win) hwSend({ t: 'signout' });
+    store('lb_me', null); store(SNAP, null); store('lb_avatar', null);
+    try {
+      var drop = [], tag = m ? String(m.cls + '_' + m.name).toLowerCase() : null;
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^wsh_/.test(k) && tag && k.toLowerCase().indexOf(tag) >= 0) drop.push(k); }
+      drop.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) { /* storage blocked */ }
+    try { indexedDB.deleteDatabase('wsh-pdf'); } catch (e) { /* no IndexedDB */ }
+    rwToken = null;
+    me = null; D = null; V = ''; local = freshLocal(); layers = [];
+    setTimeout(hwReset, 700);    // the engine gets the sign-out message first
+  }
+  function askSignOut() {
+    dialog('Sign out?', 'You will need your password to sign in again.', [
+      { text: 'Stay signed in', ghost: true },
+      { text: 'Sign out', fn: function () { var st = me && me.st; if (st) call('s_signout', st).catch(function () {}); clearLocal(me); startPortal(); } }
+    ]);
+  }
+  $('btn-signout').addEventListener('click', askSignOut);
+
+  /* ---------- a small dialog ---------- */
+  function dialog(title, text, buttons) {
+    var box = $('dlg-box'); box.innerHTML = '';
+    box.appendChild(el('h2', '', title)).style.fontSize = '22px';
+    if (text) box.appendChild(el('p', '', text));
+    var row = el('div', 'acts'); box.appendChild(row);
+    (buttons || [{ text: 'OK' }]).forEach(function (b) {
+      var x = el('button', 'btn' + (b.ghost ? ' ghost' : ''), b.text); x.type = 'button';
+      x.addEventListener('click', function () { $('dlg').classList.add('hidden'); if (b.fn) b.fn(); });
+      row.appendChild(x);
+    });
+    $('dlg').classList.remove('hidden');
+    return box;
+  }
+
+  /* ---------- the data: one s_home, painted first from this student's own snapshot ---------- */
+  var D = null, V = '', liveAt = 0, snapAt = 0, pollMs = 60000, pollT = 0, fails = 0, inFlight = false;
+  function freshLocal() { return { handed: {}, seen: {}, mine: {}, done: {} }; }
+  var local = freshLocal();
+  function loadSnap() { var s = load(SNAP); return s && s.who === who() && s.d ? s : null; }
+  function saveSnap() { if (D && me) store(SNAP, { who: who(), v: V, at: liveAt || snapAt || Date.now(), d: D, local: local }); }
+  function merge(r) { if (!D) D = {}; Object.keys(r).forEach(function (k) { if (['ok', 'v', 'same', 'poll', 'error'].indexOf(k) < 0) D[k] = r[k]; }); }
+  function stopPolling() { clearTimeout(pollT); pollT = 0; }
+  function schedule(ms) { stopPolling(); if (!me || document.hidden) return; pollT = setTimeout(refresh, Math.round(ms * (0.85 + Math.random() * 0.3))); }
+  function refresh() {
+    stopPolling();
+    if (!me || document.hidden || inFlight) return;
+    inFlight = true;
+    var st = me.st;
+    call('s_home', st, { v: V }).then(function (r) {
+      inFlight = false;
+      if (!me || me.st !== st) return;
+      if (!r || r.ok === false) throw new Error((r && r.error) || 'No reply');
+      fails = 0; liveAt = Date.now();
+      if (r.poll) pollMs = Number(r.poll) || pollMs;
+      if (!r.same) { merge(r); V = r.v || V; tidyLocal(); drawAll(); }
+      saveSnap(); drawFresh(); schedule(pollMs);
+    }).catch(function (e) {
+      inFlight = false;
+      if (isSignedOut(e)) { signedOutNow(); return; }
+      fails++; drawFresh(); schedule(Math.min(30000, 2000 * Math.pow(2, fails - 1)));
+    });
+  }
+  document.addEventListener('visibilitychange', function () {
+    document.body.classList.toggle('paused', document.hidden);       // the red glow rests while the iPad is away
+    if (document.hidden) stopPolling();
+    else if (me && !$('v-app').classList.contains('hidden')) refresh();
   });
+  function ago(t) { var m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m === 1 ? '1 minute ago' : m < 60 ? m + ' minutes ago' : Math.round(m / 60) === 1 ? '1 hour ago' : Math.round(m / 60) + ' hours ago'; }
+  function drawFresh() {
+    var f = $('fresh'), t = liveAt || snapAt;
+    if (layers.length) { f.textContent = ''; return; }
+    if (!liveAt && snapAt) f.textContent = 'Last updated ' + ago(snapAt) + '. Checking for new work.';
+    else if (fails && t) f.textContent = 'Last updated ' + ago(t) + '. Checking again soon.';
+    else if (fails) f.textContent = 'Checking for new work.';
+    else f.textContent = '';
+  }
+  setInterval(function () { if (me && !document.hidden && (fails || (!liveAt && snapAt))) drawFresh(); }, 30000);
+
+  /* ---------- items: one status model (CONTRACT section 1) ---------- */
+  function items() {
+    var out = [], b = (D && D.binder) || {};
+    (b.chapters || []).forEach(function (c) { (c.sheets || []).forEach(function (it) { out.push(withLocal(it, c)); }); });
+    (b.loose || []).forEach(function (it) { out.push(withLocal(it, null)); });
+    return out;
+  }
+  // What this iPad knows before the server does: a hand-in a moment ago, a marked copy just opened.
+  function withLocal(it, c) {
+    var x = {}; Object.keys(it).forEach(function (k) { x[k] = it[k]; });
+    x.chName = c ? c.name : ''; x.chColor = c ? c.color : '';
+    var h = local.handed[it.id];
+    if (h && (it.status === 'new' || it.status === 'started' || it.status === 'corrDue')) {
+      x.status = h.corr ? 'corrIn' : 'handedIn'; x.owed = false; x.handedAt = h.at;
+      if (!h.corr) x.handedTs = h.ts;
+    }
+    if (local.seen[it.id]) x.seen = true;
+    return x;
+  }
+  function tidyLocal() {
+    var byId = {}; items().forEach(function (x) { byId[x.id] = x; });
+    var raw = {}; ((D && D.binder && D.binder.chapters) || []).forEach(function (c) { (c.sheets || []).forEach(function (it) { raw[it.id] = it; }); });
+    ((D && D.binder && D.binder.loose) || []).forEach(function (it) { raw[it.id] = it; });
+    Object.keys(local.handed).forEach(function (id) {
+      var r = raw[id], h = local.handed[id];
+      if (!r || Date.now() - h.ts > 20 * 60000 || !(r.status === 'new' || r.status === 'started' || r.status === 'corrDue')) delete local.handed[id];
+    });
+  }
+  function isOwed(it) { return !it.practice && (it.owed === true || (it.owed !== false && (it.status === 'new' || it.status === 'started' || it.status === 'corrDue'))); }
+  function dueOf(it) { return it.status === 'corrDue' && it.corr ? (it.corr.dueTs || null) : (it.dueTs || null); }
+  function band(it) { var d = dueOf(it); if (!d) return 3; var ms = d - Date.now(); return ms < 0 ? 0 : ms <= 2 * 864e5 ? 1 : 2; }
+  function owedList() {
+    return items().filter(isOwed).sort(function (a, b) {
+      return band(a) - band(b) || ((b.status === 'corrDue') - (a.status === 'corrDue')) || ((dueOf(a) || 9e15) - (dueOf(b) || 9e15));
+    });
+  }
+  function backItem() {
+    var b = D && D.back;
+    if (b && !local.seen[b.id]) { var hit = items().filter(function (x) { return x.id === b.id; })[0]; return hit || withLocal(b, null); }
+    return items().filter(function (x) { return (x.status === 'marked' || x.status === 'corrDue' || x.status === 'corrIn') && x.hasMarked !== false && x.seen === false; })
+      .sort(function (a, b2) { return (b2.handedTs || 0) - (a.handedTs || 0); })[0] || null;
+  }
+  // One due-date formatter for every screen.
+  function fmtWhen(ts) {
+    var d = new Date(ts), now = new Date(), t = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    if (d.toDateString() === now.toDateString()) return 'today at ' + t;
+    var tm = new Date(now); tm.setDate(tm.getDate() + 1);
+    if (d.toDateString() === tm.toDateString()) return 'tomorrow at ' + t;
+    if (d - now > 0 && d - now < 6 * 864e5) return d.toLocaleDateString([], { weekday: 'long' }) + ' at ' + t;
+    return d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function dueText(it) {
+    var c = it.status === 'corrDue', ts = dueOf(it), what = c ? 'Corrections are due' : 'Due';
+    if (!ts) { var s = c ? (it.corr && it.corr.due) : it.due; return s ? what + ' ' + s + '.' : ''; }
+    if (ts < Date.now()) return (c ? 'Corrections were due ' : 'It was due ') + fmtWhen(ts) + '.';
+    return what + ' ' + fmtWhen(ts) + '.';
+  }
+  function tabDue(it) {
+    var ts = dueOf(it); if (it.status === 'corrDue') return 'Corrections';
+    if (!ts) return 'Due';
+    var d = new Date(ts), now = new Date();
+    if (ts < Date.now()) return 'Overdue';
+    if (d.toDateString() === now.toDateString()) return 'Due today';
+    var tm = new Date(now); tm.setDate(tm.getDate() + 1);
+    if (d.toDateString() === tm.toDateString()) return 'Due tomorrow';
+    return 'Due ' + d.toLocaleDateString([], { weekday: 'short' });
+  }
+  function scoreText(s) { var m = String(s || '').match(/^\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/); return m ? m[1] + ' out of ' + m[2] : String(s || ''); }
+  function shortScore(s) { return String(s || '').replace(/\s+/g, ''); }
 
   /* ---------- app shell ---------- */
-  var panel = 'now';
+  var panel = 'now', layers = [];
   function openApp() {
     $('v-portal').classList.add('hidden'); $('v-app').classList.remove('hidden');
-    $('me-name').textContent = me.name; $('me-class').textContent = me.cls;
-    setPanel('now'); refreshHome(); refreshOverview();
-    stopPolling(); homeTimer = setInterval(refreshHome, 12000); overTimer = setInterval(refreshOverview, 120000);
+    var s = loadSnap();
+    if (s && !D) { D = s.d; V = s.v || ''; snapAt = s.at || 0; local = s.local || freshLocal(); if (!local.done) local.done = {}; }
+    liveAt = 0; fails = 0; layers = [];
+    setPanel('now');
+    drawAll(); drawFresh();
+    refresh();
   }
-  function stopPolling() { clearInterval(homeTimer); clearInterval(overTimer); homeTimer = overTimer = null; }
   function setPanel(p) {
     panel = p;
+    if (layers.length) closeLayers(true);
     ['now', 'file', 'me'].forEach(function (x) { $('p-' + x).classList.toggle('hidden', x !== p); var b = $('nav-' + x); if (x === p) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-    window.scrollTo(0, 0);
-    if (p === 'file') drawFile(); if (p === 'me') drawMe();
+    $('p-sheet').classList.add('hidden');
+    drawHeader();
+    if (p === 'file') { fileChosen = false; drawFile(); } if (p === 'me') drawMe(); if (p === 'now') drawNow();
   }
   $('nav-now').addEventListener('click', function () { setPanel('now'); });
   $('nav-file').addEventListener('click', function () { setPanel('file'); });
   $('nav-me').addEventListener('click', function () { setPanel('me'); });
   $('wallet').addEventListener('click', function (e) { e.preventDefault(); setPanel('me'); });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden && me) { refreshHome(); refreshOverview(); } });
+  $('backpill').addEventListener('click', back);
 
-  function lbParam() { return encodeURIComponent(me.cls + '|' + me.name) + '&st=' + encodeURIComponent(me.st); }
-  function deckUrl(url, taskId, revise) { return url.replace(/#.*$/, '') + '#lb=' + lbParam() + (taskId ? '&q=' + encodeURIComponent(taskId) : '') + (revise ? '&revise' : ''); }
-
-  /* ---------- data ---------- */
-  function refreshHome() {
+  function drawHeader() {
+    var L = layers[layers.length - 1];
+    document.body.classList.toggle('inlayer', !!L);
+    $('backpill').classList.toggle('hidden', !L);
+    $('wallet').classList.toggle('hidden', !!L);
+    if (L) {
+      $('backpill-t').textContent = backLabel();
+      $('h1').textContent = L.title; $('hsub').textContent = L.sub || '';
+      drawFresh(); return;
+    }
     if (!me) return;
-    call('apiStudentHome', me.st).then(function (h) {
-      home = h; if (h.hub && h.hub !== hwLink) hwLink = h.hub;
-      drawNow(); loadArcade();
-    }).catch(function (e) { if (isSignedOut(e)) signedOutNow(); });
+    var n = (D && D.now) || {};
+    if (panel === 'now' && n.lesson) { $('h1').textContent = 'Science lesson'; $('hsub').textContent = me.name + ' · ' + me.cls; }
+    else if (panel === 'now') { $('h1').textContent = greet() + ', ' + firstName(me.name); $('hsub').textContent = me.cls + ' · ' + new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }); }
+    else if (panel === 'file') { $('h1').textContent = 'My Science file'; $('hsub').textContent = me.name + ' · ' + me.cls; }
+    else { $('h1').textContent = 'Me'; $('hsub').textContent = me.name + ' · ' + me.cls; }
+    drawFresh();
   }
-  function refreshOverview() {
-    if (!me) return;
-    call('apiStudentOverview', me.st).then(function (o) {
-      overview = o; if (o.hubLink && !hwLink) hwLink = o.hubLink;
-      drawWallet(); drawNow(); if (panel === 'file') drawFile(); if (panel === 'me') drawMe(); drawBadge();
-    }).catch(function (e) { if (isSignedOut(e)) signedOutNow(); });
+  function backLabel() {
+    if (layers.length > 1) return 'Back to ' + (layers[layers.length - 2].backName || 'the sheet');
+    var from = layers[0].from;
+    return from === 'file' ? 'Put it back in my file' : from === 'me' ? 'Back to Me' : 'Back to Now';
   }
-  var arcadeAt = 0;
-  function loadArcade() {
-    if (!me || Date.now() - arcadeAt < 60000) return;
-    arcadeAt = Date.now();
-    call('api_st_arcade', me.st).then(function (a) { arcade = a; drawNow(); if (panel === 'me') drawMe(); }).catch(function () {});
+  function drawAll() {
+    if (!me || !D) { drawHeader(); return; }
+    drawWallet(); drawBadge(); drawHeader();
+    var q = quickNow();
+    if (q) drawQuick(q); else hideQuick();
+    if (layers.length) drawLayerSide();
+    if (panel === 'now') drawNow();
+    drawFile();                  // kept current while hidden, so a tab turns green at once
+    if (panel === 'me') drawMe();
   }
-  function hub() { return overview && overview.hub && !overview.hub.error ? overview.hub : null; }
-  function homework() { return (hub() && hub().homework) || []; }
-  function owedList() { return homework().filter(function (h) { return !h.practice && (h.status === 'todo' || h.status === 'overdue'); }).sort(function (a, b) { return (a.dueTs || 9e15) - (b.dueTs || 9e15); }); }
-  function drawWallet() { var h = hub(); $('wallet-n').textContent = h ? (Number(h.points) || 0).toLocaleString() + ' points' : 'points'; }
+  function wallet() { return (D && D.wallet) || { points: 0, tokens: 0 }; }
+  function drawWallet() { var w = wallet(); $('wallet-n').textContent = (Number(w.points) || 0).toLocaleString() + ' points'; }
   function drawBadge() { var n = owedList().length, b = $('file-badge'); b.textContent = n; b.classList.toggle('hidden', !n); }
+  function funOpen() { return !(D && D.fun && D.fun.open === false); }
 
-  /* ---------- NOW ---------- */
+  /* ---------- decks open in one named tab (Ruling A15) ---------- */
+  var lessonWin = null;
+  function lbParam() { return encodeURIComponent(me.cls + '|' + me.name) + '&st=' + encodeURIComponent(me.st); }
+  function deckUrl(url, taskId, revise) { return String(url).replace(/#.*$/, '') + '#lb=' + lbParam() + (taskId ? '&q=' + encodeURIComponent(taskId) : '') + (revise ? '&revise' : ''); }
+  function openDeck(url, taskId, revise) {
+    if (!url || !me) return;
+    var u = deckUrl(url, taskId, revise);
+    try { lessonWin = window.open(u, 'lwmc-lesson'); } catch (e) { lessonWin = null; }
+    if (!lessonWin) { var a = el('a'); a.href = u; a.target = 'lwmc-lesson'; a.rel = 'opener'; document.body.appendChild(a); a.click(); a.remove(); }
+    if (panel === 'now') { drawNow(); setTimeout(drawNow, 400); }
+  }
+  function deckOpen() { try { return !!(lessonWin && !lessonWin.closed); } catch (e) { return false; } }
+  window.__lwOpenDeck = openDeck;   // for testing only
+
+  /* ---------- NOW: the ladder, the first match wins ---------- */
+  function quickNow() {
+    var q = D && D.now && D.now.quick;
+    if (!q || !q.id) return null;
+    var key = q.id + ':' + (q.round || 1);
+    if (q.open) return q;
+    if (q.result && !local.done[key]) return q;
+    return null;
+  }
+  function ladder() {
+    var n = (D && D.now) || {};
+    if (quickNow()) return { k: 1 };
+    if (n.lesson) return { k: 2 };
+    if (n.ask && !deckOpen()) return { k: 3 };
+    var o = owedList();
+    if (o.length && band(o[0]) <= 1) return { k: 4, it: o[0], rest: o.slice(1) };
+    if (o.length) return { k: 5, it: o[0], rest: o.slice(1) };
+    var b = backItem();
+    if (b) return { k: 6, it: b, rest: [] };
+    return { k: 7, rest: [] };
+  }
+  function hero(cls) { var h = el('section', 'hero' + (cls ? ' ' + cls : '')); h.setAttribute('data-hero', ''); var b = el('div', 'body'); h.appendChild(b); return { h: h, b: b }; }
+  function heroBtn(h, text, cls, fn) { var x = el('button', 'btn big ' + (cls || 'hl'), text); x.type = 'button'; x.addEventListener('click', fn); h.appendChild(x); return x; }
   function drawNow() {
     if (!me) return;
-    var body = $('now-body'); body.innerHTML = '';
-    var now = home && home.now, ask = home && home.ask;
-    if (now) {
-      $('now-h1').textContent = 'Science lesson'; $('now-sub').textContent = me.name + ' · ' + me.cls;
-      var h = el('section', 'hero blue');
-      var b = el('div', 'body');
-      var lv = el('div', 'live'); lv.appendChild(el('i')); lv.appendChild(el('span', '', 'In class now')); b.appendChild(lv);
-      b.appendChild(el('h2', '', now.lesson ? now.title + ' · ' + now.lesson : now.title));
-      b.appendChild(el('div', 'lead', (now.from ? 'Mr Cedric is on slides ' + now.from + ' to ' + now.to + '. ' : '') + 'Your answers count.'));
-      h.appendChild(b);
-      var join = el('a', 'btn big', 'Join the lesson'); join.style.background = '#fff'; join.style.color = '#1B1F3B'; join.href = deckUrl(now.url); join.target = '_blank'; h.appendChild(join);
-      body.appendChild(h);
-      if (ask) body.appendChild(askCard(ask));
-      var next = owedList()[0];
-      var af = el('div', 'after');
-      af.appendChild(el('span', '', next ? 'After class: ' + next.title + '. ' + fmtDue(next) + '.' : 'After class: nothing is due yet.'));
-      af.appendChild(el('span', 'quiet', 'Puzzles open after the lesson'));
-      body.appendChild(af);
-      return;
-    }
-    $('now-h1').textContent = greet() + ', ' + firstName(me.name);
-    $('now-sub').textContent = me.cls + ' · ' + new Date().toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
-    if (ask) body.appendChild(askCard(ask));
-
-    var todo = owedList(), fixes = ((overview && overview.lessons) || []).filter(function (l) { return l.fix > 0; });
-    var hero = el('section', 'hero'); var hb = el('div', 'body'); hero.appendChild(hb);
-    if (todo.length) {
-      var t = todo[0];
-      hb.appendChild(el('span', 'pill', t.status === 'overdue' ? 'Overdue' : 'Do this now'));
-      hb.appendChild(el('h2', '', t.title));
-      hb.appendChild(el('div', 'lead', fmtDue(t) + (todo.length > 1 ? ' · ' + (todo.length - 1) + ' more in your file' : '')));
-      var go = el('button', 'btn big hl', t.status === 'overdue' ? 'Do it now' : 'Open'); go.addEventListener('click', function () { openSheet(t); }); hero.appendChild(go);
-    } else if (fixes.length) {
-      hb.appendChild(el('span', 'pill', 'Put right'));
-      hb.appendChild(el('h2', '', fixes[0].title));
-      hb.appendChild(el('div', 'lead', fixes[0].fix + ' answer' + (fixes[0].fix === 1 ? '' : 's') + ' to put right from the lesson'));
-      var g2 = el('a', 'btn big hl', 'Open the slides'); g2.href = deckUrl(fixes[0].url, null, true); g2.target = '_blank'; hero.appendChild(g2);
+    var body = $('p-now'); body.innerHTML = '';
+    var L = ladder(), n = (D && D.now) || {}, cards = [];
+    body.setAttribute('data-state', String(L.k));
+    if (!D) { var w = el('section', 'hero calm'); w.appendChild(el('div', 'body')).appendChild(el('h2', '', 'Opening your file')); body.appendChild(w); return; }
+    if (L.k === 1) {
+      var qh = hero('blue'); qh.b.appendChild(el('span', 'pill', 'Mr Cedric is asking')); qh.b.appendChild(el('h2', '', 'Answer the question on your screen.'));
+      heroBtn(qh.h, 'Answer now', '', function () { var q = quickNow(); if (q) drawQuick(q); }); body.appendChild(qh.h);
+    } else if (L.k === 2) {
+      var l = n.lesson, h2 = hero('blue');
+      var lv = el('div', 'live'); lv.appendChild(el('i')); lv.appendChild(el('span', '', 'In class now')); h2.b.appendChild(lv);
+      h2.b.appendChild(el('h2', '', l.title || 'Science lesson'));
+      h2.b.appendChild(el('div', 'lead', 'Your answers count.'));
+      var j = heroBtn(h2.h, 'Join the lesson', '', function () { openDeck(l.url); }); j.style.background = '#fff'; j.style.color = '#1B1F3B';
+      body.appendChild(h2.h);
+      if (n.ask && !deckOpen()) cards.push(askCard(n.ask));
+    } else if (L.k === 3) {
+      var h3 = hero(''); h3.b.appendChild(el('span', 'pill', 'Mr Cedric is asking'));
+      h3.b.appendChild(el('h2', '', n.ask.question || 'A question from the slides'));
+      if (n.ask.deckTitle) h3.b.appendChild(el('div', 'lead', n.ask.deckTitle));
+      heroBtn(h3.h, 'Answer now', 'hl', function () { openDeck(n.ask.url, n.ask.taskId); }); body.appendChild(h3.h);
+    } else if (L.k === 4 || L.k === 5) {
+      var it = L.it, now4 = L.k === 4, h4 = hero(now4 ? '' : 'calm');
+      h4.b.appendChild(el('span', 'pill' + (now4 ? '' : ' blue'), now4 ? (band(it) === 0 ? 'Overdue' : 'Do this now') : 'Next up'));
+      h4.b.appendChild(el('h2', '', it.title));
+      var lead = dueText(it);
+      if (it.status === 'corrDue') lead += ' Fix them in green on your marked copy.';
+      else if (it.pages && it.pages.total) lead += ' You have done ' + (it.pages.done || 0) + ' of ' + it.pages.total + ' pages.';
+      if (reminded(it.id)) lead += ' Mr Cedric reminded you about this.';
+      h4.b.appendChild(el('div', 'lead', lead.trim()));
+      if (it.pages && it.pages.total) { var bar = el('div', 'bar'); var bb = el('b'); bb.style.width = Math.round(100 * (it.pages.done || 0) / it.pages.total) + '%'; bar.appendChild(bb); h4.b.appendChild(bar); }
+      var label = it.status === 'corrDue' ? (it.corr && it.corr.started ? 'Carry on corrections' : 'Do corrections') : it.status === 'started' ? 'Carry on' : 'Start';
+      heroBtn(h4.h, label, now4 ? 'hl' : 'blue', function () { openSheet(it, 'now', it.status === 'corrDue' ? 'corrections' : 'write'); });
+      body.appendChild(h4.h);
+    } else if (L.k === 6) {
+      var m = L.it, h6 = hero('');
+      h6.b.appendChild(el('span', 'pill', 'Back from Mr Cedric'));
+      h6.b.appendChild(el('h2', '', m.title));
+      h6.b.appendChild(el('div', 'lead', (m.score ? 'You scored ' + scoreText(m.score) + '. ' : 'It is marked. ') + (m.comment ? 'Mr Cedric wrote a comment for you.' : 'Look at the marking on your copy.')));
+      heroBtn(h6.h, 'See my marked copy', 'hl', function () { openSheet(m, 'now', 'marked'); });
+      body.appendChild(h6.h);
     } else {
-      hb.appendChild(el('span', 'pill', 'All done'));
-      hb.appendChild(el('h2', '', 'Nothing is due.'));
-      hb.appendChild(el('div', 'lead', 'Open your file to revise any lesson, or play today\'s puzzle.'));
-      var g3 = el('button', 'btn big hl', 'Open my file'); g3.addEventListener('click', function () { setPanel('file'); }); hero.appendChild(g3);
+      var h7 = hero('');
+      h7.b.appendChild(el('span', 'pill green', 'All done'));
+      h7.b.appendChild(el('h2', '', 'Nothing is due.'));
+      var pz = D.puzzle;
+      if (funOpen() && pz && pz.left > 0) {
+        h7.b.appendChild(el('div', 'lead', 'Every worksheet is in. Today\'s puzzle is waiting for you.'));
+        heroBtn(h7.h, 'Play today\'s puzzle', 'hl', function () { openPanel('arcade', 'now'); });
+      } else {
+        h7.b.appendChild(el('div', 'lead', 'Every worksheet is in. You can revise any lesson in your file.'));
+        heroBtn(h7.h, 'Open my file', 'hl', function () { setPanel('file'); });
+      }
+      body.appendChild(h7.h);
     }
-    body.appendChild(hero);
-
-    var g = el('div', 'grid2'); body.appendChild(g);
-    var marked = homework().filter(function (x) { return x.status === 'marked'; });
-    var lastLesson = ((overview && overview.lessons) || []).filter(function (l) { return l.open; }).sort(function (a, b) { return (b.last || 0) - (a.last || 0); })[0];
-    if (marked.length) {
-      var m = marked[0], c = el('section', 'card row');
-      c.appendChild(el('div', 'ring', m.score ? String(m.score).replace(/\s+/g, '') : '✓'));
-      var tx = el('div', 'txt'); tx.appendChild(el('span', 'kicker', 'BACK FROM MR CEDRIC')); tx.appendChild(el('span', 't', m.title)); tx.appendChild(el('span', 's', 'Marked' + (m.score ? ', ' + m.score : '') + '. Open it to see the marking.')); c.appendChild(tx);
-      var ob = el('button', 'btn soft', 'Open'); ob.style.height = '48px'; ob.addEventListener('click', function () { openSheet(m); }); c.appendChild(ob);
-      g.appendChild(c);
+    if (L.k >= 3) cards = cards.concat(nowCards(L));
+    if (cards.length) {
+      var g = el('div', 'cards'); cards.slice(0, 3).forEach(function (c) { g.appendChild(c); }); body.appendChild(g);
+      if (cards.length === 3) g.lastChild.style.gridColumn = '1 / -1';
     }
-    if (lastLesson) {
-      var c2 = el('section', 'card row');
-      var sq = el('div', 'sq'); sq.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>'; c2.appendChild(sq);
-      var tx2 = el('div', 'txt'); tx2.appendChild(el('span', 'kicker', 'LATEST LESSON')); tx2.appendChild(el('span', 't', lastLesson.title));
-      tx2.appendChild(el('span', 's', (lastLesson.slides ? lastLesson.seen + ' of ' + lastLesson.slides + ' slides seen' : 'Open to revise') + (lastLesson.check ? ' · chapter check ' + lastLesson.check.best + '%' : ''))); c2.appendChild(tx2);
-      var ol = el('a', 'btn soft', 'Revise'); ol.style.height = '48px'; ol.href = deckUrl(lastLesson.url); ol.target = '_blank'; c2.appendChild(ol);
-      g.appendChild(c2);
+    var end = el('div', 'now-end');
+    if (L.k === 2) {
+      var next = owedList()[0];
+      var af = el('div', 'strip');
+      af.appendChild(el('span', '', next ? 'After class, ' + next.title + ' is next. ' + dueText(next) : 'After class, nothing is due yet.'));
+      if (!funOpen()) af.appendChild(el('span', 'quiet', 'Puzzles open after the lesson'));
+      end.appendChild(af);
+    } else if (n.before && n.before.at && n.before.at > Date.now() && n.before.at - Date.now() <= 15 * 60000) {
+      var t = new Date(n.before.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      end.appendChild(el('div', 'strip', 'Science starts at ' + t + '. The Join button appears here when Mr Cedric starts.'));
     }
-    if (arcade && arcade.open) {
-      var left = (arcade.items || []).filter(function (i) { return (i.ready || !i.done) && !i.done; }).length;
-      var a = el('section', 'card row');
-      var tx3 = el('div', 'txt'); tx3.appendChild(el('span', 't', 'Today\'s puzzles')); tx3.appendChild(el('span', 's', (left ? left + ' left today' : 'All done today') + (arcade.streak ? ' · ' + arcade.streak + '-day streak' : ''))); a.appendChild(tx3);
-      var pb = el('button', 'btn ghost', 'Play'); pb.style.height = '48px'; pb.addEventListener('click', function () { openArcade('q'); }); a.appendChild(pb);
-      body.appendChild(a);
-    }
+    if (end.children.length) body.appendChild(end);
   }
+  function reminded(id) { return ((D && D.remind) || []).some(function (r) { return r.id === id; }); }
   function askCard(ask) {
     var c = el('section', 'card ask');
     c.appendChild(el('span', 'pill', 'Mr Cedric is asking'));
     c.appendChild(el('div', 'q', ask.question || ask.deckTitle || 'A question from the slides'));
-    var a = el('a', 'btn', 'Answer now'); a.href = deckUrl(ask.url, ask.taskId); a.target = '_blank'; a.style.alignSelf = 'flex-start'; c.appendChild(a);
+    var a = el('button', 'btn', 'Answer now'); a.type = 'button'; a.style.alignSelf = 'flex-start'; a.addEventListener('click', function () { openDeck(ask.url, ask.taskId); }); c.appendChild(a);
     return c;
   }
-
-  /* ---------- MY FILE ---------- */
-  var curDiv = load('lb_pkg') || '';
-  function chapters() {
-    var pk = (overview && overview.packages) || [], hw = homework(), out = [], byKey = {};
-    pk.forEach(function (p) {
-      var num = String(p.key || '').split(':')[1] || '';
-      var d = { key: p.key, label: num ? 'Ch ' + num : p.name, title: num ? 'Chapter ' + num : p.name, name: p.name, color: p.color || '#2F5BFF', lessons: p.items || [], work: [] };
-      out.push(d); byKey[p.key] = d; d.num = num; d.subject = p.subject;
-    });
-    var other = { key: 'other', label: 'Other', title: 'Other work', name: 'Worksheets not in a chapter', color: '#474D6B', lessons: [], work: [] };
-    hw.forEach(function (h) {
-      var ch = String(h.chapter || ''), m = ch.match(/(\d+)/), hit = null;
-      out.forEach(function (d) { if (!hit && ((m && d.num === m[1]) || (ch && d.name && ch.toLowerCase() === String(d.name).toLowerCase()))) hit = d; });
-      (hit || other).work.push(h);
-    });
-    if (other.work.length) out.push(other);
-    out.sort(function (a, b) { return (Number(b.num) || 0) - (Number(a.num) || 0); });
-    out.push({ key: 'mine', label: 'My notes', title: 'My notes', name: 'Notes I wrote myself', color: '#6B48C8', mine: true, lessons: [], work: [] });
+  function rowCard(kick, title, sub, btnText, fn, lead) {
+    var c = el('section', 'card row');
+    if (lead) c.appendChild(lead);
+    var tx = el('div', 'txt'); tx.appendChild(el('span', 'kicker', kick)); tx.appendChild(el('span', 't', title)); if (sub) tx.appendChild(el('span', 's', sub)); c.appendChild(tx);
+    var b = el('button', 'btn soft', btnText); b.type = 'button'; b.addEventListener('click', fn); c.appendChild(b);
+    return c;
+  }
+  function nowCards(L) {
+    var out = [], heroId = L.it ? L.it.id : '';
+    var fix = [];
+    ((D.binder && D.binder.chapters) || []).forEach(function (c) { (c.lessons || []).forEach(function (l) { if (l.fix > 0 && l.open !== false) fix.push(l); }); });
+    if (fix.length) { var f = fix[0]; out.push(rowCard('PUT RIGHT', f.title, f.fix + (f.fix === 1 ? ' answer' : ' answers') + ' to put right from the lesson', 'Open the slides', function () { openDeck(f.url, null, true); })); }
+    var b = backItem();
+    if (b && b.id !== heroId) {
+      var ring = el('div', 'ring', b.score ? shortScore(b.score) : 'New');
+      out.push(rowCard('BACK FROM MR CEDRIC', b.title, b.status === 'corrDue' ? dueText(b) : (b.score ? 'Marked, ' + scoreText(b.score) + '.' : 'Marked.'), 'Open', function () { openSheet(b, 'now', 'marked'); }, ring));
+    }
+    var more = (L.rest || [])[0];
+    if (more) out.push(rowCard('ALSO TO DO', more.title, dueText(more), more.status === 'corrDue' ? 'Do corrections' : more.status === 'started' ? 'Carry on' : 'Start', function () { openSheet(more, 'now', more.status === 'corrDue' ? 'corrections' : 'write'); }));
+    var pz = D.puzzle;
+    if (L.k !== 7 && funOpen() && pz) out.push(rowCard('TODAY\'S PUZZLE', pz.left > 0 ? (pz.left === 1 ? '1 puzzle left' : pz.left + ' puzzles left') : 'All done today', pz.streak ? pz.streak + '-day streak' : '', 'Play', function () { openPanel('arcade', 'now'); }));
     return out;
   }
-  function lessonInfo(id) { var hit = null; ((overview && overview.lessons) || []).forEach(function (l) { if (l.id === id) hit = l; }); return hit; }
-  function owedIn(d) { return d.work.some(function (h) { return !h.practice && (h.status === 'todo' || h.status === 'overdue'); }); }
+
+  /* ---------- the quick check, full screen in the app (Ruling A4: no counts while it is open) ---------- */
+  function hideQuick() { if ($('qc').classList.contains('hidden')) return; $('qc').classList.add('hidden'); $('v-app').style.visibility = ''; placeHw(); }
+  function drawQuick(q) {
+    var box = $('qc'), key = q.id + ':' + (q.round || 1), mine = local.mine[key] != null ? local.mine[key] : q.mine;
+    box.classList.remove('hidden'); $('v-app').style.visibility = 'hidden'; $('hwhost').classList.add('off');
+    box.innerHTML = '';
+    var hd = el('header'); hd.appendChild(el('span', 'dot')); hd.appendChild(el('b', '', 'Mr Cedric is asking'));
+    hd.appendChild(el('span', 'st', q.open ? (mine != null ? 'Your answer is in.' : 'Tap one answer.') : 'This question has closed.'));
+    box.appendChild(hd);
+    var top = el('div'); top.appendChild(el('div', 'qlead', 'Look at the slide, or listen to the question.'));
+    top.appendChild(el('h2', '', q.prompt || (q.type === 'gotit' ? 'How well do you understand this?' : q.type === 'word' ? 'Type your answer in one word.' : 'Choose your answer.')));
+    box.appendChild(top);
+    if (q.open) {
+      var opts = (q.options && q.options.length) ? q.options : (q.type === 'tf' ? ['True', 'False'] : q.type === 'gotit' ? ['Got it', 'Nearly', 'Lost'] : q.type === 'abcd' ? ['A', 'B', 'C', 'D'] : []);
+      if (q.type === 'word' || !opts.length) {
+        if (q.type === 'slide' && !opts.length) {
+          var sl = el('div', 'res'); sl.appendChild(el('div', 'ttl', 'This question is on the slide.'));
+          var lessonUrl = D.now && D.now.lesson && D.now.lesson.url;
+          if (lessonUrl) { var ob = el('button', 'btn big hl', 'Open the lesson'); ob.type = 'button'; ob.addEventListener('click', function () { openDeck(lessonUrl, q.taskId); }); sl.appendChild(ob); }
+          box.appendChild(sl);
+        } else {
+          var wb = el('div', 'wordbox'), inp = el('input'); inp.type = 'text'; inp.maxLength = 40; inp.placeholder = 'Your answer'; inp.value = mine || ''; inp.autocomplete = 'off'; inp.setAttribute('aria-label', 'Your answer');
+          var sb = el('button', 'btn big hl', mine ? 'Send again' : 'Send'); sb.type = 'button';
+          sb.addEventListener('click', function () { var v = inp.value.trim().slice(0, 40); if (!v) { inp.focus(); return; } answerQuick(q, v); });
+          inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') sb.click(); });
+          wb.appendChild(inp); wb.appendChild(sb); box.appendChild(wb);
+          box.appendChild(el('div', 'hint', mine ? 'You sent "' + mine + '". You can send a new answer until Mr Cedric closes the question.' : 'Type one word, then tap Send.'));
+        }
+      } else {
+        var g = el('div', 'opts' + (opts.length === 3 ? ' three' : ''));
+        opts.forEach(function (o) {
+          var b = el('button', 'opt' + (String(o).length > 2 ? ' word' : ''), o); b.type = 'button'; b.setAttribute('aria-pressed', String(mine === o));
+          b.addEventListener('click', function () { answerQuick(q, o); });
+          g.appendChild(b);
+        });
+        box.appendChild(g);
+        box.appendChild(el('div', 'hint', mine != null ? 'You chose ' + mine + '. Tap another answer to change it until Mr Cedric closes the question.' : 'Tap one answer.'));
+      }
+      return;
+    }
+    // closed: my own result and the counts, with no names
+    var r = q.result || {}, res = el('div', 'res'), right = r.right, cor = r.correct;
+    var big = el('div', 'mark', cor || (mine != null ? '✓' : '?'));
+    big.style.background = right === true ? '#0B7A4E' : right === false ? '#C62F36' : '#2F5BFF';
+    if (cor && String(cor).length > 2) big.style.fontSize = '30px';
+    res.appendChild(big);
+    res.appendChild(el('div', 'ttl', right === true ? 'You got it.' : cor ? 'The answer is ' + cor + '.' : mine != null ? 'Thank you. Mr Cedric has your answer.' : 'This question has closed.'));
+    var counts = r.counts || {}, total = Number(r.total) || Object.keys(counts).reduce(function (s, k) { return s + (Number(counts[k]) || 0); }, 0);
+    var sub = mine != null ? 'You chose ' + mine + '.' : 'You did not answer this one.';
+    if (cor && total) sub += ' ' + (Number(counts[cor]) || 0) + ' of ' + total + ' chose ' + cor + '.';
+    res.appendChild(el('div', 'sub', sub + ' Mr Cedric will go over it on the slide.'));
+    var keys = Object.keys(counts);
+    if (keys.length) {
+      var cl = el('div', 'counts'), max = Math.max.apply(null, keys.map(function (k) { return Number(counts[k]) || 0; }).concat([1]));
+      keys.forEach(function (k) { var row = el('div', k === cor ? 'ok' : ''); row.appendChild(el('span', '', k)); var bar = el('i'); bar.style.width = Math.round(100 * (Number(counts[k]) || 0) / max) + '%'; var w = el('span'); w.appendChild(bar); row.appendChild(w); row.appendChild(el('span', '', String(counts[k]))); cl.appendChild(row); });
+      res.appendChild(cl);
+    }
+    var done = el('button', 'btn big hl', 'Back to Now'); done.type = 'button';
+    done.addEventListener('click', function () { local.done[q.id + ':' + (q.round || 1)] = Date.now(); saveSnap(); hideQuick(); drawNow(); });
+    res.appendChild(done);
+    box.appendChild(res);
+  }
+  function answerQuick(q, v) {
+    var key = q.id + ':' + (q.round || 1);
+    local.mine[key] = v; drawQuick(q);
+    call('s_quick', me.st, q.id, q.round || 1, v).then(function (r) {
+      if (r && r.closed) { toast('Mr Cedric has closed this question.'); refresh(); }
+    }).catch(function (e) { if (isSignedOut(e)) { signedOutNow(); return; } toast('Your answer did not send. Tap it again.'); delete local.mine[key]; drawQuick(q); });
+  }
+
+  /* ---------- MY FILE: the binder (the filing rules) ---------- */
+  var curDiv = '', fileChosen = false;
+  function chNum(c) { var m = String(c.key || '').split(':')[1] || ''; if (/^\d+$/.test(m)) return m; var n = String(c.name || '').match(/^(?:Chapter\s*)?(\d+)/i); return n ? n[1] : ''; }
+  function dividers() {
+    var b = (D && D.binder) || {}, out = [];
+    (b.chapters || []).forEach(function (c) {
+      var num = chNum(c), sheets = (c.sheets || []).map(function (it) { return withLocal(it, c); });
+      out.push({ key: c.key, label: num ? 'Ch ' + num : String(c.name || '').split(/\s+/)[0], title: num ? 'Chapter ' + num : c.name, name: c.name, color: c.color || '#2F5BFF', lessons: c.lessons || [], sheets: sheets });
+    });
+    var loose = (b.loose || []).map(function (it) { return withLocal(it, null); });
+    if (loose.length) out.push({ key: 'other', label: 'Other', title: 'Other work', name: 'Worksheets not in a chapter', color: '#474D6B', lessons: [], sheets: loose });
+    out.push({ key: 'mine', label: 'My notes', title: 'My notes', name: 'Notes I wrote myself', color: '#6B48C8', mine: true, lessons: [], sheets: [] });
+    return out;
+  }
+  function newestDivider(list) {
+    var best = null, bestT = -1;
+    list.forEach(function (d) {
+      if (d.mine) return;
+      var t = 0;
+      d.lessons.forEach(function (l) { t = Math.max(t, Number(l.taught) || 0); });
+      d.sheets.forEach(function (s) { t = Math.max(t, Number(s.handedTs) || 0, s.dueTs ? s.dueTs - 7 * 864e5 : 0); });
+      if (t > bestT) { bestT = t; best = d; }
+    });
+    return best;
+  }
   function drawFile() {
-    var list = chapters(), cur = null;
-    list.forEach(function (d) { if (d.key === curDiv) cur = d; });
-    if (!cur) { cur = list.filter(function (d) { return !d.mine; })[0] || list[0]; }
+    if (!me || !D) return;
+    var list = dividers(), cur = null;
+    if (fileChosen) list.forEach(function (d) { if (d.key === curDiv) cur = d; });
+    if (!cur) cur = newestDivider(list) || list[0];
+    curDiv = cur.key;
     var dv = $('dividers'); dv.innerHTML = '';
     list.forEach(function (d) {
-      var b = el('button', 'divider'); b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(d === cur)); b.setAttribute('aria-label', d.title + ' ' + d.name); b.style.background = d.color;
-      b.appendChild(el('span', '', d.label)); if (owedIn(d)) b.appendChild(el('i', 'dotr glow'));
-      b.addEventListener('click', function () { curDiv = d.key; store('lb_pkg', curDiv); drawFile(); });
+      var b = el('button', 'divider'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(d === cur)); b.setAttribute('aria-label', d.title + ', ' + d.name); b.style.background = d.color;
+      b.setAttribute('data-key', d.key);
+      b.appendChild(el('span', '', d.label));
+      if (d.sheets.some(isOwed)) b.appendChild(el('i', 'dotr glow'));
+      b.addEventListener('click', function () { curDiv = d.key; fileChosen = true; drawFile(); });
       dv.appendChild(b);
     });
     var pg = $('pages'); pg.innerHTML = '';
-    var head = el('div', 'chhead'); head.style.background = cur.color; head.appendChild(el('b', '', cur.title)); head.appendChild(el('span', '', cur.name)); pg.appendChild(head);
-    var s1 = el('section', 'rowsec'); s1.appendChild(el('h3', '', cur.mine ? 'MY OWN NOTES' : 'LESSONS (SLIDES AND NOTES)')); var sh1 = el('div', 'shelf'); s1.appendChild(sh1); pg.appendChild(s1);
+    var head = el('div', 'chhead'); head.style.background = cur.color; head.appendChild(el('b', '', cur.title)); if (cur.name && cur.name !== cur.title) head.appendChild(el('span', '', cur.name)); pg.appendChild(head);
     if (cur.mine) {
-      var nb = el('button', 'sheet'); nb.appendChild(tabEl('My notes', '')); nb.appendChild(pageEl()); nb.appendChild(el('span', 'meta', 'Your folders in Homework')); nb.addEventListener('click', function () { openArcade(''); }); sh1.appendChild(nb);
-    } else if (!cur.lessons.length) sh1.appendChild(el('span', 'quiet', 'No lessons filed yet'));
-    cur.lessons.forEach(function (it) {
-      var li = lessonInfo(it.id), open = it.open || (li && li.open);
-      var a = el(open ? 'a' : 'div', 'sheet');
-      a.appendChild(tabEl((it.num ? it.num + ' ' : '') + 'Lesson', open ? '' : 'l'));
-      var p = pageEl(); if (li && li.fix > 0) p.appendChild(flagEl('r', li.fix + ' to put right')); else if (!open) p.appendChild(flagEl('l', 'Not yet')); a.appendChild(p);
-      a.appendChild(el('span', 'meta', it.title + (li && li.slides ? ' · ' + li.seen + ' of ' + li.slides + ' slides' : '') + (!open ? ' · opens when Mr Cedric releases it' : '')));
-      if (open) { a.href = deckUrl(it.url, null, !!(li && li.fix > 0)); a.target = '_blank'; a.setAttribute('aria-label', 'Open ' + it.title); }
-      sh1.appendChild(a);
-    });
-    if (!cur.mine) {
-      var s2 = el('section', 'rowsec'); s2.appendChild(el('h3', '', 'WORKSHEETS')); var sh2 = el('div', 'shelf'); s2.appendChild(sh2); pg.appendChild(s2);
-      if (!cur.work.length) sh2.appendChild(el('span', 'quiet', 'No worksheets yet'));
-      cur.work.forEach(function (h) {
-        var owed = !h.practice && (h.status === 'todo' || h.status === 'overdue'), kind = h.practice ? 'p' : (owed || h.status === 'missed' ? 'r' : 'g');
-        var b = el('button', 'sheet' + (owed ? ' glow' : '')); b.setAttribute('aria-label', h.title + (owed ? ', not handed in' : ''));
-        b.appendChild(tabEl(shortTitle(h.title), kind));
-        var p = pageEl();
-        if (h.status === 'marked' && h.score) p.appendChild(stampEl(String(h.score).replace(/\s+/g, '')));
-        else if (owed) p.appendChild(flagEl('r', shortDue(h)));
-        else if (h.status === 'submitted') p.appendChild(flagEl('g', 'Handed in'));
-        else if (h.status === 'missed') p.appendChild(flagEl('r', 'Missed'));
-        else if (h.practice) p.appendChild(flagEl('l', 'Practice'));
-        b.appendChild(p);
-        var meta = h.title + ' · ' + (h.practice ? 'never due' : (h.status === 'marked' ? 'marked' + (h.late ? ', late' : '') : (h.status === 'submitted' ? 'waiting for marking' : (h.status === 'missed' ? 'missed' : 'not handed in'))));
-        b.appendChild(el('span', 'meta' + (owed ? ' r' : ''), meta));
-        b.addEventListener('click', function () { openSheet(h); });
-        sh2.appendChild(b);
+      var sm = el('section', 'rowsec'); sm.appendChild(el('h3', '', 'MY OWN NOTES'));
+      sm.appendChild(el('p', 'note', 'Your own folders and notes are here. You can have up to 3 notes.'));
+      sm.appendChild(el('p', 'note', 'Mr Cedric can see your notes.')).style.fontWeight = '700';
+      var acts = el('div', 'row'); acts.style.flexWrap = 'wrap';
+      var o1 = el('button', 'btn', 'Open my notes'); o1.type = 'button'; o1.addEventListener('click', function () { openPanel('notes', 'file'); });
+      var o2 = el('button', 'btn ghost', 'New note'); o2.type = 'button'; o2.addEventListener('click', function () { openPanel('newNote', 'file'); });
+      acts.appendChild(o1); acts.appendChild(o2); sm.appendChild(acts); pg.appendChild(sm);
+    } else {
+      var s1 = el('section', 'rowsec'); s1.appendChild(el('h3', '', 'LESSONS')); var sh1 = el('div', 'shelf'); s1.appendChild(sh1); pg.appendChild(s1);
+      if (!cur.lessons.length) sh1.appendChild(el('span', 'quiet', 'No lesson slides filed yet.'));
+      cur.lessons.forEach(function (it) {
+        var open = it.open !== false, a = el('button', 'sheet'); a.type = 'button';
+        a.appendChild(el('span', 'tab' + (open ? '' : ' l'), 'Lesson ' + (it.num || '')));
+        var p = pageEl(); if (it.fix > 0) p.appendChild(flagEl('r', it.fix + ' to put right')); else if (!open) p.appendChild(flagEl('l', 'Not yet')); a.appendChild(p);
+        a.appendChild(el('span', 'meta', it.title));
+        a.appendChild(el('span', 'meta2', open ? 'Tap to open the slides' : 'Opens when Mr Cedric releases it'));
+        a.setAttribute('aria-label', 'Lesson ' + it.title + (open ? '' : ', not open yet'));
+        a.addEventListener('click', function () { if (open) openDeck(it.url, null, it.fix > 0); else toast('This lesson opens when Mr Cedric releases it.'); });
+        sh1.appendChild(a);
       });
+      var s2 = el('section', 'rowsec'); s2.appendChild(el('h3', '', 'WORKSHEETS')); var sh2 = el('div', 'shelf'); s2.appendChild(sh2); pg.appendChild(s2);
+      if (!cur.sheets.length) sh2.appendChild(el('span', 'quiet', 'No worksheets in this chapter yet.'));
+      cur.sheets.forEach(function (h) { sh2.appendChild(sheetEl(h)); });
+    }
+    if (list.length === 1) {
+      pg.appendChild(el('p', 'quiet', 'Your file is empty for now. Mr Cedric puts lesson notes and worksheets here after each lesson.')).style.padding = '0 22px 18px 40px';
     }
     var ow = $('owed'); ow.innerHTML = ''; ow.appendChild(el('div', 'kicker', 'STILL TO HAND IN'));
     var o = owedList();
-    if (!o.length) ow.appendChild(el('div', '', 'Nothing. Every tab is green.')).style.cssText = 'color:var(--ok);font-weight:700;padding-top:8px';
-    o.forEach(function (h) { var it = el('div', 'it'); it.appendChild(el('span', '', h.title)).style.fontWeight = '700'; it.appendChild(el('span', '', fmtDue(h))).style.cssText = 'color:var(--bad);font-weight:700;font-size:14px'; ow.appendChild(it); });
-    drawBadge();
+    if (!o.length) ow.appendChild(el('div', 'none', 'Nothing. Every tab is green.'));
+    o.forEach(function (h) {
+      var it = el('button', 'it'); it.type = 'button'; it.setAttribute('data-id', h.id);
+      it.appendChild(el('b', '', h.title)); it.appendChild(el('span', '', dueText(h)));
+      it.addEventListener('click', function () { openSheet(h, 'file'); });
+      ow.appendChild(it);
+    });
   }
-  function shortTitle(t) { t = String(t || ''); var m = t.match(/^(Worksheet|Practice|Revision|Revision worksheet|Topical|WS)\s*[^:]*?(\d+)?[^:]*/i); var head = t.split(':')[0].trim(); if (head.length <= 15) return head; return head.slice(0, 14) + '…'; }
-  function tabEl(text, kind) { return el('span', 'tab' + (kind ? ' ' + kind : ''), text); }
-  function pageEl() { var p = el('span', 'page'); var l = el('span', 'lines'); l.innerHTML = '<i class="h"></i><i style="width:92%"></i><i style="width:84%"></i><i style="width:92%;height:28px;background:none;border:1px solid #D6DAE4;border-radius:3px"></i><i style="width:80%"></i><i style="width:60%"></i>'; p.appendChild(l); return p; }
+  // red means I owe it (corrections due too), green means it is in, grey means practice
+  function kindOf(h) { return h.practice ? 'p' : isOwed(h) ? 'r' : h.status === 'missed' ? 'm' : 'g'; }
+  function sheetEl(h) {
+    var owed = isOwed(h), kind = kindOf(h), b = el('button', 'sheet' + (owed ? ' owes' : '')); b.type = 'button';
+    b.setAttribute('data-id', h.id); b.setAttribute('data-kind', kind);
+    var head = String(h.title || '').split(':')[0].trim() || h.title;
+    var tab = el('span', 'tab ' + kind + (owed ? ' glow' : ''), head); b.appendChild(tab);
+    var p = pageEl();
+    if ((h.status === 'marked' || h.status === 'corrDue' || h.status === 'corrIn') && h.score) p.appendChild(el('span', 'stamp', shortScore(h.score)));
+    if (h.status === 'corrDue') p.appendChild(flagEl('r', 'Corrections due'));
+    else if (owed) p.appendChild(flagEl('r', tabDue(h)));
+    else if (h.status === 'handedIn') p.appendChild(flagEl('g', 'Handed in'));
+    else if (h.status === 'corrIn') p.appendChild(flagEl('g', 'Corrections in'));
+    else if (h.status === 'missed') p.appendChild(flagEl('l', 'Closed'));
+    else if (h.practice) p.appendChild(flagEl('l', 'Practice'));
+    if (h.seen === false && (h.status === 'marked' || h.status === 'corrDue' || h.status === 'corrIn')) p.appendChild(el('span', 'newdot', 'New'));
+    b.appendChild(p);
+    b.appendChild(el('span', 'meta', h.title));
+    var line = h.practice ? 'Practice, never due' : h.status === 'corrDue' ? dueText(h) : owed ? dueText(h) : h.status === 'handedIn' ? 'Waiting for marking' : h.status === 'missed' ? 'It closed before you handed it in' : h.status === 'corrIn' ? 'Corrections handed in' : 'Marked' + (h.late ? ', handed in late' : '');
+    b.appendChild(el('span', 'meta2' + (owed ? ' r' : ''), line));
+    b.setAttribute('aria-label', h.title + '. ' + line + '.');
+    b.addEventListener('click', function () { openSheet(h, 'file'); });
+    return b;
+  }
+  function pageEl() { var p = el('span', 'page'); var l = el('span', 'lines'); l.innerHTML = '<i class="h"></i><i style="width:92%"></i><i style="width:84%"></i><i style="width:92%;height:28px;background:none;border:1px solid #D6DAE4;border-radius:3px"></i><i style="width:80%"></i>'; p.appendChild(l); return p; }
   function flagEl(kind, text) { return el('span', 'flag ' + kind, text); }
-  function stampEl(text) { return el('span', 'stamp', text); }
+
+  /* ---------- a sheet taken out: owed opens the editor, handed in is read only, marked has three copies ---------- */
+  function findItem(id) { return items().filter(function (x) { return x.id === id; })[0] || null; }
+  function openSheet(it, from, mode) {
+    if (!it) return;
+    it = findItem(it.id) || it;
+    var st = it.status;
+    if (!mode) mode = it.practice ? 'write' : (st === 'new' || st === 'started') ? 'write' : st === 'corrDue' ? 'marked' : st === 'handedIn' ? 'view' : st === 'missed' ? 'clean' : 'marked';
+    var edit = mode === 'write' || mode === 'corrections' || mode === 'retry';
+    pushLayer({ kind: edit ? 'edit' : 'view', it: it, mode: mode, from: from || panel, title: it.title, sub: subFor(it, mode), backName: 'the marked sheet' });
+  }
+  function subFor(it, mode) {
+    if (mode === 'corrections') return 'Corrections. ' + dueText(it);
+    if (mode === 'retry') return 'A clean copy to try again. It is not handed in.';
+    if (it.practice) return 'Practice, never due';
+    if (mode === 'write') return dueText(it);
+    if (it.status === 'handedIn') return 'Handed in. Waiting for marking.';
+    return it.chName || '';
+  }
+  function openPanel(which, from) {
+    if ((which === 'arcade' || which === 'badges') && !funOpen()) { toast('The Arcade opens after the lesson.'); return; }
+    var t = { arcade: 'Arcade', badges: 'Badges', notes: 'My notes', newNote: 'My notes' }[which];
+    pushLayer({ kind: 'panel', panel: which, from: from || panel, title: t, sub: which === 'notes' || which === 'newNote' ? 'Mr Cedric can see your notes.' : '' });
+  }
+  function pushLayer(L) {
+    if (!layers.length) { L.fromPanel = panel; }
+    layers.push(L);
+    showLayer(L);
+  }
+  function showLayer(L) {
+    ['now', 'file', 'me'].forEach(function (x) { $('p-' + x).classList.add('hidden'); });
+    var box = $('p-sheet'); box.classList.remove('hidden'); box.innerHTML = '';
+    var lay = el('div', 'sheetlay ' + (L.kind === 'view' ? 'view' : 'edit')), left = el('div', 'left');
+    lay.appendChild(left); box.appendChild(lay);
+    if (L.kind === 'view') {
+      var segs = segsFor(L.it);
+      if (segs.length > 1) {
+        var sg = el('div', 'seg'); sg.setAttribute('role', 'tablist');
+        segs.forEach(function (s) {
+          var b = el('button', '', s[1]); b.type = 'button'; b.setAttribute('data-mode', s[0]); b.setAttribute('aria-pressed', String(s[0] === L.mode));
+          b.addEventListener('click', function () { if (L.mode === s[0]) return; L.mode = s[0]; showLayer(L); });
+          sg.appendChild(b);
+        });
+        sg.style.alignSelf = 'flex-start'; left.appendChild(sg);
+      }
+    }
+    var slot = el('div', 'slot'); slot.id = 'slot'; slot.appendChild(el('span', '', L.kind === 'panel' ? 'Opening ' + L.title + '…' : 'Opening ' + L.title + '…'));
+    left.appendChild(slot);
+    if (L.kind === 'view') { var side = el('div', 'side'); side.id = 'sheet-side'; lay.appendChild(side); }
+    drawHeader(); drawLayerSide();
+    L.ready = false;
+    hwOpenFor(L);
+    if (L.mode === 'marked' && L.it && (L.it.seen === false || (D && D.back && D.back.id === L.it.id))) {
+      local.seen[L.it.id] = Date.now(); saveSnap();
+      if (me) call('s_seen', me.st, L.it.id).catch(function () {});
+      drawBadge(); drawFile();
+    }
+  }
+  function segsFor(it) {
+    var s = [];
+    if (it.status === 'handedIn') return [['view', 'My copy']];
+    if (it.status === 'missed') return [['clean', 'Clean copy']];
+    if (it.hasMarked !== false) s.push(['marked', 'My marked copy']);
+    s.push(['clean', 'Clean copy']);
+    if (it.keyOpen) s.push(['key', 'Answer key']);
+    return s;
+  }
+  function drawLayerSide() {
+    var L = layers[layers.length - 1], side = $('sheet-side');
+    if (!L || L.kind !== 'view' || !side) return;
+    var it = findItem(L.it.id) || L.it; L.it = it;
+    side.innerHTML = '';
+    var c1 = el('section', 'card');
+    if (it.chName) c1.appendChild(el('div', 'kick', it.chName));
+    c1.appendChild(el('h2', '', it.title));
+    if (it.status === 'handedIn') c1.appendChild(el('p', '', 'Handed in' + (it.handedAt ? ' at ' + it.handedAt : it.handedTs ? ' ' + fmtWhen(it.handedTs) : '') + '. Waiting for marking.'));
+    else if (it.status === 'missed') c1.appendChild(el('p', '', 'This worksheet closed before you handed it in. If you still want to do it, ask Mr Cedric.'));
+    else {
+      c1.appendChild(el('div', 'score', it.score ? 'Marked ' + scoreText(it.score) : 'Marked'));
+      if (it.comment) c1.appendChild(el('p', '', 'Mr Cedric\'s comment. ' + it.comment));
+    }
+    side.appendChild(c1);
+    if (it.status === 'corrDue') {
+      var c2 = el('section', 'card');
+      c2.appendChild(el('b', '', 'Corrections to do'));
+      c2.appendChild(el('p', '', dueText(it) + ' Fix them in green on your marked copy.'));
+      var dc = el('button', 'btn corr', it.corr && it.corr.started ? 'Carry on corrections' : 'Do corrections'); dc.type = 'button';
+      dc.addEventListener('click', function () { pushLayer({ kind: 'edit', it: it, mode: 'corrections', from: L.from, title: it.title, sub: subFor(it, 'corrections') }); });
+      c2.appendChild(dc); side.appendChild(c2);
+    } else if (it.status === 'corrIn') {
+      var c3 = el('section', 'card'); c3.appendChild(el('b', '', 'Corrections handed in')); c3.appendChild(el('p', '', 'Mr Cedric has your corrections.')); side.appendChild(c3);
+    }
+    if (it.status !== 'handedIn') {
+      var c4 = el('section', 'card');
+      c4.appendChild(el('b', '', 'Revise with it'));
+      c4.appendChild(el('p', '', it.keyOpen ? 'Try it again on a clean copy, then check it against the answer key. This practice is not handed in.' : 'Try it again on a clean copy. This practice is not handed in.'));
+      var ta = el('button', 'btn line', 'Try it again'); ta.type = 'button';
+      ta.addEventListener('click', function () { pushLayer({ kind: 'edit', it: it, mode: 'retry', from: L.from, title: it.title, sub: subFor(it, 'retry') }); });
+      c4.appendChild(ta); side.appendChild(c4);
+    }
+  }
+  function back() {
+    var L = layers.pop(); if (!L) return;
+    hwClose();
+    if (layers.length) { showLayer(layers[layers.length - 1]); return; }
+    endLayers(L.fromPanel || L.from);
+  }
+  function closeLayers(quiet) { if (!layers.length) return; var f = layers[0].fromPanel; layers = []; hwClose(); if (!quiet) endLayers(f); else { $('p-sheet').classList.add('hidden'); $('p-sheet').innerHTML = ''; document.body.classList.remove('inlayer'); } }
+  function endLayers(to) {
+    $('p-sheet').classList.add('hidden'); $('p-sheet').innerHTML = '';
+    hwOff();
+    setPanel(to === 'file' || to === 'me' ? to : 'now');
+  }
+
+  /* ---------- the Homework engine: one hidden iframe, made on first need and kept (WP12) ---------- */
+  var hw = { frame: null, win: null, origin: '', q: [], want: null, link: '' };
+  function okOrigin(o) { return /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(o || ''); }
+  function hubLink() {
+    var l = (D && (D.hub || (D.me && D.me.hub))) || hw.link;
+    if (l) return Promise.resolve(l);
+    // a server without the hub link in s_home: the release-33 call still has it
+    return call('apiStudentHome', me.st).then(function (h) { hw.link = (h && h.hub) || ''; if (!hw.link) throw new Error('Homework is not linked yet. Tell Mr Cedric.'); return hw.link; });
+  }
+  function hwEnsure() {
+    if (hw.frame) return Promise.resolve();
+    return hubLink().then(function (link) {
+      if (hw.frame) return;
+      var f = document.createElement('iframe'); f.title = 'Worksheet'; f.setAttribute('allow', 'fullscreen; clipboard-write');
+      f.src = link + (link.indexOf('?') >= 0 ? '&' : '?') + 'embed=ms&shell=1';
+      hw.frame = f; $('hwhost').appendChild(f);
+    });
+  }
+  function hwReset() { if (hw.frame) hw.frame.remove(); hw = { frame: null, win: null, origin: '', q: [], want: null, link: hw.link }; hwOff(); }
+  function hwSend(m) { m.to = 'wsh'; if (hw.win) { try { hw.win.postMessage(m, hw.origin); } catch (e) { hw.win = null; hw.q.push(m); } } else hw.q.push(m); }
+  function itemFor(it) { return { title: it.title, status: it.status, dueTs: it.dueTs || null, submittedAt: it.handedAt || '', practice: !!it.practice, autoHandIn: !!it.autoHandIn }; }
+  function hwOpenFor(L) {
+    hwOff();
+    var msg = L.kind === 'panel' ? (L.panel === 'newNote' ? { t: 'open', id: '', mode: 'newNote' } : { t: 'panel', which: L.panel }) : { t: 'open', id: L.it.id, mode: L.mode, item: itemFor(L.it) };
+    hw.want = { L: L, id: msg.id || '', mode: msg.mode || 'panel' };
+    sizeHw();
+    hwEnsure().then(function () { hwSend(msg); }).catch(function (e) { slotText(e.message, true); });
+  }
+  function hwClose() { if (hw.frame) hwSend({ t: 'close' }); hw.want = null; hwOff(); }
+  function hwOff() { $('hwhost').classList.add('off'); }
+  // The engine is sized to the slot before it opens anything, so the worksheet is laid out once, at its real size.
+  function sizeHw() {
+    var slot = $('slot'), host = $('hwhost'); if (!slot) return;
+    var r = slot.getBoundingClientRect(); if (!r.width || !r.height) return;
+    host.style.left = r.left + 'px'; host.style.top = r.top + 'px'; host.style.width = r.width + 'px'; host.style.height = r.height + 'px';
+  }
+  function placeHw() {
+    var L = layers[layers.length - 1], host = $('hwhost');
+    if (!L || !L.ready || !$('slot') || !$('qc').classList.contains('hidden')) { host.classList.add('off'); return; }
+    sizeHw(); host.classList.remove('off');
+  }
+  window.addEventListener('resize', function () { if (layers.length) requestAnimationFrame(placeHw); });
+  function slotText(t, bad) {
+    var s = $('slot'); if (!s) return; s.innerHTML = ''; s.appendChild(el('span', '', t));
+    if (bad) { var b = el('button', 'btn', 'Try again'); b.type = 'button'; b.addEventListener('click', function () { var L = layers[layers.length - 1]; if (L) showLayer(L); }); s.appendChild(b); }
+  }
+  function inHw(src) {
+    var look = function (w, depth) { if (!w) return false; if (w === src) return true; if (depth <= 0) return false; try { for (var i = 0; i < w.frames.length; i++) if (look(w.frames[i], depth - 1)) return true; } catch (e) {} return false; };
+    return !!(hw.frame && src && look(hw.frame.contentWindow, 3));
+  }
+  function onHandedIn(id, at, corr) {
+    local.handed[id] = { at: at || '', ts: Date.now(), corr: !!corr };
+    drawFile(); drawBadge(); if (panel === 'now') drawNow(); drawLayerSide();     // the tab turns green at once
+    saveSnap();
+    toast(corr ? 'Corrections handed in. Mr Cedric has them.' : 'Handed in. Mr Cedric has your worksheet.');
+    var L = layers[layers.length - 1];
+    if (L && L.kind === 'edit' && L.it && L.it.id === id && L.mode !== 'retry') {
+      setTimeout(function () { if (layers[layers.length - 1] === L) { layers = []; hwClose(); endLayers('file'); } }, 1400);
+    }
+    setTimeout(refresh, 2500);
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!m || m.from !== 'wsh' || !m.t || !hw.frame || !me) return;
+    if (!okOrigin(e.origin) || !inHw(e.source)) return;
+    if (m.t === 'ready') {
+      if (!hw.win || e.source !== hw.win) {
+        hw.win = e.source; hw.origin = e.origin;
+        var ch = msTheme.chosen();
+        try { hw.win.postMessage({ to: 'wsh', t: 'hello', st: me.st, dark: ch === 'dark' ? true : ch === 'light' ? false : '' }, hw.origin); } catch (x) {}
+        var q = hw.q; hw.q = []; q.forEach(hwSend);
+      }
+    } else if (m.t === 'opened') {
+      var L = layers[layers.length - 1];
+      if (L && hw.want && hw.want.L === L) { L.ready = true; placeHw(); }
+    } else if (m.t === 'closed') {
+      var top = layers[layers.length - 1];
+      // closed by the page itself (for example "Back to my worksheets"): put the sheet back
+      if (top && top.ready && hw.want && hw.want.L === top && (m.id || '') === hw.want.id) { layers.pop(); hw.want = null; hwOff(); if (layers.length) showLayer(layers[layers.length - 1]); else endLayers(top.fromPanel || top.from); }
+    } else if (m.t === 'handedIn') onHandedIn(String(m.id || ''), String(m.at || ''), !!m.corr);
+    else if (m.t === 'wallet' && typeof m.points === 'number') { if (D) { D.wallet = { points: m.points, tokens: Number(m.tokens) || 0 }; drawWallet(); if (panel === 'me') drawMe(); } }
+    else if (m.t === 'points' || m.t === 'arcade') setTimeout(refresh, 800);
+    else if (m.t === 'rewards') openRewards(m.tab === 'market' ? 'market' : 'shop');
+    else if (m.t === 'error') { var Le = layers[layers.length - 1]; if (Le && hw.want && hw.want.L === Le) slotText(String(m.text || 'It did not open. Try again.'), true); }
+    else if (m.t === 'signedout') call('s_home', me.st, { v: V }).then(function (r) { if (!r || r.ok === false) signedOutNow(); }).catch(function (e2) { if (isSignedOut(e2)) signedOutNow(); });
+  });
+  window.addEventListener('ms-theme', function () { var ch = msTheme.chosen(); if (hw.win) hwSend({ t: 'theme', dark: ch === 'dark' ? true : ch === 'light' ? false : '' }); });
 
   /* ---------- ME ---------- */
+  function initials(n) { var p = String(n || '').trim().split(/\s+/); return ((p[0] || '')[0] || '') + (p.length > 1 ? p[p.length - 1][0] : ''); }
+  function avatarSrc() {
+    var a = load('lb_avatar'); if (a && a.who === who() && a.src) return a.src;
+    try { var b = JSON.parse(localStorage.getItem('wsh_body_' + me.cls + '_' + String(me.name).toLowerCase())); if (b && b.src) return b.src; } catch (e) {}
+    return '';
+  }
   function drawMe() {
-    var h = hub();
-    $('me-points').textContent = h ? (Number(h.points) || 0).toLocaleString() : '…';
-    $('me-tokens').textContent = h ? String(Number(h.tokens) || 0) : '…';
-    $('me-earned').textContent = h && h.earned ? h.earned + ' points earned so far' : '';
-    $('t-arcade-s').textContent = arcade && arcade.open ? 'Puzzles, quests and revision rush' + (arcade.streak ? ' · ' + arcade.streak + '-day streak' : '') : 'Opens after the lesson';
-    var hl = $('hist-list'); hl.innerHTML = '';
-    ((h && h.recent) || []).forEach(function (r) { var it = el('div', 'it'); it.appendChild(el('span', '', r.text + (r.when ? ' · ' + r.when : ''))); it.appendChild(el('b', '', (r.points > 0 ? '+' : '') + r.points)); hl.appendChild(it); });
-    if (!hl.children.length) hl.appendChild(el('div', 'quiet', 'Points you earn show up here.')).style.paddingTop = '8px';
+    if (!me) return;
+    var w = wallet();
+    $('me-name').textContent = me.name; $('me-class').textContent = me.cls;
+    $('me-points').textContent = (Number(w.points) || 0).toLocaleString();
+    $('me-tokens').textContent = String(Number(w.tokens) || 0);
+    $('me-ini').textContent = initials(me.name).toUpperCase();
+    var src = avatarSrc(), pic = $('me-pic');
+    if (src) { if (pic.getAttribute('src') !== src) pic.src = src; pic.classList.remove('hidden'); $('me-ini').classList.add('hidden'); }
+    else { pic.classList.add('hidden'); $('me-ini').classList.remove('hidden'); }
+    var open = funOpen(), pz = D && D.puzzle, closedTxt = 'Opens after the lesson';
+    ['t-shop', 't-market', 't-arcade', 't-badges'].forEach(function (id) { $(id).classList.toggle('closed', !open); });
+    $('t-shop-s').textContent = open ? 'Hair, clothes and colours for your avatar' : closedTxt;
+    $('t-market-s').textContent = open ? 'Spend your tokens at the stalls' : closedTxt;
+    $('t-arcade-s').textContent = open ? 'Puzzles, quests and revision rush' + (pz && pz.left ? ' · ' + pz.left + ' left today' : '') : closedTxt;
+    $('t-badges-s').textContent = open ? 'The badges you have earned' : closedTxt;
     var ch = msTheme.chosen();
     Array.prototype.forEach.call($('look').children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === ch)); });
   }
-  Array.prototype.forEach.call($('look').children, function (b) { b.addEventListener('click', function () { msTheme.set(b.getAttribute('data-v')); drawMe(); tellHwTheme(); }); });
-  $('t-arcade').addEventListener('click', function () { openArcade('q'); });
-  $('t-badges').addEventListener('click', function () { openArcade('z'); });
-  $('t-notes').addEventListener('click', function () { openArcade(''); });
-  $('btn-avatar').addEventListener('click', openRewards);
-  $('t-shop').addEventListener('click', openRewards);
+  Array.prototype.forEach.call($('look').children, function (b) { b.addEventListener('click', function () { msTheme.set(b.getAttribute('data-v')); drawMe(); }); });
+  $('t-arcade').addEventListener('click', function () { openPanel('arcade', 'me'); });
+  $('t-badges').addEventListener('click', function () { openPanel('badges', 'me'); });
+  $('t-shop').addEventListener('click', function () { openRewards('shop'); });
+  $('t-market').addEventListener('click', function () { openRewards('market'); });
+  $('btn-avatar').addEventListener('click', function () { openRewards('shop'); });
+  $('btn-hist').addEventListener('click', function () {
+    var box = dialog('Where my points came from', 'Loading…', [{ text: 'Close' }]), p = box.querySelector('p');
+    var show = function (list) {
+      p.innerHTML = '';
+      if (!list || !list.length) { p.textContent = 'Points you earn show up here.'; return; }
+      var h = el('div', 'hist'); list.slice(0, 30).forEach(function (r) { var it = el('div', 'it'); it.appendChild(el('span', '', r.text + (r.when ? ' · ' + r.when : ''))); it.appendChild(el('b', '', (r.points > 0 ? '+' : '') + r.points)); h.appendChild(it); });
+      p.appendChild(h);
+    };
+    call('s_points', me.st).then(function (r) { show(r && r.recent); }).catch(function () {
+      return call('apiStudentOverview', me.st).then(function (o) { show(o && o.hub && o.hub.recent); });
+    }).catch(function () { p.textContent = 'This could not load. Try again in a moment.'; });
+  });
 
-  /* Rewards overlay (avatar, shop, night market): the Worksheet Hub's own page, with a Hub token from this sign-in. */
+  /* Rewards (avatar shop, night market): loaded only when the student taps, never at boot. */
   var rwToken = null;
   function hubToken() {
     if (rwToken && rwToken.at > Date.now() - 25 * 60000) return Promise.resolve(rwToken.token);
     return call('api_ticketLogin', me.st).then(function (r) { if (!r || !r.token) throw new Error('Could not open'); rwToken = { token: r.token, at: Date.now() }; return r.token; });
   }
-  function openRewards() {
-    if (home && home.now) { toast('The avatar shop opens after the lesson'); return; }
+  function openRewards(tab) {
+    if (!funOpen()) { toast('The avatar shop and the night market open after the lesson.'); return; }
     var go = function () {
       hubToken().then(function (tok) {
-        window.Rewards.open({ call: function (name, token) { var a = Array.prototype.slice.call(arguments, 2); return call.apply(null, [name, typeof token === 'function' ? token() : token].concat(a)); }, token: function () { return rwToken ? rwToken.token : tok; },
-          onPoints: function (p, t) { if (hub()) { hub().points = p; hub().tokens = t; drawWallet(); drawMe(); } }, onClose: function () { refreshOverview(); } });
-      }).catch(function (e) { toast(/FUN_CLOSED/.test(e.message) ? 'Opens after the lesson' : e.message); });
+        window.Rewards.open({ tab: tab, call: function (name, token) { var a = Array.prototype.slice.call(arguments, 2); return call.apply(null, [name, typeof token === 'function' ? token() : token].concat(a)); }, token: function () { return rwToken ? rwToken.token : tok; },
+          onPoints: function (p, t) { if (D) { D.wallet = { points: p, tokens: t }; drawWallet(); drawMe(); } },
+          onClose: function (r) {
+            if (r && D) { D.wallet = { points: r.points, tokens: r.tokens }; drawWallet(); }
+            if (r && r.outfit && window.Rewards.portrait) window.Rewards.portrait(r.outfit).then(function (p) { if (p && p.src && me) { store('lb_avatar', { who: who(), src: p.src }); drawMe(); } }).catch(function () {});
+            refresh();
+          } });
+        var x = document.getElementById('rw-close');
+        if (x) { x.setAttribute('aria-label', 'Back to Me'); if (x.lastChild && x.lastChild.nodeType === 3) x.lastChild.textContent = 'Back'; }
+      }).catch(function (e) { toast(/FUN_CLOSED/.test(e.message) ? 'It opens after the lesson.' : e.message); });
     };
     if (window.Rewards) { go(); return; }
     toast('Opening…');
@@ -912,57 +1563,18 @@
       var box = document.createElement('div'); box.innerHTML = html;
       Array.prototype.forEach.call(box.querySelectorAll('script'), function (s) { var n = document.createElement('script'); if (s.src) n.src = s.src; else n.textContent = s.textContent; s.parentNode.replaceChild(n, s); });
       document.body.appendChild(box);
-      var tries = 0; (function wait() { if (window.Rewards) go(); else if (tries++ < 40) setTimeout(wait, 150); else toast('Could not open the avatar shop'); })();
+      var tries = 0; (function wait() { if (window.Rewards) go(); else if (tries++ < 40) setTimeout(wait, 150); else toast('The avatar shop did not open. Try again.'); })();
     }).catch(function (e) { toast(e.message); });
   }
+  function hwHide() { hwOff(); }
 
-  /* ---------- the homework pane: the Worksheet Hub's student page, signed in by message ---------- */
-  var hwFrame = null, hwSigned = false, hwLink = '', hwTheme = null, hwPending = '', hwArcade = '';
-  function hwReset() { if (hwFrame) { hwFrame.remove(); hwFrame = null; } hwSigned = false; hwTheme = null; hwPending = ''; hwArcade = ''; rwToken = null; }
-  function hwShow(title, backText) { $('hw-title').textContent = title || ''; $('hw-back').textContent = '‹ ' + (backText || 'Back'); $('pane-hw').classList.remove('hidden'); document.body.style.overflow = 'hidden'; hwOpen(); }
-  function hwHide() { $('pane-hw').classList.add('hidden'); document.body.style.overflow = ''; }
-  $('hw-back').addEventListener('click', function () { hwHide(); refreshOverview(); });
-  function hwOpen() {
-    if (!hwLink) { $('hw-wait').textContent = 'Homework is not linked yet. Tell your teacher.'; return; }
-    if (hwFrame) { sendHwOpen(); return; }
-    $('hw-wait').textContent = 'Opening your homework…';
-    hwFrame = document.createElement('iframe'); hwFrame.title = 'Homework'; hwFrame.setAttribute('allow', 'fullscreen; clipboard-write');
-    hwFrame.src = hwLink + (hwLink.indexOf('?') >= 0 ? '&' : '?') + 'embed=ms';
-    $('pane-hw').appendChild(hwFrame);
-    setTimeout(function () { if (!hwSigned) $('hw-wait').textContent = 'Still opening your homework… If it does not open, check the internet.'; }, 12000);
-  }
-  function inHw(src) {
-    var look = function (w, depth) { if (!w) return false; if (w === src) return true; if (depth <= 0) return false; try { for (var i = 0; i < w.frames.length; i++) if (look(w.frames[i], depth - 1)) return true; } catch (e) {} return false; };
-    return !!(hwFrame && src && look(hwFrame.contentWindow, 3));
-  }
-  function tellHwTheme() { if (!hwTheme) return; try { hwTheme[0].postMessage({ to: 'wsh', type: 'theme', theme: msTheme.chosen() }, hwTheme[1]); } catch (x) { hwTheme = null; } }
-  window.addEventListener('ms-theme', tellHwTheme);
-  function sendHwOpen() {
-    if (!hwSigned || !hwTheme) return;
-    if (hwPending) { try { hwTheme[0].postMessage({ to: 'wsh', type: 'open', id: hwPending }, hwTheme[1]); hwPending = ''; } catch (x) {} }
-    if (hwArcade) { try { hwTheme[0].postMessage({ to: 'wsh', type: 'arcade', key: hwArcade }, hwTheme[1]); hwArcade = ''; } catch (x) {} }
-  }
-  window.addEventListener('message', function (e) {
-    var m = e.data;
-    if (!m || m.from !== 'wsh' || !hwFrame || !me) return;
-    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
-    if (!inHw(e.source)) return;
-    if (m.type === 'ready') { try { e.source.postMessage({ to: 'wsh', type: 'signin', st: me.st }, e.origin); hwTheme = [e.source, e.origin]; tellHwTheme(); } catch (x) {} }
-    else if (m.type === 'in') { hwSigned = true; $('hw-wait').classList.add('hidden'); setTimeout(sendHwOpen, 300); }
-    else if (m.type === 'signedout') { call('apiStMe', me.st).then(function (r) { if (!r.ok) signedOutNow(); else { $('hw-wait').textContent = m.error || 'Homework could not open. Try again in a moment.'; } }); }
-    else if (m.type === 'points') refreshOverview();
-    else if (m.type === 'arcade') { arcadeAt = 0; loadArcade(); }
-    else if (m.type === 'wallet' && typeof m.points === 'number' && hub()) { hub().points = m.points; hub().tokens = Number(m.tokens) || 0; drawWallet(); if (panel === 'me') drawMe(); }
-  });
-  function openSheet(h) { hwPending = h.id; hwShow(h.title, 'Put it back in my file'); }
-  function openArcade(key) { if (home && home.now && key) { toast('The arcade opens after the lesson'); return; } hwArcade = key; hwShow(key ? 'Arcade' : 'Homework', 'Back'); }
+  // for testing only
+  window.__shell = { state: function () { return { panel: panel, layers: layers.map(function (L) { return { kind: L.kind, mode: L.mode, id: L.it && L.it.id, panel: L.panel, ready: L.ready }; }), ladder: D ? ladder().k : 0, V: V, polling: !!pollT, rw: !!rwToken, hw: !!hw.frame, local: local }; },
+    refresh: refresh, deckOpen: deckOpen };
 
-  /* ---------- start ---------- */
+  /* ---------- start: paint first from this student's own snapshot, then ask the server ---------- */
   me = load('lb_me');
-  if (me && me.st) {
-    call('apiStMe', me.st).then(function (r) { if (r && r.ok) { me.cls = r.cls; me.name = r.name; store('lb_me', me); openApp(); } else signedOutNow(); })
-      .catch(function () { openApp(); });
-  } else startPortal();
+  if (me && me.st) openApp(); else startPortal();
 })();
 </script>
 <script>
@@ -1191,9 +1803,22 @@
     if (!still) spin = 0.35 + (now - t0) / 1000 * 0.004;            // the sky turns once in about 26 minutes
     lastDraw = now; draw(now);
   }
+  // Release 34: the sky is built only when the portal is on screen, and only after the sign-in card has painted, so a
+  // signed-in student never pays for it and the card is ready to type in at once. Until then the plain video shows.
+  var building = 0;
   function start() {
     if (failed) return;
-    try { if (!ready) { init(); layout(); portal.insertBefore(cv, portal.firstChild); document.body.classList.add('po-lensed'); } } catch (e) { fallback(); return; }
+    if (!ready) {
+      if (building) return;
+      var build = function () {
+        building = 0;
+        if (failed || ready || portal.classList.contains('hidden') || document.hidden) return;
+        try { init(); layout(); portal.insertBefore(cv, portal.firstChild); document.body.classList.add('po-lensed'); } catch (e) { fallback(); return; }
+        start();
+      };
+      building = window.requestIdleCallback ? requestIdleCallback(build, { timeout: 1200 }) : setTimeout(build, 400);
+      return;
+    }
     if (running) return;
     running = true; t0 = performance.now(); raf = requestAnimationFrame(loop);
   }
