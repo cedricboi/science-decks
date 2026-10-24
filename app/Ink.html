@@ -407,6 +407,56 @@ window.Ink = (function () {
     });
   }
 
+
+  /* Palm guard, shared by the student page and the Teacher Hub.
+     Safari labels every contact as 'pen' (Apple Pencil) or 'touch' (finger or palm). Once this iPad has
+     seen a Pencil (remembered on the device, and noticed even while the Pencil hovers), a touch is read as a
+     resting palm when it lands while the Pencil is down, just after it lifts, or with a contact patch far
+     bigger than a fingertip. The pages ignore those touches, and a Pencil that lands while a palm is already
+     down takes over from it. */
+  var Palm = (function () {
+    var KEY = 'ink_pencil_seen', seen = false, down = 0, upAt = 0, fns = [];
+    try { seen = localStorage.getItem(KEY) === '1'; } catch (e) { /* storage blocked: this visit only */ }
+    var AFTER_MS = 600, BIG_PX = 60;
+    function markSeen() {
+      if (seen) return;
+      seen = true;
+      try { localStorage.setItem(KEY, '1'); } catch (e) { /* this visit only */ }
+      fns.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } });
+    }
+    function isPen(e) { return e && e.pointerType === 'pen'; }
+    function penBusy() { return down > 0 || Date.now() - upAt < AFTER_MS; }
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('pointerdown', function (e) { if (isPen(e)) { markSeen(); down++; } }, true);
+      ['pointerup', 'pointercancel'].forEach(function (t) {
+        document.addEventListener(t, function (e) { if (isPen(e)) { down = Math.max(0, down - 1); upAt = Date.now(); } }, true);
+      });
+      // The Pencil hovering over the screen (newer iPads) also counts as seeing it.
+      document.addEventListener('pointermove', function (e) { if (isPen(e)) markSeen(); }, true);
+      // A resting palm must not scroll the pages while the Pencil works. Touch events carry the contact size.
+      document.addEventListener('touchstart', function (e) {
+        if (!seen) return;
+        var t = e.changedTouches && e.changedTouches[0];
+        if (!t || t.touchType === 'stylus') return;
+        if (penBusy() || Math.max(t.radiusX || 0, t.radiusY || 0) * 2 > BIG_PX) {
+          if (e.target && e.target.closest && e.target.closest('[data-palm-guard]') && e.cancelable) e.preventDefault();
+        }
+      }, { capture: true, passive: false });
+    }
+    // True for a touch that should be ignored as a palm.
+    function isPalm(e) {
+      if (!e || e.pointerType !== 'touch' || !seen) return false;
+      if (penBusy()) return true;
+      return Math.max(e.width || 0, e.height || 0) > BIG_PX;
+    }
+    return {
+      seen: function () { return seen; },
+      penDown: function () { return down > 0; },
+      isPalm: isPalm,
+      onSeen: function (f) { fns.push(f); }
+    };
+  })();
+
   return {
     paperLines: paperLines, drawPaper: drawPaper, notePdf: notePdf,
     BLANK_W: BLANK_W, BLANK_H: BLANK_H, HL_ALPHA: HL_ALPHA, SHAPES: SHAPES, TEXT_FONT: TEXT_FONT,
@@ -414,7 +464,8 @@ window.Ink = (function () {
     tracePath: tracePath, shapeLines: shapeLines, isShape: isShape, stampLines: stampLines, isGeom: isGeom, geomLines: geomLines,
     stampIcon: stampIcon, textLines: textLines, textFont: textFont, drawStroke: drawStroke, hexRgb: hexRgb, textPng: textPng,
     viewports: viewports, buildPdf: buildPdf, label: label, draftPages: draftPages,
-    nameBoxes: nameBoxes, nameBoxesOf: nameBoxesOf, withoutNames: withoutNames, coverNames: coverNames
+    nameBoxes: nameBoxes, nameBoxesOf: nameBoxesOf, withoutNames: withoutNames, coverNames: coverNames,
+    Palm: Palm
   };
 })();
 </script>

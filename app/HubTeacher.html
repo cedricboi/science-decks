@@ -4507,7 +4507,7 @@
       '<button class="tb" id="rv-finger" aria-pressed="' + R.finger + '" title="Draw with your finger. Off: a finger scrolls and only the Apple Pencil draws.">' + RICON.hand + 'Finger draws</button>' +
       '<button class="tb" id="rv-claude" aria-pressed="' + R.showClaude + '" title="Show or hide Claude\'s ticks and crosses">' + RICON.eye + 'Claude\'s marks</button>' +
       '</div>';
-    h += '<div class="rv-body"><div class="rv-pages" id="rv-pages"></div><aside class="rv-side" id="rv-side"></aside></div>';
+    h += '<div class="rv-body"><div class="rv-pages" id="rv-pages" data-palm-guard></div><aside class="rv-side" id="rv-side"></aside></div>';
     $('review').innerHTML = h;
     if (R.solution) $('review').querySelector('.rv-nav').classList.add('hidden');
     R.pages.forEach(function (pg, i) {
@@ -4714,7 +4714,13 @@
     c.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'pen') { R.penSeen = true; }
       var touch = e.pointerType === 'touch';
-      // A finger scrolls unless Finger draws is on. A tap still places a tick, a cross or text, or erases.
+      // Palm guard (Ink.Palm): a palm resting while the Apple Pencil marks is ignored completely.
+      if (touch && Ink.Palm.isPalm(e)) { e.preventDefault(); return; }
+      // A Pencil landing while a palm is down takes over from it.
+      if (e.pointerType === 'pen' && active && active.touch) { try { c.releasePointerCapture(active.id); } catch (err) { /* ignore */ } active = null; }
+      // A finger scrolls unless Finger draws is on. Without a Pencil, a tap still places a tick, a cross or text,
+      // or erases. Once this iPad has used a Pencil, only the Pencil marks, so a resting palm cannot drop a tick.
+      if (touch && !R.finger && (Ink.Palm.seen() || R.penSeen) && R.tool !== 'move') return;
       if (touch && !R.finger) {
         if (R.tool === 'move') {
           // In Move a finger picks up a mark; anywhere else it scrolls the pages.
@@ -4723,18 +4729,18 @@
             var box = $('rv-pages');
             e.preventDefault();
             try { c.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-            active = { pan: true, id: e.pointerId, x: e.clientX, y: e.clientY, sl: box.scrollLeft, st: box.scrollTop };
+            active = { pan: true, touch: true, id: e.pointerId, x: e.clientX, y: e.clientY, sl: box.scrollLeft, st: box.scrollTop };
             return;
           }
         } else {
-          if (R.tool !== 'pen') active = { tap: true, id: e.pointerId, start: pagePoint(pg, e) };
+          if (R.tool !== 'pen') active = { tap: true, touch: true, id: e.pointerId, start: pagePoint(pg, e) };
           return;
         }
       }
       e.preventDefault();
       try { c.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       var pt = pagePoint(pg, e);
-      active = { id: e.pointerId, start: pt };
+      active = { id: e.pointerId, start: pt, touch: touch };
       startAction(i + 1, pt);
     });
     c.addEventListener('pointermove', function (e) {
