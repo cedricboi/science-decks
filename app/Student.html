@@ -67,12 +67,13 @@
   #v-portal { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; gap: 40px; padding: 40px 56px; position: relative; isolation: isolate; color: #EEF2FF; background: #040714;
     --ink: #EEF2FF; --ink-2: #C9D2F0; --muted: #9EA9CF; --line: rgba(160,185,255,.22); --card: rgba(255,255,255,.07); --soft: rgba(255,255,255,.05);
     --blue-soft: rgba(80,140,255,.18); --blue-ink: #9CC2FF; --bad-soft: rgba(255,110,110,.16); --bad: #FF9A9A; --canvas: #070B1F; --sky: #5CC8FF; }
-  #po-sky { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; }
-  .po-veil { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(120% 90% at 85% 50%, rgba(4,7,20,.0) 30%, rgba(4,7,20,.55) 100%), linear-gradient(90deg, rgba(4,7,20,.55) 0%, rgba(4,7,20,.05) 45%, rgba(4,7,20,.25) 100%); }
+  #po-video { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: block; object-fit: cover; object-position: 100% 50%; background: #000; pointer-events: none; }
+  .po-credit { position: fixed; left: 16px; bottom: 10px; margin: 0; font-size: 11px; color: rgba(200,210,240,.55); z-index: 1; pointer-events: none; }
+  .po-veil { position: fixed; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(0deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,0) 45%), linear-gradient(90deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 40%); }
   .po-art { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; }
   .po-brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-size: 22px; color: #fff; }
   .po-brand .mark { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--sky); background: rgba(92,200,255,.12); box-shadow: inset 0 0 0 1px rgba(92,200,255,.35); }
-  .po-hero-text { margin-bottom: 6vh; text-shadow: 0 2px 24px rgba(0,0,0,.6); }
+  .po-hero-text { margin-bottom: 6vh; text-shadow: 0 2px 4px rgba(0,0,0,.55), 0 4px 30px rgba(0,0,0,.85); }
   .po-art h1 { font-size: clamp(44px, 6.4vw, 92px); line-height: .98; font-weight: 800; letter-spacing: -.02em; color: #fff; }
   .po-art h1 span { color: var(--sky); }
   .po-tag { font-family: var(--display); font-size: clamp(22px, 2.6vw, 36px); font-weight: 500; color: #E4EAFF; margin: 10px 0 18px; }
@@ -242,7 +243,9 @@
   .modal .box { background: var(--card); border-radius: 24px; padding: 24px; width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
 
   @media (max-width: 900px) {
-    #v-portal { flex-direction: column; align-items: stretch; padding: 22px 16px 28px; gap: 18px; }
+    #v-portal { flex-direction: column; align-items: stretch; padding: 22px 16px 34px; gap: 18px; }
+    #po-video { height: 52vh; object-position: 50% 50%; }
+    .po-veil { background: linear-gradient(180deg, rgba(0,0,0,0) 28vh, rgba(0,0,0,1) 52vh); }
     .po-art { gap: 14px; align-self: auto; }
     .po-hero-text { margin: 0; }
     .po-art .sub { display: none; }
@@ -275,7 +278,7 @@
 
 <!-- ============ PORTAL ============ -->
 <div id="v-portal" class="hidden">
-  <canvas id="po-sky" aria-hidden="true"></canvas>
+  <video id="po-video" autoplay muted loop playsinline preload="auto" disablepictureinpicture aria-hidden="true" poster="https://cedricboi.github.io/science-decks/media/portal-blackhole.jpg"><source src="https://cedricboi.github.io/science-decks/media/portal-blackhole.mp4" type="video/mp4"></video>
   <div class="po-veil" aria-hidden="true"></div>
   <aside class="po-art">
     <div class="po-brand"><span class="mark" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6"><ellipse cx="24" cy="24" rx="20" ry="7.5"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.6" fill="currentColor" stroke="none"/></svg></span><span>learnwithmrcedric</span></div>
@@ -285,6 +288,7 @@
       <p class="sub">Lessons, worksheets and your file, all in one place.<br>Assumption English School &middot; Lower Secondary Science</p>
     </div>
   </aside>
+  <p class="po-credit">Black hole simulation: NASA&rsquo;s Goddard Space Flight Center / Jeremy Schnittman</p>
   <main class="po-main">
     <div class="po-cardtop">
       <span class="po-orb" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4"><ellipse cx="24" cy="24" rx="20" ry="7.5"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="20" ry="7.5" transform="rotate(120 24 24)"/><circle cx="24" cy="24" r="3.6" fill="currentColor" stroke="none"/></svg></span>
@@ -951,183 +955,21 @@
 })();
 </script>
 <script>
-/* The portal's night sky: drifting stars, a black hole with a lensed accretion disk, a small planet on a
-   wide orbit, faint physics equations and the odd shooting star. Drawn live on a canvas (no video to
-   download), only while the portal shows, at up to 30 frames a second; a still frame for reduced motion. */
+/* The portal's background: NASA's black hole simulation as a looping video. It plays only while the portal
+   shows; with reduced motion switched on, or in Low Power Mode, the still poster frame shows instead. */
 (function () {
-  var cv = document.getElementById('po-sky'), portal = document.getElementById('v-portal');
-  if (!cv || !cv.getContext) return;
-  var ctx = cv.getContext('2d');
+  var v = document.getElementById('po-video'), portal = document.getElementById('v-portal');
+  if (!v) return;
   var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var W = 0, H = 0, DPR = 1, bg = null, stars = [], disk = [], eqs = [], shoot = null, nextShoot = 4, BH = { x: 0, y: 0, r: 0 };
-  var EQ = ['E = mc²', 'F = ma', 'a = (v − u) / t', 'W = mg', 'ρ = m / V', 'V = IR', 'P = F / A', 'v = fλ', 'n = sin i / sin r', 'KE = ½mv²'];
-  function rnd(a, b) { return a + Math.random() * (b - a); }
-
-  function layout() {
-    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
-    W = window.innerWidth; H = window.innerHeight;
-    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-    var narrow = W < 900;
-    BH.x = narrow ? W * 0.70 : W * 0.40; BH.y = narrow ? H * 0.17 : H * 0.40;
-    BH.r = Math.max(26, Math.min(W, H) * (narrow ? 0.065 : 0.075));
-    // The still layers: deep space and two nebulae, drawn once per size.
-    bg = document.createElement('canvas'); bg.width = cv.width; bg.height = cv.height;
-    var g = bg.getContext('2d'); g.scale(DPR, DPR);
-    var sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#02040d'); sky.addColorStop(.55, '#060b22'); sky.addColorStop(1, '#0b1233');
-    g.fillStyle = sky; g.fillRect(0, 0, W, H);
-    [[W * .18, H * .78, Math.max(W, H) * .55, 'rgba(70,60,160,.22)'], [W * .82, H * .2, Math.max(W, H) * .45, 'rgba(30,110,170,.18)'], [BH.x, BH.y, BH.r * 9, 'rgba(255,150,60,.10)']].forEach(function (n) {
-      var r = g.createRadialGradient(n[0], n[1], 0, n[0], n[1], n[2]); r.addColorStop(0, n[3]); r.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = r; g.fillRect(0, 0, W, H);
-    });
-    stars = [];
-    var count = Math.round(Math.min(420, W * H / 4200));
-    for (var i = 0; i < count; i++) {
-      var layer = i % 3;
-      stars.push({ x: rnd(0, W), y: rnd(0, H), s: [0.6, 1.0, 1.6][layer] * rnd(.7, 1.2), v: [2, 5, 10][layer], tw: rnd(0, 6.28), ts: rnd(.6, 2.2),
-        c: Math.random() < .15 ? '255,214,170' : Math.random() < .3 ? '170,205,255' : '235,240,255' });
-    }
-    disk = [];
-    for (var k = 0; k < 420; k++) {
-      var t = Math.pow(Math.random(), 1.7), r = BH.r * (1.75 + t * 3.9);
-      disk.push({ r: r, a: rnd(0, 6.28), w: 1.15 * Math.pow(BH.r * 1.75 / r, 1.5), s: rnd(.7, 1.6), heat: 1 - t });
-    }
-    eqs = [];
-    for (var e = 0; e < (narrow ? 5 : 8); e++) eqs.push(newEq(true));
-    buildLayers();
-  }
-  function newEq(anywhere) {
-    return { t: EQ[Math.floor(Math.random() * EQ.length)], x: rnd(W * .03, W * .9), y: anywhere ? rnd(0, H) : H + 40, v: rnd(5, 11),
-      size: rnd(20, 34), a: rnd(.10, .2), rot: rnd(-.12, .06) };
-  }
-
-  // One glowing band of the disk (or of its lensed image): a wide soft stroke under a thin bright one.
-  // The left side moves towards us, so it is brighter (Doppler beaming).
-  function band(ctx, rx, ry, a0, a1, rgb, al, w) {
-    var g = ctx.createLinearGradient(BH.x - rx, 0, BH.x + rx, 0);
-    g.addColorStop(0, 'rgba(' + rgb + ',' + Math.min(1, al * 1.5).toFixed(3) + ')');
-    g.addColorStop(.5, 'rgba(' + rgb + ',' + al.toFixed(3) + ')');
-    g.addColorStop(1, 'rgba(' + rgb + ',' + (al * .35).toFixed(3) + ')');
-    ctx.strokeStyle = g;
-    ctx.lineWidth = w * 3.2; ctx.globalAlpha = .22; ctx.beginPath(); ctx.ellipse(BH.x, BH.y, rx, ry, 0, a0, a1); ctx.stroke();
-    ctx.lineWidth = w; ctx.globalAlpha = 1; ctx.beginPath(); ctx.ellipse(BH.x, BH.y, rx, ry, 0, a0, a1); ctx.stroke();
-  }
-  function heatRgb(h) { return '255,' + Math.round(110 + 130 * h) + ',' + Math.round(35 + 175 * h * h); }
-  var RINGS = 18, layers = {};
-  // The glowing bands never change, so they are drawn once per screen size and reused every frame.
-  function makeLayer(draw) {
-    var c = document.createElement('canvas'); c.width = cv.width; c.height = cv.height;
-    var x = c.getContext('2d'); x.scale(DPR, DPR); x.globalCompositeOperation = 'lighter'; x.lineCap = 'butt'; draw(x); return c;
-  }
-  function diskBands(x, front) {
-    var a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : Math.PI * 2;
-    for (var k = 0; k < RINGS; k++) {
-      var f = k / (RINGS - 1), r = BH.r * (1.7 + f * 3.6), h = 1 - f;
-      band(x, r, r * 0.17, a0, a1, heatRgb(h), (0.07 + 0.38 * Math.pow(h, 1.4)) * (front ? 1 : .8), Math.max(1, BH.r * (0.07 + 0.05 * h)));
-    }
-  }
-  // The far side of the disk, bent by gravity into a halo over the top of the hole and, fainter, under it.
-  function lensBands(x) {
-    x.lineCap = 'round';
-    for (var k = 0; k < 9; k++) {
-      var f = k / 8, rx = BH.r * (1.1 + f * 0.75), h = 1 - f, w = Math.max(1, BH.r * (0.06 + 0.05 * h));
-      band(x, rx, rx * 0.96, Math.PI, Math.PI * 2, heatRgb(h), 0.05 + 0.32 * Math.pow(h, 1.3), w);
-      band(x, rx * 0.97, rx * 0.86, 0, Math.PI, heatRgb(h), 0.03 + 0.16 * Math.pow(h, 1.5), w * .7);
-    }
-  }
-  function buildLayers() {
-    layers.back = makeLayer(function (x) { diskBands(x, false); });
-    layers.lens = makeLayer(lensBands);
-    layers.front = makeLayer(function (x) { diskBands(x, true); });
-  }
-  function sparks(front) {
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    for (var i = 0; i < disk.length; i++) {
-      var p = disk[i];
-      if ((Math.sin(p.a) > 0) !== front) continue;
-      var q = diskPoint(p), dop = 1 + 0.6 * Math.cos(p.a + Math.PI);
-      ctx.fillStyle = 'rgba(' + heatRgb(p.heat) + ',' + Math.min(.9, (.12 + .45 * p.heat) * dop).toFixed(3) + ')';
-      ctx.fillRect(q[0] - p.s * 1.6, q[1] - p.s * .3, p.s * 3.2, p.s * .6);
-    }
-    ctx.restore();
-  }
-  function diskPoint(p) { return [BH.x + p.r * Math.cos(p.a), BH.y + p.r * Math.sin(p.a) * 0.17]; }
-  function layer(c, al) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = al; ctx.drawImage(c, 0, 0); ctx.restore(); }
-
-  function frame(t, dt) {
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.drawImage(bg, 0, 0, W, H);
-    // stars
-    for (var i = 0; i < stars.length; i++) {
-      var s = stars[i];
-      s.x -= s.v * dt; if (s.x < -2) { s.x = W + 2; s.y = rnd(0, H); }
-      var tw = 0.55 + 0.45 * Math.sin(t * s.ts + s.tw);
-      ctx.fillStyle = 'rgba(' + s.c + ',' + (tw * (s.s > 1.2 ? .95 : .7)).toFixed(3) + ')';
-      ctx.fillRect(s.x, s.y, s.s, s.s);
-    }
-    // equations drifting up, faint like chalk
-    ctx.save(); ctx.font = 'italic 28px Georgia, "Times New Roman", serif'; ctx.textBaseline = 'middle';
-    for (var e = 0; e < eqs.length; e++) {
-      var q = eqs[e]; q.y -= q.v * dt;
-      if (q.y < -40) { eqs[e] = newEq(false); continue; }
-      ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.rot); ctx.font = 'italic ' + q.size.toFixed(0) + 'px Georgia, "Times New Roman", serif';
-      var fade = Math.min(1, q.y / (H * .25), (H + 40 - q.y) / (H * .2));
-      ctx.fillStyle = 'rgba(205,220,255,' + (q.a * Math.max(0, fade)).toFixed(3) + ')'; ctx.fillText(q.t, 0, 0); ctx.restore();
-    }
-    ctx.restore();
-    // planet on a wide orbit: behind the hole on the far half, in front on the near half
-    var pa = t * 0.12, pr = BH.r * 8.5, px = BH.x + pr * Math.cos(pa), py = BH.y + pr * Math.sin(pa) * 0.22, behind = Math.sin(pa) < 0;
-    function planet() {
-      var rr = BH.r * 0.32, g = ctx.createRadialGradient(px - rr * .4, py - rr * .4, rr * .1, px, py, rr);
-      g.addColorStop(0, '#bfe6ff'); g.addColorStop(.6, '#3d78b8'); g.addColorStop(1, '#0d1f3d');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, rr, 0, 6.2832); ctx.fill();
-    }
-    if (behind) planet();
-    // glow, far half of the disk, lensed light, the shadow, the photon ring, near half of the disk
-    var glow = ctx.createRadialGradient(BH.x, BH.y, BH.r * .9, BH.x, BH.y, BH.r * 4.2);
-    glow.addColorStop(0, 'rgba(255,170,90,.35)'); glow.addColorStop(.4, 'rgba(255,120,50,.10)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glow; ctx.fillRect(BH.x - BH.r * 5, BH.y - BH.r * 5, BH.r * 10, BH.r * 10);
-    for (var d = 0; d < disk.length; d++) disk[d].a += disk[d].w * dt;
-    layer(layers.back, 1); sparks(false);
-    layer(layers.lens, 0.92 + 0.08 * Math.sin(t * 1.3));
-    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(BH.x, BH.y, BH.r, 0, 6.2832); ctx.fill();
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = 'rgba(255,225,180,.85)'; ctx.lineWidth = Math.max(1.2, BH.r * .045);
-    ctx.beginPath(); ctx.arc(BH.x, BH.y, BH.r * 1.04, 0, 6.2832); ctx.stroke(); ctx.restore();
-    layer(layers.front, 1); sparks(true);
-    if (!behind) planet();
-    // a shooting star now and then
-    nextShoot -= dt;
-    if (!shoot && nextShoot <= 0) { shoot = { x: rnd(W * .2, W), y: rnd(0, H * .4), vx: -rnd(380, 560), vy: rnd(120, 220), life: 1 }; nextShoot = rnd(6, 11); }
-    if (shoot) {
-      shoot.x += shoot.vx * dt; shoot.y += shoot.vy * dt; shoot.life -= dt * 1.1;
-      var tail = ctx.createLinearGradient(shoot.x, shoot.y, shoot.x - shoot.vx * .18, shoot.y - shoot.vy * .18);
-      tail.addColorStop(0, 'rgba(255,255,255,' + Math.max(0, shoot.life).toFixed(2) + ')'); tail.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.strokeStyle = tail; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y); ctx.lineTo(shoot.x - shoot.vx * .18, shoot.y - shoot.vy * .18); ctx.stroke();
-      if (shoot.life <= 0) shoot = null;
-    }
-  }
-
-  var running = false, lastT = 0, acc = 0, raf = 0, clock = 0;
-  function loop(now) {
-    if (!running) return;
-    raf = requestAnimationFrame(loop);
-    var dt = lastT ? (now - lastT) / 1000 : 0; lastT = now;
-    if (dt > 0.25) dt = 0.25;
-    acc += dt; if (acc < 1 / 30) return;                         // 30 frames a second is plenty, and kinder to the battery
-    clock += acc; frame(clock, acc); acc = 0;
-  }
-  function visible() { return !portal.classList.contains('hidden') && !document.hidden; }
   function sync() {
-    var on = visible();
-    if (on && !W) layout();
-    if (still) { if (on) frame(20, 0); return; }
-    if (on && !running) { running = true; lastT = 0; raf = requestAnimationFrame(loop); }
-    else if (!on && running) { running = false; cancelAnimationFrame(raf); }
+    var on = !portal.classList.contains('hidden') && !document.hidden && !still;
+    if (on) { var p = v.play(); if (p && p.catch) p.catch(function () { /* autoplay refused: the poster stays */ }); }
+    else v.pause();
   }
-  window.addEventListener('resize', function () { if (!visible()) { W = 0; return; } layout(); if (still) frame(20, 0); });
+  if (still) v.removeAttribute('autoplay');
   document.addEventListener('visibilitychange', sync);
   if (window.MutationObserver) new MutationObserver(sync).observe(portal, { attributes: true, attributeFilter: ['class'] });
   sync();
-  window.__poSky = { frame: frame, layout: layout, state: function () { return { running: running, W: W, H: H }; } };   // for testing
 })();
 </script>
 </body>
