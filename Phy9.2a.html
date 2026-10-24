@@ -8176,6 +8176,8 @@ try{
       if (left > 0) { tx.textContent = 'Ending the lesson for ' + cls + ' in ' + left + ' s.'; return; }
       clearInterval(endTimer); endTimer = null;
       if (endBar) { endBar.remove(); endBar = null; }
+      // One more call after the Undo time, so Live Board finishes the End now (even if the laptop is closed next).
+      try { api({ api: 'tdo', pin: presPin, topicId: cfg.topicId, cls: cls, op: 'state', args: {}, cmdId: cmdId() }).then(null, function () {}); } catch (e) {}
       lessonEnded();
     }, 250);
   }

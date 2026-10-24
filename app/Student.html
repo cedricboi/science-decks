@@ -771,7 +771,7 @@
     setTimeout(hwReset, 700);    // the engine gets the sign-out message first
   }
   function askSignOut() {
-    dialog('Sign out?', 'You will need your password to sign in again.', [
+    dialog('Sign out?', 'You will be signed out on every device. You will need your password to sign in again.', [
       { text: 'Stay signed in', ghost: true },
       { text: 'Sign out', fn: function () { var st = me && me.st; if (st) call('s_signout', st).catch(function () {}); clearLocal(me); startPortal(); } }
     ]);
@@ -1556,7 +1556,7 @@
           } });
         var x = document.getElementById('rw-close');
         if (x) { x.setAttribute('aria-label', 'Back to Me'); if (x.lastChild && x.lastChild.nodeType === 3) x.lastChild.textContent = 'Back'; }
-      }).catch(function (e) { toast(/FUN_CLOSED/.test(e.message) ? 'It opens after the lesson.' : e.message); });
+      }).catch(function (e) { toast(/FUN_CLOSED/.test(e.message) ? 'It opens after the lesson.' : String(e.message || '').replace(/^(Exception|Error):\s*/, '').replace(/^[A-Z_]+:\s*/, '')); });
     };
     if (window.Rewards) { go(); return; }
     toast('Opening…');

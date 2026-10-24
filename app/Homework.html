@@ -955,7 +955,7 @@
 
   function cleanMsg(err) {
     var m = (err && err.message) || 'Something went wrong.';
-    return m.replace(/^Exception:\s*/, '').replace(/^Error:\s*/, '').replace(/^FUN_CLOSED:\s*/, '');
+    return m.replace(/^Exception:\s*/, '').replace(/^Error:\s*/, '').replace(/^(FUN_CLOSED|PAUSED):\s*/, '');
   }
 
   /* ---------------- Local storage (optional) ---------------- */

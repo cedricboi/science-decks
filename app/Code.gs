@@ -1149,7 +1149,7 @@ function receiveDeckBatch_(d) {
   var all = Array.isArray(lb.allQuestions) ? lb.allQuestions : null;
   // Release 34: two different deck files may not share one topic id (their questions and slide numbers would mix).
   if (lb.deckUrl && /^https:\/\//.test(lb.deckUrl)) {
-    var kd = findDeck_(deckId), bare = function (u) { return String(u || '').split('#')[0].split('?')[0]; };
+    var kd = findDeck_(deckId), bare = function (u) { return String(u || '').split('#')[0].split('?')[0].replace(/\.html?$/i, '').replace(/\/+$/, '').toLowerCase(); };
     if (kd && kd.link && /^https:\/\//.test(kd.link) && bare(kd.link) !== bare(lb.deckUrl) && String(lb.deckUrl).indexOf(lessonSite_()) === 0 && String(kd.link).indexOf(lessonSite_()) === 0) {
       cachePut_('tid_clash', JSON.stringify({ id: deckId, a: bare(kd.link), b: bare(lb.deckUrl), at: Date.now() }), 21600);
       return { ok: false, error: 'Two decks share one topic id.', clash: true, acceptedIds: [] };
@@ -1180,16 +1180,23 @@ function receiveDeckBatch_(d) {
   var evKey = function (ev) { return 'ev_' + String(d.recordId || '').slice(0, 50) + '_' + String(ev.id || '').slice(0, 60); };
   var checkRes = null, award = null;
   var visits = who.matched && counts && Array.isArray(d.visits) && d.visits.length;
-  var fresh = [];
+  var fresh = [], saving = {};
   if (answers.length) {
     // A deck that gave up waiting sends the same answers again: skip the ones already saved, and claim the
     // rest straight away, so a resend that arrives while this one is still saving does not save them twice.
+    // A claim is 'p' while it is being saved and 's' once saved. An answer another request is still saving is neither
+    // saved again nor acknowledged here, so the deck keeps it and sends it again until it is saved.
     var withId = answers.filter(function (ev) { return ev.id; });
     var done = withId.length ? cache.getAll(withId.map(evKey)) : {};
-    fresh = answers.filter(function (ev) { return !ev.id || !done[evKey(ev)]; });
+    fresh = answers.filter(function (ev) {
+      if (!ev.id) return true;
+      var v = done[evKey(ev)];
+      if (v === 'p') { saving[ev.id] = 1; return false; }
+      return !v;
+    });
     var claim = {};
-    fresh.forEach(function (ev) { if (ev.id) claim[evKey(ev)] = '1'; });
-    try { if (Object.keys(claim).length) cache.putAll(claim, 21600); } catch (err) { /* only used to skip resent answers */ }
+    fresh.forEach(function (ev) { if (ev.id) claim[evKey(ev)] = 'p'; });
+    try { if (Object.keys(claim).length) cache.putAll(claim, 400); } catch (err) { /* only used to skip resent answers */ }
     var touched = {};
     try {
       var known = {};
@@ -1237,6 +1244,9 @@ function receiveDeckBatch_(d) {
         touched[id] = true;
       });
       appendPosts_(rows);
+      var saved = {};
+      Object.keys(claim).forEach(function (k) { saved[k] = 's'; });
+      try { if (Object.keys(saved).length) cache.putAll(saved, 21600); } catch (err) { /* only used to skip resent answers */ }
       if (fresh.length) {
         var sc = scoreChapterCheck_(deckId, who, fresh);
         if (sc) { checkRes = sc.result; award = sc.award; }
@@ -1256,7 +1266,7 @@ function receiveDeckBatch_(d) {
     }
   }
   if (award) checkRes = finishAward_(award, checkRes);
-  var acked = ackEvents_(d, lessonCtl, who.cls);
+  var acked = ackEvents_(d, lessonCtl, who.cls, saving);
   return {
     ok: true, course: d.course, topicId: d.topicId, recordId: d.recordId,
     acceptedIds: acked.accepted, heldIds: acked.held,
@@ -1266,12 +1276,17 @@ function receiveDeckBatch_(d) {
 }
 /* Which events the deck may forget (saved, saved before, or not kept on purpose: revision, views) and which it must
    keep and send again (work done in the minutes before the lesson starts, release 34). */
-function ackEvents_(d, lessonCtl, cls) {
+function ackEvents_(d, lessonCtl, cls, saving) {
   var soon = false;
-  if (!lessonCtl.lesson) { try { var nx = nextSlotStart_(cls, Date.now()); soon = !!nx && nx - Date.now() < 20 * 60000; } catch (err) { soon = false; } }
+  if (!lessonCtl.lesson) {
+    try { var nx = nextSlotStart_(cls, Date.now()); soon = !!nx && nx - Date.now() < 20 * 60000; } catch (err) { soon = false; }
+    // In the class's timetabled lesson before the teacher presses Teach (a late start): kept too.
+    if (!soon) { try { soon = !!slotAt_(cls, Date.now()); } catch (err) { /* not on the timetable */ } }
+  }
   var accepted = [], held = [];
+  saving = saving || {};
   d.events.forEach(function (ev) {
-    if (!ev || !ev.id) return;
+    if (!ev || !ev.id || saving[ev.id]) return;
     var isAnswer = ev.action === 'submit' && ev.valid !== false && String(ev.answer == null ? '' : ev.answer).trim();
     if (isAnswer && soon && !inLessonWindow_(lessonCtl, Date.parse(ev.at))) held.push(ev.id); else accepted.push(ev.id);
   });
@@ -2314,6 +2329,8 @@ function shortTitle_(t) { t = String(t || ''); return t.length > 48 ? t.slice(0,
 /* Adds one line to the Worksheet Hub's Rewards log. who: { cls, reg, name }. */
 var HUB_LOG_SH_ = null;   // the Hub's Rewards log, opened once per run
 function hubLog_(who, item, points, note, what) {
+  // While the move to one sheet runs (a minute at a quiet time), points wait: the caller says "not given yet".
+  if (frozen_()) return { ok: false, note: 'Not given yet: saving is paused for a minute while the sheet is updated. Try again in a minute.' };
   var sh = HUB_LOG_SH_;
   if (!sh) {
     var id = getSetting_('Class list sheet ID');
@@ -2607,7 +2624,7 @@ function sqFinish_(g) {
       });
       if (fresh.length) {
         var sh = sheet_(TAB.checks), at = sh.getLastRow() + 1;
-        sh.getRange(at, 1, fresh.length, CHECK_COLS.length).setValues(fresh.map(checkToRow_));
+        writeBelow_(sh, fresh.map(checkToRow_), CHECK_COLS.length);
         fresh.forEach(function (c, i) { c.row = at + i; });
         CacheService.getScriptCache().remove('checks_' + normClass_(g.cls));
       }
@@ -2649,9 +2666,9 @@ function sqHubMany_(lines) {
   }
   var now = new Date();
   try {
-    sh.getRange(sh.getLastRow() + 1, 1, lines.length, HUB_LOG_COLS.length).setValues(lines.map(function (l) {
+    writeBelow_(sh, lines.map(function (l) {
       return [now, l.who.cls, l.who.reg, l.who.name, 'Lesson', l.item, l.points, 0, '', '', l.note];
-    }));
+    }), HUB_LOG_COLS.length);
   } catch (err) { return { ok: false, note: 'Not given yet: ' + err.message }; }
   var seen = {};
   lines.forEach(function (l) { var k = 'hub_' + normClass_(l.who.cls); if (!seen[k]) { seen[k] = 1; CacheService.getScriptCache().remove(k); } });
@@ -2941,15 +2958,39 @@ function updateProgress_(deckId, who, d, answers, lb) {
   // first is still saving) cannot overwrite each other.
   var f0 = progRowFor_(sh, deckId, who);
   if (f0.at) {
-    // Release 34: the row is already there (made at Start for the whole class), so it is read again and written
-    // without the lock. Only this student's iPad writes this row, so answers do not queue behind each other.
-    var f1 = progRowFor_(sh, deckId, who);
-    if (f1.at) { mergeProgress_(sh, f1, deckId, who, deck, lb, visits, done, readNow, ordered, kind); return; }
+    // Release 34: the row is already there (made at Start for the whole class). It is read again and written under a
+    // claim for this one student, not the lock, so different students' answers never queue behind each other, and one
+    // student's two batches at once (the outbox and the slides) merge one after the other.
+    var mine = progClaim_(deckId, who);
+    try {
+      var f1 = progRowFor_(sh, deckId, who);
+      if (f1.at) { mergeProgress_(sh, f1, deckId, who, deck, lb, visits, done, readNow, ordered, kind); return; }
+    } finally { progRelease_(mine); }
   }
   withLock_(function () {
     var f = progRowFor_(sh, deckId, who, f0.at ? 0 : f0.scanned);
     mergeProgress_(sh, f, deckId, who, deck, lb, visits, done, readNow, ordered, kind);
   }, 10000);
+}
+/* A claim on one student's Progress row, for up to 6 seconds (then the merge goes ahead anyway). The claim is put, then
+   read back after a moment: of two batches that put it at once, only the last one reads its own claim back. */
+function progClaim_(deckId, who) {
+  var cache = CacheService.getScriptCache(), k = 'pgm_' + (deckId + '|' + normClass_(who.cls) + '|' + normName_(who.name)).slice(0, 200);
+  var me = Utilities.getUuid().slice(0, 12), end = Date.now() + 6000;
+  while (Date.now() < end) {
+    var v = cache.get(k);
+    if (!v) {
+      cache.put(k, me, 20);
+      Utilities.sleep(60);
+      if (cache.get(k) === me) return { k: k, me: me };
+    }
+    Utilities.sleep(150);
+  }
+  return null;
+}
+function progRelease_(c) {
+  if (!c) return;
+  try { var cache = CacheService.getScriptCache(); if (cache.get(c.k) === c.me) cache.remove(c.k); } catch (err) { /* runs out in 20 s */ }
 }
 /* At Start: a Progress row for every student in the class who has none for this lesson yet, in one write, so the
    answers in the lesson never wait for each other (release 34). */
@@ -2962,8 +3003,13 @@ function seatProgress_(deckId, cls) {
   if (!add.length) return 0;
   return withLock_(function () {
     progHeads_(sh);
+    // Read again inside the lock: a row added since (an answer sent at this moment) is not made twice.
+    var last2 = sh.getLastRow();
+    if (last2 > last) sh.getRange(last + 1, 1, last2 - last, 3).getValues().forEach(function (r) { if (String(r[0]) === deckId && normClass_(r[1]) === normClass_(cls)) have[normName_(r[2])] = 1; });
+    add = add.filter(function (s) { return !have[normName_(s.name)]; });
+    if (!add.length) return 0;
     var at = sh.getLastRow() + 1, cache = CacheService.getScriptCache(), hints = {};
-    sh.getRange(at, 1, add.length, PROG_COLS.length).setValues(add.map(function (s) { return [deckId, cls, s.name, 0, 0, 0, 0, '', '', '', '', '', '']; }));
+    writeBelow_(sh, add.map(function (s) { return [deckId, cls, s.name, 0, 0, 0, 0, '', '', '', '', '', '']; }), PROG_COLS.length);
     add.forEach(function (s, i) { hints['pg_' + (deckId + '|' + normClass_(cls) + '|' + normName_(s.name)).slice(0, 200)] = String(at + i); });
     try { cache.putAll(hints, 21600); } catch (err) { /* the rows are found by reading */ }
     return add.length;
@@ -3208,7 +3254,7 @@ function presenterLead_(d) {
 function projectorSafe_(st) {
   var q = st.quick;
   return { ok: true, lesson: st.lesson ? { mode: st.lesson.mode, inCount: st.lesson.inCount, of: st.lesson.of, slide: st.lesson.slide, endAt: st.lesson.endAt } : null,
-    ctl: st.ctl, undoUntil: st.undoUntil || 0,
+    ctl: st.ctl, undoUntil: st.undoUntil || 0, repeat: !!st.repeat,
     quick: q ? { id: q.id, type: q.type, open: q.open, round: q.round, options: q.options, correct: q.open ? null : q.correct, total: q.total, of: q.of } : null };
 }
 var LSET_DEFAULT = { readSecs: 15, stuckMins: 5, wrongTries: 3 };
@@ -3253,8 +3299,13 @@ function liveCheck_(d) {
   var cls = who ? who.cls : '';
   var got = got0;
   if (who) {
-    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name), sqKey_(deckId, cls)]);
+    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name), sqKey_(deckId, cls), endKey_(deckId, cls)]);
     Object.keys(more).forEach(function (k) { got[k] = more[k]; });
+    // An End whose Undo time has passed is finished here too (the laptop may have been closed straight after End).
+    var due = Number(got[endKey_(deckId, cls)] || 0);
+    if (due && Date.now() >= due) {
+      try { if (finishEnds_(deckId, cls, String(due))) { got[ctlKey_(deckId, cls)] = cache.get(ctlKey_(deckId, cls)); got[leadKey_(deckId, cls)] = cache.get(leadKey_(deckId, cls)); } } catch (err) { /* the next call finishes it */ }
+    }
   }
   var old = null, c0 = who ? getCtl_(deckId, cls, got[ctlKey_(deckId, cls)], got[leadKey_(deckId, cls)] || null) : null;
   if (who) { try { old = JSON.parse(got[pulseStudentKey_(deckId, cls, who.name)] || 'null'); } catch (err) { old = null; } }
@@ -3265,6 +3316,8 @@ function liveCheck_(d) {
     var raw = got['live_ask'];
     if (raw !== 'none') { try { var a0 = JSON.parse(raw); if (a0.until > Date.now()) ask = a0; } catch (err) { ask = null; } }
   } else ask = currentAsk_();
+  // An ask is for the classes that were running its deck when it was asked.
+  if (ask && cls && ask.classes && ask.classes.indexOf(String(cls).toUpperCase()) < 0) ask = null;
   var set = got['lset'] ? JSON.parse(got['lset']) : null;
   if (!set) { try { set = lessonSettings_(); } catch (err) { set = LSET_DEFAULT; } }
   var out = { ok: true, readSecs: set.readSecs, poll: 14,
@@ -3276,8 +3329,8 @@ function liveCheck_(d) {
     var alloc = null;
     try { alloc = got['alloc'] ? JSON.parse(got['alloc']) : allocAll_(); } catch (err) { alloc = {}; }
     out.who = { cls: cls, name: who.name };
-    out.bv = BRIDGE_LATEST;
     out.live = !!c.lesson;                                                       // answers count now
+    if (!out.live) out.bv = BRIDGE_LATEST;   // an older bridge reloads only between lessons, never in one
     out.open = out.live || (alloc[normClass_(cls)] || []).indexOf(deckId) >= 0;   // open for revision
     if (!out.live) out.ask = null;
     // Streak Challenge: the game on this deck for the class, while the lesson is on.
@@ -4014,13 +4067,14 @@ function apiStartLesson(pin, deckId, cls, from, to, title) {
   endOtherLessons_(deckId, cls);
   try { endOtherClasses_(cls); } catch (err) { /* they end by themselves */ }
   try { noteStart_(deckId, cls, Math.round(Number(from) || 0), Math.round(Number(to) || 0)); } catch (err) { /* only for the timetable */ }
+  // The class's Progress rows are made before the lesson goes live, so the first answers find them.
+  try { seatProgress_(deckId, cls); } catch (err) { /* rows are made as answers come */ }
   var c = apiSetControlNoPin_(deckId, cls, { from: from, to: to, follow: true, hold: true, hooks: true, vid: true, pause: false, fun: false, keep: false });
   c.lesson = { t: clean_(title, 80), at: Date.now(), end: lessonEndFor_(cls, Date.now()) };
   c.leadAt = Date.now();
   saveCtlRaw_(deckId, cls, c);
   try { autoAlloc_(deckId, cls); } catch (err) { /* opened for revision next time */ }
   try { noteTaught_(deckId, cls, Math.round(Number(from) || 0), Math.round(Number(to) || 0), title); } catch (err) { /* only for Teach next */ }
-  try { seatProgress_(deckId, cls); } catch (err) { /* rows are made as answers come */ }
   cachePut_('run_v', String(Date.now()), 21600);
   cachePut_('wtr_' + String(deckId).slice(0, 80) + '_' + normClass_(cls), '1', 21600);
   try { verBump_('today'); verBump_('cls_' + normClass_(cls)); } catch (err) { /* only stamps */ }
@@ -4037,7 +4091,7 @@ function ensureDeckKnown_(deckId) {
   withLock_(function () {
     if (findDeck_(deckId)) return;
     var sh = sheet_(TAB.decks), row = [deckId, info ? info.title : deckId, '', 0, new Date(), info && info.file ? site + info.file : '', '', ''];
-    sh.getRange(sh.getLastRow() + 1, 1, 1, DECK_COLS.length).setValues([row.slice(0, DECK_COLS.length)]);
+    writeBelow_(sh, [row.slice(0, DECK_COLS.length)], DECK_COLS.length);
     CacheService.getScriptCache().remove('decks');
   }, 15000);
 }
@@ -5045,7 +5099,7 @@ function qcClose_(q, correct) {
       var a = ans[normName_(s.name)];
       return [now, q.cls, title, q.id, q.round, q.type, String(q.prompt || '').slice(0, 300), String(s.reg || ''), s.name, a == null ? '' : a, q.correct || '', q.correct ? (a === q.correct) : ''];
     });
-    if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, QC_COLS.length).setValues(rows);
+    if (rows.length) writeBelow_(sh, rows, QC_COLS.length);
   } catch (err) { /* the counts are still shown; the rows are kept in the cache for 3 hours */ }
   return q;
 }
@@ -5101,15 +5155,39 @@ function modeForSlide_(deckId, cls, c, slideId, kind, n) {
 function endKey_(deckId, cls) { return 'endat_' + String(deckId).slice(0, 80) + '_' + normClass_(cls); }
 /* A lesson whose Undo time has passed is ended now. Called by every lesson call, so it ends within a second or two. */
 function finishEnds_(deckId, cls, raw) {
-  var cache = CacheService.getScriptCache();
-  if (raw === undefined) raw = cache.get(endKey_(deckId, cls));
+  var cache = CacheService.getScriptCache(), k = endKey_(deckId, cls);
+  if (raw === undefined) raw = cache.get(k);
   var at = Number(raw || 0);
   if (!at || Date.now() < at) return false;
-  cache.remove(endKey_(deckId, cls));
+  // Only one caller finishes it: the key is read again and taken away under the lock (two callers a moment apart
+  // would otherwise both end the lesson and write two debriefs).
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return false;
+  try {
+    var now = Number(cache.get(k) || 0);
+    if (!now || Date.now() < now) return false;
+    cache.remove(k);
+  } finally { lock.releaseLock(); }
+  endsDue_(deckId, cls, false);
   var c = getCtl_(deckId, cls);
   if (!c.lesson) return false;
   endLessonNow_(deckId, cls);
   return true;
+}
+/* The Ends waiting for their Undo time, so the timer finishes one that nobody's call did (the laptop closed). */
+function endsDue_(deckId, cls, add) {
+  var cache = CacheService.getScriptCache(), list = [];
+  try { list = JSON.parse(cache.get('ends_due') || '[]'); } catch (err) { list = []; }
+  list = list.filter(function (x) { return !(x.d === deckId && x.c === cls) && Date.now() - x.at < 3600000; });
+  if (add) list.push({ d: deckId, c: cls, at: Date.now() });
+  cachePut_('ends_due', JSON.stringify(list.slice(-20)), 3600);
+}
+function sweepEnds_() {
+  var list = [];
+  try { list = JSON.parse(CacheService.getScriptCache().get('ends_due') || '[]'); } catch (err) { list = []; }
+  var done = 0;
+  list.forEach(function (x) { try { if (finishEnds_(x.d, x.c)) done++; } catch (err) { /* the next tick */ } });
+  return done;
 }
 function endLessonNow_(deckId, cls) {
   var q = qcGet_(cls);
@@ -5193,7 +5271,6 @@ function tDo_(cls, deckId, op, args, cmdId) {
   if (cmdId) {
     var seen = cache.get('cmd_' + cmdId);
     if (seen) return tState_(cls, deckId, true);
-    cachePut_('cmd_' + cmdId, '1', 600);
   }
   if (deckId) finishEnds_(deckId, cls);
   var c = deckId ? getCtl_(deckId, cls) : null;
@@ -5233,6 +5310,7 @@ function tDo_(cls, deckId, op, args, cmdId) {
   } else if (op === 'show') {
     var q4 = qcGet_(cls);
     if (!q4) throw new Error('There is no check to show.');
+    if (q4.open && args.on !== false) throw new Error('Close the check first (mark it, or press Done), then show it.');
     q4.shown = args.on !== false;
     qcSave_(q4);
   } else if (op === 'release') {
@@ -5240,10 +5318,14 @@ function tDo_(cls, deckId, op, args, cmdId) {
     bumpLive_(deckId, cls);
   } else if (op === 'end') {
     var until = Date.now() + 4000;
-    cachePut_(endKey_(deckId, cls), String(until), 600);
+    cachePut_(endKey_(deckId, cls), String(until), 3600);
+    endsDue_(deckId, cls, true);
     out.undoUntil = until;
   } else if (op === 'undo') {
     cache.remove(endKey_(deckId, cls));
+    endsDue_(deckId, cls, false);
+  } else if (op === 'state') {
+    // Nothing to do: the reply is the state (the slides ask once after their Undo countdown, so End finishes).
   } else if (op === 'letin') {
     out.letin = hubLetIn_({ gkey: clean_(args.id, 60), yes: args.allow !== false, cls: String(args.cls || cls).toUpperCase() });
     cachePut_('gh_all_v', String(Date.now()), 21600);
@@ -5251,6 +5333,7 @@ function tDo_(cls, deckId, op, args, cmdId) {
     c = apiSetControlNoPin_(deckId, cls, { fun: !!args.on });
     try { CacheService.getScriptCache().remove('fun_' + cls); } catch (err) { /* fine */ }
   } else throw new Error('Unknown command.');
+  if (cmdId) cachePut_('cmd_' + cmdId, '1', 600);   // after it worked: a retry of a command that failed runs again
   var st = tState_(cls, deckId, false);
   if (out.undoUntil) st.undoUntil = out.undoUntil;
   if (out.letin) st.letinResult = out.letin;

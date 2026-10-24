@@ -1131,6 +1131,7 @@ function assignsForClass_(assigns, cls) {
 
 function buildTracker() { guardJob_('buildTracker'); return buildTracker_(); }
 function buildTracker_() {
+  if (frozen_()) return;   // the move to one sheet is running: the next hour's run does it
   ensureSubmissionCols_();
   var now = new Date();
   var assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; });
@@ -2204,6 +2205,7 @@ function ensureTick_(want) {
 // Runs every 15 minutes: homework linked to sub-chapters that were taught is set, then anything due happens.
 function hubTick() {
   guardJob_('hubTick');
+  try { sweepEnds_(); } catch (e) { /* tried again next time */ }
   if (frozen_()) return [];
   var done = [];
   try { oneDrain_(); } catch (e) { /* tried again next time */ }
@@ -2276,8 +2278,7 @@ function autoHandIn_(a, now) {
     rows.push([Utilities.formatDate(when, TZ, 'd MMM yyyy, h:mm a'), a.id, a.title, s.cls, s.reg, s.name, pages, strokes, '', '', '', '', when, '', '', '', '', 'Auto']);
   });
   if (rows.length) {
-    var sh = hubSheet_(TABS.submissions.name), at = sh.getLastRow() + 1;
-    sh.getRange(at, 1, rows.length, 18).setValues(rows);
+    writeBelow_(hubSheet_(TABS.submissions.name), rows, 18);
   }
   return String(rows.length);
 }
@@ -3489,6 +3490,7 @@ function api_rw_summary(token) {
 }
 
 function api_rw_buy(token, id) {
+  needUnfrozen_();
   var s = funGuard_(who_(token));
   var lock = hubLock_();
   lock.waitLock(30000);
@@ -3504,6 +3506,7 @@ function api_rw_buy(token, id) {
 }
 
 function api_rw_exchange(token, n) {
+  needUnfrozen_();
   var s = funGuard_(who_(token));
   n = Math.round(Number(n) || 0);
   if (n < 1 || n > 1000) throw new Error('Choose how many tokens.');
@@ -3519,6 +3522,7 @@ function api_rw_exchange(token, n) {
 
 // Buys a sticker with tokens. Stickers are shown at the night market, so they cost tokens, not points.
 function api_rw_sticker(token, id) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), x = null;
   RW_STICKERS.forEach(function (r) { if (r[0] === id) x = r; });
   if (!x) throw new Error('That sticker is not on sale.');
@@ -3535,6 +3539,7 @@ function api_rw_sticker(token, id) {
 
 // Saves what the avatar is wearing. Anything the student does not own is taken off.
 function api_rw_wear(token, json) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), o = parseJson_(String(json || '')) || {};
   var rules = rwRules_(), items = rwItems_(rules), L = rwLedger_(s, [], {}, rwLog_(), rules, items);
   var own = {}, slotOf = {};
@@ -3582,6 +3587,7 @@ function api_rw_market(token) {
 }
 
 function api_rw_order(token, prizeId) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), code = '', prize = null;
   var lock = hubLock_();
   lock.waitLock(30000);
@@ -4017,6 +4023,7 @@ function rwThemes_(rules, L) {
 
 // Unlocks a colour theme (once) and wears it.
 function api_rw_theme(token, id) {
+  needUnfrozen_();
   var s = who_(token), x = null;
   RW_THEMES.forEach(function (t) { if (t[0] === id) x = t; });
   if (!x) throw new Error('That colour theme was not found.');
@@ -5124,4 +5131,14 @@ function s_seen(st, id) {
 }
 /* Signing out: the sign-in lives only on this iPad, and the page deletes it with the student's other saved things.
    Kept as a call so the page can say when it was done. */
-function s_signout(st) { return { ok: true, signedOut: !!stParse_(st) }; }
+/* Signing out ends this sign-in on every device (a copied sign-in stops working too). */
+function s_signout(st) {
+  var who = stCheck_(st);
+  if (!who) return { ok: true, signedOut: false };
+  withLock_(function () {
+    var a = acctGet_(who.id) || { c: who.cls, n: who.name, v: 0 };
+    a.v = (Number(a.v) || 0) + 1;
+    acctPut_(who.id, a);
+  }, 10000);
+  return { ok: true, signedOut: true };
+}
