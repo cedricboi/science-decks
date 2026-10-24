@@ -2703,6 +2703,17 @@ function api_t_parentSent(token, cls, name, on) {
 
 // One student's whole record for the side panel in the tracker: every worksheet with the hand-in,
 // score and comment, and their points.
+/* Release 34: the student record with the share of their open lessons' slides done (from Progress, cached). */
+function t_student(token, cls, name) {
+  var r = api_t_student(token, cls, name);
+  try {
+    var seen = 0, total = 0, open = {};
+    allocFor_(cls).forEach(function (id) { open[id] = 1; });
+    readProgress_(cls).forEach(function (p) { if (open[p[0]] && normName_(p[2]) === normName_(name)) { seen += Number(p[3]) || 0; total += Number(p[4]) || 0; } });
+    if (r && typeof r === 'object' && total) r.slides = Math.round(100 * Math.min(seen, total) / total) + '%';
+  } catch (e) { /* the record without it */ }
+  return r;
+}
 function api_t_student(token, cls, name) {
   teacher_(token);
   var s = hubFindStudent_(hubNormClass_(cls), name);

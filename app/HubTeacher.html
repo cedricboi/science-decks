@@ -1517,7 +1517,7 @@
 
   /* header */
   .nx-top { position: sticky; top: 0; z-index: 20; background: var(--nx-surface); border-bottom: 1px solid var(--nx-line); }
-  .nx-top-in { max-width: 1440px; margin: 0 auto; padding: 12px 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+  .nx-top-in { max-width: 1440px; margin: 0 auto; padding: 12px 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
   .nx-brand { display: flex; align-items: center; gap: 12px; font: 800 20px var(--display); color: var(--nx-ink); }
   .nx-logo { width: 42px; height: 42px; border-radius: 13px; background: var(--nx-blue); color: #fff; display: grid; place-items: center; font: 800 18px var(--display); }
   .nx-nav { display: flex; gap: 6px; }
@@ -1767,7 +1767,7 @@
   .nx-devs li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--nx-soft); }
   .nx-devs li span { flex: 1; display: flex; flex-direction: column; }
   .nx-devs small { color: var(--nx-muted); }
-  .nx-look { align-self: flex-start; }
+  .nx-lookseg { align-self: flex-start; }
   .nx-rep summary { cursor: pointer; color: var(--nx-link); font-weight: 700; }
   .nx-rep table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
   .nx-rep th, .nx-rep td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--nx-chip); }
@@ -1799,6 +1799,7 @@
   .nx-fres small { color: var(--nx-muted); }
   .nx-fres p { margin: 8px 12px; }
 
+  @media (max-width: 1400px) { .nx-priv span { display: none; } .nx-cls button { padding: 0 12px; } }
   @media (max-width: 1100px) {
     .nx-top-in, #app main { padding-left: 18px; padding-right: 18px; }
     .nx-hero h2 { font-size: 32px; }
@@ -2060,7 +2061,7 @@
       var out = function () { lsDel('wsh_tt'); H.token = null; closeModal(); showSignin(true); throw e; };
       if (!dv) return out();
       return call('api_t_login', dv).then(function (r) { H.token = r.token; lsSet('wsh_tt', r.token); return go(); }, function () { lsDel('wsh_dv'); return out(); });
-    });
+    }).then(function (r) { try { pvSniff(r, 0); } catch (e) { /* only for the privacy screen */ } return r; });
   }
   function msg(e) { return String((e && e.message) || e || 'Something went wrong.').replace(/^(Exception|Error):\s*/, ''); }
 
@@ -8052,7 +8053,7 @@
   // Calls to Live Board's half (student sign-ins, the room) with the Live Board key the Hub gets from Teach next.
   function nxLb(fn) {
     var rest = Array.prototype.slice.call(arguments, 1);
-    return tnToken().then(function (tn) { if (!tn || !tn.token) throw new Error(H.tnErr || 'Live Board could not be reached.'); return call.apply(null, [fn, tn.token].concat(rest)); });
+    return tnToken().then(function (tn) { if (!tn || !tn.token) throw new Error(H.tnErr || 'Live Board could not be reached.'); return call.apply(null, [fn, tn.token].concat(rest)); }).then(function (r) { try { pvSniff(r, 0); } catch (e) { /* only for the privacy screen */ } return r; });
   }
   // A list that redraws only the lines that changed (the 60 s ping redraws Today this way).
   function nxPatch(box, parts) {
@@ -8090,6 +8091,22 @@
       var f = n.split(' ')[0]; if (f.length >= 2 && !PV_WORDS.test(f)) PV.first[f] = 1;
     });
     if (add) { PV.re = null; if (PV.was) pvWalk(document.body); }
+  }
+  // Student names in a reply from the server (objects with a class or register number, and the lists of names).
+  function pvSniff(o, d) {
+    if (!o || typeof o !== 'object' || d > 5) return;
+    var got = [];
+    (function walk(x, dd) {
+      if (!x || typeof x !== 'object' || dd > 5) return;
+      if (Array.isArray(x)) { x.forEach(function (y) { walk(y, dd + 1); }); return; }
+      if (typeof x.name === 'string' && (x.cls !== undefined || x.reg !== undefined)) got.push(x.name);
+      ['notHanded', 'notFinished', 'notAnswered', 'names'].forEach(function (k) { if (Array.isArray(x[k])) x[k].forEach(function (n) { if (typeof n === 'string') got.push(n); }); });
+      if (Array.isArray(x.stuck)) x.stuck.forEach(function (n) { got.push(typeof n === 'string' ? n : n && n.name); });
+      if (Array.isArray(x.corrOwed)) x.corrOwed.forEach(function (n) { got.push(String(n).replace(/^\S+\s+/, '')); });
+      if (Array.isArray(x.who)) x.who.forEach(function (n) { if (n && n.n) got.push(n.n); });
+      Object.keys(x).forEach(function (k) { if (x[k] && typeof x[k] === 'object') walk(x[k], dd + 1); });
+    })(o, d || 0);
+    pvLearn(got);
   }
   function pvCollect() {
     var out = [], d = H.dash;
@@ -8174,8 +8191,9 @@
       if (why) {
         var left = Math.max(0, PV.until - Date.now());
         b.classList.toggle('on', on);
-        b.innerHTML = on ? NX_ICON.shut + '<span>Names hidden</span><b>Show names for 2 minutes</b>'
-          : NX_ICON.eye + '<span>Names showing</span><b>' + Math.floor(left / 60000) + ':' + ('0' + Math.floor(left / 1000) % 60).slice(-2) + ' left. Hide them</b>';
+        b.innerHTML = on ? NX_ICON.shut + '<span>Names hidden</span><b>Show for 2 min</b>'
+          : NX_ICON.eye + '<span>Names showing</span><b>' + Math.floor(left / 60000) + ':' + ('0' + Math.floor(left / 1000) % 60).slice(-2) + ' left</b>';
+        b.setAttribute('aria-label', on ? 'Names are hidden. Show names for 2 minutes.' : 'Names are showing. Hide them now.');
         b.title = why === 'taught' ? 'You pressed Teach on this laptop, so it may be on the projector.' : why === 'live' ? 'A lesson is on the timetable now.' : 'A second screen is attached.';
       }
     }
@@ -8302,7 +8320,7 @@
     if (!H.token) return;
     var v = H.view === 'detail' ? H.backTo : H.view;
     nxClassChips(v);
-    if (v === 'today') nxToday(); else if (v === 'chx') nxChapters(); else if (v === 'stu') nxStudents(); else if (v === 'set') nxSettings();
+    if (v === 'today') nxToday(); else if (v === 'chx') nxChapters(); else if (v === 'stu') nxStudents();
     if (NX.tab === 'stu') nxStuBar(v);
   }
   function nxShow(v) {
@@ -8433,7 +8451,7 @@
       var hw = nxHwAfter(L), deb = NX.deb[L.cls], hard = deb && deb.questions ? deb.questions.filter(function (q) { return q.hard; }).length : 0;
       var pair = !nxPhonePaired();
       h += '<section class="nx-hero' + (L.run ? ' run' : '') + '" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">' + esc(L.kick) + '</span><h2>' + esc(L.title) + '</h2>' +
-        '<span class="nx-hsub">' + esc([L.sub || (L.run ? '' : 'The whole lesson'), L.range, hw].filter(String).join(' · ') || 'The slides are open for ' + L.cls + '.') + '</span>' +
+        '<span class="nx-hsub">' + esc([L.sub || (L.run ? '' : 'The whole lesson'), L.range, hw].filter(Boolean).join(' · ') || 'The slides are open for ' + L.cls + '.') + '</span>' +
         (hard ? '<span class="nx-chip-y"><i></i>' + plural(hard, 'hard question', 'hard questions') + ' from last lesson</span>' : '') + '</div>' +
         '<div class="nx-hero-a"><a class="nx-teachbtn" id="nx-teach" data-go href="' + esc(L.href) + '" target="' + NX_TAB + '" aria-label="' + esc((L.run ? 'Back to the slides of ' : 'Teach ') + L.title + ' to ' + L.cls) + '">' + esc(L.label) + '</a>' +
         (pair ? '<button type="button" class="nx-pairbtn" data-nxa="pair">Pair my phone</button>' : '') + '</div></section>';
@@ -8709,6 +8727,7 @@
     var box = $('view-chx'); if (!box || box.classList.contains('hidden') && H.view !== 'chx') return;
     var cls = nxCls();
     if (!H.dash || !sxReady()) {
+      box._h = '';
       box.innerHTML = (H.teErr ? '<p class="nx-note">' + esc(H.teErr) + '</p>' : '') + '<div class="nx-chlayout"><aside class="nx-chaside">' + [0, 1, 2, 3].map(function () { return '<div class="skel" style="height:58px;border-radius:14px"></div>'; }).join('') + '</aside><div class="nx-chmain"><div class="skel" style="height:300px;border-radius:24px"></div></div></div>';
       return;
     }
@@ -8780,6 +8799,10 @@
     h += '<div class="nx-rows">' + (rows.length ? rows.join('') : '<p class="nx-muted">Nothing in this chapter for ' + esc(cls) + ' yet.</p>') + '</div>';
     h += '<div class="nx-chfoot"><label class="nx-btn ghost">+ Lesson notes<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label><button type="button" class="nx-btn ghost" data-nxc2="addw">+ Worksheet</button>' +
       '<span class="nx-grow"></span><button type="button" class="nx-btn soft" data-nxc2="ws">All worksheets</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button></div></div></div>';
+    // nothing changed, or a menu is open on this page: leave it as it is (a redraw would close the menu)
+    if (box._h === h) return;
+    if (document.querySelector('.pop:not(.hidden)') || !$('veil').classList.contains('hidden')) { clearTimeout(NX.chT); NX.chT = setTimeout(nxChapters, 1500); return; }
+    box._h = h;
     box.innerHTML = h;
     NX.chActs = acts;
     // wiring
@@ -8941,7 +8964,7 @@
   function nxStudents(onlyList) {
     var box = $('view-stu'); if (!box || box.classList.contains('hidden') && H.view !== 'stu') return;
     var cls = nxCls(), c = (H.tracker || []).filter(function (x) { return x.cls === cls; })[0];
-    if (!c) { box.innerHTML = H.tracker ? '<p class="nx-note">No students in ' + esc(cls) + ' yet. Add them in the Students tab of your sheet.</p>' : '<div class="nx-stu"><div class="nx-stulist">' + skeleton('list') + '</div></div>'; return; }
+    if (!c) { box._h = ''; box.innerHTML = H.tracker ? '<p class="nx-note">No students in ' + esc(cls) + ' yet. Add them in the Students tab of your sheet.</p>' : '<div class="nx-stu"><div class="nx-stulist">' + skeleton('list') + '</div></div>'; return; }
     var rows = c.rows.slice().sort(function (a, b) { return (Number(a.reg) || 999) - (Number(b.reg) || 999) || a.name.localeCompare(b.name); });
     var data = rows.map(function (r) { var red = nxRedOf(cls, r.name), now = nxNowOf(cls, r); return { r: r, red: red, now: now, pts: nxPointsOf(cls, r.name), nudge: red >= 2 || !!r.follow.level || now.bad }; });
     var q = norm(NX.stuQ), shown = data.filter(function (x) { return (NX.stuFilter !== 'nudge' || x.nudge) && (!q || norm(x.r.name).indexOf(q) >= 0 || String(x.r.reg) === q); });
@@ -8953,6 +8976,8 @@
           '<span class="nx-pts">' + (x.pts == null ? '<span class="nx-muted">...</span>' : esc(Number(x.pts).toLocaleString('en-GB'))) + '</span></button>';
       }).join('') + (shown.length ? '' : '<p class="nx-muted" style="padding:12px">' + (q ? 'No one matches.' : 'No one needs a nudge right now.') + '</p>') + '</div>';
     if (onlyList && box.querySelector('.nx-stulist')) { box.querySelector('.nx-stulist').outerHTML = list; nxBindStu(box, cls); return; }
+    if (box._h === list + NX.stuSel && box.querySelector('#nx-rec')) return;
+    box._h = list + NX.stuSel;
     box.innerHTML = '<div class="nx-stu">' + list + '<aside class="nx-rec" id="nx-rec" aria-label="Student record"></aside></div>';
     nxBindStu(box, cls);
     nxRecord(cls, NX.stuSel);
@@ -8974,13 +8999,13 @@
     var head = '<div class="nx-rech"><span class="nx-av">' + esc(pvInit(name)) + '</span><span><b>' + esc(pvName(name)) + '</b><span class="nx-muted">' + esc(cls) + (r.reg ? ' · Register ' + esc(r.reg) : '') + (pts != null ? ' · ' + Number(pts).toLocaleString('en-GB') + ' points' : '') + '</span></span></div>';
     var avg = null;
     if (p && p.record) { var ps = p.record.map(function (x) { return parseScore(x.score); }).filter(Boolean); if (ps.length) avg = Math.round(100 * ps.reduce(function (t, s) { return t + s.got / s.max; }, 0) / ps.length); }
-    var h = head + '<div class="nx-tiles"><div><b>' + (done ? r.onTime + '/' + done : '–') + '</b><span>on time</span></div><div><b>' + (avg == null ? '–' : avg + '%') + '</b><span>average</span></div><div><b>' + (p && p.slides != null ? esc(p.slides) : nxRedOf(cls, name)) + '</b><span>' + (p && p.slides != null ? 'slides done' : 'red tabs') + '</span></div></div>';
+    var h = head + '<div class="nx-tiles"><div><b>' + (done ? r.onTime + '/' + done : 'None') + '</b><span>on time</span></div><div><b>' + (avg == null ? 'None' : avg + '%') + '</b><span>average</span></div><div><b>' + (p && p.slides != null ? esc(p.slides) : nxRedOf(cls, name)) + '</b><span>' + (p && p.slides != null ? 'slides done' : 'red tabs') + '</span></div></div>';
     if (!p) { box.innerHTML = h + skeleton('list'); }
     else {
       h += '<div class="nx-recsec"><span class="nx-cap">THEIR FILE</span>' + (p.record.length ? p.record.slice(0, 6).map(function (x) {
         var wd = wsById(x.id), owes = wd && wd.open && (wd.perClass || []).some(function (q) { return chNorm(q.cls) === chNorm(cls) && (q.notHanded || []).some(function (y) { return norm(y) === norm(name); }); });
-        var col = x.kind === 'missing' || owes ? '#C62F36' : x.kind === 'notDue' ? '#8A90AA' : '#0B7A4E';
-        var txt = x.score || (x.kind === 'missing' ? 'Not handed in' : x.kind === 'late' ? 'Late' : x.kind === 'notDue' ? 'Not due yet' : 'Handed in');
+        var col = x.kind === 'missing' || owes ? '#C62F36' : '#0B7A4E';
+        var txt = x.score || (x.kind === 'missing' ? 'Not handed in' : owes ? 'Not handed in yet' : x.kind === 'late' ? 'Late' : x.kind === 'notDue' ? 'Handed in' : 'Handed in');
         return '<button type="button" class="nx-fl" data-nxw="' + esc(x.id) + '"><i style="background:' + col + '"></i><span>' + esc(x.title) + '</span><small class="' + (x.kind === 'missing' ? 'bad' : '') + '">' + esc(txt) + '</small></button>';
       }).join('') : '<p class="nx-muted">No worksheets yet.</p>') + '</div>';
       if (p.parent && (p.parent.due || p.parent.problems.length)) {
@@ -9047,7 +9072,7 @@
     h += card('st-one', 'One sheet', '<div id="st-onebody"><p class="nx-muted">Looking...</p></div>');
     h += card('st-next', 'New version', '<p>Which pages everyone uses. You can go back to the old pages at any time.</p><div id="st-nextbody"><p class="nx-muted">Looking...</p></div>');
     h += card('st-more', 'Setup, guide and look', '<div class="nx-acts"><button type="button" class="nx-btn ghost" data-st="setup">Setup check and updates</button><button type="button" class="nx-btn ghost" data-st="guide">Setup guide</button><button type="button" class="nx-btn ghost" data-st="news">What\'s new</button><button type="button" class="nx-btn ghost" data-st="keys">Keyboard shortcuts</button></div>' +
-      '<div class="nx-seg nx-look" role="group" aria-label="Look">' + THEMES.map(function (t) { return '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (themePick() === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="nx-seg nx-lookseg" role="group" aria-label="Look">' + THEMES.map(function (t) { return '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (themePick() === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<label class="nx-check"><input type="checkbox" id="st-fun"' + (lsGet('wsh_fun') === '1' ? ' checked' : '') + '> Confetti when the last script is marked</label>');
     h += card('st-links', 'Links', '<div class="nx-acts">' + (l.student ? '<a class="nx-btn ghost" href="' + esc(l.student) + '" target="_blank" rel="noopener">Student page</a>' : '') + (l.site ? '<a class="nx-btn ghost" href="' + esc(l.site) + '" target="_blank" rel="noopener">Class site</a>' : '') +
       (l.sheet ? '<a class="nx-btn ghost" href="' + esc(l.sheet) + '" target="_blank" rel="noopener">Sheet</a>' : '') + (l.folder ? '<a class="nx-btn ghost" href="' + esc(l.folder) + '" target="_blank" rel="noopener">Drive folder</a>' : '') +

@@ -5094,7 +5094,7 @@ function endLessonNow_(deckId, cls) {
   saveCtlRaw_(deckId, cls, c);
   try { projectorEnded_(deckId, String(cls || '').toUpperCase()); } catch (err) { /* the projector stays on the slides */ }
   if (deb) { try { saveDebrief_(deb); } catch (err) { /* kept in the cache only */ } }
-  try { verBump_('today'); verBump_('cls_' + normClass_(cls)); bumpLive_(deckId, cls); } catch (err) { /* only stamps */ }
+  try { verBump_('today'); verBump_('cls_' + normClass_(cls)); bumpLive_(deckId, cls); cachePut_('run_v', String(Date.now()), 21600); } catch (err) { /* only stamps */ }
   return c;
 }
 
