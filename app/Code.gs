@@ -1060,7 +1060,7 @@ function lbDoPost_(e) {
   var out;
   try {
     var d = JSON.parse(e.postData.contents);
-    if (d && d.api === 'roster') out = { ok: true, classes: apiRoster(), typed: true };
+    if (d && d.api === 'roster') { out = { ok: true, classes: apiRoster(), typed: true }; try { out.liveCls = Object.keys(runningFor_(Object.keys(readRoster_()))); } catch (err) { out.liveCls = []; } }
     else if (d && d.api === 'unlock') out = { ok: apiUnlock(d.pin) };
     else if (d && d.api === 'live') out = liveCheck_(d);
     else if (d && d.api === 'away') out = awayNote_(d);
@@ -1078,7 +1078,7 @@ function lbDoPost_(e) {
     else if (d && d.api === 'st') out = stRequest_(d);
     else if (d && d.api === 'qa') { var tq = stCheck_(d.st); out = tq ? qcAnswer_(tq, d.qid, d.round, d.answer) : { ok: false, signedOut: true }; }
     else if (d && d.api === 'pgo') { PIN_INCLASS_ = true; out = presenterGo_(d); }
-    else if (d && d.api === 'tdo') { PIN_INCLASS_ = true; checkPin_(d.pin); out = tDo_(String(d.cls || '').toUpperCase(), clean_(d.topicId, 120), String(d.op || ''), d.args || {}, clean_(d.cmdId, 60)); }
+    else if (d && d.api === 'tdo') { PIN_INCLASS_ = true; checkPin_(d.pin); out = projectorSafe_(tDo_(String(d.cls || '').toUpperCase(), clean_(d.topicId, 120), String(d.op || ''), d.args || {}, clean_(d.cmdId, 60))); }
     else if (d && d.api === 'mine') { var tkm = stCheck_(d.st); out = { ok: true, done: tkm ? studentDone_(clean_(d.topicId, 120), tkm.cls, tkm.name) : [] }; }
     else if (d && Number(d.version) === 2 && Array.isArray(d.events)) out = frozen_() ? { ok: false, paused: true, error: FROZEN_MSG, acceptedIds: [] } : receiveDeckBatch_(d);
     else if (d && (d.qid || d.question) && d.answer != null) out = receiveSingle_(d);
@@ -3196,7 +3196,20 @@ function presenterLead_(d) {
     active++;
     if (x.slide === n) here++; else if (x.slide < n) behind++;
   });
-  return { ok: true, ctl: c, active: active, here: here, behind: behind };
+  // Release 34: what the presenter strip draws (no names: the presenter is on the projector).
+  var q = qcGet_(cls);
+  return { ok: true, ctl: c, active: active, here: here, behind: behind,
+    lesson: c.lesson ? { mode: modeOf_(c), inCount: active, of: names.length } : null,
+    phone: Date.now() - Number(cache.get('phl_' + normClass_(cls)) || 0) < 30000,
+    quick: q && q.deckId === deckId ? { id: q.id, type: q.type, open: !!q.open, round: q.round, options: q.options || [], correct: q.open ? null : (q.correct || null) } : null,
+    show: q && q.deckId === deckId ? qcForProjector_(q) : null };
+}
+/* A command reply for the presenter deck: the lesson state and the check without any name. */
+function projectorSafe_(st) {
+  var q = st.quick;
+  return { ok: true, lesson: st.lesson ? { mode: st.lesson.mode, inCount: st.lesson.inCount, of: st.lesson.of, slide: st.lesson.slide, endAt: st.lesson.endAt } : null,
+    ctl: st.ctl, undoUntil: st.undoUntil || 0,
+    quick: q ? { id: q.id, type: q.type, open: q.open, round: q.round, options: q.options, correct: q.open ? null : q.correct, total: q.total, of: q.of } : null };
 }
 var LSET_DEFAULT = { readSecs: 15, stuckMins: 5, wrongTries: 3 };
 function lessonSettings_() {
@@ -4532,6 +4545,7 @@ function stRequest_(d) {
     if (d.op === 'setup') return apiStSetup(d.cls, d.name, { reg: d.reg, key: d.key }, d.pin, d.q, d.answer);
     if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.q, d.answer, d.pin);
     if (d.op === 'me') return apiStMe(d.st);
+    if (d.op === 'signout') return { ok: true };
   } catch (err) {
     return { ok: false, error: String(err && err.message || err) };
   }

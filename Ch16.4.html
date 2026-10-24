@@ -4831,7 +4831,7 @@ try{
     if (!modeBar) {
       modeBar = el('div', 'lbrev'); modeBar.setAttribute('role', 'status'); modeBar.hidden = true;
       modeBar.appendChild(el('b', '', 'Revision'));
-      modeBar.appendChild(el('span', '', ' · Your answers here are not saved and do not count. They count in class.'));
+      modeBar.appendChild(el('span', '', ' · Your answers here are kept as practice. They count in class.'));
       modeBar.addEventListener('click', function () { modeBar.classList.toggle('small'); });
       document.body.appendChild(modeBar);
     }
