@@ -1,39 +1,37 @@
 {
-  "build": "2026-10-25-passwords",
-  "seq": 33,
-  "ref": "06b1834f69c890265470d7d0fe0c2aab007186eb",
-  "title": "learnwithmrcedric: names and passwords",
+  "build": "2026-10-25-one-platform",
+  "seq": 34,
+  "ref": "206f8718224592ad9a81f55a4cdd68af0c5e0736",
+  "title": "learnwithmrcedric: one platform",
   "notes": [
-    "Students sign in with their name and a password (Science or Computing, chosen on the card). Old 4-number PINs still work once, then the page asks for a proper password",
-    "The Teacher Hub signs in with a username and password. The first time, the Hub asks for your teacher PIN to set them. Change them in the T menu, Username and password",
-    "The portal: a roomier card, a small teacher link, and stars and galaxies bent by the black hole's gravity behind NASA's simulation",
-    "The decks' own sign-in box takes a password",
-    "Includes release 29 (Streak Challenge). Paste: App.gs, Code.gs, Hub.gs and ComputingCode.gs, then deploy a new version. The pages update themselves"
+    "Students: one app. Now shows the one thing to do, My file is the binder (red means I owe it, green means it is in), Me holds the avatar, points, shop, night market, arcade and badges. Handing in takes two taps and the tab turns green at once. The answer key opens after corrections are handed in",
+    "Teacher Hub: Today, Chapters and Students, with Settings in the menu. Teach is one click, Check and return then Return is two. Needs you is the one list of things to do. While you teach, names turn into initials on the laptop",
+    "Your phone (open /exec?phone, paired with a 4-digit code from the Hub): Back and Next, quick checks (A B C D, True or false, Got it / Nearly / Lost, a word, or the question on the slide), Eyes on me, Together or Own pace, Who is stuck, Let in, and End with 4 seconds to undo",
+    "The slides (bridge 15): quick checks appear at the bottom of the slide, students sign in from learnwithmrcedric with no typing, work done just before Teach is kept, and the projector never shows a name. The Streak top 5 shows initials",
+    "Lesson 5 (1.5 Which instrument fits the job?) is its own lesson now, with its own place in Chapter 1",
+    "One sheet: Settings, One sheet, Make the one sheet copies every tab of both old sheets into a new private sheet and checks each tab. Switch to the one sheet runs at a quiet time. The two old sheets are never changed, and Go back to the old sheets works until the end of the next school day",
+    "Faster: the iPads ask less often and never while hidden, a whole class opening the app at once reads the sheet once, and answers no longer wait for each other",
+    "Safer: only you (the owner) can make, switch or go back from the one sheet, going back copies new hand-ins, answers and points back into the old sheets, End always finishes even if the laptop is closed straight after, and Sign out signs a student out on every device",
+    "Fallback: the New version switch in Settings (off, test, on), or add ?classic to any link for the release 33 pages"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "a1692fa3b0519f5cf9ca7262e8e4efc714895045bd4c45c16d21ca911d4f28d9"
-    },
-    {
-      "name": "appsscript",
-      "type": "JSON",
-      "path": "appsscript.json",
-      "sha256": "6b5aa20bc57879c07f931e1cfe964706b4aa9cd53a2efb578c82c71da83fc590"
+      "sha256": "3a4ba6ef258a3e658f27b85676451dc14b3cbebb03569ca353d18f1ab0333f56"
     },
     {
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "b31d76296222706f241866937eb4fbe46dd9a5c04f883aa0a67a061b1ba79688"
+      "sha256": "d6f30e98ccb00ed4700906299e99c9625358ac86770c01f0ffa158d728ed7717"
     },
     {
       "name": "Computing",
       "type": "HTML",
       "path": "Computing.html",
-      "sha256": "aa83be8a1bb636d469f7dd9238ea93c2c8a98551fef2b98bb077a9e23f61a03f"
+      "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
     },
     {
       "name": "ComputingCode",
@@ -51,25 +49,31 @@
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
+      "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
     },
     {
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "d3c498b6a64be28f59b00ddacfe2672fc44fc1d9944eaf6f5c2271c3f9a6a7dd"
+      "sha256": "d049e952298cec8a09412c241b19af1724d526aedda49d3c865ff45e488ffb28"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "d4e46b36ba719de272432c1dc1ca96c381b8fb9d86a0644e75f53f17729ef0a4"
+      "sha256": "fa56e9203c9c8bfaf8c16e69b3dd47f0861f4e820a05ffcd3ec03e8de7630e77"
     },
     {
       "name": "Ink",
       "type": "HTML",
       "path": "Ink.html",
       "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+    },
+    {
+      "name": "Phone",
+      "type": "HTML",
+      "path": "Phone.html",
+      "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
     },
     {
       "name": "Rewards",
@@ -81,7 +85,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "aed3123b46454a5865aaebdec154bba29ba8b041e62fd77cf397d4dd6e0f31ff"
+      "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
     },
     {
       "name": "Styles",
@@ -93,10 +97,74 @@
       "name": "Teacher",
       "type": "HTML",
       "path": "Teacher.html",
-      "sha256": "933f6429cff389aba5b35d8bae3ea7a5d45f9d486b74fb84a009b62e037c2f1b"
+      "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+    },
+    {
+      "name": "appsscript",
+      "type": "JSON",
+      "path": "appsscript.json",
+      "sha256": "6b5aa20bc57879c07f931e1cfe964706b4aa9cd53a2efb578c82c71da83fc590"
     }
   ],
   "pages": [
+    {
+      "seq": 34,
+      "build": "2026-10-25-one-platform",
+      "ref": "206f8718224592ad9a81f55a4cdd68af0c5e0736",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "fa56e9203c9c8bfaf8c16e69b3dd47f0861f4e820a05ffcd3ec03e8de7630e77"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 33,
       "build": "2026-10-25-passwords",
@@ -462,57 +530,23 @@
           "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
         }
       ]
-    },
-    {
-      "seq": 26,
-      "build": "2026-10-16-privacy",
-      "ref": "f7b3d4f1a1ce245e5680d84326f234f3dac11c1b",
-      "needsServer": 26,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "3f33b4dba8986e683111fc3ff55171e7ddbe6284088309862425080534dd4351"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        }
-      ]
     }
   ],
   "server": [
+    {
+      "seq": 34,
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs",
+        "ComputingCode.gs"
+      ],
+      "notes": [
+        "Release 34: paste App.gs, Code.gs, Hub.gs and ComputingCode.gs, then deploy a new version. The pages update themselves",
+        "After deploying, the New version switch is on test: your Hub and phone are new, students stay on release 33 until you switch it to on in Settings",
+        "Then, in Settings, One sheet, press Make the one sheet (it asks for your teacher PIN). Switch after one normal school day, at a quiet time"
+      ]
+    },
     {
       "seq": 33,
       "files": [
@@ -573,5 +607,6 @@
       ]
     }
   ],
-  "codePage": "https://claude.ai/artifact/AFmqx6xRHBp6MCrBc9sWuy"
+  "codePage": "https://claude.ai/artifact/AFmqx6xRHBp6MCrBc9sWuy",
+  "classicRef": "06b1834f69c890265470d7d0fe0c2aab007186eb"
 }
