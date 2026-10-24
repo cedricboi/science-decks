@@ -15,7 +15,7 @@
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 //   /exec?computing       the computing page for students: their Spreadsheet Coaches and files (ComputingCode.gs)
 
-var APP_BUILD = '2026-10-21-computing';
+var APP_BUILD = '2026-10-24-streak';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -1017,7 +1017,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 28;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 29;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;

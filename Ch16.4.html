@@ -3148,7 +3148,11 @@ try{
         iPad checks in every 3 seconds all through a lesson, and straight after the student changes slide.
      17. Version 13: no class list on the iPad. With Live Board release 26 the sign-in has the classes only: the
         student types their own name and PIN, checked together. With an older Live Board the list of names still
-        works, but it is kept in memory only, and a copy kept on the iPad before is removed. */
+        works, but it is kept in memory only, and a copy kept on the iPad before is removed.
+     18. Version 14: the Streak Challenge. On the chapter check slide the projector can run the check as a class game,
+        one question at a time. Speed gives nothing: right answers earn points, and answers right in a row earn a streak
+        bonus. Each iPad shows the student's own result and place, the projector the top 5 and the longest streaks, and
+        the final score becomes Worksheet Hub points, once per deck (the solo chapter check is scored the same way). */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3156,7 +3160,7 @@ try{
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 13;
+  var VERSION = 14;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -3910,7 +3914,7 @@ try{
     else if (c.hadPoints) line += 'You already have the points for this chapter check.';
     else if (c.note) line += c.note.replace(/^Not given yet: .*/, 'Your teacher will add the points.');
     else if (!c.bestCounts && !c.firstTry) line += 'Points come from the first try only. Your first try was ' + (c.first == null ? 'not recorded' : c.first + '%') + '.';
-    else line += c.passMark + '% earns ' + c.worth + ' points. Go back over the pages the check marked for you.' + (c.bestCounts ? ' Then try again.' : '');
+    else line += 'Points come from right answers, with a bonus for answers right in a row. Go back over the pages the check marked for you.' + (c.bestCounts ? ' Then try again.' : '');
     tx.appendChild(el('span', '', line));
     // With the first-try rule, another try is practice, so the deck's own button says so.
     var retry = document.querySelector('.quiz-retry');
@@ -4099,6 +4103,7 @@ try{
       ctl = r && r.ctl ? r.ctl : null;
       ctlKnown = true;
       applyLook(); enforce();
+      try { sqStudent(r && r.ok && r.live ? r.game : null); } catch (e) { /* the slides carry on */ }
       if (!mineAsked && me && me.cls) askMine(me);
       var a = r && r.ok && r.ask && byId[r.ask.taskId] ? r.ask : null;
       if (handedQ) {   // opened from learnwithmrcedric: show the asked question, or go to the slide if it is no longer asked
@@ -4197,6 +4202,7 @@ try{
      note), with Follow off a note at the bottom, while the teacher is presenting. */
   function enforce() {
     if (presenting || !ctl) { setBlock(null); aheadNote(0); return; }
+    if (sqOn && !ctl.pause) { setBlock(null); aheadNote(0); return; }   // the Streak Challenge covers the slides
     var sl = currentSlide();
     if (!sl) return;
     var n = slideList().indexOf(sl) + 1;
@@ -5305,6 +5311,528 @@ try{
     showWho(id);
     drawMode();
   }
+  /* ---------------- Streak Challenge ----------------
+     Version 14: the chapter check as a class game, run from the projector. One question at a time for the whole class,
+     like Kahoot, but speed gives nothing: every right answer is worth 100, and each right answer in a row after the first
+     adds 50 more (up to 300 a question). A wrong answer ends the streak. The projector shows how many have answered,
+     then the answer, the class's choices, the top 5 and the longest streaks. Each iPad shows the student's own result
+     and place only. At the end the score becomes Worksheet Hub points (the full score earns the chapter check points),
+     once per deck, and the game counts as the student's chapter check. */
+  var SQ_COLOURS = ['#e9082b', '#1f6feb', '#e6a100', '#13945a', '#7a3fd1', '#0f8a9c'];
+  var SQ_LETTERS = 'ABCDEF';
+  var sqOn = false, sqBox = null, sqDrawn = '', sqGid = '', sqJoined = '', sqPick = '', sqSkew = 0, sqTick = null, sqMsg = '';
+  var SQ_SEEN = 'liveboard.sqSeen:' + (cfg.topicId || '');
+  function sqQs() { return checkIds.filter(function (id) { return byId[id] && (byId[id].kind === 'choice' || byId[id].kind === 'number'); }); }
+  function sqAnswerText(t) { return String(t.correct == null ? '' : t.correct) + (t.kind === 'number' && t.unit ? ' ' + t.unit : ''); }
+  function sqMark(t, value) {
+    if (t.kind === 'choice') return value === String(t.correct);
+    var raw = String(value).replace(new RegExp('\\s*' + String(t.unit || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$'), '');
+    var v = parseNum(raw);
+    if (!isFinite(v)) return null;
+    var tol = t.tol != null ? Number(t.tol) : Math.max(Math.abs(Number(t.correct)) * 0.005, 1e-14);
+    return Math.abs(v - Number(t.correct)) <= tol + 1e-12;
+  }
+  function sqPlace(n) {
+    var s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+  function sqStreakText(n) { return n >= 2 ? n + ' in a row' : ''; }
+  function sqLeft(ends) { return Math.max(0, Math.ceil((ends - (Date.now() + sqSkew)) / 1000)); }
+  function sqClock(s) { return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  function sqStyle() {
+    if (document.getElementById('sq-style')) return;
+    var st = document.createElement('style');
+    st.id = 'sq-style';
+    st.textContent =
+      '.sq{position:fixed!important;inset:0!important;z-index:2147480500!important;background:#17113a!important;color:#fff!important;display:flex!important;flex-direction:column!important;font:18px/1.4 Arial,Helvetica,sans-serif!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important}' +
+      '.sq *{box-sizing:border-box!important}' +
+      '.sq-top{display:flex!important;align-items:center!important;gap:12px!important;padding:14px 20px!important;background:rgba(255,255,255,.06)!important;border-bottom:2px solid rgba(255,255,255,.12)!important}' +
+      '.sq-brand{font:900 20px/1 "Arial Black",Arial,sans-serif!important;letter-spacing:.3px!important}' +
+      '.sq-brand i{display:inline-block!important;width:14px!important;height:18px!important;margin-right:8px!important;vertical-align:-2px!important;background:#ff8a1f!important;border-radius:50% 50% 50% 50%/60% 60% 40% 40%!important;box-shadow:0 0 12px #ff8a1f!important}' +
+      '.sq-count{margin-left:auto!important;font-weight:700!important;color:#d8d2ff!important}' +
+      '.sq-time{min-width:74px!important;text-align:center!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important;background:#fff!important;color:#17113a!important;border-radius:999px!important;padding:8px 14px!important}' +
+      '.sq-time.low{background:#ffd1d8!important;color:#a1001b!important}' +
+      '.sq-main{flex:1!important;display:flex!important;flex-direction:column!important;gap:16px!important;padding:22px 20px 26px!important;width:min(1100px,100%)!important;margin:0 auto!important}' +
+      '.sq-q{background:#fff!important;color:#101014!important;border-radius:14px!important;padding:18px 22px!important;font:700 24px/1.35 Arial,Helvetica,sans-serif!important;box-shadow:0 6px 0 rgba(0,0,0,.25)!important}' +
+      '.sq-opts{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}' +
+      '.sq-opt{display:flex!important;align-items:center!important;gap:14px!important;min-height:76px!important;padding:14px 16px!important;border:0!important;border-radius:14px!important;color:#fff!important;font:700 20px/1.3 Arial,Helvetica,sans-serif!important;text-align:left!important;cursor:pointer!important;box-shadow:0 5px 0 rgba(0,0,0,.28)!important;transition:transform .12s,opacity .2s!important}' +
+      '.sq-opt b{flex:none!important;display:grid!important;place-items:center!important;width:42px!important;height:42px!important;border-radius:10px!important;background:rgba(255,255,255,.22)!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important}' +
+      '.sq-opt span{flex:1!important}' +
+      '.sq-opt:disabled{cursor:default!important;opacity:1!important}' +
+      '.sq-opt.on{outline:5px solid #fff!important;outline-offset:3px!important;transform:translateY(-2px)!important}' +
+      '.sq-opts.picked .sq-opt:not(.on){opacity:.45!important}' +
+      '.sq-opts.shown .sq-opt:not(.right){opacity:.35!important}' +
+      '.sq-opt.right{outline:5px solid #fff!important;outline-offset:3px!important}' +
+      '.sq-opt em{flex:none!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important;font-style:normal!important;background:rgba(0,0,0,.25)!important;border-radius:999px!important;padding:6px 12px!important}' +
+      '.sq-entry{display:flex!important;gap:10px!important;align-items:center!important;background:#fff!important;border-radius:14px!important;padding:12px!important;color:#101014!important}' +
+      '.sq-entry input{flex:1!important;min-width:0!important;font:700 26px Arial,sans-serif!important;padding:10px 12px!important;border:2px solid #101014!important;border-radius:10px!important}' +
+      '.sq-entry b{font:700 22px Arial,sans-serif!important}' +
+      '.sq-go{align-self:center!important;border:0!important;border-radius:999px!important;background:#fff!important;color:#17113a!important;font:900 20px/1 "Arial Black",Arial,sans-serif!important;padding:16px 30px!important;cursor:pointer!important;box-shadow:0 5px 0 rgba(0,0,0,.3)!important}' +
+      '.sq-go:disabled{opacity:.45!important;cursor:default!important}' +
+      '.sq-go.alt{background:transparent!important;color:#d8d2ff!important;box-shadow:none!important;font:700 16px Arial,sans-serif!important;text-decoration:underline!important;padding:8px!important}' +
+      '.sq-row{display:flex!important;gap:12px!important;justify-content:center!important;align-items:center!important;flex-wrap:wrap!important}' +
+      '.sq-act{position:sticky!important;bottom:0!important;margin:0 -20px -26px!important;padding:12px 20px 16px!important;background:linear-gradient(rgba(23,17,58,0),#17113a 30%)!important}' +
+      '.sq-note .sq-flame{font-size:20px!important;padding:6px 16px!important}' +
+      '.sq-top5 li span.sq-flame{flex:none!important}' +
+      '.sq-note{text-align:center!important;color:#e6e1ff!important;font-size:19px!important}' +
+      '.sq-msg{text-align:center!important;color:#ffd1d8!important;font-weight:700!important;min-height:1.4em!important}' +
+      '.sq-big{text-align:center!important;font:900 46px/1.1 "Arial Black",Arial,sans-serif!important;margin:6px 0!important}' +
+      '.sq-big.ok{color:#5df2a6!important}.sq-big.no{color:#ff9aab!important}' +
+      '.sq-card{background:rgba(255,255,255,.08)!important;border:2px solid rgba(255,255,255,.14)!important;border-radius:14px!important;padding:16px 18px!important}' +
+      '.sq-card h3{margin:0 0 10px!important;font:900 18px/1.2 "Arial Black",Arial,sans-serif!important;color:#fff!important}' +
+      '.sq-rules{margin:0!important;padding-left:22px!important;color:#e6e1ff!important}.sq-rules li{margin:4px 0!important}' +
+      '.sq-stats{display:flex!important;gap:12px!important;justify-content:center!important;flex-wrap:wrap!important}' +
+      '.sq-stat{background:#fff!important;color:#17113a!important;border-radius:14px!important;padding:12px 18px!important;text-align:center!important;min-width:140px!important}' +
+      '.sq-stat b{display:block!important;font:900 30px/1.1 "Arial Black",Arial,sans-serif!important}' +
+      '.sq-stat span{font-size:14px!important;font-weight:700!important;color:#4a4566!important}' +
+      '.sq-flame{display:inline-block!important;background:#ff8a1f!important;color:#1d0d00!important;border-radius:999px!important;padding:3px 10px!important;font:900 14px/1.2 Arial,sans-serif!important;white-space:nowrap!important}' +
+      '.sq-board{display:grid!important;grid-template-columns:3fr 2fr!important;gap:14px!important}' +
+      '.sq-top5{list-style:none!important;margin:0!important;padding:0!important}' +
+      '.sq-top5 li{display:flex!important;align-items:center!important;gap:12px!important;padding:10px 12px!important;border-radius:10px!important;background:rgba(255,255,255,.08)!important;margin-bottom:8px!important;font-size:21px!important}' +
+      '.sq-top5 li b{flex:none!important;width:44px!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important;color:#ffd75e!important}' +
+      '.sq-top5 li span{flex:1!important;font-weight:700!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}' +
+      '.sq-top5 li em{font-style:normal!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important}' +
+      '.sq-meter{height:12px!important;border-radius:999px!important;background:rgba(255,255,255,.15)!important;overflow:hidden!important}' +
+      '.sq-meter i{display:block!important;height:100%!important;background:#5df2a6!important;transition:width .4s!important}' +
+      '.sq-pick{display:flex!important;gap:8px!important;justify-content:center!important;flex-wrap:wrap!important}' +
+      '.sq-pick button{border:2px solid rgba(255,255,255,.4)!important;background:transparent!important;color:#fff!important;border-radius:999px!important;padding:8px 16px!important;font:700 17px Arial,sans-serif!important;cursor:pointer!important}' +
+      '.sq-pick button:hover,.sq-pick button:focus{background:rgba(255,255,255,.12)!important;color:#fff!important}' +
+      '.sq-pick button.on,.sq-pick button.on:hover,.sq-pick button.on:focus{background:#fff!important;color:#17113a!important;border-color:#fff!important}' +
+      '.sq-launch{position:fixed!important;left:50%!important;bottom:86px!important;transform:translateX(-50%)!important;z-index:2147480400!important;border:0!important;border-radius:999px!important;background:#17113a!important;color:#fff!important;font:900 20px/1 "Arial Black",Arial,sans-serif!important;padding:16px 28px!important;box-shadow:0 6px 0 #ff8a1f,0 10px 30px rgba(0,0,0,.35)!important;cursor:pointer!important}' +
+      '.sq-launch i{display:inline-block!important;width:12px!important;height:16px!important;margin-right:10px!important;vertical-align:-1px!important;background:#ff8a1f!important;border-radius:50%/60% 60% 40% 40%!important}' +
+      '.sq-pop{animation:sqPop .45s ease-out!important}' +
+      '@keyframes sqPop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}' +
+      '@media (max-width:700px){.sq-opts{grid-template-columns:1fr!important}.sq-board{grid-template-columns:1fr!important}.sq-q{font-size:20px!important}.sq-big{font-size:34px!important}}' +
+      '@media (prefers-reduced-motion:reduce){.sq-pop{animation:none}.sq-bar i,.sq-meter i{transition:none}}';
+    document.head.appendChild(st);
+  }
+  function sqOpen() {
+    sqStyle();
+    if (!sqBox) {
+      sqBox = el('div', 'sq');
+      sqBox.setAttribute('role', 'dialog');
+      sqBox.setAttribute('aria-label', 'Streak Challenge');
+      document.body.appendChild(sqBox);
+    }
+    sqOn = true;
+    return sqBox;
+  }
+  function sqClose() { if (sqBox) { sqBox.remove(); sqBox = null; } sqOn = false; sqDrawn = ''; clearInterval(sqTick); sqTick = null; }
+  function sqHead(box, count, ends) {
+    var top = el('div', 'sq-top');
+    var br = el('div', 'sq-brand'); br.appendChild(el('i')); br.appendChild(document.createTextNode('Streak Challenge'));
+    top.appendChild(br);
+    if (count) top.appendChild(el('span', 'sq-count', count));
+    if (ends) {
+      var tm = el('span', 'sq-time'); tm.setAttribute('data-ends', String(ends));
+      top.appendChild(tm);
+    }
+    box.appendChild(top);
+    sqTickNow();
+    return top;
+  }
+  function sqTickNow() {
+    if (!sqBox) return;
+    Array.prototype.forEach.call(sqBox.querySelectorAll('.sq-time'), function (t) {
+      var left = sqLeft(Number(t.getAttribute('data-ends')));
+      t.textContent = sqClock(left);
+      t.classList.toggle('low', left <= 5);
+    });
+  }
+  function sqRules(main) {
+    var c = el('div', 'sq-card');
+    c.appendChild(el('h3', '', 'How it works'));
+    var ul = el('ul', 'sq-rules');
+    ['Each right answer is worth 100 points. Answering fast earns nothing extra, so take your time and think.',
+      'Get answers right in a row for a streak bonus: 150 for the second, 200 for the third, up to 300 a question.',
+      'A wrong answer ends your streak. Your final score becomes Worksheet Hub points.'].forEach(function (x) { ul.appendChild(el('li', '', x)); });
+    c.appendChild(ul);
+    main.appendChild(c);
+  }
+
+  /* ----- the student's iPad ----- */
+  function sqStudent(g) {
+    if (presenting) return;
+    if (!g || mode !== 'live') { if (sqOn) sqClose(); return; }
+    if (g.ends && g.now) sqSkew = g.now - Date.now();
+    if (readJ(SQ_SEEN) === g.gid + ':end' && g.phase === 'end') { if (sqOn) sqClose(); return; }
+    if (sqGid !== g.gid) { sqGid = g.gid; sqPick = ''; sqMsg = ''; }
+    if (sqJoined !== g.gid && !g.joined) {
+      sqJoined = g.gid;
+      api({ api: 'sqjoin', topicId: cfg.topicId, st: stNow(), gid: g.gid }).catch(function () { sqJoined = ''; });
+    }
+    var key = [g.gid, g.phase, g.qi, g.mine == null ? '' : g.mine, g.me ? g.me.score + '/' + g.me.place : '', g.result ? 1 : 0].join('|');
+    if (key === sqDrawn && sqBox) return;
+    if (g.phase === 'q' && sqDrawn.split('|').slice(0, 3).join('|') === [g.gid, g.phase, g.qi].join('|') && sqBox && g.mine == null) return;   // still choosing
+    sqDrawn = key;
+    if (sqOn && sqBox) sqBox.innerHTML = ''; else sqOpen();
+    var box = sqBox, t = g.task ? byId[g.task] : null;
+    if (g.phase === 'lobby') {
+      sqHead(box, '');
+      var m0 = el('div', 'sq-main');
+      m0.appendChild(el('div', 'sq-big sq-pop', 'You are in'));
+      m0.appendChild(el('p', 'sq-note', 'Look at the board. The first question is coming.'));
+      sqRules(m0);
+      box.appendChild(m0);
+      return;
+    }
+    if (g.phase === 'q' && t) {
+      sqHead(box, 'Question ' + (g.qi + 1) + ' of ' + g.n, g.ends);
+      var main = el('div', 'sq-main');
+      main.appendChild(el('div', 'sq-q', t.question));
+      var msg = el('p', 'sq-msg', '');
+      var locked = g.mine != null;
+      if (locked) {
+        if (t.kind === 'choice') main.appendChild(sqTiles(t, g.mine, null, true));
+        else main.appendChild(el('div', 'sq-big', g.mine + (t.unit && String(g.mine).indexOf(t.unit) < 0 ? ' ' + t.unit : '')));
+        main.appendChild(el('p', 'sq-note', 'Your answer is locked in. Wait for your teacher to show the answer.'));
+        box.appendChild(main);
+        return;
+      }
+      if (sqLeft(g.ends) <= 0) {
+        main.appendChild(el('div', 'sq-big', "Time's up"));
+        main.appendChild(el('p', 'sq-note', 'Look at the board for the answer.'));
+        box.appendChild(main);
+        return;
+      }
+      var go = el('button', 'sq-go', 'Lock in my answer'); go.type = 'button'; go.disabled = true;
+      var value = '';
+      if (t.kind === 'choice') {
+        var tiles = sqTiles(t, '', function (o, b) {
+          value = o; go.disabled = false;
+          Array.prototype.forEach.call(tiles.children, function (c) { c.classList.toggle('on', c === b); c.setAttribute('aria-pressed', c === b ? 'true' : 'false'); });
+          tiles.classList.add('picked');
+        });
+        main.appendChild(tiles);
+        main.appendChild(el('p', 'sq-note', 'Tap an answer, check it, then lock it in. You cannot change it after that.'));
+      } else {
+        var row = el('label', 'sq-entry'), inp = el('input');
+        inp.inputMode = 'decimal'; inp.autocomplete = 'off'; inp.placeholder = 'Your answer';
+        inp.setAttribute('aria-label', 'Your answer' + (t.unit ? ', in ' + t.unit : ''));
+        inp.addEventListener('input', function () { value = inp.value.trim(); go.disabled = !value; msg.textContent = ''; });
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !go.disabled) { e.preventDefault(); go.click(); } });
+        row.appendChild(inp);
+        if (t.unit) row.appendChild(el('b', '', t.unit));
+        main.appendChild(row);
+        main.appendChild(el('p', 'sq-note', 'Type the number, check it, then lock it in. You cannot change it after that.'));
+      }
+      var r0 = el('div', 'sq-row'); r0.appendChild(go); main.appendChild(r0);
+      main.appendChild(msg);
+      go.addEventListener('click', function () {
+        var right = sqMark(t, value);
+        if (right === null) { msg.textContent = 'Type a number, for example 4.5 or 3.0e8.'; return; }
+        go.disabled = true; msg.textContent = 'Sending…';
+        api({ api: 'sqans', topicId: cfg.topicId, st: stNow(), gid: g.gid, qi: g.qi, task: g.task, answer: value, right: right }).then(function (r) {
+          if (r && r.ok) { g.mine = value; sqDrawn = ''; sqStudent(g); return; }
+          if (r && r.signedOut) { signedOutHere(); return; }
+          msg.textContent = (r && r.error) || 'That did not send. Try again.';
+          go.disabled = !!(r && r.closed);
+        }, function () { msg.textContent = 'That did not send. Check the wifi, then try again.'; go.disabled = false; });
+      });
+      box.appendChild(main);
+      return;
+    }
+    if (g.phase === 'reveal' && t) {
+      sqHead(box, 'Question ' + (g.qi + 1) + ' of ' + g.n);
+      var mr = el('div', 'sq-main'), me = g.me || { now: -1, score: 0, streak: 0, place: 0, last: 0 };
+      if (me.now === 1) {
+        mr.appendChild(el('div', 'sq-big ok sq-pop', 'Right! +' + me.last));
+        if (me.streak >= 2) { var f = el('p', 'sq-note'); f.appendChild(el('span', 'sq-flame', sqStreakText(me.streak))); mr.appendChild(f); }
+      } else {
+        mr.appendChild(el('div', 'sq-big no sq-pop', me.now === 0 ? 'Not this time' : 'No answer'));
+        mr.appendChild(el('p', 'sq-note', 'The answer is ' + sqAnswerText(t) + '.' + (me.now === 0 && g.mine != null ? ' You answered ' + g.mine + '.' : '')));
+      }
+      if (t.model) mr.appendChild(el('p', 'sq-note', t.model));
+      mr.appendChild(sqMine(me));
+      mr.appendChild(el('p', 'sq-note', 'Look at the board for the next question.'));
+      box.appendChild(mr);
+      return;
+    }
+    if (g.phase === 'end' && !g.result && !(g.me && g.me.place)) {
+      sqHead(box, '');
+      var m4 = el('div', 'sq-main');
+      m4.appendChild(el('div', 'sq-big', 'The game has ended'));
+      m4.appendChild(el('p', 'sq-note', 'You did not answer any questions in this game, so there is no score.'));
+      var c4 = el('button', 'sq-go', 'Back to the slides'); c4.type = 'button';
+      c4.addEventListener('click', function () { writeJ(SQ_SEEN, g.gid + ':end'); sqClose(); });
+      var r4 = el('div', 'sq-row'); r4.appendChild(c4); m4.appendChild(r4);
+      box.appendChild(m4);
+      return;
+    }
+    if (g.phase === 'end') {
+      sqHead(box, '');
+      var me2 = g.me || { score: 0, place: 0, right: 0, of: 0 }, res = g.result, me3 = el('div', 'sq-main');
+      me3.appendChild(el('div', 'sq-big sq-pop', 'Final score ' + (res ? res.score : me2.score)));
+      var stats = el('div', 'sq-stats');
+      var stat = function (b, s) { var x = el('div', 'sq-stat'); x.appendChild(el('b', '', b)); x.appendChild(el('span', '', s)); stats.appendChild(x); };
+      if (res) { stat(res.right + ' / ' + res.of, 'right'); stat(sqPlace(res.place), 'place'); }
+      else if (me2.place) stat(sqPlace(me2.place), 'place');
+      if (res && res.hub > 0) stat('+' + res.hub, 'Worksheet Hub points');
+      me3.appendChild(stats);
+      var line = !res ? 'The game has ended.'
+        : res.had ? 'You already have the points for this chapter check, so this game was for the score only.'
+          : res.later ? 'Your teacher will add your Worksheet Hub points.'
+            : res.hub > 0 ? 'Your points are in the Worksheet Hub. Spend them in the shop and the night market.'
+              : 'No right answers this time, so no points. Go back over the chapter, then practise the check.';
+      me3.appendChild(el('p', 'sq-note', line));
+      var close = el('button', 'sq-go', 'Back to the slides'); close.type = 'button';
+      close.addEventListener('click', function () { writeJ(SQ_SEEN, g.gid + ':end'); sqClose(); loadReview(true).then(null, function () {}); });
+      var r1 = el('div', 'sq-row'); r1.appendChild(close); me3.appendChild(r1);
+      box.appendChild(me3);
+      return;
+    }
+    sqClose();
+  }
+  function sqMine(me) {
+    var s = el('div', 'sq-stats');
+    var a = el('div', 'sq-stat'); a.appendChild(el('b', '', String(me.score))); a.appendChild(el('span', '', 'your score')); s.appendChild(a);
+    if (me.place) { var b = el('div', 'sq-stat'); b.appendChild(el('b', '', sqPlace(me.place))); b.appendChild(el('span', '', 'of ' + (me.of || '') + ' players')); s.appendChild(b); }
+    return s;
+  }
+  /* The choices as coloured tiles, in the deck's own order, so A is A on every iPad and on the board. */
+  function sqTiles(t, chosen, pick, done) {
+    var box = el('div', 'sq-opts' + (chosen ? ' picked' : ''));
+    (t.options || []).forEach(function (o, i) {
+      var b = el('button', 'sq-opt' + (String(o) === String(chosen) ? ' on' : ''));
+      b.type = 'button';
+      b.style.setProperty('background', SQ_COLOURS[i % SQ_COLOURS.length], 'important');
+      b.appendChild(el('b', '', SQ_LETTERS.charAt(i)));
+      b.appendChild(el('span', '', o));
+      b.disabled = !!done || !pick;
+      if (pick) b.addEventListener('click', function () { pick(String(o), b); });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /* ----- the projector ----- */
+  var sqLaunch = null, sqState = null, sqPoll = null, sqBusy = false, sqSecs = 60, sqAuto = '', sqView = '';
+  function sqCall(op, extra) {
+    var body = { api: 'sq', op: op, pin: presPin, topicId: cfg.topicId, cls: presCls };
+    Object.keys(extra || {}).forEach(function (k) { body[k] = extra[k]; });
+    return api(body).then(function (r) {
+      if (r && r.ok === false && /PIN|sign-in/i.test(r.error || '')) { var e = new Error('PIN'); e.pin = true; throw e; }
+      if (r && r.ok === false && /Unknown request/.test(r.error || '')) throw new Error('The Streak Challenge needs the new Live Board code. Paste Code.gs and App.gs from the update, then try again.');
+      if (!r || r.ok === false) throw new Error((r && r.error) || 'Live Board did not answer.');
+      return r;
+    });
+  }
+  var sqResumed = '';
+  function sqWatchPresenter() {
+    var on = presenting && presCls && sqQs().length > 0;
+    if (on && sqResumed !== presCls && !sqOn) {
+      sqResumed = presCls;   // the page was reloaded during a game: carry on with it
+      sqCall('state').then(function (r) { if (r.game && r.game.phase !== 'end' && !sqOn) sqPresenter(false, r); }, function () {});
+    }
+    var sl = on ? currentSlide() : null;
+    var show = !!(sl && isCheckSlide(sl)) && !sqOn;
+    if (show && !sqLaunch) {
+      sqStyle();
+      sqLaunch = el('button', 'sq-launch');
+      sqLaunch.type = 'button';
+      sqLaunch.appendChild(el('i'));
+      sqLaunch.appendChild(document.createTextNode('Play the chapter check as a Streak Challenge'));
+      sqLaunch.addEventListener('click', function () { sqPresenter(true); });
+      document.body.appendChild(sqLaunch);
+      // A game already running for this class (the page was reloaded): pick it up.
+      sqCall('state').then(function (r) { if (r.game && r.game.phase !== 'end') sqPresenter(false, r); }, function () {});
+    } else if (!show && sqLaunch) { sqLaunch.remove(); sqLaunch = null; }
+  }
+  setInterval(sqWatchPresenter, 900);
+  setInterval(function () { if (sqOn && !presenting) sqTickNow(); }, 500);
+  function sqPresenter(fresh, r) {
+    sqOpen();
+    if (sqLaunch) { sqLaunch.remove(); sqLaunch = null; }
+    clearInterval(sqPoll);
+    sqPoll = setInterval(sqRefresh, 2000);
+    clearInterval(sqTick); sqTick = setInterval(function () { sqTickNow(); sqAutoReveal(); }, 500);
+    if (r) { sqShow(r); return; }
+    if (fresh) {
+      sqCall('state').then(function (r2) { if (r2.game && r2.game.phase !== 'end') sqShow(r2); else sqSetup(); }, function () { sqSetup(); });
+      return;
+    }
+    sqRefresh();
+  }
+  function sqStopPresenter() { clearInterval(sqPoll); sqPoll = null; sqClose(); sqState = null; sqView = ''; }
+  function sqRefresh() {
+    if (!sqOn || sqBusy || !sqState) return;
+    sqCall('state').then(function (r) { if (!sqBusy) sqShow(r); }, function () {});
+  }
+  function sqDo(op, extra) {
+    if (sqBusy) return;
+    sqBusy = true;
+    var b = sqBox && sqBox.querySelectorAll('button');
+    if (b) Array.prototype.forEach.call(b, function (x) { x.disabled = true; });
+    sqCall(op, extra).then(function (r) { sqBusy = false; if (op === 'stop') { sqStopPresenter(); return; } sqShow(r); }, function (err) {
+      sqBusy = false;
+      if (err && err.pin) { presAuthLost(); return; }
+      sqMsg = err.message; sqView = '';
+      if (sqState) sqShow(sqState); else sqSetup();
+    });
+  }
+  function sqSetup() {
+    sqState = null; sqView = 'setup';
+    var box = sqOpen(); box.innerHTML = '';
+    sqHead(box, presCls);
+    var main = el('div', 'sq-main'), qs = sqQs();
+    main.appendChild(el('div', 'sq-big', 'Chapter check: ' + qs.length + ' questions'));
+    sqRules(main);
+    var c = el('div', 'sq-card');
+    c.appendChild(el('h3', '', 'Time for each question'));
+    var pick = el('div', 'sq-pick');
+    [30, 45, 60, 90, 120].forEach(function (s) {
+      var b = el('button', s === sqSecs ? 'on' : '', s < 60 ? s + ' seconds' : s === 60 ? '1 minute' : (s / 60) + ' minutes'); b.type = 'button';
+      b.addEventListener('click', function () { sqSecs = s; Array.prototype.forEach.call(pick.children, function (x) { x.classList.toggle('on', x === b); }); });
+      pick.appendChild(b);
+    });
+    c.appendChild(pick);
+    c.appendChild(el('p', 'sq-note', 'You can show the answer early once everyone has answered.'));
+    main.appendChild(c);
+    var row = el('div', 'sq-row');
+    var go = el('button', 'sq-go', 'Start the game'); go.type = 'button';
+    go.addEventListener('click', function () {
+      sqMsg = '';
+      sqDo('start', { qs: qs, kinds: qs.map(function (id) { return byId[id].kind; }), secs: sqSecs });
+    });
+    row.appendChild(go);
+    var no = el('button', 'sq-go alt', 'Not now'); no.type = 'button';
+    no.addEventListener('click', sqStopPresenter);
+    row.appendChild(no);
+    main.appendChild(row);
+    main.appendChild(el('p', 'sq-msg', sqMsg));
+    box.appendChild(main);
+  }
+  function sqAutoReveal() {
+    var g = sqState && sqState.game;
+    if (!g || g.phase !== 'q' || sqBusy) return;
+    var key = g.gid + ':' + g.qi;
+    if (sqAuto !== key && sqLeft(g.ends) <= 0) { sqAuto = key; sqDo('reveal'); }
+  }
+  function sqShow(r) {
+    var g = r && r.game;
+    if (!g) { if (sqView !== 'setup') sqSetup(); return; }
+    if (r.now) sqSkew = r.now - Date.now();
+    sqState = r;
+    var t = g.task ? byId[g.task] : null;
+    var view = [g.gid, g.phase, g.qi, g.phase === 'q' ? r.answered : JSON.stringify([r.joined, r.top, r.tally, r.done])].join('|');
+    if (view === sqView) return;
+    // In the lobby only the number in changes: update it in place.
+    if (g.phase === 'lobby' && sqView.split('|').slice(0, 2).join('|') === [g.gid, 'lobby'].join('|') && sqBox && sqBox.querySelector('.sq-joined')) {
+      sqView = view; sqBox.querySelector('.sq-joined').textContent = String(r.joined || 0); return;
+    }
+    // During a question only the count changes: update it in place.
+    if (g.phase === 'q' && sqView.split('|').slice(0, 3).join('|') === [g.gid, g.phase, g.qi].join('|') && sqBox) {
+      sqView = view; sqCount(r); return;
+    }
+    sqView = view;
+    var box = sqOpen(); box.innerHTML = '';
+    var main = el('div', 'sq-main');
+    var stop = el('button', 'sq-go alt', 'Stop the game (no points)'); stop.type = 'button';
+    stop.addEventListener('click', function () { if (window.confirm('Stop the game? Nobody gets points from it.')) sqDo('stop'); });
+    if (g.phase === 'lobby') {
+      sqHead(box, presCls);
+      main.appendChild(el('div', 'sq-big sq-pop', 'Join on your iPad'));
+      main.appendChild(el('p', 'sq-note', 'The game is on the iPads of everyone in this lesson. Stay on the slides.'));
+      var st = el('div', 'sq-stats'), s1 = el('div', 'sq-stat');
+      s1.appendChild(el('b', 'sq-joined', String(r.joined || 0))); s1.appendChild(el('span', '', 'of ' + (r.classSize || 0) + ' are in'));
+      st.appendChild(s1); main.appendChild(st);
+      sqRules(main);
+      var row = el('div', 'sq-row sq-act'), go = el('button', 'sq-go', 'First question'); go.type = 'button';
+      go.addEventListener('click', function () { sqDo('next'); });
+      row.appendChild(go); row.appendChild(stop); main.appendChild(row);
+    } else if (g.phase === 'q' && t) {
+      sqHead(box, 'Question ' + (g.qi + 1) + ' of ' + g.n, g.ends);
+      main.appendChild(el('div', 'sq-q', t.question));
+      if (t.kind === 'choice') main.appendChild(sqTiles(t, '', null, true));
+      else main.appendChild(el('p', 'sq-note', 'Type your answer on your iPad' + (t.unit ? ', in ' + t.unit : '') + '.'));
+      var meter = el('div', 'sq-card');
+      meter.appendChild(el('h3', 'sq-answered', ''));
+      var bar = el('div', 'sq-meter'); bar.appendChild(el('i', 'sq-fill')); meter.appendChild(bar);
+      main.appendChild(meter);
+      var row2 = el('div', 'sq-row sq-act'), rv = el('button', 'sq-go', 'Show the answer'); rv.type = 'button';
+      rv.addEventListener('click', function () { sqAuto = g.gid + ':' + g.qi; sqDo('reveal'); });
+      row2.appendChild(rv); row2.appendChild(stop); main.appendChild(row2);
+      box.appendChild(main);
+      sqCount(r);
+      main.appendChild(el('p', 'sq-msg', sqMsg)); sqMsg = '';
+      return;
+    } else if (g.phase === 'reveal' && t) {
+      sqHead(box, 'Question ' + (g.qi + 1) + ' of ' + g.n);
+      main.appendChild(el('div', 'sq-q', t.question));
+      var total = r.answered || 0;
+      if (t.kind === 'choice') {
+        var tiles = sqTiles(t, '', null, true);
+        tiles.classList.add('shown');
+        Array.prototype.forEach.call(tiles.children, function (b, i) {
+          var o = String(t.options[i]);
+          if (o === String(t.correct)) b.classList.add('right');
+          b.appendChild(el('em', '', String((r.tally || {})[o] || 0)));
+        });
+        main.appendChild(tiles);
+      } else {
+        main.appendChild(el('div', 'sq-big ok', sqAnswerText(t)));
+      }
+      main.appendChild(el('p', 'sq-note', (r.right || 0) + ' of ' + total + ' got it right.' + (t.model ? ' ' + t.model : '')));
+      main.appendChild(sqBoard(r));
+      var last = g.qi + 1 >= g.n;
+      var row3 = el('div', 'sq-row sq-act'), nx = el('button', 'sq-go', last ? 'Finish and give the points' : 'Next question'); nx.type = 'button';
+      nx.addEventListener('click', function () { sqDo(last ? 'end' : 'next'); });
+      row3.appendChild(nx);
+      if (!last) { var en = el('button', 'sq-go alt', 'End the game here and give the points'); en.type = 'button'; en.addEventListener('click', function () { if (window.confirm('End the game now? Points are given for the questions played so far.')) sqDo('end'); }); row3.appendChild(en); }
+      main.appendChild(row3);
+    } else if (g.phase === 'end') {
+      sqHead(box, presCls);
+      main.appendChild(el('div', 'sq-big sq-pop', 'Final results'));
+      main.appendChild(sqBoard(r, true));
+      var d = r.done || {};
+      var parts = [];
+      if (d.given) parts.push('Worksheet Hub points were added for ' + d.given + (d.given === 1 ? ' student.' : ' students.'));
+      if (d.had) parts.push(d.had + (d.had === 1 ? ' student already had' : ' students already had') + ' the points for this chapter check.');
+      if (d.note) parts.push(d.note);
+      if (!parts.length) parts.push(d.players ? 'No points were due.' : 'Nobody answered, so no points were given.');
+      main.appendChild(el('p', 'sq-note', parts.join(' ')));
+      var row4 = el('div', 'sq-row sq-act'), cl = el('button', 'sq-go', 'Back to the slides'); cl.type = 'button';
+      cl.addEventListener('click', sqStopPresenter);
+      row4.appendChild(cl); main.appendChild(row4);
+    } else { sqSetup(); return; }
+    main.appendChild(el('p', 'sq-msg', sqMsg)); sqMsg = '';
+    box.appendChild(main);
+  }
+  function sqCount(r) {
+    if (!sqBox) return;
+    var n = r.answered || 0, of = Math.max(r.joined || 0, n);
+    var h = sqBox.querySelector('.sq-answered'), f = sqBox.querySelector('.sq-fill');
+    if (h) h.textContent = n + ' of ' + of + ' have answered' + (of && n >= of ? '. Everyone is in, so you can show the answer.' : '');
+    if (f) f.style.setProperty('width', (of ? Math.round(100 * n / of) : 0) + '%', 'important');
+  }
+  function sqBoard(r, final) {
+    var wrap = el('div', 'sq-board');
+    var c1 = el('div', 'sq-card');
+    c1.appendChild(el('h3', '', final ? 'Top 5' : 'Top 5 so far'));
+    var ol = el('ol', 'sq-top5');
+    (r.top || []).forEach(function (x) {
+      var li = el('li');
+      li.appendChild(el('b', '', sqPlace(x.place)));
+      li.appendChild(el('span', '', x.name));
+      if (x.streak >= 2 && !final) li.appendChild(el('span', 'sq-flame', sqStreakText(x.streak)));
+      li.appendChild(el('em', '', String(x.score)));
+      ol.appendChild(li);
+    });
+    if (!(r.top || []).length) ol.appendChild(el('li', '', 'No scores yet.'));
+    c1.appendChild(ol);
+    wrap.appendChild(c1);
+    var c2 = el('div', 'sq-card');
+    c2.appendChild(el('h3', '', final ? 'Best streak' : 'Longest streaks now'));
+    if (final) c2.appendChild(el('div', 'sq-big', r.best ? r.best + ' in a row' : 'None'));
+    else if ((r.streaks || []).length) {
+      var ul = el('ol', 'sq-top5');
+      r.streaks.forEach(function (x) { var li = el('li'); li.appendChild(el('span', '', x.name)); li.appendChild(el('span', 'sq-flame', sqStreakText(x.streak))); ul.appendChild(li); });
+      c2.appendChild(ul);
+    } else c2.appendChild(el('p', 'sq-note', 'No streaks yet. Two right in a row starts one.'));
+    wrap.appendChild(c2);
+    return wrap;
+  }
+
   function start() {
     if (presentMode) { startPresenter(); return; }
     addReviseCard();

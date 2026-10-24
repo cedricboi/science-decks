@@ -49,8 +49,8 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
-var BUILD = '2026-10-10-packages';
-var BRIDGE_LATEST = 12;   // slides with an older bridge reload themselves once a newer copy is on the site
+var BUILD = '2026-10-24-streak';
+var BRIDGE_LATEST = 14;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
   if (e && e.parameter && e.parameter.api === 'build') {
@@ -1048,6 +1048,9 @@ function lbDoPost_(e) {
     else if (d && d.api === 'end') { PIN_INCLASS_ = true; checkPin_(d.pin); apiEndLesson(d.pin, clean_(d.topicId, 120), String(d.cls || '').toUpperCase()); out = { ok: true }; }
     else if (d && d.api === 'lead') { PIN_INCLASS_ = true; out = presenterLead_(d); }
     else if (d && d.api === 'control') { PIN_INCLASS_ = true; checkPin_(d.pin); out = { ok: true, ctl: apiSetControlNoPin_(clean_(d.topicId, 120), d.cls, d.set || {}) }; }
+    else if (d && d.api === 'sq') { PIN_INCLASS_ = true; checkPin_(d.pin); out = sqControl_(d); }
+    else if (d && d.api === 'sqans') out = sqAnswer_(d);
+    else if (d && d.api === 'sqjoin') out = sqJoin_(d);
     else if (d && d.api === 'review') out = review_(d);
     else if (d && d.api === 'results') { PIN_INCLASS_ = true; out = slideResults_(d); }
     else if (d && d.api === 'gatehelp') out = gateHelp_(d);
@@ -2112,7 +2115,8 @@ function checkTries_(events, marked) {
   });
   return groups.filter(function (x) { return marked.every(function (id) { return id in x.got; }); }).map(function (x) {
     var score = marked.filter(function (id) { return x.got[id] === true; }).length;
-    return { at: x.end, assisted: x.assisted, score: score, out: marked.length, pct: Math.round(100 * score / marked.length) };
+    return { at: x.end, assisted: x.assisted, score: score, out: marked.length, pct: Math.round(100 * score / marked.length),
+      seq: marked.map(function (id) { return x.got[id] === true; }) };
   });
 }
 
@@ -2143,6 +2147,8 @@ function scoreChapterCheck_(deckId, who, answers) {
           first: t.assisted ? null : t.pct, firstScore: t.assisted ? '' : t.score + ' / ' + t.out,
           best: t.pct, tries: 0, last: 0, points: null, givenAt: 0, note: '' };
         if (t.assisted) c.note = 'The first try was made before this deck was connected.';
+        // Points as in the Streak Challenge: the questions in the check's order, with a bonus for answers right in a row.
+        else c.sqPts = sqHub_(sqRun_(t.seq).score, t.seq.length, rules.points);
       }
       c.tries += 1;
       c.best = Math.max(c.best == null ? 0 : c.best, t.pct);
@@ -2167,8 +2173,17 @@ function decideAward_(c, rules, onList) {
   if (!qualifies_(c, rules)) return false;
   if (!onList) { c.note = 'Not on the class list, so no points were given.'; return false; }
   if (!rules.points) { c.note = 'Chapter check points is 0 in the Settings tab.'; return false; }
-  c.points = rules.points; c.givenAt = Date.now(); c.note = '';
+  c.points = checkPts_(c, rules); c.givenAt = Date.now(); c.note = '';
   return true;
+}
+/* The points a chapter check earns, the Streak Challenge way: worked out from the first try's answers in order when
+   they are known, or else (Live Board > 7, from the sheet) the first try's share of right answers. */
+function checkPts_(c, rules) {
+  if (c.sqPts != null && !rules.best) return c.sqPts;
+  var m = rules.best ? null : /^(\d+)\s*\/\s*(\d+)$/.exec(String(c.firstScore || '').trim());
+  if (m && Number(m[2]) > 0) return Math.round(rules.points * Number(m[1]) / Number(m[2]));
+  var pct = rules.best ? c.best : c.first;
+  return pct == null ? 0 : Math.round(rules.points * pct / 100);
 }
 
 /* Adds the points to the Hub. If that fails, the row goes back to "not given" with the reason,
@@ -2186,9 +2201,10 @@ function finishAward_(award, result) {
   return result;
 }
 
+/* Any right answer on the try that counts earns points now (the pass mark is no longer used). */
 function qualifies_(c, rules) {
   var pct = rules.best ? c.best : c.first;
-  return pct != null && pct >= rules.pass;
+  return pct != null && pct > 0 && checkPts_(c, rules) > 0;
 }
 
 /* Gives the points if the try qualifies. Changes c; the caller writes it. */
@@ -2206,7 +2222,7 @@ function tryAward_(c, rules, onList) {
 function giveHubPoints_(c, rules) {
   var title = shortTitle_(c.deck);
   var pct = rules.best ? c.best : c.first;
-  return hubLog_(c, 'check:' + c.deckId, rules.points, title + ': chapter check ' + pct + '%');
+  return hubLog_(c, 'check:' + c.deckId, c.points != null ? c.points : checkPts_(c, rules), title + ': chapter check ' + pct + '%');
 }
 
 function shortTitle_(t) { t = String(t || ''); return t.length > 48 ? t.slice(0, 46).replace(/\s+\S*$/, '') + '…' : t; }
@@ -2275,6 +2291,326 @@ function givePendingPoints() {
   });
   SpreadsheetApp.getUi().alert(given + (given === 1 ? ' student was' : ' students were') + ' given chapter check points.' +
     (waiting ? '\n\n' + waiting + ' still waiting. ' + note : ''));
+}
+
+/* ------------------------------------------------------------------ */
+/* Streak Challenge: the chapter check as a class game                 */
+/* ------------------------------------------------------------------ */
+/* The teacher runs the chapter check from the projector as a game, one question at a time, like Kahoot, but speed
+   gives nothing: every right answer is worth 100, and each right answer in a row after the first adds 50 more (up to
+   +200), so a streak of five or more is worth 300 a question. A wrong answer, or none, ends the streak.
+   At the end, each student's score becomes Worksheet Hub points: the full score earns the Chapter check points in the
+   Settings tab (30), and a lower score earns its share. Like the chapter check, a student gets these points once per
+   deck. A student who already has the chapter check points still plays, for the score only.
+   The game is kept in the script properties and the cache under sq_<deck>_<class>:
+     { gid, deckId, cls, qs: [task ids], kinds: [], qi: -1 (waiting to start) or the question shown, phase: 'lobby',
+       'q' (answering), 'reveal' or 'end', secs, qAt, ends, at, done: [award result] }
+   Each student's answers are in the cache under sqa_<gid>_<account>: { n: name, r: reg, a: { qi: [answer, right] } }.
+   The answer key (never sent to the iPads) is under sqk_<gid>. The scores at the last reveal are under sqb_<gid>. */
+var SQ_BASE = 100, SQ_STEP = 50, SQ_MAX_STEPS = 4, SQ_KEEP = 21600, SQ_GRACE = 4000;
+function sqKey_(deckId, cls) { return 'sq_' + String(deckId).slice(0, 120) + '_' + normClass_(cls); }
+function sqAnsKey_(gid, aid) { return 'sqa_' + gid + '_' + aid; }
+/* The points for one right answer that makes a streak of this many. */
+function sqWorth_(streak) { return SQ_BASE + SQ_STEP * Math.min(Math.max(streak - 1, 0), SQ_MAX_STEPS); }
+/* The most a game of n questions can give: every answer right. */
+function sqMax_(n) { var t = 0; for (var i = 1; i <= n; i++) t += sqWorth_(i); return t; }
+/* A run of answers (true right, false wrong, null none) in question order: the score, the streak now, the best streak,
+   how many were right and what the last one earned. */
+function sqRun_(seq) {
+  var score = 0, streak = 0, best = 0, right = 0, last = 0;
+  seq.forEach(function (ok) {
+    if (ok === true) { streak++; right++; last = sqWorth_(streak); score += last; best = Math.max(best, streak); }
+    else { streak = 0; last = 0; }
+  });
+  return { score: score, streak: streak, best: best, right: right, last: last };
+}
+/* Worksheet Hub points for a score in a game of n questions: the share of the most it could have been. */
+function sqHub_(score, n, cap) { return n && cap > 0 ? Math.round(cap * score / sqMax_(n)) : 0; }
+
+function sqGet_(deckId, cls, raw) {
+  var key = sqKey_(deckId, cls);
+  if (raw === undefined) raw = CacheService.getScriptCache().get(key);
+  if (raw === null || raw === undefined) {
+    raw = PropertiesService.getScriptProperties().getProperty(key) || 'none';
+    cachePut_(key, raw, SQ_KEEP);
+  }
+  if (!raw || raw === 'none') return null;
+  var g = null;
+  try { g = JSON.parse(raw); } catch (err) { g = null; }
+  // A game left open is closed after six hours.
+  return g && Date.now() - (g.at || 0) < SQ_KEEP * 1000 ? g : null;
+}
+function sqSave_(g, deckId, cls) {
+  var key = sqKey_(g ? g.deckId : deckId, g ? g.cls : cls), raw = g ? JSON.stringify(g) : 'none';
+  if (g) PropertiesService.getScriptProperties().setProperty(key, raw); else PropertiesService.getScriptProperties().deleteProperty(key);
+  cachePut_(key, raw, SQ_KEEP);
+}
+/* What every iPad may know: no answers. */
+function sqPublic_(g) {
+  if (!g) return null;
+  var out = { gid: g.gid, qi: g.qi, n: g.qs.length, phase: g.phase, ends: g.ends || 0, qAt: g.qAt || 0 };
+  if (g.qi >= 0 && g.qi < g.qs.length) out.task = g.qs[g.qi];
+  return out;
+}
+/* Every student on the class list with their answers in this game. */
+function sqPlayers_(g) {
+  var list = readRoster_()[g.cls] || [], keys = list.map(function (s) { return sqAnsKey_(g.gid, acctId_(g.cls, s.name)); });
+  var got = keys.length ? CacheService.getScriptCache().getAll(keys) : {};
+  var out = [];
+  list.forEach(function (s, i) {
+    var raw = got[keys[i]];
+    if (!raw) return;
+    var x = null;
+    try { x = JSON.parse(raw); } catch (err) { x = null; }
+    if (x) out.push({ aid: acctId_(g.cls, s.name), name: s.name, reg: s.reg, a: x.a || {}, j: x.j || 0 });
+  });
+  return out;
+}
+/* Each player's run up to question upto (the questions shown so far), with places: equal scores share a place. */
+function sqScores_(g, players, upto) {
+  var rows = players.map(function (p) {
+    var seq = [];
+    for (var i = 0; i <= upto; i++) seq.push(p.a[i] ? p.a[i][1] === true : null);
+    var r = sqRun_(seq);
+    r.aid = p.aid; r.name = p.name; r.reg = p.reg;
+    r.now = upto >= 0 && p.a[upto] ? (p.a[upto][1] === true) : null;
+    return r;
+  });
+  rows.sort(function (a, b) { return b.score - a.score || b.streak - a.streak || a.name.localeCompare(b.name); });
+  rows.forEach(function (r, i) { r.place = i && rows[i - 1].score === r.score ? rows[i - 1].place : i + 1; });
+  return rows;
+}
+/* Saves the scores at a reveal (or the end), so each iPad reads its own line from one cache entry. */
+function sqSnapshot_(g, rows, final) {
+  var me = {};
+  rows.forEach(function (r) { me[r.aid] = [r.score, r.streak, r.place, r.now === true ? 1 : r.now === false ? 0 : -1, r.last, r.right]; });
+  var snap = { qi: g.qi, of: rows.length, me: me, final: !!final };
+  cachePut_('sqb_' + g.gid, JSON.stringify(snap), SQ_KEEP);
+  return snap;
+}
+
+/* The projector: start, next, reveal, end, stop and state. */
+function sqControl_(d) {
+  var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase();
+  if (!deckId || !cls) throw new Error('Choose a class first.');
+  var op = String(d.op || 'state');
+  var g = sqGet_(deckId, cls);
+  if (op === 'start') {
+    var qs = (Array.isArray(d.qs) ? d.qs : []).map(function (x) { return clean_(x, 120); }).filter(String).slice(0, 40);
+    if (!qs.length) throw new Error('This chapter check has no questions that can be marked.');
+    var kinds = (Array.isArray(d.kinds) ? d.kinds : []).slice(0, 40).map(function (k) { return k === 'number' ? 'number' : 'choice'; });
+    // The answer key, kept away from the iPads: the deck's own correct answers, as Live Board has them.
+    var key = {};
+    try { readDeckBoardsFor_(deckId).forEach(function (b) { if (b.kind === 'choice' && b.correct !== '') key[b.taskId] = String(b.correct); }); } catch (err) { key = {}; }
+    g = { gid: 'g' + Utilities.getUuid().replace(/-/g, '').slice(0, 10), deckId: deckId, cls: cls, qs: qs, kinds: kinds, qi: -1, phase: 'lobby',
+      secs: Math.max(10, Math.min(300, Math.round(Number(d.secs) || 60))), qAt: 0, ends: 0, at: Date.now(), done: null };
+    cachePut_('sqk_' + g.gid, JSON.stringify(key), SQ_KEEP);
+    sqSave_(g);
+  } else if (op === 'stop') {
+    if (g) sqSave_(null, deckId, cls);
+    return { ok: true, game: null };
+  } else if (!g) {
+    if (op === 'state') return { ok: true, game: null };
+    throw new Error('The game has ended. Start it again from the chapter check slide.');
+  } else if (op === 'next') {
+    if (g.phase === 'q') throw new Error('Show the answer first.');
+    if (g.phase !== 'end') {
+      if (g.qi + 1 >= g.qs.length) return sqFinish_(g);
+      g.qi++; g.phase = 'q'; g.qAt = Date.now(); g.ends = g.qAt + g.secs * 1000 + SQ_GRACE;
+      sqSave_(g);
+    }
+  } else if (op === 'reveal') {
+    if (g.phase === 'q') { g.phase = 'reveal'; g.ends = Math.min(g.ends, Date.now()); sqSave_(g); }
+  } else if (op === 'end') {
+    return sqFinish_(g);
+  }
+  return sqState_(g);
+}
+/* Everything the projector shows: the question's count of answers and choices, and the leaderboard after a reveal. */
+function sqState_(g, extra) {
+  var players = sqPlayers_(g), qi = g.qi, out = { ok: true, game: sqPublic_(g), joined: players.length, now: Date.now() };
+  out.game.secs = g.secs;
+  if (qi >= 0 && qi < g.qs.length) {
+    var tally = {}, answered = 0, right = 0;
+    players.forEach(function (p) {
+      var a = p.a[qi];
+      if (!a) return;
+      answered++;
+      if (a[1] === true) right++;
+      if (g.phase !== 'q') { var v = String(a[0]); tally[v] = (tally[v] || 0) + 1; }
+    });
+    out.answered = answered;
+    if (g.phase !== 'q') { out.tally = tally; out.right = right; }
+  }
+  var reg = readRoster_()[g.cls] || [];
+  out.classSize = reg.length;
+  if (g.phase === 'reveal' || g.phase === 'end') {
+    var rows = sqScores_(g, players, g.phase === 'end' ? g.qs.length - 1 : qi);
+    out.top = rows.slice(0, 5).map(function (r) { return { name: r.name, score: r.score, streak: r.streak, place: r.place }; });
+    out.streaks = rows.filter(function (r) { return r.streak >= 2; }).sort(function (a, b) { return b.streak - a.streak || b.score - a.score; })
+      .slice(0, 3).map(function (r) { return { name: r.name, streak: r.streak }; });
+    out.best = rows.reduce(function (m, r) { return Math.max(m, r.best); }, 0);
+    sqSnapshot_(g, rows, g.phase === 'end');
+  }
+  if (g.phase === 'end') out.done = g.done;
+  if (extra) Object.keys(extra).forEach(function (k) { out[k] = extra[k]; });
+  return out;
+}
+
+/* The end of the game: every player's score becomes Worksheet Hub points (once per deck), and the game counts as the
+   chapter check's first try for those who had not tried it, so Practise opens for them and the check gives no more. */
+function sqFinish_(g) {
+  if (g.phase === 'end') return sqState_(g);
+  var upto = g.phase === 'lobby' ? -1 : g.qi;   // questions shown: 0..upto
+  var asked = upto + 1;
+  g.phase = 'end'; g.ends = 0;
+  if (asked > 0) g.qs = g.qs.slice(0, asked);   // ended early: only the questions shown count
+  sqSave_(g);
+  var players = sqPlayers_(g).filter(function (p) { return Object.keys(p.a).length > 0; });
+  var rows = asked ? sqScores_(g, players, asked - 1) : [];
+  var rules = checkRules_(), deck = findDeck_(g.deckId) || { title: g.deckId };
+  var due = [], given = 0, had = 0, res = {};
+  if (rows.length) {
+    ensureDeckTabs_();
+    withLock_(function () {
+      var mine = {};
+      readChecks_().forEach(function (c) { if (c.deckId === g.deckId && normClass_(c.cls) === normClass_(g.cls)) mine[normName_(c.name)] = c; });
+      var fresh = [];
+      rows.forEach(function (r) {
+        var pct = Math.round(100 * r.right / asked), pts = sqHub_(r.score, asked, rules.points);
+        var c = mine[normName_(r.name)];
+        if (!c) {
+          c = { row: 0, deckId: g.deckId, deck: deck.title, cls: g.cls, reg: r.reg, name: r.name, first: pct, firstScore: r.right + ' / ' + asked,
+            best: pct, tries: 0, last: 0, points: null, givenAt: 0, note: '' };
+          fresh.push(c);
+        }
+        c.tries += 1; c.best = Math.max(c.best == null ? 0 : c.best, pct); c.last = Date.now();
+        var line = { score: r.score, place: r.place, right: r.right, of: asked, hub: 0, had: false };
+        if (c.points != null) { line.had = true; had++; }
+        else if (pts > 0) {
+          if (!rules.points) c.note = 'Chapter check points is 0 in the Settings tab.';
+          else { c.points = pts; c.givenAt = Date.now(); c.note = 'Streak Challenge: ' + r.score + ' points'; line.hub = pts; due.push({ c: c, pts: pts, score: r.score }); }
+        } else c.note = 'Streak Challenge: no right answers, so no points.';
+        res[r.aid] = line;
+        if (c.row) writeCheck_(c);
+      });
+      if (fresh.length) {
+        var sh = sheet_(TAB.checks), at = sh.getLastRow() + 1;
+        sh.getRange(at, 1, fresh.length, CHECK_COLS.length).setValues(fresh.map(checkToRow_));
+        fresh.forEach(function (c, i) { c.row = at + i; });
+        CacheService.getScriptCache().remove('checks_' + normClass_(g.cls));
+      }
+    });
+    // The points go to the Hub in one write. If that fails, the rows go back to "not given" with the reason,
+    // so Live Board > 7 gives them later.
+    if (due.length) {
+      var hub = sqHubMany_(due.map(function (x) {
+        return { who: x.c, item: 'check:' + g.deckId, points: x.pts, note: shortTitle_(deck.title) + ': Streak Challenge ' + x.score + ' points' };
+      }));
+      if (hub.ok) given = due.length;
+      else withLock_(function () {
+        due.forEach(function (x) {
+          x.c.points = null; x.c.givenAt = 0; x.c.note = hub.note + ' (Streak Challenge: ' + x.pts + ' points)';
+          writeCheck_(x.c);
+          rows.forEach(function (r) { if (normName_(r.name) === normName_(x.c.name) && res[r.aid]) { res[r.aid].hub = 0; res[r.aid].later = true; } });
+        });
+      });
+    }
+  }
+  g.done = { players: rows.length, given: given, had: had, asked: asked, note: due.length && !given ? 'The points could not be added to the Hub yet. Use Live Board > 7 later.' : '' };
+  sqSave_(g);
+  cachePut_('sqr_' + g.gid, JSON.stringify(res), SQ_KEEP);
+  return sqState_(g);
+}
+/* Many lines in the Hub's Rewards log at once. lines: [{ who: { cls, reg, name }, item, points, note }]. */
+function sqHubMany_(lines) {
+  var id = getSetting_('Class list sheet ID');
+  if (!id) return { ok: false, note: 'Not given yet: Live Board is not linked to the Worksheet Hub (Live Board > 5), then use Live Board > 7.' };
+  var sh;
+  try { sh = HUB_LOG_SH_ || SpreadsheetApp.openById(id).getSheetByName(HUB_LOG); } catch (err) { return { ok: false, note: 'Not given yet: the Worksheet Hub sheet could not be opened.' }; }
+  if (!sh) {
+    // The Hub makes its own log the first time: one line the usual way makes it, then the rest follow.
+    var r0 = hubLog_(lines[0].who, lines[0].item, lines[0].points, lines[0].note);
+    if (!r0.ok) return r0;
+    lines = lines.slice(1);
+    sh = HUB_LOG_SH_;
+    if (!lines.length) return { ok: true };
+  }
+  var now = new Date();
+  try {
+    sh.getRange(sh.getLastRow() + 1, 1, lines.length, HUB_LOG_COLS.length).setValues(lines.map(function (l) {
+      return [now, l.who.cls, l.who.reg, l.who.name, 'Lesson', l.item, l.points, 0, '', '', l.note];
+    }));
+  } catch (err) { return { ok: false, note: 'Not given yet: ' + err.message }; }
+  var seen = {};
+  lines.forEach(function (l) { var k = 'hub_' + normClass_(l.who.cls); if (!seen[k]) { seen[k] = 1; CacheService.getScriptCache().remove(k); } });
+  return { ok: true };
+}
+
+/* A student's answer. Only while the question is open, and only the first answer counts: no changing it, and no
+   speed bonus, so there is no reason to rush. */
+function sqAnswer_(d) {
+  var tk = stCheck_(d.st);
+  if (!tk) return { ok: false, signedOut: true };
+  var deckId = clean_(d.topicId, 120), g = sqGet_(deckId, tk.cls);
+  if (!g || g.gid !== String(d.gid || '')) return { ok: false, error: 'This game has ended.' };
+  var qi = Math.round(Number(d.qi));
+  if (g.phase !== 'q' || qi !== g.qi) return { ok: false, error: 'The answers for this question are closed.', closed: true };
+  if (Date.now() > g.ends) return { ok: false, error: "Time's up for this question.", closed: true };
+  var task = g.qs[qi];
+  if (String(d.task || '') !== task) return { ok: false, error: 'That is not the question being asked.' };
+  var answer = clean_(d.answer, 200);
+  if (!answer) return { ok: false, error: 'Choose an answer first.' };
+  var right = d.right === true;
+  // A choice is marked here, from the deck's answer key, when Live Board has it.
+  var key = null;
+  try { key = JSON.parse(CacheService.getScriptCache().get('sqk_' + g.gid) || 'null'); } catch (err) { key = null; }
+  if (key && key[task] != null && g.kinds[qi] !== 'number') right = answer === key[task];
+  var k = sqAnsKey_(g.gid, tk.id), cache = CacheService.getScriptCache();
+  var x = null;
+  try { x = JSON.parse(cache.get(k) || 'null'); } catch (err) { x = null; }
+  if (!x) { var s = findStudent_(tk.cls, tk.name); x = { n: tk.name, r: s ? s.reg : '', a: {}, j: Date.now() }; }
+  if (x.a[qi]) return { ok: true, locked: true, already: true };
+  x.a[qi] = [answer, right];
+  cachePut_(k, JSON.stringify(x), SQ_KEEP);
+  return { ok: true, locked: true };
+}
+/* Joining (the iPad has seen the game): counted on the projector before the first question. */
+function sqJoin_(d) {
+  var tk = stCheck_(d.st);
+  if (!tk) return { ok: false, signedOut: true };
+  var g = sqGet_(clean_(d.topicId, 120), tk.cls);
+  if (!g || g.gid !== String(d.gid || '')) return { ok: false };
+  var k = sqAnsKey_(g.gid, tk.id), cache = CacheService.getScriptCache();
+  if (!cache.get(k)) { var s = findStudent_(tk.cls, tk.name); cachePut_(k, JSON.stringify({ n: tk.name, r: s ? s.reg : '', a: {}, j: Date.now() }), SQ_KEEP); }
+  return { ok: true };
+}
+/* What one iPad sees in its check: the game, its own answer to the question being asked, and after a reveal its own
+   result and place (never anyone else's). */
+function sqForIpad_(g, aid, got) {
+  if (!g) return null;
+  var out = sqPublic_(g), mine = null, snap = null, fin = null;
+  out.now = Date.now();
+  try { mine = JSON.parse(got[sqAnsKey_(g.gid, aid)] || 'null'); } catch (err) { mine = null; }
+  try { snap = JSON.parse(got['sqb_' + g.gid] || 'null'); } catch (err) { snap = null; }
+  out.joined = !!mine;
+  if (mine && g.qi >= 0 && mine.a[g.qi]) out.mine = mine.a[g.qi][0];
+  if (snap && snap.qi === g.qi && (g.phase === 'reveal' || g.phase === 'end')) {
+    var m = snap.me[aid];
+    out.me = m ? { score: m[0], streak: m[1], place: m[2], now: m[3], last: m[4], right: m[5], of: snap.of } : { score: 0, streak: 0, place: 0, now: -1, last: 0, right: 0, of: snap.of };
+  }
+  if (g.phase === 'reveal' && g.qi >= 0) {
+    // the right answer to the question just shown (choice questions), so the iPad can show it
+    var key = null;
+    try { key = JSON.parse(got['sqk_' + g.gid] || 'null'); } catch (err) { key = null; }
+    if (key && key[g.qs[g.qi]] != null) out.answer = key[g.qs[g.qi]];
+  }
+  if (g.phase === 'end') {
+    try { fin = JSON.parse(got['sqr_' + g.gid] || 'null'); } catch (err) { fin = null; }
+    if (fin && fin[aid]) out.result = fin[aid];
+    out.asked = g.done ? g.done.asked : g.qs.length;
+  }
+  return out;
 }
 
 /* ------------------------------------------------------------------ */
@@ -2745,7 +3081,7 @@ function liveCheck_(d) {
   var cls = who ? who.cls : '';
   var got = got0;
   if (who) {
-    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name)]);
+    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name), sqKey_(deckId, cls)]);
     Object.keys(more).forEach(function (k) { got[k] = more[k]; });
   }
   var old = null, c0 = who ? getCtl_(deckId, cls, got[ctlKey_(deckId, cls)], got[leadKey_(deckId, cls)] || null) : null;
@@ -2772,6 +3108,13 @@ function liveCheck_(d) {
     out.live = !!c.lesson;                                                       // answers count now
     out.open = out.live || (alloc[normClass_(cls)] || []).indexOf(deckId) >= 0;   // open for revision
     if (!out.live) out.ask = null;
+    // Streak Challenge: the game on this deck for the class, while the lesson is on.
+    var g = out.live ? sqGet_(deckId, cls, got[sqKey_(deckId, cls)]) : null;
+    if (g) {
+      var gk = cache.getAll([sqAnsKey_(g.gid, aid || acctId_(cls, who.name)), 'sqb_' + g.gid, 'sqk_' + g.gid, 'sqr_' + g.gid]);
+      out.game = sqForIpad_(g, aid || acctId_(cls, who.name), gk);
+      out.poll = Math.min(out.poll, 3);
+    }
   } else if (out.ask) out.poll = 6;
   return out;
 }
