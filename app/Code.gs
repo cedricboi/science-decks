@@ -49,8 +49,8 @@ var MAX_IMAGE_CHARS = 2500000; // about 1.8 MB of JPEG or PNG
 
 /* Which code this is. Change it with every update, so the Teacher page can tell whether the
    link your slides and your phone use is running this same code (see apiLinkCheck). */
-var BUILD = '2026-10-24-streak';
-var BRIDGE_LATEST = 14;   // slides with an older bridge reload themselves once a newer copy is on the site
+var BUILD = '2026-10-25-one-platform';
+var BRIDGE_LATEST = 15;   // slides with an older bridge reload themselves once a newer copy is on the site
 
 function lbDoGet_(e) {
   if (e && e.parameter && e.parameter.api === 'build') {
@@ -60,7 +60,7 @@ function lbDoGet_(e) {
   var view = (e && e.parameter && e.parameter.view) || '';
   var page = view === 'teacher' ? 'Teacher' : 'Student';
   // The page comes from the lesson site when it can (it updates itself), or else the copy pasted here.
-  return (typeof pageHtml_ === 'function' ? HtmlService.createHtmlOutput(pageHtml_(page)) : HtmlService.createHtmlOutputFromFile(page))
+  return (typeof pageAssembled_ === 'function' ? HtmlService.createHtmlOutput(pageAssembled_(page)) : HtmlService.createHtmlOutputFromFile(page))
     .setTitle(page === 'Teacher' ? 'Live Board (teacher)' : 'learnwithmrcedric')
     .addMetaTag('viewport', page === 'Teacher' ? 'width=device-width, initial-scale=1, viewport-fit=cover'
       : 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover')
@@ -86,7 +86,8 @@ function lbOnOpen_() {
 }
 
 function setupSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  guardJob_('setupSheet');
+  var ss = lbSs_();
 
   var st = ss.getSheetByName(TAB.settings) || ss.insertSheet(TAB.settings);
   if (st.getLastRow() < 1) {
@@ -130,16 +131,27 @@ function setupSheet() {
 /* Changes typed into the sheet take effect straight away. */
 function onEdit(e) {
   try {
-    var name = e.range.getSheet().getName();
+    // Release 34: once the app uses the one sheet, this old sheet is the backup. Say so, and change nothing.
+    if (oneSsId_() && e && e.source && e.source.getId && e.source.getId() !== oneSsId_()) {
+      try { e.source.toast('This is the backup copy. Changes here are not used. Open the one sheet from the Teacher Hub, Settings.', 'learnwithmrcedric', 8); } catch (err) { /* fine */ }
+      return;
+    }
+    onEditClear_(e.range.getSheet().getName());
+  } catch (err) { /* ignore */ }
+}
+function onEditClear_(name) {
+  try {
     var cache = CacheService.getScriptCache();
+    if (name === 'Students' || name === 'Assignments' || name === 'Submissions') { cache.remove('stu_idx'); try { verBump_('today'); } catch (err) { /* fine */ } }
     if (name === TAB.students) cache.remove('roster');
-    if (name === TAB.settings) cache.remove('pin');
+    if (name === TAB.settings) { cache.remove('pin'); cache.remove(SETTINGS_KEY); }
     if (name === TAB.boards) cache.remove('boards');
     if (name === TAB.deckq) { cache.remove('deckboards'); readDecks_().forEach(function (d) { cache.remove('db_' + String(d.id).slice(0, 120)); }); }
   } catch (err) { /* ignore */ }
 }
 
 function checkStudents() {
+  guardJob_('checkStudents');
   CacheService.getScriptCache().remove('roster');
   var roster = readRoster_();
   var lines = [];
@@ -205,7 +217,7 @@ function setWebAppLink() {
 function ensureDeckTabs_() {
   var cache = CacheService.getScriptCache();
   if (cache.get('tabs_v5')) return;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = lbSs_();
   var dk = ss.getSheetByName(TAB.decks);
   if (!dk) {
     dk = ss.insertSheet(TAB.decks);
@@ -223,7 +235,9 @@ function ensureDeckTabs_() {
   var st = sheet_(TAB.settings);
   var have = {};
   st.getDataRange().getValues().forEach(function (r) { have[String(r[0]).trim()] = true; });
-  CHECK_SETTINGS.forEach(function (x) { if (!have[x[0]]) st.appendRow(x); });
+  var added = false;
+  CHECK_SETTINGS.forEach(function (x) { if (!have[x[0]]) { st.appendRow(x); added = true; } });
+  if (added) { SETTINGS_MEMO_ = null; try { cache.remove(SETTINGS_KEY); } catch (err) { /* fine */ } }
   var pg = ss.getSheetByName(TAB.progress);
   if (!pg) {
     pg = ss.insertSheet(TAB.progress);
@@ -294,18 +308,19 @@ function setHubLink() {
 /* ------------------------------------------------------------------ */
 
 function sheet_(name) {
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+  var sh = lbSs_().getSheetByName(name);
   if (!sh) throw new Error('The "' + name + '" tab is missing. Run Live Board > 1. Set up this sheet.');
   return sh;
 }
 
 function getSetting_(key) {
-  var rows = sheet_(TAB.settings).getDataRange().getValues();
-  for (var i = 1; i < rows.length; i++) if (String(rows[i][0]).trim() === key) return String(rows[i][1]).trim();
-  return '';
+  var map = settingsMap_();
+  return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : '';
 }
 
 function setSetting_(key, value) {
+  SETTINGS_MEMO_ = null;
+  try { CacheService.getScriptCache().remove(SETTINGS_KEY); } catch (err) { /* fine */ }
   var sh = sheet_(TAB.settings);
   var rows = sh.getDataRange().getValues();
   for (var i = 1; i < rows.length; i++) {
@@ -345,7 +360,7 @@ function checkPin_(pin) {
   }
   var real = cache.get('pin');
   if (!real) {
-    real = getSetting_('Teacher PIN');
+    real = teacherPin_();
     if (real) cache.put('pin', real, 120);
   }
   var fails = Number(cache.get('pin_fails') || 0);
@@ -362,7 +377,13 @@ function bump_(boardId) {
 }
 
 function version_(boardId) {
-  return Number(PropertiesService.getScriptProperties().getProperty('v_' + boardId) || 0);
+  var c = 0;
+  try { c = Number(CacheService.getScriptCache().get('vc_' + boardId) || 0); } catch (err) { c = 0; }
+  return Number(PropertiesService.getScriptProperties().getProperty('v_' + boardId) || 0) + c;
+}
+/* A change stamp for a deck question's board, in the cache only (release 34: answers no longer write script properties). */
+function bumpCache_(boardId) {
+  try { var cache = CacheService.getScriptCache(), k = 'vc_' + boardId; cache.put(k, String(Number(cache.get(k) || 0) + 1), 21600); } catch (err) { /* only a stamp */ }
 }
 
 function withLock_(fn, ms) {
@@ -383,7 +404,7 @@ function rosterSheet_() {
   try { id = typeof hubSheetId_ === 'function' ? hubSheetId_() : ''; } catch (err) { id = ''; }
   if (!id) id = getSetting_('Class list sheet ID');
   if (id) {
-    var sh = SpreadsheetApp.openById(id).getSheetByName('Students');
+    var sh = (oneSsId_() || id === hubSheetId_() ? hubSs_() : SpreadsheetApp.openById(id)).getSheetByName('Students');
     if (!sh) throw new Error('The Worksheet Hub sheet has no Students tab.');
     return sh;
   }
@@ -501,7 +522,7 @@ function readDeckBoards_() {
   var cache = CacheService.getScriptCache();
   var hit = cache.get('deckboards');
   if (hit) return JSON.parse(hit);
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.deckq);
+  var sh = lbSs_().getSheetByName(TAB.deckq);
   var out = [];
   if (sh && sh.getLastRow() > 1) {
     var rows = sh.getRange(2, 1, sh.getLastRow() - 1, DECKQ_COLS.length).getValues();
@@ -1039,7 +1060,7 @@ function lbDoPost_(e) {
   var out;
   try {
     var d = JSON.parse(e.postData.contents);
-    if (d && d.api === 'roster') out = { ok: true, classes: apiRoster(), typed: true };
+    if (d && d.api === 'roster') { out = { ok: true, classes: apiRoster(), typed: true }; try { out.liveCls = Object.keys(runningFor_(Object.keys(readRoster_()))); } catch (err) { out.liveCls = []; } }
     else if (d && d.api === 'unlock') out = { ok: apiUnlock(d.pin) };
     else if (d && d.api === 'live') out = liveCheck_(d);
     else if (d && d.api === 'away') out = awayNote_(d);
@@ -1055,8 +1076,11 @@ function lbDoPost_(e) {
     else if (d && d.api === 'results') { PIN_INCLASS_ = true; out = slideResults_(d); }
     else if (d && d.api === 'gatehelp') out = gateHelp_(d);
     else if (d && d.api === 'st') out = stRequest_(d);
+    else if (d && d.api === 'qa') { var tq = stCheck_(d.st); out = tq ? qcAnswer_(tq, d.qid, d.round, d.answer) : { ok: false, signedOut: true }; }
+    else if (d && d.api === 'pgo') { PIN_INCLASS_ = true; out = presenterGo_(d); }
+    else if (d && d.api === 'tdo') { PIN_INCLASS_ = true; checkPin_(d.pin); out = projectorSafe_(tDo_(String(d.cls || '').toUpperCase(), clean_(d.topicId, 120), String(d.op || ''), d.args || {}, clean_(d.cmdId, 60))); }
     else if (d && d.api === 'mine') { var tkm = stCheck_(d.st); out = { ok: true, done: tkm ? studentDone_(clean_(d.topicId, 120), tkm.cls, tkm.name) : [] }; }
-    else if (d && Number(d.version) === 2 && Array.isArray(d.events)) out = receiveDeckBatch_(d);
+    else if (d && Number(d.version) === 2 && Array.isArray(d.events)) out = frozen_() ? { ok: false, paused: true, error: FROZEN_MSG, acceptedIds: [] } : receiveDeckBatch_(d);
     else if (d && (d.qid || d.question) && d.answer != null) out = receiveSingle_(d);
     else out = { ok: false, error: 'Unknown request.' };
   } catch (err) {
@@ -1123,6 +1147,14 @@ function receiveDeckBatch_(d) {
   // Decks with the Live Board bridge describe their own questions, so they need no connect step.
   var lb = d.liveBoard || {};
   var all = Array.isArray(lb.allQuestions) ? lb.allQuestions : null;
+  // Release 34: two different deck files may not share one topic id (their questions and slide numbers would mix).
+  if (lb.deckUrl && /^https:\/\//.test(lb.deckUrl)) {
+    var kd = findDeck_(deckId), bare = function (u) { return String(u || '').split('#')[0].split('?')[0].replace(/\.html?$/i, '').replace(/\/+$/, '').toLowerCase(); };
+    if (kd && kd.link && /^https:\/\//.test(kd.link) && bare(kd.link) !== bare(lb.deckUrl) && String(lb.deckUrl).indexOf(lessonSite_()) === 0 && String(kd.link).indexOf(lessonSite_()) === 0) {
+      cachePut_('tid_clash', JSON.stringify({ id: deckId, a: bare(kd.link), b: bare(lb.deckUrl), at: Date.now() }), 21600);
+      return { ok: false, error: 'Two decks share one topic id.', clash: true, acceptedIds: [] };
+    }
+  }
   var needRegister = false;
   if (all && all.length) {
     var known0 = findDeck_(deckId);
@@ -1148,20 +1180,34 @@ function receiveDeckBatch_(d) {
   var evKey = function (ev) { return 'ev_' + String(d.recordId || '').slice(0, 50) + '_' + String(ev.id || '').slice(0, 60); };
   var checkRes = null, award = null;
   var visits = who.matched && counts && Array.isArray(d.visits) && d.visits.length;
-  var fresh = [];
+  var fresh = [], saving = {}, posted = false;
   if (answers.length) {
     // A deck that gave up waiting sends the same answers again: skip the ones already saved, and claim the
     // rest straight away, so a resend that arrives while this one is still saving does not save them twice.
+    // A claim is 'p' while it is being saved and 's' once saved. An answer another request is still saving is neither
+    // saved again nor acknowledged here, so the deck keeps it and sends it again until it is saved.
     var withId = answers.filter(function (ev) { return ev.id; });
     var done = withId.length ? cache.getAll(withId.map(evKey)) : {};
-    fresh = answers.filter(function (ev) { return !ev.id || !done[evKey(ev)]; });
+    fresh = answers.filter(function (ev) {
+      if (!ev.id) return true;
+      var v = done[evKey(ev)];
+      if (v === 'p') { saving[ev.id] = 1; return false; }
+      return !v;
+    });
     var claim = {};
-    fresh.forEach(function (ev) { if (ev.id) claim[evKey(ev)] = '1'; });
-    try { if (Object.keys(claim).length) cache.putAll(claim, 21600); } catch (err) { /* only used to skip resent answers */ }
+    fresh.forEach(function (ev) { if (ev.id) claim[evKey(ev)] = 'p'; });
+    try { if (Object.keys(claim).length) cache.putAll(claim, 400); } catch (err) { /* only used to skip resent answers */ }
     var touched = {};
     try {
       var known = {};
       if (fresh.length) readDeckBoardsFor_(deckId).forEach(function (b) { known[b.id] = b; });
+      // Release 34: a deck that lists its questions (every deck with the bridge) has nothing else saved: an arcade
+      // round or a task not in the list is accepted and left out, instead of making a new board under the lock.
+      if (all && all.length) {
+        var listed = {};
+        all.forEach(function (q) { var t = clean_(q && (q.id || q.task || q.taskId), 120); if (t) listed[t] = 1; });
+        if (Object.keys(listed).length) fresh = fresh.filter(function (ev) { var t = clean_(ev.task, 120); return !t || listed[t] || known[deckBoardId_(deckId, t)]; });
+      }
       var missing = fresh.some(function (ev) { var t = clean_(ev.task, 120); return t && !known[deckBoardId_(deckId, t)]; });
       if (missing) {
         // A question the deck did not describe (decks with the bridge describe them all): its board is
@@ -1198,17 +1244,29 @@ function receiveDeckBatch_(d) {
         touched[id] = true;
       });
       appendPosts_(rows);
+      posted = true;
+      var saved = {};
+      Object.keys(claim).forEach(function (k) { saved[k] = 's'; });
+      if (Object.keys(saved).length) { try { cache.putAll(saved, 21600); } catch (err) { try { cache.putAll(saved, 21600); } catch (e3) { /* the 'p' claims still hold for 400 s */ } } }
       if (fresh.length) {
-        var sc = scoreChapterCheck_(deckId, who, fresh);
-        if (sc) { checkRes = sc.result; award = sc.award; }
+        // Scored after saving: if scoring fails, the answers stay saved (and are not saved again). The answers to
+        // score are kept for 6 hours and scored with this deck's next batch.
+        var redoKey = 'ckr_' + String(d.recordId || '').slice(0, 50) + '_' + acctId_(who.cls, who.name);
+        try { var sc = scoreChapterCheck_(deckId, who, fresh); if (sc) { checkRes = sc.result; award = sc.award; } }
+        catch (err) { checkRes = null; award = null; try { cachePut_(redoKey, JSON.stringify(fresh.slice(0, 60)), 21600); } catch (e4) { /* too big: not scored */ } }
       }
     } catch (err) {
-      // Not saved (or not scored): let the deck send these again.
-      try { cache.removeAll(Object.keys(claim)); } catch (e2) { /* the claims run out in 6 hours */ }
-      throw err;
+      // Not saved: let the deck send these again.
+      if (!posted) { try { cache.removeAll(Object.keys(claim)); } catch (e2) { /* the claims run out by themselves */ } throw err; }
     }
-    Object.keys(touched).forEach(bump_);
+    Object.keys(touched).forEach(bumpCache_);
     if (counts && lessonCtl.lesson && lessonCtl.hold && !lessonCtl.keep) { try { autoReleaseAnswered_(deckId, who.cls, Object.keys(touched)); } catch (err) { /* shown when the teacher moves on */ } }
+  }
+  // Answers saved earlier whose scoring failed are scored now.
+  if (tk && !award) {
+    var rk = 'ckr_' + String(d.recordId || '').slice(0, 50) + '_' + acctId_(who.cls, who.name), redo = null;
+    try { redo = JSON.parse(cache.get(rk) || 'null'); } catch (err) { redo = null; }
+    if (redo && redo.length) { try { var sc2 = scoreChapterCheck_(deckId, who, redo); cache.remove(rk); if (sc2) { checkRes = sc2.result; award = sc2.award; } } catch (err) { /* tried again with the next batch */ } }
   }
   if (who.matched && (fresh.length || visits)) {
     try { updateProgress_(deckId, who, d, fresh, lb); } catch (err) {
@@ -1217,12 +1275,31 @@ function receiveDeckBatch_(d) {
     }
   }
   if (award) checkRes = finishAward_(award, checkRes);
+  var acked = ackEvents_(d, lessonCtl, who.cls, saving);
   return {
     ok: true, course: d.course, topicId: d.topicId, recordId: d.recordId,
-    acceptedIds: d.events.map(function (ev) { return ev && ev.id; }),
+    acceptedIds: acked.accepted, heldIds: acked.held,
     receivedAt: new Date().toISOString(),
     liveBoard: checkRes ? { check: checkRes, revision: !counts } : { revision: !counts }
   };
+}
+/* Which events the deck may forget (saved, saved before, or not kept on purpose: revision, views) and which it must
+   keep and send again (work done in the minutes before the lesson starts, release 34). */
+function ackEvents_(d, lessonCtl, cls, saving) {
+  var soon = false;
+  if (!lessonCtl.lesson) {
+    try { var nx = nextSlotStart_(cls, Date.now()); soon = !!nx && nx - Date.now() < 20 * 60000; } catch (err) { soon = false; }
+    // In the class's timetabled lesson before the teacher presses Teach (a late start): kept too.
+    if (!soon) { try { soon = !!slotAt_(cls, Date.now()); } catch (err) { /* not on the timetable */ } }
+  }
+  var accepted = [], held = [];
+  saving = saving || {};
+  d.events.forEach(function (ev) {
+    if (!ev || !ev.id || saving[ev.id]) return;
+    var isAnswer = ev.action === 'submit' && ev.valid !== false && String(ev.answer == null ? '' : ev.answer).trim();
+    if (isAnswer && soon && !inLessonWindow_(lessonCtl, Date.parse(ev.at))) held.push(ev.id); else accepted.push(ev.id);
+  });
+  return { accepted: accepted, held: held };
 }
 
 function receiveSingle_(d) {
@@ -1318,8 +1395,21 @@ function liveTally_(rows) {
     });
     var keys = Object.keys(want);
     if (!keys.length) return;
-    var have = cache.getAll(keys);
+    var wrongBy = {};
+    rows.forEach(function (r) {
+      var bid = String(r[1] || '');
+      if (bid.indexOf('D:') !== 0 || !(r[12] === false || String(r[12]).toUpperCase() === 'FALSE')) return;
+      var deck = bid.slice(2, bid.indexOf(':', 2)), task = bid.slice(bid.indexOf(':', 2) + 1), wk = wrongKey_(deck, r[3], r[5]);
+      (wrongBy[wk] = wrongBy[wk] || {})[task] = ((wrongBy[wk] || {})[task] || 0) + 1;
+    });
+    var wks = Object.keys(wrongBy);
+    var have = cache.getAll(keys.concat(wks));
     keys.forEach(function (k) { if (have[k] == null) put[k] = want[k]; });   // keep the first try
+    wks.forEach(function (wk) {
+      var m = {}; try { m = JSON.parse(have[wk] || '{}'); } catch (err) { m = {}; }
+      Object.keys(wrongBy[wk]).forEach(function (t) { m[t] = (m[t] || 0) + wrongBy[wk][t]; });
+      put[wk] = JSON.stringify(m);
+    });
     cache.putAll(put, 21600);
   } catch (err) {
     /* the phone falls back to reading the Posts tab */
@@ -1406,6 +1496,9 @@ function questionSlideFor_(deckId, n) {
    wrong several times, stuck on a slide, behind, two iPads on one name, an old copy of the lesson. */
 function apiPhoneRoom(pin, deckId, cls) {
   checkPin_(pin);
+  return apiPhoneRoomNoPin_(deckId, cls);
+}
+function apiPhoneRoomNoPin_(deckId, cls) {
   deckId = clean_(deckId, 120);
   var roster = readRoster_()[cls] || [], cache = CacheService.getScriptCache();
   var keys = roster.map(function (s) { return pulseStudentKey_(deckId, cls, s.name); });
@@ -1478,7 +1571,7 @@ function readDecks_() {
   var cache = CacheService.getScriptCache();
   var hit = cache.get('decks');
   if (hit) return JSON.parse(hit);
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.decks);
+  var sh = lbSs_().getSheetByName(TAB.decks);
   var out = [];
   if (sh && sh.getLastRow() > 1) {
     sh.getRange(2, 1, sh.getLastRow() - 1, DECK_COLS.length).getValues().forEach(function (r) {
@@ -1814,7 +1907,7 @@ var TOKEN_HOURS = 12;
 /* A short mark of the teacher PIN, kept with each sign-in: changing the PIN ends every sign-in at once. */
 function pinMark_() {
   var cache = CacheService.getScriptCache(), real = cache.get('pin');
-  if (!real) { real = getSetting_('Teacher PIN'); if (real) cache.put('pin', real, 120); }
+  if (!real) { real = teacherPin_(); if (real) cache.put('pin', real, 120); }
   var s = 'pm|' + String(real || ''), h = 5381;
   for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return 'p' + (h >>> 0).toString(16);
@@ -1846,8 +1939,9 @@ function hubToken_() {
   return cur;
 }
 function hubRequest_(d) {
-  var id = getSetting_('Class list sheet ID');
-  if (!id || String(d.key || '') !== String(id)) return { ok: false, error: 'Wrong key.' };
+  // Release 34: the Teacher Hub and Live Board are one app, so this is only ever called from inside it. The key is
+  // an object that cannot be sent from outside (JSON has no way to make it), not the sheet ID any more.
+  if (!d || d.key !== INPROC_) return { ok: false, error: 'Wrong key.' };
   // The homework space opens inside learnwithmrcedric with the student's sign-in, and the Hub checks it here.
   if (d.op === 'student') {
     var who = stCheck_(d.st);
@@ -1873,7 +1967,7 @@ function hubRequest_(d) {
 
 /* Every lesson's parts, from the Deck slides tab in one read: { deckId: { lessons: [{ t, from, to }], slides: n } }. */
 function allDeckParts_(withDom) {
-  var out = {}, sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SLIDE_TAB);
+  var out = {}, sh = lbSs_().getSheetByName(SLIDE_TAB);
   if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues().forEach(function (r) {
     try { var pg = JSON.parse(String(r[1])); out[String(r[0])] = { lessons: pg.lessons || [], slides: (pg.dom || []).length }; if (withDom) out[String(r[0])].dom = pg.dom || []; } catch (err) { /* skip */ }
   });
@@ -2002,7 +2096,7 @@ function apiUnlock(pin) {
   var cache = CacheService.getScriptCache(), fails = Number(cache.get('pin_fails_u') || 0);
   if (fails >= 20) return false;
   var real = cache.get('pin');
-  if (!real) { real = getSetting_('Teacher PIN'); if (real) cache.put('pin', real, 120); }
+  if (!real) { real = teacherPin_(); if (real) cache.put('pin', real, 120); }
   var ok = !!real && String(pin == null ? '' : pin).trim() === String(real);
   if (!ok) cache.put('pin_fails_u', String(fails + 1), 900);
   return ok;
@@ -2015,7 +2109,7 @@ function apiStudentHome(st) {
   var lessons = readDecks_().filter(function (d) { return /^https:\/\//.test(d.link) && open.indexOf(d.id) >= 0; })
     .sort(function (a, b) { return a.title.localeCompare(b.title, undefined, { numeric: true }); })
     .map(function (d) { return { title: d.title, url: d.link }; });
-  var a = currentAsk_();
+  var a = currentAsk_(cls);
   var ask = a && /^https:\/\//.test(a.link || '') ? { question: a.question, deckTitle: a.deckTitle, url: a.link, taskId: a.taskId, at: a.at } : null;
   var now = null;
   try { now = runningLessonFor_(String(cls).toUpperCase()); } catch (err) { now = null; }
@@ -2030,10 +2124,24 @@ function apiStudentHome(st) {
    Each complete set is one try. The first try (or the best, if the Settings tab
    says so) at or above the pass mark gives Worksheet Hub points, once per deck. */
 
+/* The Settings tab, read once per run and kept 5 minutes (release 34). Cleared when a setting is saved or the
+   tab is edited by hand. Returns a copy, so callers may change it. */
+var SETTINGS_MEMO_ = null, SETTINGS_KEY = 'settings_v34';
 function settingsMap_() {
-  var out = {};
-  sheet_(TAB.settings).getDataRange().getValues().forEach(function (r) { out[String(r[0]).trim()] = String(r[1]).trim(); });
-  return out;
+  if (!SETTINGS_MEMO_) {
+    var cache = CacheService.getScriptCache(), hit = null;
+    try { hit = cache.get(SETTINGS_KEY); } catch (err) { hit = null; }
+    if (hit) { try { SETTINGS_MEMO_ = JSON.parse(hit); } catch (err) { SETTINGS_MEMO_ = null; } }
+    if (!SETTINGS_MEMO_) {
+      var out = {}, rows = sheet_(TAB.settings).getDataRange().getValues();
+      for (var i = 1; i < rows.length; i++) { var k = String(rows[i][0]).trim(); if (k && !Object.prototype.hasOwnProperty.call(out, k)) out[k] = String(rows[i][1]).trim(); }
+      SETTINGS_MEMO_ = out;
+      try { cache.put(SETTINGS_KEY, JSON.stringify(out), 300); } catch (err) { /* too big to keep: read again next time */ }
+    }
+  }
+  var copy = {};
+  Object.keys(SETTINGS_MEMO_).forEach(function (k) { copy[k] = SETTINGS_MEMO_[k]; });
+  return copy;
 }
 
 function checkRules_(map) {
@@ -2072,7 +2180,7 @@ function checkToRow_(c) {
     c.givenAt ? new Date(c.givenAt) : '', c.note];
 }
 function readChecks_() {
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.checks);
+  var sh = lbSs_().getSheetByName(TAB.checks);
   if (!sh || sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, CHECK_COLS.length).getValues()
     .map(rowToCheck_).filter(function (c) { return c.deckId; });
@@ -2230,12 +2338,14 @@ function shortTitle_(t) { t = String(t || ''); return t.length > 48 ? t.slice(0,
 /* Adds one line to the Worksheet Hub's Rewards log. who: { cls, reg, name }. */
 var HUB_LOG_SH_ = null;   // the Hub's Rewards log, opened once per run
 function hubLog_(who, item, points, note, what) {
+  // While the move to one sheet runs (a minute at a quiet time), points wait: the caller says "not given yet".
+  if (frozen_()) return { ok: false, note: 'Not given yet: saving is paused for a minute while the sheet is updated. Try again in a minute.' };
   var sh = HUB_LOG_SH_;
   if (!sh) {
     var id = getSetting_('Class list sheet ID');
     if (!id) return { ok: false, note: 'Not given yet: Live Board is not linked to the Worksheet Hub (Live Board > 5), then use Live Board > 7.' };
     var ss;
-    try { ss = SpreadsheetApp.openById(id); } catch (err) { return { ok: false, note: 'Not given yet: the Worksheet Hub sheet could not be opened.' }; }
+    try { ss = oneSsId_() ? hubSs_() : SpreadsheetApp.openById(id); } catch (err) { return { ok: false, note: 'Not given yet: the Worksheet Hub sheet could not be opened.' }; }
     sh = ss.getSheetByName(HUB_LOG);
     if (!sh) {
       // The same layout the Hub makes for itself
@@ -2249,6 +2359,7 @@ function hubLog_(who, item, points, note, what) {
   }
   sh.appendRow([new Date(), who.cls, who.reg, who.name, what || 'Lesson', item, points, 0, '', '', note]);
   CacheService.getScriptCache().remove('hub_' + normClass_(who.cls));
+  try { verBump_('cls_' + normClass_(who.cls)); } catch (err) { /* only a stamp */ }
   return { ok: true };
 }
 
@@ -2446,14 +2557,40 @@ function sqState_(g, extra) {
   out.classSize = reg.length;
   if (g.phase === 'reveal' || g.phase === 'end') {
     var rows = sqScores_(g, players, g.phase === 'end' ? g.qs.length - 1 : qi);
-    out.top = rows.slice(0, 5).map(function (r) { return { name: r.name, score: r.score, streak: r.streak, place: r.place }; });
+    // Release 34: the projector shows initials on a disc in two colours from the student's avatar, never a name.
+    var col = sqColours_(g.cls);
+    var disc = function (r) { var c = col[normName_(r.name)] || sqHashColours_(r.name); return { initials: discInitials_(r.name), c1: c[0], c2: c[1] }; };
+    out.top = rows.slice(0, 5).map(function (r) { var x = disc(r); x.score = r.score; x.streak = r.streak; x.place = r.place; x.best = r.best; return x; });
     out.streaks = rows.filter(function (r) { return r.streak >= 2; }).sort(function (a, b) { return b.streak - a.streak || b.score - a.score; })
-      .slice(0, 3).map(function (r) { return { name: r.name, streak: r.streak }; });
+      .slice(0, 3).map(function (r) { var x = disc(r); x.streak = r.streak; return x; });
     out.best = rows.reduce(function (m, r) { return Math.max(m, r.best); }, 0);
     sqSnapshot_(g, rows, g.phase === 'end');
   }
   if (g.phase === 'end') out.done = g.done;
   if (extra) Object.keys(extra).forEach(function (k) { out[k] = extra[k]; });
+  return out;
+}
+
+function discInitials_(name) {
+  var w = String(name || '').replace(/[^A-Za-z\s]/g, ' ').trim().split(/\s+/).filter(String);
+  return ((w[0] || '?').charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : '')).toUpperCase();
+}
+var SQ_SWATCH = ['#2F5BFF', '#0B7A4E', '#C62F36', '#9A5200', '#6B48C8', '#00838F', '#AD1457', '#5D4037', '#283593', '#2E7D32'];
+function sqHashColours_(name) { var h = Math.abs(hash_(String(name || '')).split('').reduce(function (t, c) { return t * 31 + c.charCodeAt(0) | 0; }, 7)); return [SQ_SWATCH[h % 10], SQ_SWATCH[(h >> 4) % 10 === h % 10 ? (h % 10 + 3) % 10 : (h >> 4) % 10]]; }
+/* Two colours from each student's avatar outfit (the Avatars tab), kept 10 minutes per class. */
+function sqColours_(cls) {
+  var key = 'sqc_' + normClass_(cls), hit = CacheService.getScriptCache().get(key);
+  if (hit) { try { return JSON.parse(hit); } catch (err) { /* read again */ } }
+  var out = {};
+  try {
+    var sh = hubSs_().getSheetByName('Avatars');
+    if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues().forEach(function (r) {
+      if (normClass_(r[0]) !== normClass_(cls)) return;
+      var hex = String(r[3] || '').match(/#[0-9a-fA-F]{6}/g) || [];
+      if (hex.length) out[normName_(r[2])] = [hex[0], hex[1] && hex[1] !== hex[0] ? hex[1] : (hex[2] || '#1B1F3B')];
+    });
+  } catch (err) { out = {}; }
+  cachePut_(key, JSON.stringify(out), 600);
   return out;
 }
 
@@ -2496,7 +2633,7 @@ function sqFinish_(g) {
       });
       if (fresh.length) {
         var sh = sheet_(TAB.checks), at = sh.getLastRow() + 1;
-        sh.getRange(at, 1, fresh.length, CHECK_COLS.length).setValues(fresh.map(checkToRow_));
+        writeBelow_(sh, fresh.map(checkToRow_), CHECK_COLS.length);
         fresh.forEach(function (c, i) { c.row = at + i; });
         CacheService.getScriptCache().remove('checks_' + normClass_(g.cls));
       }
@@ -2527,7 +2664,7 @@ function sqHubMany_(lines) {
   var id = getSetting_('Class list sheet ID');
   if (!id) return { ok: false, note: 'Not given yet: Live Board is not linked to the Worksheet Hub (Live Board > 5), then use Live Board > 7.' };
   var sh;
-  try { sh = HUB_LOG_SH_ || SpreadsheetApp.openById(id).getSheetByName(HUB_LOG); } catch (err) { return { ok: false, note: 'Not given yet: the Worksheet Hub sheet could not be opened.' }; }
+  try { sh = HUB_LOG_SH_ || (oneSsId_() ? hubSs_() : SpreadsheetApp.openById(id)).getSheetByName(HUB_LOG); } catch (err) { return { ok: false, note: 'Not given yet: the Worksheet Hub sheet could not be opened.' }; }
   if (!sh) {
     // The Hub makes its own log the first time: one line the usual way makes it, then the rest follow.
     var r0 = hubLog_(lines[0].who, lines[0].item, lines[0].points, lines[0].note);
@@ -2538,9 +2675,9 @@ function sqHubMany_(lines) {
   }
   var now = new Date();
   try {
-    sh.getRange(sh.getLastRow() + 1, 1, lines.length, HUB_LOG_COLS.length).setValues(lines.map(function (l) {
+    writeBelow_(sh, lines.map(function (l) {
       return [now, l.who.cls, l.who.reg, l.who.name, 'Lesson', l.item, l.points, 0, '', '', l.note];
-    }));
+    }), HUB_LOG_COLS.length);
   } catch (err) { return { ok: false, note: 'Not given yet: ' + err.message }; }
   var seen = {};
   lines.forEach(function (l) { var k = 'hub_' + normClass_(l.who.cls); if (!seen[k]) { seen[k] = 1; CacheService.getScriptCache().remove(k); } });
@@ -2630,7 +2767,19 @@ function apiSetDeckPicks(pin, deckId, ids) {
 }
 
 var ASK_MINUTES = 60;
-function currentAsk_() {
+/* The teacher's ask. With a class, only an ask for that class (release 34: an ask used to reach every class for an
+   hour): the classes running the asked deck when it was asked, and at most 10 minutes. */
+function currentAsk_(cls) {
+  var a = currentAskAll_();
+  if (!a || cls === undefined) return a;
+  if (Date.now() - (a.at || 0) > 10 * 60000) return null;
+  var c = String(cls || '').toUpperCase();
+  if (a.classes) return a.classes.indexOf(c) >= 0 ? a : null;
+  var run = null;
+  try { run = runningLessonFor_(c); } catch (err) { run = null; }
+  return run && run.id === a.deckId ? a : null;
+}
+function currentAskAll_() {
   var cache = CacheService.getScriptCache();
   var raw = cache.get('live_ask');
   if (raw === null) {
@@ -2654,7 +2803,8 @@ function apiAskLive(pin, boardId, opts) {
     // A fresh ask starts face down, so the class answers before seeing what others chose.
     if (b.revealed) withLock_(function () { b.revealed = false; writeBoard_(b); bump_(b.id); });
     a = { boardId: b.id, deckId: b.deckId, taskId: b.taskId, question: b.title, deckTitle: d.title, link: d.link,
-      at: Date.now(), until: Date.now() + ASK_MINUTES * 60000 };
+      at: Date.now(), until: Date.now() + Math.min(ASK_MINUTES, 10) * 60000 };
+    try { var run = runningFor_(Object.keys(readRoster_())); a.classes = Object.keys(run).filter(function (c) { return run[c].id === b.deckId; }); } catch (err) { /* any class running the deck */ }
     var secs = opts && Number(opts.secs) || 0;
     if (secs > 0) { a.secs = Math.min(600, Math.round(secs)); a.ends = a.at + a.secs * 1000 + 10000; }   // 10 seconds for the iPads to see it
     if (opts && opts.quiet) a.quiet = true;
@@ -2708,8 +2858,11 @@ function hubClass_(cls, fresh, map) {
     var bad = cache.get(key + '_err');
     if (bad) return { error: bad };
   }
-  // When a whole class opens the home page at once, one request asks the Hub and the rest wait for it.
+  // When a whole class opens the home page at once, one request asks the Hub. The rest use the last good copy at
+  // once (release 34), and wait only when there is none yet.
   if (!fresh && cache.get(key + '_busy')) {
+    var lastGood = getBig_(key + '_last');
+    if (lastGood) return JSON.parse(lastGood);
     for (var w = 0; w < 12; w++) {
       Utilities.sleep(500);
       var h2 = getBig_(key);
@@ -2720,8 +2873,8 @@ function hubClass_(cls, fresh, map) {
   cachePut_(key + '_busy', '1', 25);
   var msg = '';
   try {
-    var j = lbClass_({ api: 'lb_class', key: id, cls: cls });
-    if (j && j.ok) { putBig_(key, JSON.stringify(j), 120); cache.remove(key + '_busy'); return j; }
+    var j = lbClass_({ api: 'lb_class', key: INPROC_, cls: cls });
+    if (j && j.ok) { var js = JSON.stringify(j); putBig_(key, js, 120); putBig_(key + '_last', js, 21600); cache.remove(key + '_busy'); return j; }
     msg = 'The Teacher Hub did not answer as expected.';
   } catch (err) {
     msg = /HUB_NOT_MOVED/.test(err.message) ? 'Homework and points are being moved into learnwithmrcedric. They will be back soon.' : 'The Teacher Hub could not be read: ' + err.message;
@@ -2813,10 +2966,63 @@ function updateProgress_(deckId, who, d, answers, lb) {
   // written under the lock, so two requests for one student (two iPads, or an answer sent again while the
   // first is still saving) cannot overwrite each other.
   var f0 = progRowFor_(sh, deckId, who);
+  if (f0.at) {
+    // Release 34: the row is already there (made at Start for the whole class). It is read again and written under a
+    // claim for this one student, not the lock, so different students' answers never queue behind each other, and one
+    // student's two batches at once (the outbox and the slides) merge one after the other.
+    var mine = progClaim_(deckId, who);
+    try {
+      var f1 = progRowFor_(sh, deckId, who);
+      if (f1.at) { mergeProgress_(sh, f1, deckId, who, deck, lb, visits, done, readNow, ordered, kind); return; }
+    } finally { progRelease_(mine); }
+  }
   withLock_(function () {
     var f = progRowFor_(sh, deckId, who, f0.at ? 0 : f0.scanned);
     mergeProgress_(sh, f, deckId, who, deck, lb, visits, done, readNow, ordered, kind);
   }, 10000);
+}
+/* A claim on one student's Progress row, for up to 6 seconds (then the merge goes ahead anyway). The claim is put, then
+   read back after a moment: of two batches that put it at once, only the last one reads its own claim back. */
+function progClaim_(deckId, who) {
+  var cache = CacheService.getScriptCache(), k = 'pgm_' + (deckId + '|' + normClass_(who.cls) + '|' + normName_(who.name)).slice(0, 200);
+  var me = Utilities.getUuid().slice(0, 12), end = Date.now() + 6000;
+  while (Date.now() < end) {
+    var v = cache.get(k);
+    if (!v) {
+      cache.put(k, me, 20);
+      Utilities.sleep(60);
+      if (cache.get(k) === me) return { k: k, me: me };
+    }
+    Utilities.sleep(150);
+  }
+  return null;
+}
+function progRelease_(c) {
+  if (!c) return;
+  try { var cache = CacheService.getScriptCache(); if (cache.get(c.k) === c.me) cache.remove(c.k); } catch (err) { /* runs out in 20 s */ }
+}
+/* At Start: a Progress row for every student in the class who has none for this lesson yet, in one write, so the
+   answers in the lesson never wait for each other (release 34). */
+function seatProgress_(deckId, cls) {
+  var roster = readRoster_()[cls] || [];
+  if (!roster.length) return 0;
+  var sh = sheet_(TAB.progress), last = sh.getLastRow(), have = {};
+  if (last > 1) sh.getRange(2, 1, last - 1, 3).getValues().forEach(function (r) { if (String(r[0]) === deckId && normClass_(r[1]) === normClass_(cls)) have[normName_(r[2])] = 1; });
+  var add = roster.filter(function (s) { return !have[normName_(s.name)]; });
+  if (!add.length) return 0;
+  return withLock_(function () {
+    progHeads_(sh);
+    // Read again inside the lock: a row added since (an answer sent at this moment) is not made twice.
+    var last2 = sh.getLastRow();
+    if (last2 > last) sh.getRange(last + 1, 1, last2 - last, 3).getValues().forEach(function (r) { if (String(r[0]) === deckId && normClass_(r[1]) === normClass_(cls)) have[normName_(r[2])] = 1; });
+    add = add.filter(function (s) { return !have[normName_(s.name)]; });
+    if (!add.length) return 0;
+    var at = sh.getLastRow() + 1, cache = CacheService.getScriptCache(), hints = {};
+    writeBelow_(sh, add.map(function (s) { return [deckId, cls, s.name, 0, 0, 0, 0, '', '', '', '', '', '']; }), PROG_COLS.length);
+    add.forEach(function (s, i) { hints['pg_' + (deckId + '|' + normClass_(cls) + '|' + normName_(s.name)).slice(0, 200)] = String(at + i); });
+    try { cache.putAll(hints, 21600); } catch (err) { /* the rows are found by reading */ }
+    return add.length;
+  }, 15000);
 }
 function mergeProgress_(sh, f, deckId, who, deck, lb, visits, done, readNow, answers, kind) {
   var at = f.at, cur = f.cur;
@@ -2862,7 +3068,7 @@ function readProgress_(cls) {
   var cache = CacheService.getScriptCache(), want = normClass_(cls);
   var hit = getBig_('prog_' + want);
   if (hit) return JSON.parse(hit);
-  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.progress);
+  var sh = lbSs_().getSheetByName(TAB.progress);
   var groups = {};
   if (sh && sh.getLastRow() > 1) {
     var n = sh.getLastRow() - 1, mk = sh.getRange(2, 12, n, 2).getValues();
@@ -3005,10 +3211,17 @@ function presenterLead_(d) {
   var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase();
   if (!deckId || !cls) return { ok: false, error: 'No lesson or class.' };
   var cache = CacheService.getScriptCache(), old = liveLead_(cache.get(leadKey_(deckId, cls)));
-  var id = clean_(d.slide, 80), n = Math.round(Number(d.n) || 0);
+  var id = clean_(d.slide, 80), n = Math.round(Number(d.n) || 0), step = Math.max(0, Math.round(Number(d.step) || 0));
   // at changes only when the slide changes, so iPads that followed are not pulled back after looking back.
   var at = old && old.id === id ? old.at : Date.now();
-  cachePut_(leadKey_(deckId, cls), JSON.stringify({ id: id, n: n, at: at, alive: Date.now() }), 21600);
+  var lead = { id: id, n: n, at: at, alive: Date.now(), step: step, sat: old && old.id === id && (old.step || 0) === step ? (old.sat || at) : Date.now() };
+  if (d.kind) lead.kind = clean_(d.kind, 20);
+  if (d.total) lead.total = Math.round(Number(d.total) || 0);
+  if (d.title) lead.title = clean_(d.title, 80);
+  if (d.steps) lead.steps = Math.max(0, Math.round(Number(d.steps) || 0));
+  cachePut_(leadKey_(deckId, cls), JSON.stringify(lead), 21600);
+  if (!old || old.n !== n || (old.step || 0) !== step) bumpLive_(deckId, cls);
+  finishEnds_(deckId, cls);
   try { if (n) noteReached_(deckId, cls, n); } catch (err) { /* only for Teach next */ }
   var c = getCtl_(deckId, cls);
   // Back within an hour after the lesson ended by itself (the laptop slept, the tab was closed): it carries on.
@@ -3017,6 +3230,7 @@ function presenterLead_(d) {
     c.hold = true; c.keep = !!c.last.keep; c.follow = !!c.last.follow; c.last = null; c.leadAt = Date.now();
     saveCtlRaw_(deckId, cls, c);
   } else if (c.lesson && (!c.leadAt || Date.now() - c.leadAt > 4 * 60000)) { c.leadAt = Date.now(); saveCtlRaw_(deckId, cls, c); }
+  if (c.lesson && d.kind && (!old || old.id !== id)) { try { c = modeForSlide_(deckId, cls, c, id, d.kind, n); } catch (err) { /* stays as it was */ } }
   if (c.lesson && c.check !== 'open' && n && n === checkSlideNo_(deckId)) {
     c.check = 'open';
     saveCtlRaw_(deckId, cls, c);
@@ -3037,7 +3251,20 @@ function presenterLead_(d) {
     active++;
     if (x.slide === n) here++; else if (x.slide < n) behind++;
   });
-  return { ok: true, ctl: c, active: active, here: here, behind: behind };
+  // Release 34: what the presenter strip draws (no names: the presenter is on the projector).
+  var q = qcGet_(cls);
+  return { ok: true, ctl: c, active: active, here: here, behind: behind,
+    lesson: c.lesson ? { mode: modeOf_(c), inCount: active, of: names.length } : null,
+    phone: Date.now() - Number(cache.get('phl_' + normClass_(cls)) || 0) < 30000,
+    quick: q && q.deckId === deckId ? { id: q.id, type: q.type, open: !!q.open, round: q.round, options: q.options || [], correct: q.open ? null : (q.correct || null) } : null,
+    show: q && q.deckId === deckId ? qcForProjector_(q) : null };
+}
+/* A command reply for the presenter deck: the lesson state and the check without any name. */
+function projectorSafe_(st) {
+  var q = st.quick;
+  return { ok: true, lesson: st.lesson ? { mode: st.lesson.mode, inCount: st.lesson.inCount, of: st.lesson.of, slide: st.lesson.slide, endAt: st.lesson.endAt } : null,
+    ctl: st.ctl, undoUntil: st.undoUntil || 0, repeat: !!st.repeat,
+    quick: q ? { id: q.id, type: q.type, open: q.open, round: q.round, options: q.options, correct: q.open ? null : q.correct, total: q.total, of: q.of } : null };
 }
 var LSET_DEFAULT = { readSecs: 15, stuckMins: 5, wrongTries: 3 };
 function lessonSettings_() {
@@ -3081,8 +3308,13 @@ function liveCheck_(d) {
   var cls = who ? who.cls : '';
   var got = got0;
   if (who) {
-    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name), sqKey_(deckId, cls)]);
+    var more = cache.getAll([ctlKey_(deckId, cls), leadKey_(deckId, cls), pulseStudentKey_(deckId, cls, who.name), sqKey_(deckId, cls), endKey_(deckId, cls)]);
     Object.keys(more).forEach(function (k) { got[k] = more[k]; });
+    // An End whose Undo time has passed is finished here too (the laptop may have been closed straight after End).
+    var due = Number(got[endKey_(deckId, cls)] || 0);
+    if (due && Date.now() >= due) {
+      try { if (finishEnds_(deckId, cls, String(due), 250)) { got[ctlKey_(deckId, cls)] = cache.get(ctlKey_(deckId, cls)); got[leadKey_(deckId, cls)] = cache.get(leadKey_(deckId, cls)); } } catch (err) { /* the next call finishes it */ }
+    }
   }
   var old = null, c0 = who ? getCtl_(deckId, cls, got[ctlKey_(deckId, cls)], got[leadKey_(deckId, cls)] || null) : null;
   if (who) { try { old = JSON.parse(got[pulseStudentKey_(deckId, cls, who.name)] || 'null'); } catch (err) { old = null; } }
@@ -3093,6 +3325,8 @@ function liveCheck_(d) {
     var raw = got['live_ask'];
     if (raw !== 'none') { try { var a0 = JSON.parse(raw); if (a0.until > Date.now()) ask = a0; } catch (err) { ask = null; } }
   } else ask = currentAsk_();
+  // An ask is for the classes that were running its deck when it was asked.
+  if (ask && cls && ask.classes && ask.classes.indexOf(String(cls).toUpperCase()) < 0) ask = null;
   var set = got['lset'] ? JSON.parse(got['lset']) : null;
   if (!set) { try { set = lessonSettings_(); } catch (err) { set = LSET_DEFAULT; } }
   var out = { ok: true, readSecs: set.readSecs, poll: 14,
@@ -3104,16 +3338,25 @@ function liveCheck_(d) {
     var alloc = null;
     try { alloc = got['alloc'] ? JSON.parse(got['alloc']) : allocAll_(); } catch (err) { alloc = {}; }
     out.who = { cls: cls, name: who.name };
-    out.bv = BRIDGE_LATEST;
     out.live = !!c.lesson;                                                       // answers count now
+    if (!out.live) out.bv = BRIDGE_LATEST;   // an older bridge reloads only between lessons, never in one
     out.open = out.live || (alloc[normClass_(cls)] || []).indexOf(deckId) >= 0;   // open for revision
     if (!out.live) out.ask = null;
     // Streak Challenge: the game on this deck for the class, while the lesson is on.
+    out.mode = modeOf_(c);
+    if (out.ctl.lead && got[leadKey_(deckId, cls)]) { try { out.ctl.lead.step = JSON.parse(got[leadKey_(deckId, cls)]).step || 0; } catch (err) { /* no step */ } }
+    if (out.live) {
+      var qc = qcGet_(cls);
+      out.quick = qc && qc.deckId === deckId ? qcForStudent_(qc, cls, who.name) : null;
+      // Release 34: 4 seconds in a lesson, 2 while a check waits for this student or just after a teacher command.
+      var recentCmd = Date.now() - Number(CacheService.getScriptCache().get('tcmd_' + normClass_(cls)) || 0) < 20000;
+      out.poll = (out.quick && out.quick.open && !out.quick.mine) || recentCmd ? 2 : 4;
+    }
     var g = out.live ? sqGet_(deckId, cls, got[sqKey_(deckId, cls)]) : null;
     if (g) {
       var gk = cache.getAll([sqAnsKey_(g.gid, aid || acctId_(cls, who.name)), 'sqb_' + g.gid, 'sqk_' + g.gid, 'sqr_' + g.gid]);
       out.game = sqForIpad_(g, aid || acctId_(cls, who.name), gk);
-      out.poll = Math.min(out.poll, 3);
+      out.poll = Math.min(out.poll, 4);
     }
   } else if (out.ask) out.poll = 6;
   return out;
@@ -3226,7 +3469,7 @@ function saveDeckSlides_(deckId, pages, from) {
     json = JSON.stringify(pages);
     if (json.length > 49000) return null;
   }
-  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName(SLIDE_TAB);
+  var ss = lbSs_(), sh = ss.getSheetByName(SLIDE_TAB);
   if (!sh) {
     sh = ss.insertSheet(SLIDE_TAB);
     sh.getRange(1, 1, 1, SLIDE_COLS.length).setValues([SLIDE_COLS]).setFontWeight('bold');
@@ -3246,7 +3489,7 @@ function deckSlides_(deckId, wantCount) {
   var rec = null, hit = getBig_(slideKey_(deckId));
   if (hit) { try { rec = JSON.parse(hit); } catch (err) { rec = null; } }
   if (!rec) {
-    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SLIDE_TAB);
+    var sh = lbSs_().getSheetByName(SLIDE_TAB);
     if (sh && sh.getLastRow() > 1) {
       sh.getRange(2, 1, sh.getLastRow() - 1, SLIDE_COLS.length).getValues().forEach(function (r) {
         if (String(r[0]) !== deckId) return;
@@ -3344,7 +3587,7 @@ function readProgressIds_(deckId, cls) {
   var key = 'pgi_' + String(deckId).slice(0, 80) + '_' + normClass_(cls);
   var hit = getBig_(key);
   if (hit) return JSON.parse(hit);
-  var out = {}, sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(TAB.progress);
+  var out = {}, sh = lbSs_().getSheetByName(TAB.progress);
   if (sh && sh.getLastRow() > 1) {
     sh.getRange(2, 1, sh.getLastRow() - 1, PROG_COLS.length).getValues().forEach(function (r) {
       if (String(r[0]) !== deckId || normClass_(r[1]) !== normClass_(cls)) return;
@@ -3357,7 +3600,14 @@ function readProgressIds_(deckId, cls) {
 }
 
 /* Wrong answers in the last 90 minutes, per student and question: { name: { taskId: count } }. Kept for 20 seconds. */
+function wrongKey_(deckId, cls, name) { return 'wn_' + hash_(String(deckId) + '|' + normClass_(cls) + '|' + normName_(name)); }
 function wrongTries_(deckId, cls) {
+  // Release 34: counted in the cache as answers arrive (since the lesson started), so the phone never reads Posts.
+  if (CacheService.getScriptCache().get('wtr_' + String(deckId).slice(0, 80) + '_' + normClass_(cls))) {
+    var roster = readRoster_()[cls] || [], ks = roster.map(function (s) { return wrongKey_(deckId, cls, s.name); }), got = ks.length ? CacheService.getScriptCache().getAll(ks) : {}, res = {};
+    roster.forEach(function (s, i) { if (got[ks[i]]) { try { res[normName_(s.name)] = JSON.parse(got[ks[i]]); } catch (err) { /* none */ } } });
+    return res;
+  }
   var key = 'wt_' + String(deckId).slice(0, 80) + '_' + normClass_(cls);
   var hit = getBig_(key);
   if (hit) return JSON.parse(hit);
@@ -3479,7 +3729,8 @@ function slideResults_(d) {
   if (!deckId || !cls) return { ok: false, error: 'No lesson or class.' };
   var n = questionSlideFor_(deckId, Math.round(Number(d.n) || 0));
   var r = n ? apiSlideNow(d.pin, deckId, cls, n, !!d.texts) : { n: 0, questions: [] };
-  r.questions.forEach(function (q) { delete q.missing; q.wrong = null; });
+  // The projector role never gets a name (release 34): not who is missing, not who chose what.
+  r.questions.forEach(function (q) { delete q.missing; delete q.byOk; q.wrong = null; (q.choices || []).forEach(function (c) { delete c.names; }); });
   r.ok = true;
   return r;
 }
@@ -3526,6 +3777,7 @@ function gateHelp_(d) {
     cachePut_(gateHelpKey_(who.cls), JSON.stringify(list), 600);
     cachePut_('ghs_' + key, 'wait', 600);
     cachePut_('ghn_' + key, who.nomatch ? '-' : who.cls + '|' + who.name, 600);
+    cachePut_('gh_all_v', String(Date.now()), 21600);
     return { ok: true, key: key };
   }, 10000);
 }
@@ -3820,16 +4072,39 @@ function apiGivePoints(pin, cls, name, points, note) {
    when the presenter view reaches it. End lesson takes it all off, so students can finish at home. */
 function apiStartLesson(pin, deckId, cls, from, to, title) {
   checkPin_(pin);
+  // An End still waiting from an earlier lesson of this deck and class must not end this one.
+  try { CacheService.getScriptCache().remove(endKey_(deckId, cls)); endsDue_(deckId, cls, false); } catch (err) { /* fine */ }
+  try { ensureDeckKnown_(deckId); } catch (err) { /* it registers with its first answer */ }
   endOtherLessons_(deckId, cls);
   try { endOtherClasses_(cls); } catch (err) { /* they end by themselves */ }
   try { noteStart_(deckId, cls, Math.round(Number(from) || 0), Math.round(Number(to) || 0)); } catch (err) { /* only for the timetable */ }
+  // The class's Progress rows are made before the lesson goes live, so the first answers find them.
+  try { seatProgress_(deckId, cls); } catch (err) { /* rows are made as answers come */ }
   var c = apiSetControlNoPin_(deckId, cls, { from: from, to: to, follow: true, hold: true, hooks: true, vid: true, pause: false, fun: false, keep: false });
   c.lesson = { t: clean_(title, 80), at: Date.now(), end: lessonEndFor_(cls, Date.now()) };
   c.leadAt = Date.now();
   saveCtlRaw_(deckId, cls, c);
   try { autoAlloc_(deckId, cls); } catch (err) { /* opened for revision next time */ }
   try { noteTaught_(deckId, cls, Math.round(Number(from) || 0), Math.round(Number(to) || 0), title); } catch (err) { /* only for Teach next */ }
+  cachePut_('run_v', String(Date.now()), 21600);
+  cachePut_('wtr_' + String(deckId).slice(0, 80) + '_' + normClass_(cls), '1', 21600);
+  try { verBump_('today'); verBump_('cls_' + normClass_(cls)); } catch (err) { /* only stamps */ }
   return apiGetControl(pin, deckId, cls, c);
+}
+/* Release 34: a deck taught for the first time is listed at Start (from the lesson site's list), so the phone and the
+   students' Join see the lesson at once. Its questions arrive with the first answer, as before. */
+function ensureDeckKnown_(deckId) {
+  if (!deckId || findDeck_(deckId)) return;
+  var info = null;
+  try { chaptersAll_().forEach(function (c) { c.decks.forEach(function (d) { if (d.id === deckId) info = d; }); }); } catch (err) { info = null; }
+  var site = '';
+  try { site = lessonSite_(); } catch (err) { site = ''; }
+  withLock_(function () {
+    if (findDeck_(deckId)) return;
+    var sh = sheet_(TAB.decks), row = [deckId, info ? info.title : deckId, '', 0, new Date(), info && info.file ? site + info.file : '', '', ''];
+    writeBelow_(sh, [row.slice(0, DECK_COLS.length)], DECK_COLS.length);
+    CacheService.getScriptCache().remove('decks');
+  }, 15000);
 }
 /* A class has one lesson at a time: starting one ends any other lesson still running for that class, so
    learnwithmrcedric shows the right lesson in class now. */
@@ -3860,6 +4135,8 @@ function presentInfo_(d) {
 function presentStart_(d) {
   var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase();
   if (!deckId || !cls || !readRoster_()[cls]) return { ok: false, error: 'That class is not on the class list.' };
+  // An End whose Undo time has passed is finished first, so this Start begins a new lesson instead of keeping that one.
+  try { finishEnds_(deckId, cls); } catch (err) { /* fine */ }
   var c = getCtl_(deckId, cls), from = Math.round(Number(d.from) || 0), to = Math.round(Number(d.to) || 0);
   // force: the part was chosen in the Teacher Hub, so a different part still running is replaced.
   if (c.lesson && Date.now() - (c.lesson.at || 0) < 3 * 3600000 && (!d.force || ((c.from || 0) === from && (c.to || 0) === to))) { checkPin_(d.pin); return { ok: true, ctl: c, kept: true }; }
@@ -3868,12 +4145,9 @@ function presentStart_(d) {
 }
 function apiEndLesson(pin, deckId, cls) {
   checkPin_(pin);
-  var c = apiSetControlNoPin_(deckId, cls, { follow: false, pause: false, hold: false, to: 0, from: 0 });
-  try { if (c.lesson) noteLessonLength_(cls, c.lesson.at || 0, Date.now()); } catch (err) { /* only for the timetable */ }
-  noteLessonEnd_(c);
-  c.lesson = null;
-  saveCtlRaw_(deckId, cls, c);
-  try { projectorEnded_(deckId, String(cls || '').toUpperCase()); } catch (err) { /* the projector stays on the slides */ }
+  CacheService.getScriptCache().remove(endKey_(deckId, cls));
+  var c = endLessonNow_(deckId, cls);
+  cachePut_('run_v', String(Date.now()), 21600);
   return apiGetControl(pin, deckId, cls, c);
 }
 function saveCtlRaw_(deckId, cls, c) {
@@ -3931,6 +4205,9 @@ function apiPhoneJoin(k, device) {
    answered them, in one call. */
 function apiSlideNow(pin, deckId, cls, n, withTexts) {
   checkPin_(pin);
+  return apiSlideNowNoPin_(deckId, cls, n, withTexts);
+}
+function apiSlideNowNoPin_(deckId, cls, n, withTexts) {
   n = Math.round(Number(n) || 0);
   var qs = readDeckBoardsFor_(deckId).filter(function (b) { return b.slideNo === n; })
     .sort(function (a, b) { return a.order - b.order; });
@@ -3961,7 +4238,18 @@ function apiSlideNow(pin, deckId, cls, n, withTexts) {
     if (b.kind === 'choice' && b.columns && b.columns.length) {
       var cnt = {};
       firsts.forEach(function (f) { cnt[f.text] = (cnt[f.text] || 0) + 1; });
-      choices = b.columns.map(function (o) { return { t: String(o), n: cnt[String(o)] || 0, ok: !!b.correct && String(o) === b.correct }; });
+      var who = {};
+      Object.keys(q.first).forEach(function (k) { var f = q.first[k]; (who[f.text] = who[f.text] || []).push(k); });
+      var nm = {};
+      roster.forEach(function (s) { nm[normName_(s.name)] = s.name; });
+      choices = b.columns.map(function (o) { return { t: String(o), n: cnt[String(o)] || 0, ok: !!b.correct && String(o) === b.correct, names: (who[String(o)] || []).map(function (k) { return nm[k] || k; }) }; });
+    }
+    var byOk = null;
+    if (!choices) {
+      var nm2 = {};
+      roster.forEach(function (s) { nm2[normName_(s.name)] = s.name; });
+      byOk = { right: [], wrong: [], unmarked: [] };
+      Object.keys(q.first).forEach(function (k) { var f = q.first[k]; byOk[f.ok === true ? 'right' : f.ok === false ? 'wrong' : 'unmarked'].push(nm2[k] || k); });
     }
     // For Show answers on the projector: what the class wrote (first tries, in the order they came, no names).
     var texts = null;
@@ -3970,7 +4258,7 @@ function apiSlideNow(pin, deckId, cls, n, withTexts) {
         .map(function (f) { return { x: String(f.text || '').slice(0, 300), ok: f.ok }; }).filter(function (f) { return f.x.trim(); }).slice(0, 150);
     }
     return { id: b.id, taskId: b.taskId, title: b.title, kind: b.kind, answered: Object.keys(q.any).length, size: roster.length,
-      firsts: firsts.length, right: right, choices: choices, texts: texts,
+      firsts: firsts.length, right: right, choices: choices, byOk: byOk, texts: texts,
       pct: marked.length ? Math.round(100 * right / marked.length) : null, wrong: top ? [top, wrong[top]] : null,
       released: c.relAll || c.rel.indexOf(b.taskId) >= 0,
       missing: roster.filter(function (s) { return !q.any[normName_(s.name)]; }).map(function (s) { return s.name; }) };
@@ -4085,9 +4373,12 @@ function stMatchPass_(all, typed, pass, nomatch, scopeCls) {
     stHash_('no-such-account', pass);
     throw new Error(stNoMatch_('stf_', stTryAny_('stf_', null, scopeCls, typed), nomatch));
   }
+  // The slow part (the password hashing) runs before the lock. Only the counting of tries is done under it.
+  var good = {};
+  all.forEach(function (w) { var id = acctId_(w.cls, w.name), a = acctGet_(id); if (a && a.ph && stHash_(a.s, pass) === a.ph) good[id] = a.ph; });
   return withLock_(function () {
     var open = all.filter(function (w) { return !stBlocked_('stf_', acctId_(w.cls, w.name)); });
-    var hits = open.filter(function (w) { var a = acctGet_(acctId_(w.cls, w.name)); return a && a.ph && stHash_(a.s, pass) === a.ph; });
+    var hits = open.filter(function (w) { var id = acctId_(w.cls, w.name), a = good[id] ? acctGet_(id) : null; return a && a.ph === good[id]; });
     if (hits.length > 1) return { needClass: hits.map(function (w) { return w.plain || w.cls; }) };
     if (hits.length === 1) { stClear_('stf_', acctId_(hits[0].cls, hits[0].name)); return { hit: hits[0], weak: /^\d{4}$/.test(pass) }; }
     if (!open.length) { var why = stBlocked_('stf_', acctId_(all[0].cls, all[0].name)); throw new Error(why === 'teacher' ? stTeacherMsg_('stf_') : stWaitMsg_(ST_LIMITS.stf_.mins)); }
@@ -4127,9 +4418,18 @@ function rosterStudent_(cls, name) {
   if (!who.matched) throw new Error('That name is not on the class list. Choose your class and your name again.');
   return who;
 }
+var ST_SECRET_ = null;
 function stSecret_() {
-  var props = PropertiesService.getScriptProperties(), s = props.getProperty('st_secret');
-  if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); props.setProperty('st_secret', s); }
+  if (ST_SECRET_) return ST_SECRET_;
+  var cache = CacheService.getScriptCache(), s = null;
+  try { s = cache.get('st_secret'); } catch (err) { s = null; }
+  if (!s) {
+    var props = PropertiesService.getScriptProperties();
+    s = props.getProperty('st_secret');
+    if (!s) { s = Utilities.getUuid() + Utilities.getUuid(); props.setProperty('st_secret', s); }
+    try { cache.put('st_secret', s, 21600); } catch (err) { /* read again next time */ }
+  }
+  ST_SECRET_ = s;
   return s;
 }
 function b64u_(x) { return Utilities.base64EncodeWebSafe(x).replace(/=+$/, ''); }
@@ -4328,6 +4628,7 @@ function stRequest_(d) {
     if (d.op === 'setup') return apiStSetup(d.cls, d.name, { reg: d.reg, key: d.key }, d.pin, d.q, d.answer);
     if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.q, d.answer, d.pin);
     if (d.op === 'me') return apiStMe(d.st);
+    if (d.op === 'signout') return { ok: true };
   } catch (err) {
     return { ok: false, error: String(err && err.message || err) };
   }
@@ -4703,4 +5004,464 @@ function taughtAll_() {
     try { out[k.slice(7)] = JSON.parse(all[k]) || {}; } catch (err) { /* skipped */ }
   });
   return out;
+}
+
+/* ================================================================== */
+/* Release 34: quick checks, Together / Own pace / Eyes on me, the     */
+/* phone's live view and one command endpoint (t_do)                  */
+/* ================================================================== */
+// Quick check: the teacher asks the class (A B C D, True or false, Got it / Nearly / Lost, a word, or the question on
+// the slide). It reaches the iPads in the deck's check-in and in learnwithmrcedric. Answers are kept in the cache
+// only (one entry per student, so a retry overwrites), and nothing is written to the sheet until the check closes:
+// then one row per student goes in the Quick checks tab. While a check is open no student and no projector sees how
+// the class answered.
+var QC_TAB = 'Quick checks', QC_COLS = ['Time', 'Class', 'Lesson', 'Check', 'Round', 'Type', 'Question', 'Reg No', 'Name', 'Answer', 'Correct', 'Right'];
+var QC_OPTIONS = { abcd: ['A', 'B', 'C', 'D'], tf: ['True', 'False'], gotit: ['Got it', 'Nearly', 'Lost'], word: [] };
+var QC_KEEP = 3 * 3600;
+function qcKey_(cls) { return 'qc_' + normClass_(cls); }
+function qaKey_(id, round, cls, name) { return 'qa_' + hash_(id + '|' + round + '|' + normClass_(cls) + '|' + normName_(name)); }
+function qcGet_(cls, raw) {
+  if (raw === undefined) { try { raw = CacheService.getScriptCache().get(qcKey_(cls)); } catch (err) { raw = null; } }
+  var q = null;
+  try { q = raw ? JSON.parse(raw) : null; } catch (err) { q = null; }
+  return q && Date.now() - (q.at || 0) < QC_KEEP * 1000 ? q : null;
+}
+function qcSave_(q) { cachePut_(qcKey_(q.cls), JSON.stringify(q), QC_KEEP); verBump_('cls_' + normClass_(q.cls)); bumpLive_(q.deckId, q.cls); }
+/* Moves the deck and class change stamp, so the phone's long wait and the iPads see the change at once. */
+function bumpLive_(deckId, cls) {
+  if (!deckId) return;
+  try { CacheService.getScriptCache().put(liveVerKey_(deckId, cls), Date.now() + '.' + Math.floor(Math.random() * 1e6), 21600); } catch (err) { /* only a stamp */ }
+}
+/* The answers so far: { normName: answer } for one round. */
+function qcAnswers_(q, roster) {
+  var keys = roster.map(function (s) { return qaKey_(q.id, q.round, q.cls, s.name); }), got = {};
+  try { got = keys.length ? CacheService.getScriptCache().getAll(keys) : {}; } catch (err) { got = {}; }
+  var out = {};
+  roster.forEach(function (s, i) { if (got[keys[i]] != null) out[normName_(s.name)] = String(got[keys[i]]); });
+  return out;
+}
+function qcCounts_(q, ans) {
+  var counts = {}, words = {}, total = 0;
+  (q.options || []).forEach(function (o) { counts[o] = 0; });
+  Object.keys(ans).forEach(function (k) {
+    var a = ans[k];
+    total++;
+    if (q.type === 'word') { var w = a.trim().toLowerCase(); if (w) words[w] = (words[w] || 0) + 1; }
+    else counts[a] = (counts[a] || 0) + 1;
+  });
+  return { counts: counts, words: Object.keys(words).sort(function (a, b) { return words[b] - words[a]; }).slice(0, 60).map(function (w) { return { text: w, n: words[w] }; }), total: total };
+}
+/* What one student sees: never the class's answers while the check is open. */
+function qcForStudent_(q, cls, name) {
+  if (!q) return null;
+  var mine = null;
+  try { mine = CacheService.getScriptCache().get(qaKey_(q.id, q.round, cls, name)); } catch (err) { mine = null; }
+  var out = { id: q.id, type: q.type, prompt: q.prompt || '', options: q.options || [], taskId: q.taskId || '', round: q.round, open: !!q.open, mine: mine, result: null };
+  if (!q.open && q.res) {
+    out.result = { correct: q.correct || null, right: q.correct ? (mine ? mine === q.correct : false) : null, counts: q.res.counts, total: q.res.total };
+  }
+  return out;
+}
+/* What the phone sees: names under each answer. */
+function qcForPhone_(q) {
+  if (!q) return null;
+  var roster = readRoster_()[q.cls] || [], ans = qcAnswers_(q, roster), c = qcCounts_(q, ans), tally = {}, not = [], wordNames = {};
+  (q.options || []).forEach(function (o) { tally[o] = []; });
+  roster.forEach(function (s) {
+    var a = ans[normName_(s.name)];
+    if (a == null) { not.push(s.name); return; }
+    if (q.type === 'word') { var w = a.trim().toLowerCase(); (wordNames[w] = wordNames[w] || []).push(s.name); }
+    else (tally[a] = tally[a] || []).push(s.name);
+  });
+  return { id: q.id, type: q.type, prompt: q.prompt || '', options: q.options || [], taskId: q.taskId || '', round: q.round, open: !!q.open, at: q.at,
+    correct: q.correct || null, shown: !!q.shown, counts: c.counts, total: c.total, of: roster.length, tally: tally, notAnswered: not,
+    words: c.words.map(function (w) { return { text: w.text, n: w.n, names: wordNames[w.text] || [] }; }), prev: q.prev || null };
+}
+/* What the projector sees (Show on screen): counts and words, never a name. */
+function qcForProjector_(q) {
+  if (!q || !q.shown) return null;
+  var roster = readRoster_()[q.cls] || [], c = q.open ? qcCounts_(q, qcAnswers_(q, roster)) : (q.res || qcCounts_(q, qcAnswers_(q, roster)));
+  if (q.type === 'word') return { kind: 'words', words: c.words.map(function (w) { return { text: w.text, n: w.n }; }) };
+  return { kind: 'bars', options: q.options || [], counts: c.counts, correct: q.correct || null, total: c.total };
+}
+/* A student answers (from the deck, or from learnwithmrcedric). */
+function qcAnswer_(who, qid, round, answer) {
+  var q = qcGet_(who.cls);
+  if (!q || q.id !== String(qid || '') || !q.open || Number(round) !== Number(q.round)) return { ok: false, closed: true };
+  var a = String(answer == null ? '' : answer).trim();
+  if (q.type === 'word') a = a.replace(/\s+/g, ' ').slice(0, 40);
+  else if ((q.options || []).indexOf(a) < 0) return { ok: false, error: 'Choose one of the answers.' };
+  if (!a) return { ok: false, error: 'Type a word first.' };
+  cachePut_(qaKey_(q.id, q.round, who.cls, who.name), a, QC_KEEP);
+  bumpLive_(q.deckId, q.cls);
+  return { ok: true, mine: a };
+}
+function s_quick(st, qid, round, answer) { var who = stWho_(st); return qcAnswer_(who, qid, round, answer); }
+/* Closing writes one row per student to the Quick checks tab (one write), and keeps the counts for the result. */
+function qcClose_(q, correct) {
+  var roster = readRoster_()[q.cls] || [], ans = qcAnswers_(q, roster);
+  q.res = qcCounts_(q, ans);
+  if (correct !== undefined) q.correct = correct ? String(correct) : null;
+  q.open = false; q.closedAt = Date.now();
+  qcSave_(q);
+  try {
+    var sh = lbSs_().getSheetByName(QC_TAB);
+    if (!sh) { sh = lbSs_().insertSheet(QC_TAB); sh.getRange(1, 1, 1, QC_COLS.length).setValues([QC_COLS]).setFontWeight('bold'); sh.setFrozenRows(1); sh.getRange('H:H').setNumberFormat('@'); sh.getRange('J:J').setNumberFormat('@'); }
+    var now = new Date(), deck = findDeck_(q.deckId), title = deck ? deck.title : q.deckId;
+    var rows = roster.map(function (s) {
+      var a = ans[normName_(s.name)];
+      return [now, q.cls, title, q.id, q.round, q.type, String(q.prompt || '').slice(0, 300), String(s.reg || ''), s.name, a == null ? '' : a, q.correct || '', q.correct ? (a === q.correct) : ''];
+    });
+    if (rows.length) writeBelow_(sh, rows, QC_COLS.length);
+  } catch (err) { /* the counts are still shown; the rows are kept in the cache for 3 hours */ }
+  return q;
+}
+/* Opens a check. type 'slide' uses the question on the slide the teacher is on (its options and right answer). */
+function qcOpen_(deckId, cls, type, prompt, taskId) {
+  var old = qcGet_(cls);
+  if (old && old.open) qcClose_(old);
+  var q = { id: 'q' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), cls: String(cls).toUpperCase(), deckId: deckId || '', type: type, prompt: clean_(prompt, 300),
+    taskId: '', options: (QC_OPTIONS[type] || []).slice(), correct: null, round: 1, open: true, at: Date.now(), shown: false };
+  if (type === 'slide') {
+    var lead = liveLead_(CacheService.getScriptCache().get(leadKey_(deckId, cls))), n = lead ? lead.n : 0;
+    var qs = readDeckBoardsFor_(deckId).filter(function (b) { return taskId ? b.taskId === taskId : b.slideNo === n; }).filter(function (b) { return b.kind !== 'order'; });
+    var b = qs.filter(function (x) { return x.kind === 'choice' && x.columns && x.columns.length; })[0] || qs[0];
+    if (!b) throw new Error('This slide has no question to ask. Choose A B C D or another kind instead.');
+    q.taskId = b.taskId; q.prompt = clean_(b.title, 300);
+    if (b.kind === 'choice' && b.columns && b.columns.length) { q.options = b.columns.slice(0, 8).map(String); q.key = b.correct || ''; }
+    else { q.type = 'word'; q.options = []; q.key = ''; }
+    q.fromSlide = true;
+  } else if (!QC_OPTIONS[type]) throw new Error('Unknown kind of check.');
+  qcSave_(q);
+  return q;
+}
+
+/* ---------- lesson states ---------- */
+// Together: the iPads follow the teacher's slide and step. Own pace: free, up to one slide past the teacher.
+// Eyes on me: the iPads are paused. Each slide's kind (sent by the presenter) sets the state when the slide changes,
+// unless Eyes on me is on or the teacher chose a state on that slide.
+var MODE_BY_KIND = { cover: 'together', section: 'together', story: 'together', practice: 'own', investigation: 'own', concept: 'own', assessment: 'own' };
+function modeOf_(c) { return c.pause ? 'eyes' : (c.follow ? 'together' : 'own'); }
+function applyMode_(deckId, cls, v, leadN) {
+  var set = {};
+  if (v === 'together') set = { follow: true, pause: false, to: 0 };
+  else if (v === 'own') set = { follow: false, pause: false, to: leadN ? leadN + 1 : 0 };
+  else if (v === 'eyes') set = { pause: true };
+  else if (v === 'release') set = { pause: false };
+  else throw new Error('Unknown state.');
+  return apiSetControlNoPin_(deckId, cls, set);
+}
+/* Called from presenterLead_ when the presenter (bridge v15) reports a new slide and its kind. */
+function modeForSlide_(deckId, cls, c, slideId, kind, n) {
+  if (!kind || !c.lesson || c.pause) return c;
+  if (c.modeTap && c.modeTap === slideId) return c;
+  var want = MODE_BY_KIND[String(kind)] || 'own';
+  var hold = String(kind) === 'assessment';
+  var cur = modeOf_(c);
+  if (cur === want && !!c.hold === hold && (want !== 'own' || (c.to || 0) === n + 1)) return c;
+  var set = want === 'together' ? { follow: true, to: 0 } : { follow: false, to: n + 1 };
+  set.hold = hold;
+  return apiSetControlNoPin_(deckId, cls, set);
+}
+
+/* ---------- End with Undo ---------- */
+function endKey_(deckId, cls) { return 'endat_' + String(deckId).slice(0, 80) + '_' + normClass_(cls); }
+/* A lesson whose Undo time has passed is ended now. Called by every lesson call, so it ends within a second or two. */
+function finishEnds_(deckId, cls, raw, waitMs) {
+  var cache = CacheService.getScriptCache(), k = endKey_(deckId, cls);
+  if (raw === undefined) raw = cache.get(k);
+  var at = Number(raw || 0);
+  if (!at || Date.now() < at) return false;
+  // Only one caller finishes it: the key is read again and taken away under the lock (two callers a moment apart
+  // would otherwise both end the lesson and write two debriefs).
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(waitMs === undefined ? 5000 : waitMs)) return false;
+  try {
+    var now = Number(cache.get(k) || 0);
+    if (!now || Date.now() < now) return false;
+    cache.remove(k);
+  } finally { lock.releaseLock(); }
+  endsDue_(deckId, cls, false);
+  var c = getCtl_(deckId, cls);
+  if (!c.lesson) return false;
+  endLessonNow_(deckId, cls);
+  return true;
+}
+/* The Ends waiting for their Undo time, so the timer finishes one that nobody's call did (the laptop closed). */
+function endsDue_(deckId, cls, add) {
+  var cache = CacheService.getScriptCache(), list = [];
+  try { list = JSON.parse(cache.get('ends_due') || '[]'); } catch (err) { list = []; }
+  list = list.filter(function (x) { return !(x.d === deckId && x.c === cls) && Date.now() - x.at < 3600000; });
+  if (add) list.push({ d: deckId, c: cls, at: Date.now() });
+  cachePut_('ends_due', JSON.stringify(list.slice(-20)), 3600);
+}
+function sweepEnds_() {
+  var list = [];
+  try { list = JSON.parse(CacheService.getScriptCache().get('ends_due') || '[]'); } catch (err) { list = []; }
+  var done = 0;
+  list.forEach(function (x) { try { if (finishEnds_(x.d, x.c)) done++; } catch (err) { /* the next tick */ } });
+  return done;
+}
+function endLessonNow_(deckId, cls) {
+  var q = qcGet_(cls);
+  if (q && q.open) { try { qcClose_(q); } catch (err) { /* closed by itself after 3 hours */ } }
+  var deb = null;
+  try { deb = buildDebrief_(deckId, cls); } catch (err) { deb = null; }
+  var c = apiSetControlNoPin_(deckId, cls, { follow: false, pause: false, hold: false, to: 0, from: 0 });
+  try { if (c.lesson) noteLessonLength_(cls, c.lesson.at || 0, Date.now()); } catch (err) { /* only for the timetable */ }
+  noteLessonEnd_(c);
+  c.lesson = null;
+  c.modeTap = '';
+  saveCtlRaw_(deckId, cls, c);
+  try { projectorEnded_(deckId, String(cls || '').toUpperCase()); } catch (err) { /* the projector stays on the slides */ }
+  if (deb) { try { saveDebrief_(deb); } catch (err) { /* kept in the cache only */ } }
+  try { verBump_('today'); verBump_('cls_' + normClass_(cls)); bumpLive_(deckId, cls); cachePut_('run_v', String(Date.now()), 21600); } catch (err) { /* only stamps */ }
+  return c;
+}
+
+/* ---------- the debrief: what the lesson showed, for an hour after End ---------- */
+function debKey_(cls) { return 'deb_' + normClass_(cls); }
+function buildDebrief_(deckId, cls) {
+  var deck = findDeck_(deckId), roster = readRoster_()[cls] || [], c = getCtl_(deckId, cls);
+  var boards = readDeckBoardsFor_(deckId).filter(function (b) { return b.kind !== 'order'; }).sort(function (a, b) { return (a.slideNo - b.slideNo) || (a.order - b.order); });
+  // Each slide with questions, as the phone sees it (from the cache, or read from Posts once and kept).
+  var qs = [], bySlide = {}, info = {};
+  boards.forEach(function (b) { if (b.slideNo) bySlide[b.slideNo] = 1; });
+  Object.keys(bySlide).forEach(function (n) {
+    var r = null;
+    try { r = apiSlideNowNoPin_(deckId, cls, Number(n)); } catch (err) { r = null; }
+    (r ? r.questions : []).forEach(function (q) { info[q.taskId] = q; });
+  });
+  boards.forEach(function (b) {
+    var q = info[b.taskId];
+    if (!q || q.pct === null || q.pct === undefined) return;
+    qs.push({ taskId: b.taskId, title: String(b.title || b.taskId).slice(0, 120), slide: b.slideNo, pct: q.pct, n: q.firsts, common: q.wrong ? q.wrong[0] : '', hard: q.pct < 50 });
+  });
+  // The exit ticket: the questions on the last slide that has questions.
+  var lastSlide = boards.reduce(function (m, b) { return Math.max(m, b.slideNo || 0); }, 0);
+  var exit = boards.filter(function (b) { return b.slideNo === lastSlide; });
+  var miss = {};
+  exit.forEach(function (b) { var q = info[b.taskId]; (q ? q.missing : roster.map(function (s) { return s.name; })).forEach(function (n) { miss[n] = 1; }); });
+  var notFinished = roster.filter(function (s) { return miss[s.name]; }).map(function (s) { return s.name; });
+  var stuck = [];
+  try {
+    var wr = wrongTries_(deckId, cls), keys = roster.map(function (s) { return pulseStudentKey_(deckId, cls, s.name); }), got = CacheService.getScriptCache().getAll(keys);
+    roster.forEach(function (s, i) {
+      var x = null; try { x = got[keys[i]] ? JSON.parse(got[keys[i]]) : null; } catch (err) { x = null; }
+      var w = wr[normName_(s.name)] || {}, two = Object.keys(w).some(function (t) { return w[t] >= 2; });
+      if ((x && (x.on || 0) >= 180) || two) stuck.push(s.name);
+    });
+  } catch (err) { stuck = []; }
+  return { cls: String(cls).toUpperCase(), deckId: deckId, title: deck ? deck.title : deckId, startedAt: c.lesson ? c.lesson.at : 0, endedAt: Date.now(),
+    questions: qs, hard: qs.filter(function (q) { return q.hard; }).map(function (q) { return q.taskId; }), exitSlide: lastSlide, notFinished: notFinished, stuck: stuck };
+}
+var DEB_TAB = 'Lesson debriefs';
+function saveDebrief_(deb) {
+  cachePut_(debKey_(deb.cls), JSON.stringify(deb), 3600);
+  // The hard questions are kept for the next lesson's warm-up (release 34, P1 uses them).
+  try { PropertiesService.getScriptProperties().setProperty('WARM_' + normClass_(deb.cls), JSON.stringify({ deckId: deb.deckId, hard: deb.hard.slice(0, 5), at: deb.endedAt })); } catch (err) { /* fine */ }
+  var sh = lbSs_().getSheetByName(DEB_TAB);
+  if (!sh) { sh = lbSs_().insertSheet(DEB_TAB); sh.appendRow(['Ended', 'Class', 'Lesson', 'Hard questions', 'Did not finish the exit ticket', 'Stuck', 'Details']); sh.setFrozenRows(1); sh.getRange(1, 1, 1, 7).setFontWeight('bold'); }
+  sh.appendRow([new Date(deb.endedAt), deb.cls, deb.title, deb.questions.filter(function (q) { return q.hard; }).map(function (q) { return q.title + ' (' + q.pct + '%)'; }).join('; '),
+    deb.notFinished.length, deb.stuck.length, JSON.stringify({ questions: deb.questions }).slice(0, 45000)]);
+}
+function t_debrief(token, cls) {
+  teacher_(token);
+  var raw = CacheService.getScriptCache().get(debKey_(cls));
+  if (!raw) return null;
+  var d = JSON.parse(raw);
+  return Date.now() - d.endedAt < 3600000 ? d : null;
+}
+
+/* ---------- the phone and the presenter strip: one command endpoint ---------- */
+function t_do(key, cls, deckId, op, args, cmdId) {
+  checkPin_(key);
+  return tDo_(String(cls || '').toUpperCase(), clean_(deckId, 120), String(op || ''), args || {}, clean_(cmdId, 60));
+}
+function tDo_(cls, deckId, op, args, cmdId) {
+  if (!cls) throw new Error('Choose a class first.');
+  var cache = CacheService.getScriptCache();
+  if (cmdId) {
+    var seen = cache.get('cmd_' + cmdId);
+    if (seen) return tState_(cls, deckId, true);
+  }
+  if (deckId) finishEnds_(deckId, cls);
+  var c = deckId ? getCtl_(deckId, cls) : null;
+  var lead = deckId ? liveLead_(cache.get(leadKey_(deckId, cls))) : null;
+  var out = {};
+  if (op === 'go') {
+    if (!deckId) throw new Error('No lesson.');
+    var g = { seq: Date.now() + '.' + Math.floor(Math.random() * 1e6), slide: Math.max(1, Math.round(Number(args.slide) || 1)), step: Math.max(0, Math.round(Number(args.step) || 0)), cmd: cmdId || '' };
+    cachePut_(goKey_(deckId, cls), JSON.stringify(g), 3600);
+    bumpLive_(deckId, cls);
+  } else if (op === 'mode') {
+    var v = String(args.v || '');
+    c = applyMode_(deckId, cls, v, lead ? lead.n : 0);
+    if (v !== 'eyes' && v !== 'release' && lead) { c.modeTap = lead.id; saveCtlRaw_(deckId, cls, c); }
+    cachePut_('tcmd_' + normClass_(cls), String(Date.now()), 60);
+    bumpLive_(deckId, cls);
+  } else if (op === 'quick') {
+    qcOpen_(deckId, cls, String(args.type || 'abcd'), args.prompt, args.taskId);
+    cachePut_('tcmd_' + normClass_(cls), String(Date.now()), 60);
+  } else if (op === 'mark') {
+    var q1 = qcGet_(cls);
+    if (!q1) throw new Error('There is no check open.');
+    qcClose_(q1, String(args.correct || '') || null);
+  } else if (op === 'close') {
+    // Done with the check: its rows are written (if it was still open) and it leaves the phone and the iPads.
+    var q2 = qcGet_(cls);
+    if (q2 && q2.open) qcClose_(q2);
+    if (q2) { cache.remove(qcKey_(cls)); verBump_('cls_' + normClass_(cls)); bumpLive_(q2.deckId, cls); }
+  } else if (op === 'again') {
+    var q3 = qcGet_(cls);
+    if (!q3) throw new Error('There is no check to ask again.');
+    if (q3.open) q3 = qcClose_(q3);
+    q3.prev = { counts: q3.res ? q3.res.counts : {}, total: q3.res ? q3.res.total : 0, words: q3.res ? q3.res.words : [] };
+    q3.round = (q3.round || 1) + 1; q3.open = true; q3.correct = null; q3.res = null; q3.at = Date.now(); q3.shown = false;
+    qcSave_(q3);
+    cachePut_('tcmd_' + normClass_(cls), String(Date.now()), 60);
+  } else if (op === 'show') {
+    var q4 = qcGet_(cls);
+    if (!q4) throw new Error('There is no check to show.');
+    if (q4.open && args.on !== false) throw new Error('Close the check first (mark it, or press Done), then show it.');
+    q4.shown = args.on !== false;
+    qcSave_(q4);
+  } else if (op === 'release') {
+    c = apiSetControlNoPin_(deckId, cls, args.all ? { relAll: true } : { rel: clean_(args.taskId, 120) });
+    bumpLive_(deckId, cls);
+  } else if (op === 'end') {
+    var until = Date.now() + 4000;
+    cachePut_(endKey_(deckId, cls), String(until), 3600);
+    endsDue_(deckId, cls, true);
+    out.undoUntil = until;
+  } else if (op === 'undo') {
+    cache.remove(endKey_(deckId, cls));
+    endsDue_(deckId, cls, false);
+  } else if (op === 'state') {
+    // Nothing to do: the reply is the state (the slides ask once after their Undo countdown, so End finishes).
+  } else if (op === 'letin') {
+    out.letin = hubLetIn_({ gkey: clean_(args.id, 60), yes: args.allow !== false, cls: String(args.cls || cls).toUpperCase() });
+    cachePut_('gh_all_v', String(Date.now()), 21600);
+  } else if (op === 'avatars') {
+    c = apiSetControlNoPin_(deckId, cls, { fun: !!args.on });
+    try { CacheService.getScriptCache().remove('fun_' + cls); } catch (err) { /* fine */ }
+  } else throw new Error('Unknown command.');
+  if (cmdId) cachePut_('cmd_' + cmdId, '1', 600);   // after it worked: a retry of a command that failed runs again
+  var st = tState_(cls, deckId, false);
+  if (out.undoUntil) st.undoUntil = out.undoUntil;
+  if (out.letin) st.letinResult = out.letin;
+  return st;
+}
+function goKey_(deckId, cls) { return 'go_' + String(deckId).slice(0, 80) + '_' + normClass_(cls); }
+/* The state the phone and the presenter strip draw. */
+function tState_(cls, deckId, repeat) {
+  var cache = CacheService.getScriptCache(), c = deckId ? getCtl_(deckId, cls) : null, lead = deckId ? liveLead_(cache.get(leadKey_(deckId, cls))) : null;
+  var deck = deckId ? findDeck_(deckId) : null, roster = readRoster_()[cls] || [];
+  var lesson = null;
+  if (c && c.lesson) {
+    var inCount = 0;
+    try {
+      var keys = roster.map(function (s) { return pulseStudentKey_(deckId, cls, s.name); }), got = keys.length ? cache.getAll(keys) : {}, now = Date.now();
+      keys.forEach(function (k) { var x = null; try { x = got[k] ? JSON.parse(got[k]) : null; } catch (err) { x = null; } if (x && now - x.at < 30000) inCount++; });
+    } catch (err) { inCount = 0; }
+    lesson = { cls: cls, deckId: deckId, title: deck ? deck.title : deckId, at: c.lesson.at || 0, mode: modeOf_(c),
+      slide: lead ? { n: lead.n, id: lead.id, total: lead.total || 0, step: lead.step || 0, steps: lead.steps || 0, kind: lead.kind || '', title: lead.title || '' } : null,
+      inCount: inCount, of: roster.length, endAt: Number(cache.get(endKey_(deckId, cls)) || 0) || 0 };
+  }
+  return { ok: true, repeat: !!repeat, lesson: lesson, ctl: c ? { follow: !!c.follow, pause: !!c.pause, hold: !!c.hold, to: c.to || 0, fun: !!c.fun } : null, quick: qcForPhone_(qcGet_(cls)) };
+}
+
+/* The phone's one call: it waits up to maxMs (20 s at most) for any change, then answers with everything it draws.
+   Only one phone wait is held per class at a time (a newer one takes over) and four in all, so the waits can never
+   use up the app's simultaneous requests during a lesson. */
+var LP_MAX_ALL = 4;
+function t_live(key, cls, deckId, sig, maxMs) {
+  checkPin_(key);
+  cls = String(cls || '').toUpperCase(); deckId = clean_(deckId, 120);
+  var cache = CacheService.getScriptCache(), me = Utilities.getUuid().slice(0, 8);
+  if (deckId && cls) { finishEnds_(deckId, cls); cachePut_('phl_' + normClass_(cls), String(Date.now()), 60); }
+  var wait = Math.max(0, Math.min(Number(maxMs) || 0, 20000)), poll = 0;
+  if (wait && !lpTake_('p', cls, me, wait)) { wait = 0; poll = 3000; }
+  var keys = deckId && cls ? [liveVerKey_(deckId, cls), ctlKey_(deckId, cls), leadKey_(deckId, cls), qcKey_(cls), endKey_(deckId, cls), 'gh_all_v', 'run_v'] : ['gh_all_v', 'run_v'];
+  var end = Date.now() + wait, cur = '';
+  try {
+    while (true) {
+      var got = cache.getAll(keys), ld = deckId ? liveLead_(got[keys[2]]) : null;
+      cur = keys.map(function (k, i) { return i === 2 ? (ld ? ld.n + '.' + (ld.step || 0) : 0) : hash_(got[k] || ''); }).join('|');
+      // An End whose Undo time has passed is finished here, so the phone sees the lesson end without asking again.
+      if (deckId && got[keys[4]] && Date.now() >= Number(got[keys[4]])) { finishEnds_(deckId, cls, got[keys[4]]); cur = 'ended.' + Date.now(); break; }
+      if (cur !== sig || Date.now() >= end) break;
+      if (wait && cache.get(lpKey_('p', cls)) !== me) break;   // a newer wait from this phone took over
+      Utilities.sleep(350);
+    }
+  } finally { if (wait) lpDrop_('p', cls, me); }
+  var changed = cur !== sig;
+  var out = tState_(cls, deckId, false);
+  out.sig = cur; out.changed = changed;
+  if (poll) out.poll = poll;
+  try { out.running = apiRunningLessonsNoPin_(); } catch (err) { out.running = []; }
+  if (out.lesson) {
+    var at = out.lesson.slide ? out.lesson.slide.n : 0, show = at ? questionSlideFor_(deckId, at) : 0;
+    try { out.slide = show ? apiSlideNowNoPin_(deckId, cls, show) : null; if (out.slide) out.slide.at = at; } catch (err) { out.slide = null; }
+    var rk = 'phr_' + normClass_(cls);
+    if (!cache.get(rk)) { try { out.room = apiPhoneRoomNoPin_(deckId, cls); cachePut_(rk, '1', 6); } catch (err) { out.room = null; } }
+    else out.room = null;
+    out.stuck = out.room && out.room.flags ? out.room.flags.filter(function (f) { return f.k === 'stuck' || f.k === 'wrong'; }).map(function (f) { return { name: f.name, why: f.t }; }) : null;
+  }
+  try { out.letin = gateHelpAll_().filter(function (x) { return !cls || x.cls === cls; }).map(function (x) { return { id: x.key, cls: x.cls, name: x.name, at: x.at }; }); } catch (err) { out.letin = []; }
+  return out;
+}
+function lpKey_(role, cls) { return 'lp' + role + '_' + normClass_(cls); }
+/* Takes this class's wait for the role (the newest wins), if fewer than four waits are held in all. */
+function lpTake_(role, cls, me, ms) {
+  var cache = CacheService.getScriptCache(), all = {};
+  try { all = JSON.parse(cache.get('lp_all') || '{}'); } catch (err) { all = {}; }
+  var now = Date.now(), live = 0, mine = role + '_' + normClass_(cls);
+  Object.keys(all).forEach(function (k) { if (all[k] < now) delete all[k]; else if (k !== mine) live++; });
+  if (live >= LP_MAX_ALL) return false;
+  all[mine] = now + ms + 2000;
+  cachePut_('lp_all', JSON.stringify(all), 120);
+  cachePut_(lpKey_(role, cls), me, Math.ceil(ms / 1000) + 5);
+  return true;
+}
+function lpDrop_(role, cls, me) {
+  var cache = CacheService.getScriptCache();
+  if (cache.get(lpKey_(role, cls)) !== me) return;
+  cache.remove(lpKey_(role, cls));
+  try { var all = JSON.parse(cache.get('lp_all') || '{}'); delete all[role + '_' + normClass_(cls)]; cachePut_('lp_all', JSON.stringify(all), 120); } catch (err) { /* runs out by itself */ }
+}
+/* The presenter deck waits for a phone command (go to a slide, or show the check on the projector) while a phone is in
+   use, so a tap on the phone moves the projector at once. Without a phone in the last 30 s it says so at once. */
+function presenterGo_(d) {
+  checkPin_(d.pin);
+  var deckId = clean_(d.topicId, 120), cls = String(d.cls || '').toUpperCase(), cache = CacheService.getScriptCache();
+  if (!deckId || !cls) return { ok: false, error: 'No lesson or class.' };
+  finishEnds_(deckId, cls);
+  var phone = Date.now() - Number(cache.get('phl_' + normClass_(cls)) || 0) < 30000;
+  var keys = [goKey_(deckId, cls), qcKey_(cls), liveVerKey_(deckId, cls)];
+  var snap = function () {
+    var got = cache.getAll(keys), g = null, q = qcGet_(cls, got[keys[1]] || null);
+    try { g = got[keys[0]] ? JSON.parse(got[keys[0]]) : null; } catch (err) { g = null; }
+    var show = qcForProjector_(q);
+    return { g: g, show: show, sig: (g ? g.seq : 0) + '|' + hash_(JSON.stringify(show || null)) };
+  };
+  var s = snap();
+  if (!phone) return { ok: true, phone: false, sig: s.sig, go: s.g, show: s.show };
+  var me = Utilities.getUuid().slice(0, 8), wait = Math.max(0, Math.min(Number(d.maxMs) || 0, 20000));
+  if (wait && !lpTake_('d', cls, me, wait)) return { ok: true, phone: true, poll: 3000, sig: s.sig, go: s.g, show: s.show };
+  var end = Date.now() + wait;
+  try {
+    while (s.sig === String(d.sig || '') && Date.now() < end) {
+      Utilities.sleep(350);
+      if (cache.get(lpKey_('d', cls)) !== me) break;
+      s = snap();
+    }
+  } finally { if (wait) lpDrop_('d', cls, me); }
+  return { ok: true, phone: true, sig: s.sig, go: s.g, show: s.show };
+}
+/* The running lessons for the phone, without the PIN check (the caller checked). */
+function apiRunningLessonsNoPin_() {
+  var classes = Object.keys(readRoster_()), run = runningFor_(classes);
+  return Object.keys(run).map(function (c) { var r = run[c]; return { cls: c, deckId: r.id, title: r.title, lesson: r.lesson, at: r.at }; })
+    .sort(function (a, b) { return b.at - a.at; });
 }

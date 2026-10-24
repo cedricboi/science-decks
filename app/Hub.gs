@@ -82,10 +82,10 @@ function hubOnOpen_() {
 function setupHub() {
   needOwner_('setupHub');
   var props = PropertiesService.getScriptProperties(), hid = hubSheetId_();
-  var ss = hid ? SpreadsheetApp.openById(hid) : SpreadsheetApp.create('learnwithmrcedric homework');
+  var ss = hid ? hubSs_() : SpreadsheetApp.create('learnwithmrcedric homework');
   var asg = ss.getSheetByName(TABS.assignments.name);
   if (!hubReady_() && asg && asg.getLastRow() > 1) throw new Error('This Teacher Hub sheet already has worksheets. Move the old Hub\'s settings in first (setupMyScience).');
-  props.setProperty('SS_ID', ss.getId());
+  if (!oneSsId_()) props.setProperty('SS_ID', ss.getId());   // after the move to one sheet, SS_ID keeps naming the old Hub sheet (the backup)
   props.setProperty('HUB_READY', '1');
   HUB_SS_ = ss;
   try { setSetting_('Class list sheet ID', ss.getId()); } catch (e) { /* no Live Board Settings tab yet */ }
@@ -135,6 +135,7 @@ function setupHub() {
 }
 
 function showFolder() {
+  guardJob_('showFolder');
   var url = folder_('ROOT').getUrl();
   showLinkDialog_('Worksheet Hub folder', '<p><a href="' + url + '" target="_blank">Open the Worksheet Hub folder</a></p>');
 }
@@ -144,6 +145,7 @@ function showFolder() {
 /* ------------------------------------------------------------------ */
 
 function hubCheckStudents() {
+  guardJob_('hubCheckStudents');
   var list = getStudents_();
   var perClass = {}, seen = {}, dupes = [];
   list.forEach(function (s) {
@@ -174,6 +176,7 @@ function hubCheckStudents() {
 /* ------------------------------------------------------------------ */
 
 function checkAssignments() {
+  guardJob_('checkAssignments');
   var sh = hubSheet_(TABS.assignments.name);
   var last = sh.getLastRow();
   if (last < 2) { SpreadsheetApp.getUi().alert('The Assignments tab is empty.'); return; }
@@ -399,6 +402,26 @@ function pdfVer_(file) {
   return file.getId() + '@' + t;
 }
 
+// Release 34: the blank worksheet, also once it has closed (Clean copy and Try it again in the student app).
+function api_clean(token, id) {
+  var s = who_(token);
+  var a = findAssignment_(id);
+  if (!a || !canSee_(a, s) || !a.fileId) throw new Error('This worksheet was not found.');
+  var file = DriveApp.getFileById(a.fileId);
+  return { id: a.id, title: a.title, ver: pdfVer_(file), pdf: Utilities.base64Encode(file.getBlob().getBytes()) };
+}
+// Release 34: the copy the student handed in, read only (after the worksheet has closed).
+function api_handed(token, id) {
+  var s = who_(token);
+  var a = findAssignment_(id);
+  if (!a || !canSee_(a, s)) throw new Error('This worksheet was not found.');
+  var sub = submissionIndex_()[a.id + '|' + studentKey_(s)];
+  var fid = sub ? fileIdFromLink_(sub.file) : '';
+  if (!fid) throw new Error('Your handed-in copy was not found.');
+  var f = DriveApp.getFileById(fid);
+  if (f.isTrashed()) throw new Error('Your handed-in copy was not found.');
+  return { id: a.id, title: a.title, at: sub.at, pdf: Utilities.base64Encode(f.getBlob().getBytes()) };
+}
 // One worksheet PDF on its own, so the iPad can keep a copy of each open worksheet before it is needed.
 function api_pdf(token, id) {
   var s = who_(token);
@@ -418,6 +441,7 @@ function api_saveDraft(token, id, json) {
 }
 
 function api_submit(token, id, pdfBase64, json, stats) {
+  needUnfrozen_();
   var s = who_(token);
   var a = findAssignment_(id);
   if (!a || !canSee_(a, s)) throw new Error('This worksheet was not found.');
@@ -456,6 +480,7 @@ function api_submit(token, id, pdfBase64, json, stats) {
   } finally {
     lock.releaseLock();
   }
+  try { verBump_('work'); verBump_('today'); CacheService.getScriptCache().remove('hub_' + normClass_(s.cls)); } catch (e) { /* the next look catches up */ }
   return at;
 }
 
@@ -572,6 +597,7 @@ function makeZip() {
 }
 
 function checkMarked() {
+  guardJob_('checkMarked');
   var a = askAssignment_('Check marked work');
   if (!a) return;
   ensureSubmissionCols_();
@@ -613,7 +639,22 @@ function askAssignment_(title) {
 /* Students, submissions, drafts                                       */
 /* ------------------------------------------------------------------ */
 
+/* The class list, read once per run and kept 2 minutes (release 34: it was read up to three times per student call).
+   Each call gets its own copy. */
+var STU_MEMO_ = null;
 function getStudents_() {
+  if (!STU_MEMO_) {
+    var hit = null;
+    try { hit = CacheService.getScriptCache().get('stu_idx'); } catch (e) { hit = null; }
+    var list = hit ? null : readStudents_();
+    STU_MEMO_ = hit || JSON.stringify(list);
+    // Kept only when every student has a code (a code not given yet is tried again on the next read).
+    if (!hit && list.every(function (s) { return !!s.code; })) { try { CacheService.getScriptCache().put('stu_idx', STU_MEMO_, 120); } catch (e) { /* too big to keep: read each run */ } }
+  }
+  return JSON.parse(STU_MEMO_);
+}
+function forgetStudents_() { STU_MEMO_ = null; try { CacheService.getScriptCache().remove('stu_idx'); } catch (e) { /* fine */ } }
+function readStudents_() {
   var sh = hubSheet_(TABS.students.name);
   var last = sh.getLastRow();
   if (last < 2) return [];
@@ -741,7 +782,12 @@ function ensureAssignmentCols_() {
 // A student sees the answer key once the teacher releases it and the student has handed in,
 // or once the worksheet is closed. So a student who has not handed in cannot copy from it.
 function answersVisible_(a, sub) {
-  return !!(a.showAnswers && a.answerLink && (sub || !a.open));
+  if (!a.answerLink || !(sub || !a.open)) return false;
+  if (a.showAnswers) return true;
+  // Release 34: with "answers after corrections", each student gets the key once their corrections are in (or none
+  // are needed), not only when corrections close for the whole class.
+  var released = !!(sub && a.showMarked && (sub.marked || sub.score || sub.comment));
+  return !!(a.answersAfter && released && (sub.corrAt || !sub.marked || fullMarks_(sub.score)));
 }
 
 // Adds the Score and Comment columns to a Submissions tab made by an earlier version.
@@ -820,6 +866,7 @@ function findDraft_(a, s, kind) {
 
 function saveDraft_(a, s, json, kind) {
   if (typeof json !== 'string' || !json) return;
+  if (!kind) { try { var dk = 'dr_' + hash_(a.id + '|' + studentKey_(s)); if (CacheService.getScriptCache().get(dk) !== '1') { cachePut_(dk, '1', 21600); verBump_('work'); } } catch (e) { /* only a hint */ } }
   var f = findDraft_(a, s, kind);
   if (f) f.setContent(json);
   else folder_('DRAFTS').createFile(draftName_(a, s, kind), json, 'application/json');
@@ -879,6 +926,7 @@ function api_saveCorrectionDraft(token, id, json) {
 
 // The corrected copy: the marked PDF with the student's green corrections on it.
 function api_submitCorrection(token, id, pdfBase64, json) {
+  needUnfrozen_();
   var c = corrContext_(token, id);
   saveDraft_(c.a, c.s, json, 'corr');
   var name = corrName_(c.a, c.s);
@@ -891,6 +939,7 @@ function api_submitCorrection(token, id, pdfBase64, json) {
     ensureSubmissionCols_();
     var now = new Date();
     hubSheet_(TABS.submissions.name).getRange(c.sub.row, 14, 1, 2).setValues([[now, file.getUrl()]]);
+    try { verBump_('work'); verBump_('today'); } catch (e) { /* only stamps */ }
     return Utilities.formatDate(now, TZ, 'd MMM yyyy, h:mm a');
   } finally {
     lock.releaseLock();
@@ -907,7 +956,7 @@ function hubSheet_(name) {
   if (!HUB_SS_) {
     var id = hubSheetId_();
     if (!id) throw new Error('The Teacher Hub sheet is not linked. In the Live Board sheet, Settings tab, put its ID in Class list sheet ID.');
-    HUB_SS_ = SpreadsheetApp.openById(id);
+    HUB_SS_ = hubSs_();
   }
   var ss = HUB_SS_;
   var sh = ss.getSheetByName(name);
@@ -1080,7 +1129,9 @@ function assignsForClass_(assigns, cls) {
   return assigns.filter(function (a) { return a.classes.length === 0 || a.classes.indexOf(cls) >= 0; });
 }
 
-function buildTracker() {
+function buildTracker() { guardJob_('buildTracker'); if (frozen_()) return; return oneTimerRun_('tracker', buildTracker_); }
+function buildTracker_() {
+  if (frozen_()) return;   // the move to one sheet is running: the next hour's run does it
   ensureSubmissionCols_();
   var now = new Date();
   var assigns = getAssignments_().filter(function (a) { return a.fileId && !a.practice; });
@@ -1217,7 +1268,7 @@ function toggleHourlyTracker() {
     ui.alert('The tracker no longer updates by itself. Use Worksheet Hub > Update homework tracker when you need it.');
   } else {
     ScriptApp.newTrigger('buildTracker').timeBased().everyHours(1).create();
-    buildTracker();
+    buildTracker_();
     ui.alert('The tracker now updates by itself every hour. Run this menu item again to turn it off.');
   }
 }
@@ -1269,6 +1320,7 @@ function hubSetWebAppLink() {
 }
 
 function showTeacherHub() {
+  guardJob_('showTeacherHub');
   var url = hubUrl_();
   var isDev = /\/dev\?teacher$/.test(url);
   if (isDev) url = '';
@@ -1594,14 +1646,14 @@ function api_t_dashboard(token) {
    pairing open from here with no PIN. The Hub proves itself with its sheet ID, which Live Board keeps as its class
    list (Live Board sheet, Settings: Class list sheet ID). The answer also says, for each class, the lesson running
    now, the part taught last and the part to teach next. */
-function lbKey_() { return hubSheetId_(); }
+function lbKey_() { return INPROC_; }
 function lbAsk_(op, extra) {
   var body = { api: 'hub', key: lbKey_(), op: op || '' };
   Object.keys(extra || {}).forEach(function (k) { body[k] = extra[k]; });
   var out = hubRequest_(body);
   if (!out) throw new Error('Live Board did not answer as expected.');
   if (out.ok === false) {
-    if (/Wrong key/.test(out.error || '')) throw new Error('Live Board does not know the Teacher Hub sheet. In the Live Board sheet, Settings tab, Class list sheet ID must be the Hub sheet\'s ID: ' + lbKey_());
+    if (/Wrong key/.test(out.error || '')) throw new Error('Live Board did not accept the request from the Teacher Hub.');
     throw new Error(out.error || 'Live Board said no.');
   }
   return out;
@@ -2152,7 +2204,14 @@ function ensureTick_(want) {
 
 // Runs every 15 minutes: homework linked to sub-chapters that were taught is set, then anything due happens.
 function hubTick() {
+  guardJob_('hubTick');
+  try { sweepEnds_(); } catch (e) { /* tried again next time */ }
+  if (frozen_()) return [];
+  return oneTimerRun_('tick', hubTickRun_);
+}
+function hubTickRun_() {
   var done = [];
+  try { oneDrain_(); } catch (e) { /* tried again next time */ }
   try { done = done.concat(syncTaught_().map(function (m) { return m.id + ' set for ' + m.cls; })); } catch (e) { /* Live Board asked again next time */ }
   return done.concat(hubTickDue_());
 }
@@ -2222,8 +2281,7 @@ function autoHandIn_(a, now) {
     rows.push([Utilities.formatDate(when, TZ, 'd MMM yyyy, h:mm a'), a.id, a.title, s.cls, s.reg, s.name, pages, strokes, '', '', '', '', when, '', '', '', '', 'Auto']);
   });
   if (rows.length) {
-    var sh = hubSheet_(TABS.submissions.name), at = sh.getLastRow() + 1;
-    sh.getRange(at, 1, rows.length, 18).setValues(rows);
+    writeBelow_(hubSheet_(TABS.submissions.name), rows, 18);
   }
   return String(rows.length);
 }
@@ -2361,6 +2419,7 @@ function api_t_update(token, id, patch) {
     sh.getRange(a.row, 7).setValue(dueFrom_(patch.dueDate, patch.dueTime))
       .setNumberFormat(patch.dueTime ? 'ddd d mmm yyyy, h:mm am/pm' : 'ddd d mmm yyyy');
   }
+  try { verBump_('work'); verBump_('today'); } catch (e) { /* only stamps */ }
   return true;
 }
 
@@ -2595,7 +2654,7 @@ function api_t_tracker(token) {
 
 function api_t_updateSheetTracker(token) {
   teacher_(token);
-  var out = buildTracker();
+  var out = buildTracker_();
   PropertiesService.getScriptProperties().setProperty('SHEET_TRACKER_AT', String(Date.now()));
   return out;
 }
@@ -2648,6 +2707,17 @@ function api_t_parentSent(token, cls, name, on) {
 
 // One student's whole record for the side panel in the tracker: every worksheet with the hand-in,
 // score and comment, and their points.
+/* Release 34: the student record with the share of their open lessons' slides done (from Progress, cached). */
+function t_student(token, cls, name) {
+  var r = api_t_student(token, cls, name);
+  try {
+    var seen = 0, total = 0, open = {};
+    allocFor_(cls).forEach(function (id) { open[id] = 1; });
+    readProgress_(cls).forEach(function (p) { if (open[p[0]] && normName_(p[2]) === normName_(name)) { seen += Number(p[3]) || 0; total += Number(p[4]) || 0; } });
+    if (r && typeof r === 'object' && total) r.slides = Math.round(100 * Math.min(seen, total) / total) + '%';
+  } catch (e) { /* the record without it */ }
+  return r;
+}
 function api_t_student(token, cls, name) {
   teacher_(token);
   var s = hubFindStudent_(hubNormClass_(cls), name);
@@ -2919,9 +2989,7 @@ function hubDoPost_(e) {
 // points, tokens, latest points and homework, so the Live Board student home and class view can show them.
 // The key is this sheet's ID: only the teacher's Live Board sheet holds it, and students never see it.
 function lbClass_(req) {
-  var props = PropertiesService.getScriptProperties();
-  var ssId = hubSheetId_();
-  if (!req.key || String(req.key) !== ssId) throw new Error('Wrong key.');
+  if (!req || req.key !== INPROC_) throw new Error('Wrong key.');
   var cls = hubNormClass_(req.cls);
   var studs = getStudents_().filter(function (s) { return s.cls === cls; });
   var rules = rwRules_(), log = rwLog_(), assigns = getAssignments_(), subs = submissionIndex_(), items = rwItems_(rules);
@@ -3425,6 +3493,7 @@ function api_rw_summary(token) {
 }
 
 function api_rw_buy(token, id) {
+  needUnfrozen_();
   var s = funGuard_(who_(token));
   var lock = hubLock_();
   lock.waitLock(30000);
@@ -3440,6 +3509,7 @@ function api_rw_buy(token, id) {
 }
 
 function api_rw_exchange(token, n) {
+  needUnfrozen_();
   var s = funGuard_(who_(token));
   n = Math.round(Number(n) || 0);
   if (n < 1 || n > 1000) throw new Error('Choose how many tokens.');
@@ -3455,6 +3525,7 @@ function api_rw_exchange(token, n) {
 
 // Buys a sticker with tokens. Stickers are shown at the night market, so they cost tokens, not points.
 function api_rw_sticker(token, id) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), x = null;
   RW_STICKERS.forEach(function (r) { if (r[0] === id) x = r; });
   if (!x) throw new Error('That sticker is not on sale.');
@@ -3471,6 +3542,7 @@ function api_rw_sticker(token, id) {
 
 // Saves what the avatar is wearing. Anything the student does not own is taken off.
 function api_rw_wear(token, json) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), o = parseJson_(String(json || '')) || {};
   var rules = rwRules_(), items = rwItems_(rules), L = rwLedger_(s, [], {}, rwLog_(), rules, items);
   var own = {}, slotOf = {};
@@ -3518,6 +3590,7 @@ function api_rw_market(token) {
 }
 
 function api_rw_order(token, prizeId) {
+  needUnfrozen_();
   var s = funGuard_(who_(token)), code = '', prize = null;
   var lock = hubLock_();
   lock.waitLock(30000);
@@ -3688,6 +3761,7 @@ function api_t_rwGive(token, cls, name, points, note) {
   if (!p) throw new Error('Type a number of points.');
   var text = String(note || '').trim().slice(0, 80) || (p > 0 ? 'Bonus from your teacher' : 'Taken away by your teacher');
   rwSheet_('log').appendRow([new Date(), s.cls, s.reg, s.name, 'Teacher', '', p, 0, '', '', text]);
+  try { verBump_('cls_' + s.cls); } catch (e) { /* only a stamp */ }
   return true;
 }
 
@@ -3952,6 +4026,7 @@ function rwThemes_(rules, L) {
 
 // Unlocks a colour theme (once) and wears it.
 function api_rw_theme(token, id) {
+  needUnfrozen_();
   var s = who_(token), x = null;
   RW_THEMES.forEach(function (t) { if (t[0] === id) x = t; });
   if (!x) throw new Error('That colour theme was not found.');
@@ -4889,4 +4964,184 @@ function api_t_undeploy(token, id, back) {
 function initials_(n) {
   return String(n || '').split(/[\s\-]+/).filter(function (w) { return /[A-Za-z0-9\u00c0-\uffff]/.test(w); })
     .map(function (w) { return w.replace(/^[^A-Za-z0-9\u00c0-\uffff]+/, '').charAt(0).toUpperCase() + '.'; }).join('');
+}
+
+/* ================================================================== */
+/* Release 34: the student app's one call (s_home)                    */
+/* ================================================================== */
+// One reply for Now, My file and Me. The class's worksheets and every student's hand-ins are worked out once per class
+// and kept until something changes (a hand-in, a release, a lesson starting or ending, or 5 minutes), so a class opening
+// learnwithmrcedric at the bell asks the sheet once. One status for each sheet, used by every screen:
+//   new, started, handedIn, marked, corrDue, corrIn, missed, practice.
+var CM_SECS = 300;
+function classModel_(cls) {
+  cls = hubNormClass_(cls);
+  var v = verGet_(['work', 'cls_' + cls]), key = 'cm_' + cls, cache = CacheService.getScriptCache(), hit = getBig_(key), old = null;
+  if (hit) { try { old = JSON.parse(hit); } catch (e) { old = null; } }
+  if (old && old.v === v) return old;
+  // Someone in the class is already working it out: use the last copy rather than wait.
+  if (old && cache.get(key + '_busy')) return old;
+  cachePut_(key + '_busy', '1', 30);
+  try {
+    CH_MEMO_ = {};
+    var studs = getStudents_().filter(function (s) { return s.cls === cls; });
+    var rules = rwRules_(), log = rwLog_(), assigns = getAssignments_(), subs = submissionIndex_(), items = rwItems_(rules);
+    var probe = { cls: cls, name: '' };
+    var work = assigns.filter(function (a) { return a.fileId && canSee_(a, probe); });
+    var keepW = {};
+    work.filter(function (a) { return !a.practice; }).slice(-60).concat(work.filter(function (a) { return a.practice; }).slice(-30)).forEach(function (a) { keepW[a.id] = 1; });
+    work = work.filter(function (a) { return keepW[a.id]; });
+    var out = { v: v, at: Date.now(), cls: cls,
+      work: work.map(function (a) {
+        return { id: a.id, title: a.title, due: a.due, dueTs: a.dueAt ? a.dueAt.getTime() : null, open: a.open, practice: !!a.practice, chapter: chapterOfWs_(a),
+          key: !!a.answerLink, showAnswers: !!a.showAnswers, after: !!a.answersAfter, shown: !!a.showMarked, corrDays: a.corrDays || 0,
+          rel: a.releasedAt ? a.releasedAt.getTime() : 0, corrClosed: !!a.correctionsClosed, auto: !!(a.autoHandIn && a.dueAt) };
+      }),
+      students: {} };
+    studs.forEach(function (s) {
+      var L = rwLedger_(s, assigns, subs, log, rules, items), m = {};
+      work.forEach(function (a) {
+        var sub = subs[a.id + '|' + studentKey_(s)];
+        if (!sub) return;
+        m[a.id] = { f: sub.first instanceof Date ? sub.first.getTime() : 0, mk: !!sub.marked, sc: sub.score || '', cm: String(sub.comment || '').slice(0, 300), ci: sub.corrAt ? 1 : 0,
+          late: !!(a.dueAt && sub.first instanceof Date && sub.first > a.dueAt) };
+      });
+      out.students[hubNormName_(s.name)] = { name: s.name, reg: s.reg, points: L.points, tokens: L.tokens, subs: m };
+    });
+    putBig_(key, JSON.stringify(out), CM_SECS);
+    return out;
+  } finally { cache.remove(key + '_busy'); }
+}
+/* One sheet for one student. */
+function itemFor_(w, sub, started, now) {
+  var released = !!(sub && w.shown && (sub.mk || sub.sc || sub.cm));
+  var status, corr = null;
+  if (w.practice) status = 'practice';
+  else if (released) {
+    if (sub.ci) status = 'corrIn';
+    else if (sub.mk && !fullMarks_(sub.sc) && !w.corrClosed) {
+      status = 'corrDue';
+      var dts = w.corrDays && w.rel ? w.rel + w.corrDays * 86400000 : null;
+      corr = { dueTs: dts, due: dts ? Utilities.formatDate(new Date(dts), TZ, 'EEE d MMM') : '', started: false };
+    } else status = 'marked';
+  }
+  else if (sub) status = 'handedIn';
+  else if (!w.open) status = 'missed';
+  else status = started ? 'started' : 'new';
+  // Ruling 3: the answer key opens for a student once corrections are in or not needed, after the corrections due
+  // date, or when the teacher showed it to everyone.
+  var corrDone = released && (sub.ci || !sub.mk || fullMarks_(sub.sc));
+  var keyOpen = !!(w.key && (sub || !w.open) && (w.showAnswers || (w.after && released && corrDone)));
+  return { id: w.id, title: w.title, chapter: w.chapter || '', practice: w.practice, status: status, due: w.due, dueTs: w.dueTs,
+    handedTs: sub && sub.f ? sub.f : null, late: !!(sub && sub.late), score: released ? sub.sc : '', comment: released ? sub.cm : '', hasMarked: released && !!sub.mk,
+    corr: corr, keyOpen: keyOpen, rel: released ? w.rel : 0, seen: true, autoHandIn: !!w.auto,
+    owed: !w.practice && (status === 'new' || status === 'started' || status === 'corrDue') };
+}
+/* Worksheets the student has started (a draft saved): known from the cache, and from Drive at most every 30 minutes. */
+function startedFor_(s, ids) {
+  var cache = CacheService.getScriptCache(), out = {};
+  if (!ids.length) return out;
+  var keys = ids.map(function (id) { return 'dr_' + hash_(id + '|' + studentKey_(s)); }), got = {};
+  try { got = cache.getAll(keys); } catch (e) { got = {}; }
+  var miss = [];
+  ids.forEach(function (id, i) { if (got[keys[i]] === '1') out[id] = true; else if (got[keys[i]] !== '0') miss.push(id); });
+  var qk = 'drq_' + hash_(studentKey_(s));
+  if (miss.length && !cache.get(qk)) {
+    cachePut_(qk, '1', 1800);
+    var put = {};
+    miss.slice(0, 6).forEach(function (id) {
+      var a = findAssignment_(id), f = null;
+      try { f = a ? findDraft_(a, s) : null; } catch (e) { f = null; }
+      out[id] = !!f;
+      put['dr_' + hash_(id + '|' + studentKey_(s))] = f ? '1' : '0';
+    });
+    try { cache.putAll(put, 1800); } catch (e) { /* asked again later */ }
+  }
+  return out;
+}
+function s_home(st, have) {
+  var who = stWho_(st), cls = hubNormClass_(who.cls), name = who.name, now = Date.now();
+  var cm = classModel_(cls), me = cm.students[hubNormName_(name)];
+  var run = null;
+  try { run = runningLessonFor_(cls); } catch (e) { run = null; }
+  var ask = null;
+  try { var a0 = currentAsk_(cls); if (a0 && /^https:\/\//.test(a0.link || '')) ask = { question: a0.question, deckTitle: a0.deckTitle, url: a0.link, taskId: a0.taskId }; } catch (e) { ask = null; }
+  var quick = null;
+  try { quick = run ? qcForStudent_(qcGet_(cls), cls, name) : null; } catch (e) { quick = null; }
+  var before = null, nextAt = 0;
+  try { nextAt = nextSlotStart_(cls, now) || 0; } catch (e) { nextAt = 0; }
+  if (!run && nextAt && nextAt - now < 15 * 60000 && nextAt > now) before = { at: nextAt, title: 'Science' };
+  var s = hubFindStudent_(cls, name) || { cls: cls, name: name, reg: '', code: '' };
+  var openNew = cm.work.filter(function (w) { return w.open && !w.practice && !(me && me.subs[w.id]); }).map(function (w) { return w.id; });
+  var started = {};
+  try { started = startedFor_(s, openNew); } catch (e) { started = {}; }
+  var seenRaw = null, seen = {};
+  try { seenRaw = CacheService.getScriptCache().get('seen_' + hash_(studentKey_(s))); seen = JSON.parse(seenRaw || '{}'); } catch (e) { seen = {}; }
+  var items = cm.work.map(function (w) { var it = itemFor_(w, me ? me.subs[w.id] : null, !!started[w.id], now); if (it.hasMarked && !seen[w.id]) it.seen = false; return it; });
+  // The binder: the chapters given to the class, or with open lessons or sheets, in the lesson site's order.
+  var open = {}, given = {}, site = '';
+  try { allocFor_(cls).forEach(function (id) { open[id] = 1; }); } catch (e) { open = {}; }
+  try { given = chGiven_(cls); } catch (e) { given = {}; }
+  try { site = lessonSite_(); } catch (e) { site = ''; }
+  var fix = {};
+  try { readProgress_(cls).forEach(function (r) { if (normName_(r[2]) === normName_(name)) fix[r[0]] = r[8] || 0; }); } catch (e) { fix = {}; }
+  var want = {}, byCh = {};
+  Object.keys(given).forEach(function (k) { want[k] = 1; });
+  items.forEach(function (it) { if (it.chapter) { want[it.chapter] = 1; (byCh[it.chapter] = byCh[it.chapter] || []).push(it); } });
+  var chapters = [];
+  try {
+    chaptersAll_().forEach(function (c) {
+      var lessons = c.decks.map(function (d) { return { id: d.id, num: d.num || '', title: d.title, url: d.file ? site + d.file : '', open: !!open[d.id] || !!(run && run.id === d.id), fix: fix[d.id] || 0 }; });
+      if (!want[c.key] && !lessons.some(function (l) { return l.open; })) return;
+      var sheets = (byCh[c.key] || []).slice().sort(function (x, y) { return (x.practice ? 1 : 0) - (y.practice ? 1 : 0); });
+      chapters.push({ key: c.key, name: chapterShort_(c), subject: c.subjectName || '', color: c.color || '', lessons: lessons.filter(function (l) { return l.open; }), sheets: sheets });
+    });
+  } catch (e) { chapters = []; }
+  var placed = {};
+  chapters.forEach(function (c) { c.sheets.forEach(function (it) { placed[it.id] = 1; }); });
+  var loose = items.filter(function (it) { return !placed[it.id]; });
+  var back = items.filter(function (it) { return it.hasMarked && !it.seen; }).sort(function (x, y) { return (y.rel || 0) - (x.rel || 0); })[0] || null;
+  var fun = { open: true, why: '' };
+  try { var csx = classState_(cls); fun = { open: !csx.live || !!csx.fun, why: csx.live && !csx.fun ? 'Opens after the lesson.' : '' }; } catch (e) { fun = { open: true, why: '' }; }
+  var hubUrl = '';
+  try { hubUrl = getSetting_('Worksheet Hub link') || selfUrl_(); } catch (e) { hubUrl = ''; }
+  var out = { ok: true, hub: hubUrl, me: { cls: who.cls, name: name, first: String(name).split(' ')[0] },
+    now: { lesson: run ? { deckId: run.id, title: run.title, url: run.url, at: run.at } : null, ask: run ? ask : null, quick: quick, before: before },
+    wallet: me ? { points: me.points, tokens: me.tokens } : { points: 0, tokens: 0 }, fun: fun,
+    binder: { chapters: chapters, loose: loose }, back: back, puzzle: null, remind: [] };
+  out.poll = run ? 5000 : (before ? 10000 : 60000);
+  var v = hash_(JSON.stringify(out));
+  if (have && have.v === v) return { ok: true, v: v, same: true, poll: out.poll };
+  out.v = v;
+  return out;
+}
+/* Where my points came from (Me), newest first. */
+function s_points(st) {
+  var who = stWho_(st), s = hubFindStudent_(hubNormClass_(who.cls), who.name);
+  if (!s) return { recent: [] };
+  var rules = rwRules_(), L = rwLedger_(s, getAssignments_(), submissionIndex_(), rwLog_(), rules, rwItems_(rules));
+  return { points: L.points, tokens: L.tokens, recent: L.events.filter(function (e) { return e.points && !e.floor; }).slice(-30).reverse().map(function (e) {
+    return { when: e.t && e.t.getTime() > 0 ? Utilities.formatDate(e.t, TZ, 'd MMM') : '', text: e.text, points: e.points };
+  }) };
+}
+/* A marked copy was opened: Back from Mr Cedric moves on to the next one. */
+function s_seen(st, id) {
+  var who = stWho_(st), k = 'seen_' + hash_(hubNormClass_(who.cls) + '|' + hubNormName_(who.name)), m = {};
+  try { m = JSON.parse(CacheService.getScriptCache().get(k) || '{}'); } catch (e) { m = {}; }
+  m[String(id || '').slice(0, 40)] = 1;
+  cachePut_(k, JSON.stringify(m), 21600);
+  return { ok: true };
+}
+/* Signing out: the sign-in lives only on this iPad, and the page deletes it with the student's other saved things.
+   Kept as a call so the page can say when it was done. */
+/* Signing out ends this sign-in on every device (a copied sign-in stops working too). */
+function s_signout(st) {
+  var who = stCheck_(st);
+  if (!who) return { ok: true, signedOut: false };
+  withLock_(function () {
+    var a = acctGet_(who.id) || { c: who.cls, n: who.name, v: 0 };
+    a.v = (Number(a.v) || 0) + 1;
+    acctPut_(who.id, a);
+  }, 10000);
+  return { ok: true, signedOut: true };
 }

@@ -242,8 +242,12 @@
   var K = 'cmp_ct', LAST = 'cmp_last';
   var info = null, home = null, st = { cls: '', name: '', pin: '' }, last = load(LAST) || {};
   var ART = 'https://cedricboi.github.io/science-decks/art/';
-  function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
-  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  // Release 34: the sign-in ticket lives in this tab only (sessionStorage), because Computing runs on shared laptops.
+  // Names and the look stay in localStorage.
+  function bucket(k) { return k === K ? sessionStorage : localStorage; }
+  function store(k, v) { try { if (v == null) bucket(k).removeItem(k); else bucket(k).setItem(k, JSON.stringify(v)); } catch (e) { } }
+  function load(k) { try { return JSON.parse(bucket(k).getItem(k)); } catch (e) { return null; } }
+  try { localStorage.removeItem(K); } catch (e) { }   // a ticket kept by an older page is dropped
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function call(fn) {

@@ -686,6 +686,20 @@
   .fld-label { display: block; font: 700 14px var(--display); margin: 12px 0 4px; }
   .fld-in { width: 100%; border: 1.5px solid var(--rule); border-radius: 12px; padding: 10px 12px; font: 16px var(--text); background: var(--surface); color: var(--ink); }
   body.noting .kit-row, body.noting #btn-help { display: none !important; }
+  /* ---------- Release 34: inside learnwithmrcedric's shell. The shell owns the header, the Back pill, the avatar and
+     the points, so this page shows only the worksheet (or one panel), in the shell's colours. ---------- */
+  :root.in-shell { --ink: #1B1F3B; --muted: #5A607D; --paper: #EEF2F8; --surface: #FFFFFF; --surface-2: #F5F7FB; --soft: #F5F7FB; --soft-2: #E6ECFF;
+    --line: #DCE2EE; --rule: #DCE2EE; --navy: #26305C; --shop-blue: #2F5BFF; --shop-blue-d: #1F45D6; --accent-soft: #E6ECFF; --green: #0B7A4E; --red: #C62F36; --desk: #EEF2F8; }
+  :root.in-shell[data-theme="dark"] { --ink: #EEF1FA; --muted: #9AA1C2; --paper: #0F132B; --surface: #1B2044; --surface-2: #222955; --soft: #222955; --soft-2: #263566;
+    --line: #2E3560; --rule: #2E3560; --accent-soft: #263566; --desk: #0F132B; }
+  .in-shell #scr-login, .in-shell #hero, .in-shell #hero-nav, .in-shell #btn-rw-wrap, .in-shell #btn-list-help, .in-shell #preview-bar,
+  .in-shell #btn-back, .in-shell #btn-help, .in-shell #doc-title, .in-shell .badge-toast { display: none !important; }
+  .in-shell #scr-list .centre { padding: 18px 20px 40px; }
+  .in-shell .bar-row:first-child { justify-content: flex-end; }
+  .in-shell body.reading .bar-row:first-child { display: none; }
+  .shell-hint { display: flex; align-items: center; gap: 12px; padding: 8px 14px; margin: 0 8px 6px; border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-size: 15px; line-height: 1.35; }
+  .shell-hint span { flex: 1; }
+  .shell-hint.hidden { display: none; }
 </style>
 </head>
 <body>
@@ -903,6 +917,15 @@
 
   function call(fn) {
     var args = Array.prototype.slice.call(arguments, 1);
+    if (SHELL) return shellCall(fn, args);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) {
+        reject(e instanceof Error ? e : new Error(String((e && e.message) || e)));
+      });
+      r[fn].apply(r, args);
+    });
+  }
+  function runRaw(fn, args) {
     return new Promise(function (resolve, reject) {
       var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(function (e) {
         reject(e instanceof Error ? e : new Error(String((e && e.message) || e)));
@@ -932,7 +955,7 @@
 
   function cleanMsg(err) {
     var m = (err && err.message) || 'Something went wrong.';
-    return m.replace(/^Exception:\s*/, '').replace(/^Error:\s*/, '').replace(/^FUN_CLOSED:\s*/, '');
+    return m.replace(/^Exception:\s*/, '').replace(/^Error:\s*/, '').replace(/^(FUN_CLOSED|PAUSED):\s*/, '');
   }
 
   /* ---------------- Local storage (optional) ---------------- */
@@ -985,7 +1008,7 @@
   /* Students sign in once, in learnwithmrcedric, with their own PIN. Homework opens there (?embed=ms), and learnwithmrcedric
      passes its sign-in to this page by message, so nothing is asked here. Opened on its own, the page says to open
      learnwithmrcedric. "See it as a student" from the Teacher Hub still signs in as Test Student. */
-  var EMBED = false;
+  var EMBED = false, SHELL = false;
   function initLogin() {
     call('api_roster').then(function (r) {
       roster = r;
@@ -996,8 +1019,11 @@
     libs().catch(function () { /* shown later if needed */ });
     whereAmI();
   }
+  // The one origin check for every message between this page and learnwithmrcedric.
+  function okOrigin(o) { return /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(o || ''); }
   function tellMs(type, extra) {
     if (!EMBED) return;
+    if (SHELL) { shellSay(type, extra); return; }
     var m = { from: 'wsh', type: type };
     Object.keys(extra || {}).forEach(function (k) { m[k] = extra[k]; });
     var w = window, n = 0;
@@ -1020,14 +1046,14 @@
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'theme' || !window.msTheme) return;
-    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (!okOrigin(e.origin)) return;
     var v = m.theme === 'dark' || m.theme === 'light' ? m.theme : '';
     if (v !== msTheme.chosen()) msTheme.set(v);
   });
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'signin' || !m.st) return;
-    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (!okOrigin(e.origin)) return;
     if (ticketBusy || (S.token && S.st === m.st)) return;
     ticketBusy = true;
     call('api_ticketLogin', m.st).then(function (me) {
@@ -1043,7 +1069,7 @@
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || m.type !== 'open' || !m.id) return;
-    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (!okOrigin(e.origin)) return;
     S.pendingOpen = String(m.id).slice(0, 40);
     openPending();
   });
@@ -1077,6 +1103,7 @@
   /* ---------------- The homework page ---------------- */
 
   function openList() {
+    if (SHELL) { shellIdle(); return; }
     show('scr-list');
     var parts = String(S.me.name || '').split(/\s+/);
     $('hello-hi').textContent = greeting() + ',';
@@ -1136,7 +1163,7 @@
   // The whole avatar at the top, kept on this iPad so it shows straight away next time.
   // Until there is one, the student's initials show in a circle.
   function refreshHead(outfit) {
-    if (!outfit) return;   // no avatar yet: the initials stay
+    if (!outfit || SHELL) return;   // in learnwithmrcedric's shell the avatar is drawn there, so Rewards never loads here   // no avatar yet: the initials stay
     var k = JSON.stringify(outfit), have = cachedBody();
     if (have && have.k === k) { showBody(have); return; }
     var go = function () {
@@ -1259,6 +1286,8 @@
   }
 
   function renderList() {
+    if (SHELL && !(S.shell && S.shell.panel)) return;          // the shell draws the list
+    if (SHELL && S.shell.panel === 'badges') { renderBadges(); return; }
     drawNav();
     if (S.hwView === 'folders') { renderFolders(); return; }
     if (S.hwView === 'fun') { renderFun(); return; }
@@ -1664,6 +1693,7 @@
   setInterval(function () { if (!document.hidden && S.token && $('scr-list') && !$('scr-list').classList.contains('hidden')) funCheck(); }, 60000);
   function funClosed() { alertBox('Closed during the lesson', 'Avatars, the Arcade and the night market are closed while your class is in its Science lesson. They open again after the lesson.'); }
   function openShop() {
+    if (SHELL) { shellSay('rewards', { tab: 'shop' }); return; }
     busy('Opening your avatar');
     call('api_fun', S.token).catch(function () { return { open: true }; }).then(function (f) {
       if (f && f.open === false) { closeModal(); funClosed(); return; }
@@ -2169,7 +2199,7 @@
   window.addEventListener('message', function (e) {
     var m = e.data;
     if (!EMBED || !m || m.to !== 'wsh' || (m.type !== 'arcade' && m.type !== 'compact')) return;
-    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$|^http:\/\/localhost(:\d+)?$/.test(e.origin || '')) return;
+    if (!okOrigin(e.origin)) return;
     if (m.type === 'compact') { setCompact(!!m.on); return; }
     S.pendingArcade = String(m.key || '').slice(0, 4);
     openArcadePending();
@@ -2253,7 +2283,7 @@
       $('btn-look').onclick = openLook;
       Array.prototype.forEach.call(el.querySelectorAll('[data-pz]'), function (b) { b.onclick = function () { var k = b.getAttribute('data-pz'); if (k === 'r') openRush(); else openPuzzle(k); }; });
       Array.prototype.forEach.call(el.querySelectorAll('[data-b]'), function (b) { b.onclick = function () { openBadge(bs[Number(b.getAttribute('data-b'))]); }; });
-      if ($('go-market')) $('go-market').onclick = openShop;
+      if ($('go-market')) $('go-market').onclick = SHELL ? function () { shellSay('rewards', { tab: 'market' }); } : openShop;
     }
     funDot(bs);
   }
@@ -4319,6 +4349,257 @@
       label: Ink.label(S.me.cls, '', S.me.code || ''), corr: S.mode === 'corr', nameBoxes: S.nameBoxes || undefined });
   }
 
+  /* ---------------- Inside learnwithmrcedric's shell (release 34) ----------------
+     The shell owns the header, the Back pill, the list, the avatar and the points. This page is a headless engine:
+     it makes no server call until the first open or panel, loads the PDF tools on the first open, never loads
+     Rewards, and talks to the shell only through the messages below.
+       shell to page: hello {st, dark}, open {id, mode, item}, close, panel {which}, theme {dark}, signout
+       page to shell: ready, opened {id, mode}, closed {id, mode, handedIn}, handedIn {id, at, corr}, wallet {points, tokens},
+                      points, arcade, rewards {tab}, signedout, error {text} */
+  var shellWin = null, shellOrigin = '';
+  function shellSay(t, extra) {
+    var m = { from: 'wsh', t: t };
+    Object.keys(extra || {}).forEach(function (k) { if (k !== 't' && k !== 'from') m[k] = extra[k]; });
+    if (shellWin) { try { shellWin.postMessage(m, shellOrigin); } catch (e) { /* the shell has gone */ } return; }
+    if (t !== 'ready') return;                                   // nothing but "ready" goes out before the shell says hello
+    var w = window, n = 0;
+    while (w.parent && w.parent !== w && n++ < 6) { w = w.parent; try { w.postMessage(m, '*'); } catch (e) { /* not ours */ } }
+  }
+  function isAncestor(src) { var w = window, n = 0; while (w.parent && w.parent !== w && n++ < 6) { w = w.parent; if (w === src) return true; } return false; }
+  // Server calls in the shell: hand-ins are reported at once, and a "Try it again" copy is kept on this iPad only.
+  function shellCall(fn, args) {
+    var scratch = S.doc && S.doc.scratch && /^api_(saveDraft|submit)$/.test(fn);
+    if (scratch) return Promise.resolve('on this iPad');
+    var hand = fn === 'api_submit' || fn === 'api_submitCorrection';
+    if (hand) S.shellBusy = (S.shellBusy || 0) + 1;
+    var p = runRaw(fn, args);
+    if (!hand) return p;
+    return p.then(function (at) {
+      S.shellBusy--;
+      if (S.shell && S.shell.id === args[1]) S.shell.handed = true;
+      shellSay('handedIn', { id: args[1], at: String(at || ''), corr: fn === 'api_submitCorrection' });
+      return at;
+    }, function (e) { S.shellBusy--; throw e; });
+  }
+  function shellBoot() {
+    SHELL = true; EMBED = true; S.gen = 0;
+    document.documentElement.classList.add('in-ms', 'in-shell');
+    helpShown = true;                                            // a one-line hint replaces the help box
+    show('scr-list'); $('list-body').innerHTML = '';
+    var tries = 0;
+    (function ready() { if (shellWin || tries++ > 60) return; shellSay('ready'); setTimeout(ready, tries < 10 ? 400 : 2000); })();
+    window.__wshShell = { S: S };   // for testing only
+  }
+  function shellToken() {
+    if (S.token) return Promise.resolve();
+    if (!S.st) return Promise.reject(new Error('Sign in again in learnwithmrcedric.'));
+    if (S.tokP) return S.tokP;
+    S.tokP = call('api_ticketLogin', S.st).then(function (me) { S.token = me.token; S.me = me; S.tokP = null; }, function (e) {
+      S.tokP = null;
+      if (/SIGNED_OUT/.test(e.message)) { shellSay('signedout'); throw new Error('Sign in again in learnwithmrcedric.'); }
+      throw e;
+    });
+    return S.tokP;
+  }
+  // Nothing open: a plain empty page behind the shell.
+  function shellIdle() {
+    show('scr-list'); $('list-body').innerHTML = ''; hideHint();
+    var was = S.shell; S.shell = null;
+    if (was && !S.shellQuiet) shellSay('closed', { id: was.id, mode: was.mode, handedIn: !!was.handed });
+  }
+  function waitHandIn() {
+    return new Promise(function (resolve) { var n = 0; (function w() { if (!S.shellBusy || n++ > 200) resolve(); else setTimeout(w, 100); })(); });
+  }
+  // Closes whatever is open: the writing is saved first (and kept on this iPad if the internet is down).
+  function shellLeave() {
+    closePop();
+    return waitHandIn().then(function () {
+      if (!S.doc) { closeModal(); return; }
+      return (S.readOnly ? Promise.resolve() : saveNow()).then(function () {
+        S.shellQuiet = true; closeModal();
+        try { leaveDoc(); } finally { S.shellQuiet = false; }
+      });
+    });
+  }
+  function shellItem(id, it) {
+    it = it || {};
+    return { id: id, title: String(it.title || 'Worksheet').slice(0, 160), status: it.status === 'started' ? 'started' : 'new', open: true,
+      submittedAt: String(it.submittedAt || ''), dueTs: Number(it.dueTs) || null, autoHandIn: !!it.autoHandIn, practice: !!it.practice };
+  }
+  function shellOpen(m) {
+    var id = String(m.id || '').slice(0, 40), mode = String(m.mode || 'write'), a = shellItem(id, m.item), gen = ++S.gen;
+    return shellLeave().then(shellToken).then(function () {
+      if (gen !== S.gen) return;
+      S.shell = { id: id, mode: mode, handed: false };
+      show('scr-list'); $('list-body').innerHTML = '';
+      if (mode === 'write') openWorksheet(a);
+      else if (mode === 'view') shellView(a);
+      else if (mode === 'marked') openMarked(a);
+      else if (mode === 'clean') shellClean(a, false);
+      else if (mode === 'retry') shellClean(a, true);
+      else if (mode === 'key') openAnswers(a);
+      else if (mode === 'corrections') openCorrection(a);
+      else if (mode === 'note') openNote({ id: id, title: a.title });
+      else if (mode === 'newNote') { S.shell.panel = 'notes'; S.hwView = 'folders'; loadOrg().then(function () { renderFolders(); newNoteBox(''); shellSay('opened', { id: '', mode: mode }); }); return; }
+      else { shellSay('error', { text: 'That cannot be opened here.' }); return; }
+      watchOpen(id, mode, gen);
+    }).catch(function (e) { S.shell = null; shellSay('error', { text: cleanMsg(e) }); });
+  }
+  // Tells the shell when the worksheet is on screen, or why it did not open.
+  function watchOpen(id, mode, gen) {
+    var n = 0;
+    (function look() {
+      if (gen !== S.gen) {
+        // closed while it was still opening: if it opens late, it is put away at once
+        if (S.doc && !$('scr-edit').classList.contains('hidden')) { if (!S.readOnly) saveNow(); S.shellQuiet = true; try { closeModal(); leaveDoc(); } finally { S.shellQuiet = false; } return; }
+        if (n++ < 300) setTimeout(look, 100);
+        return;
+      }
+      var ed = !$('scr-edit').classList.contains('hidden'), spin = !!$('modal').querySelector('.spinner');
+      if (ed && S.doc && !spin) {
+        if (!S.readOnly) showHint(mode);
+        if (mode === 'write' || mode === 'corrections') { scrollToLast(); requestAnimationFrame(scrollToLast); }
+        shellSay('opened', { id: id, mode: mode });
+        return;
+      }
+      if (!S.doc && !spin && !$('veil').classList.contains('hidden') && $('modal').querySelector('h2')) {
+        var text = $('modal').textContent.replace(/\s+/g, ' ').replace(/OK$/, '').trim();
+        closeModal(); S.shell = null; shellSay('error', { text: text });
+        return;
+      }
+      if (n++ < 400) setTimeout(look, 100);
+    })();
+  }
+  // Opens at the last page with writing on it.
+  function scrollToLast() {
+    var last = 0;
+    S.strokes.forEach(function (l, i) { if (l && l.length) last = i; });
+    if (!last || !S.pages[last] || !S.pages[last].el) return;
+    var sc = $('scroller'), r = S.pages[last].el.getBoundingClientRect(), b = sc.getBoundingClientRect();
+    sc.scrollTop += r.top - b.top - 12;
+  }
+  // A handed-in worksheet, read only: the student's own writing on the worksheet.
+  function shellView(a) {
+    busy('Opening ' + a.title + '...');
+    Promise.all([libs(), pdfGet(a.id)]).then(function (res) {
+      var c = res[1];
+      return call('api_open', S.token, a.id, c ? c.ver : '').then(function (d) {
+        return { pdf: d.pdf ? b64ToBytes(d.pdf) : c.bytes, draft: d.draft ? safeParse(d.draft) : null, at: d.submittedAt };
+      }, function (e) {
+        if (!/closed|not found/i.test(e.message)) throw e;
+        // closed: the copy that was handed in
+        return call('api_handed', S.token, a.id).then(function (d) { return { pdf: b64ToBytes(d.pdf), draft: null, at: d.at || '' }; });
+      });
+    }).then(function (r) {
+      S.doc = { id: a.id, title: a.title, submittedAt: r.at || a.submittedAt };
+      S.readOnly = true; S.mode = 'read'; S.extras = null; S.pdfBytes = r.pdf;
+      return startDoc(r.draft);
+    }).then(closeModal).catch(function (e) { alertBox('Could not open', cleanMsg(e)); });
+  }
+  // The clean worksheet: to look at, or to try again. A try-again copy is never handed in and stays on this iPad.
+  function shellClean(a, write) {
+    busy('Opening a clean copy...');
+    Promise.all([libs(), pdfGet(a.id)]).then(function (res) {
+      var c = res[1];
+      if (c && c.bytes) return c.bytes;
+      return call('api_clean', S.token, a.id).catch(function () { return call('api_pdf', S.token, a.id); }).then(function (d) { return b64ToBytes(d.pdf); });
+    }).then(function (bytes) {
+      S.doc = { id: a.id + (write ? '_again' : '_clean'), title: a.title, submittedAt: '', practice: true, scratch: !!write };
+      S.readOnly = !write; S.mode = write ? 'work' : 'read'; S.extras = null; S.pdfBytes = bytes;
+      return startDoc(write ? safeParse(lsGet(backupKey())) : null);
+    }).then(closeModal).catch(function (e) { alertBox('Could not open', cleanMsg(e)); });
+  }
+  function hideHint() { var h = $('shell-hint'); if (h) h.classList.add('hidden'); }
+  function showHint(mode) {
+    var k = 'wsh_hint_' + (mode === 'corrections' ? 'corr' : mode === 'retry' ? 'again' : 'work'), h = $('shell-hint');
+    if (lsGet(k)) return;
+    if (!h) { h = document.createElement('div'); h.id = 'shell-hint'; h.className = 'shell-hint'; $('scr-edit').querySelector('.bar').appendChild(h); }
+    h.innerHTML = '';
+    var t = document.createElement('span');
+    t.textContent = mode === 'corrections' ? 'Write your corrections next to the red marks. Everything you write is in green. Tap Hand in corrections when you have finished.'
+      : mode === 'retry' ? 'This is a clean copy to try again. It stays on this iPad and is not handed in.'
+      : 'Write with your Apple Pencil. Your work saves by itself. Tap Hand in when you have finished.';
+    var x = document.createElement('button'); x.className = 'linkbtn'; x.textContent = 'OK';
+    x.onclick = function () { lsSet(k, '1'); hideHint(); layout(); };
+    h.appendChild(t); h.appendChild(x); h.classList.remove('hidden');
+    layout();
+  }
+  function listFor() {
+    if (S.listReady) return Promise.resolve();
+    return call('api_list', S.token).then(function (list) { S.list = list; S.listReady = true; });
+  }
+  function renderBadges() {
+    var bs = S.listReady ? badgeState() : null;
+    if (!bs) { $('list-body').innerHTML = '<p class="empty">Loading your badges...</p>'; return; }
+    var got = bs.filter(function (x) { return x.got; });
+    $('list-body').innerHTML = '<div class="fun"><h2 class="side-h">Badges <span class="n">' + got.length + ' of ' + bs.length + '</span></h2><div class="bdg-grid">' + bs.map(function (x, i) {
+      return '<button class="bdg' + (x.got ? '' : ' locked') + '" data-b="' + i + '" aria-label="' + esc(x.b[1] + (x.got ? '' : ', not yet')) + '">' + medal(x.b) + '<span>' + esc(x.b[1]) + '</span></button>';
+    }).join('') + '</div></div>';
+    lsSet(meKey('funseen'), JSON.stringify(got.map(function (x) { return x.b[0]; })));
+    Array.prototype.forEach.call($('list-body').querySelectorAll('[data-b]'), function (b) { b.onclick = function () { openBadge(bs[Number(b.getAttribute('data-b'))]); }; });
+  }
+  // The Arcade, Badges and My notes each open on their own, never one inside another.
+  function shellPanel(which) {
+    if (['arcade', 'badges', 'notes'].indexOf(which) < 0) return Promise.resolve();
+    var gen = ++S.gen;
+    return shellLeave().then(shellToken).then(function () {
+      if (gen !== S.gen) return;
+      S.shell = { id: '', mode: 'panel', panel: which, handed: false };
+      show('scr-list');
+      if (which === 'arcade') {
+        S.hwView = 'fun'; renderFun(); loadDaily(); loadPoints();
+        listFor().then(function () { if (S.shell && S.shell.panel === 'arcade') renderSide(); }).catch(function () { /* badges wait */ });
+      } else if (which === 'badges') {
+        renderBadges();
+        Promise.all([listFor(), call('api_rw_summary', S.token).then(function (r) { S.sum = r; S.stickers = r.stickers || []; showPoints(r.points, r.tokens); }).catch(function () {})])
+          .then(function () { if (S.shell && S.shell.panel === 'badges') renderBadges(); }).catch(function (e) { $('list-body').innerHTML = '<p class="empty">' + esc(cleanMsg(e)) + '</p>'; });
+      } else {
+        S.hwView = 'folders'; S.fsel = 'all'; S.q = '';
+        $('list-body').innerHTML = '<p class="empty">Opening your notes...</p>';
+        Promise.all([loadOrg(), listFor()]).then(function () { if (S.shell && S.shell.panel === 'notes') renderFolders(); })
+          .catch(function (e) { $('list-body').innerHTML = '<p class="empty">' + esc(cleanMsg(e)) + '</p>'; });
+      }
+      shellSay('opened', { id: '', mode: 'panel', panel: which });
+    }).catch(function (e) { S.shell = null; shellSay('error', { text: cleanMsg(e) }); });
+  }
+  function shellSignout() {
+    var me = S.me;
+    S.token = null; S.st = null; S.me = null; S.list = []; S.listReady = false; S.sum = null; S.daily = null; S.org = null; S.shell = null;
+    try {
+      var drop = [];
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/^wsh_/.test(k) && me && k.toLowerCase().indexOf(String(me.cls + '_' + me.name).toLowerCase()) >= 0) drop.push(k); }
+      drop.forEach(lsDel);
+    } catch (e) { /* storage blocked */ }
+    var open = pdfDbP; pdfDbP = null;
+    (open || Promise.resolve(null)).then(function (db) { try { if (db) db.close(); } catch (e) { /* closed */ } try { indexedDB.deleteDatabase('wsh-pdf'); } catch (e) { /* no IndexedDB */ } });
+  }
+  window.addEventListener('message', function (e) {
+    var m = e.data;
+    if (!SHELL || !m || m.to !== 'wsh' || !m.t || !okOrigin(e.origin)) return;
+    if (shellWin ? e.source !== shellWin : !isAncestor(e.source)) return;
+    if (m.t === 'hello') {
+      shellWin = e.source; shellOrigin = e.origin;
+      if (m.st && m.st !== S.st) { S.st = String(m.st); S.token = null; S.me = null; }
+      if (typeof m.dark === 'boolean' || m.dark === '') msTheme.set(m.dark === true ? 'dark' : m.dark === false ? 'light' : '');
+      shellSay('ready', { hello: true });
+    } else if (m.t === 'theme') {
+      var v = m.dark === true ? 'dark' : m.dark === false ? 'light' : '';
+      if (v !== msTheme.chosen()) msTheme.set(v);
+      applyLook();
+    } else if (m.t === 'open') queue(function () { return shellOpen(m); });
+    else if (m.t === 'panel') queue(function () { return shellPanel(String(m.which || '')); });
+    else if (m.t === 'close') {
+      S.gen++;
+      queue(function () {
+        var was = S.shell;
+        return shellLeave().then(function () { S.shell = null; show('scr-list'); $('list-body').innerHTML = ''; hideHint(); shellSay('closed', { id: was ? was.id : '', mode: was ? was.mode : '', handedIn: !!(was && was.handed) }); });
+      });
+    } else if (m.t === 'signout') { S.gen++; queue(function () { return shellLeave().then(shellSignout); }); }
+  });
+  // One message at a time, so a close always finishes before the next open starts.
+  var shellQ = Promise.resolve();
+  function queue(fn) { shellQ = shellQ.then(fn).catch(function () { /* reported to the shell already */ }); }
+
   /* ---------------- Start ---------------- */
 
   buildKit();
@@ -4334,8 +4615,18 @@
   window.__wsh = S;   // for testing only
   window.__wshBuildPdf = buildPdf;
   window.__wshGeom = geomLines;
-  initLogin();
-  previewFromUrl();
+  // Opened inside learnwithmrcedric's shell (?embed=ms&shell=1) the page waits, headless, for the shell's messages.
+  // Opened any other way it starts exactly as before.
+  (function () {
+    var done = false, standalone = function () { if (done) return; done = true; initLogin(); previewFromUrl(); };
+    if (!(window.google && google.script && google.script.url && google.script.url.getLocation)) { standalone(); return; }
+    setTimeout(standalone, 2500);
+    google.script.url.getLocation(function (loc) {
+      if (done) return;
+      var p = (loc && loc.parameter) || {};
+      if (p.embed === 'ms' && p.shell === '1' && !p.preview) { done = true; shellBoot(); } else standalone();
+    });
+  })();
 })();
 </script>
 </body>

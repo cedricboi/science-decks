@@ -14,12 +14,23 @@
 //   /exec?embed=ms        homework, inside learnwithmrcedric (also ?hw, and ?preview=CODE for See it as a student)
 //   /exec?projector       the projector screen on the laptop (lessons chosen on the phone)
 //   /exec?computing       the computing page for students: their Spreadsheet Coaches and files (ComputingCode.gs)
+//   /exec?phone           the teacher's phone during a lesson (release 34; paired with a code from the Hub)
+//   ?classic              any page as it was in release 33 (the fallback while the new pages settle in)
 
-var APP_BUILD = '2026-10-24-streak';
+var APP_BUILD = '2026-10-25-one-platform';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
   PAGE_MEMO_ = {}; CH_MEMO_ = {};
+  // Release 34: the new pages, or the release-33 pages (?classic, or the New version switch in the Hub's Settings).
+  // With the switch on test, teachers' pages are new and students' pages stay as they were unless opened with ?next
+  // (the TEST class and the Hub's See it as a student).
+  try {
+    var flag = nextFlag_(), student = !(p.teacher !== undefined || p.view === 'teacher' || p.projector !== undefined || p.phone !== undefined);
+    // off is for students only: the Hub and the phone stay new, so the switch can be turned back on from Settings.
+    PAGE_MEMO_.classic = p.classic !== undefined || (student && p.next === undefined && (flag === 'off' || (flag === 'test' && !(p.shell && (p.embed === 'ms' || p.hw !== undefined)))));
+  } catch (err) { PAGE_MEMO_.classic = false; }
+  if (p.phone !== undefined && !PAGE_MEMO_.classic) return phonePage_(e);
   if (p.api === 'build') {
     return ContentService.createTextOutput(JSON.stringify({ app: 'liveboard', build: BUILD, one: APP_BUILD }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -85,6 +96,15 @@ function isOwner_() {
   try { me = Session.getActiveUser().getEmail() || ''; owner = Session.getEffectiveUser().getEmail() || ''; } catch (err) { return false; }
   return !!me && me.toLowerCase() === owner.toLowerCase();
 }
+/* Jobs that are also sheet menu items or timers. Anyone can name a script function from a web page, so these run
+   for the owner (the sheet menu, the timers, the script editor) and otherwise at most once in 50 minutes, so they
+   cannot be used to keep the app busy during a lesson (release 34). */
+function guardJob_(name) {
+  if (isOwner_()) return;
+  var cache = CacheService.getScriptCache(), k = 'job_' + name;
+  if (cache.get(k)) throw new Error('Not now.');
+  cache.put(k, '1', 3000);
+}
 function needOwner_(what) {
   if (!isOwner_()) throw new Error('OWNER_ONLY: ' + (what || 'This') + ' works only for the owner of learnwithmrcedric: run it from the script editor, or open the Teacher Hub signed in to Google with the account that owns it.');
 }
@@ -98,11 +118,58 @@ function hubLock_() {
 }
 /* The Teacher Hub sheet: Settings, Class list sheet ID (kept in SS_ID as well, as the Hub always has). */
 function hubSheetId_() {
+  if (oneSsId_()) return oneSsId_();
   var props = PropertiesService.getScriptProperties(), id = props.getProperty('SS_ID') || '';
   if (id) return id;
   try { id = getSetting_('Class list sheet ID'); } catch (err) { id = ''; }
   return id;
 }
+/* ---------- One sheet (release 34) ---------- */
+// Everything lives in one spreadsheet once the move has run (Setup check > One sheet, or oneSheetMove from the
+// editor). Until then nothing changes: Live Board's tabs are in the sheet this script belongs to, and the Teacher
+// Hub's tabs are in the sheet whose ID is SS_ID. The move copies both into a new sheet, checks every tab, and then
+// sets ONE_SS_ID, which is the switch. SS_ID and the old sheets are never changed, so deleting ONE_SS_ID (or going
+// back to an older deployment) returns to the two old sheets as they were.
+var ONE_ = { id: null, ss: null, hub: null };
+/* The key the Teacher Hub half and the Live Board half use with each other inside one run. It is an object, so no
+   request from outside can carry it (release 34; before, the Hub sheet's ID was used, which broke on the move). */
+var INPROC_ = { inproc: true };
+function oneSsId_() {
+  if (ONE_.id === null) { try { ONE_.id = PropertiesService.getScriptProperties().getProperty('ONE_SS_ID') || ''; } catch (err) { ONE_.id = ''; } }
+  return ONE_.id;
+}
+/* Live Board's tabs: the one sheet once switched, else the sheet this script belongs to. Opened once per run. */
+function lbSs_() {
+  if (!ONE_.ss) ONE_.ss = oneSsId_() ? SpreadsheetApp.openById(oneSsId_()) : SpreadsheetApp.getActiveSpreadsheet();
+  return ONE_.ss;
+}
+/* The Teacher Hub's tabs: the one sheet once switched, else the Hub sheet (SS_ID). Opened once per run. */
+/* Change stamps (release 34): pages ask whether anything moved before asking for everything again.
+   today: the Teacher Hub's Today. cls_<CLASS>: a class's work, lessons and checks. stu_<id>: one student's own. */
+function verBump_(name) {
+  try { CacheService.getScriptCache().put('ver_' + name, Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36), 21600); } catch (err) { /* only a stamp */ }
+}
+function verGet_(names) {
+  var got = {};
+  try { got = CacheService.getScriptCache().getAll(names.map(function (n) { return 'ver_' + n; })); } catch (err) { got = {}; }
+  return names.map(function (n) { return got['ver_' + n] || '0'; }).join('.');
+}
+function t_ping(token) {
+  teacher_(token);
+  var cache = CacheService.getScriptCache(), extra = '';
+  try { var g = cache.getAll(['gh_all_v', 'run_v']); extra = (g.gh_all_v || '') + (g.run_v || ''); } catch (err) { extra = ''; }
+  return { v: verGet_(['today']) + '.' + extra };
+}
+function hubSs_() {
+  if (oneSsId_()) return lbSs_();
+  if (!ONE_.hub) {
+    var id = hubSheetId_();
+    if (!id) throw new Error('The Teacher Hub sheet is not linked. In the Live Board sheet, Settings tab, put its ID in Class list sheet ID.');
+    ONE_.hub = SpreadsheetApp.openById(id);
+  }
+  return ONE_.hub;
+}
+
 /* The Teacher Hub works once its settings have been moved here (or it has been set up here). Before that, nothing
    it does may make new Drive folders or write to the sheet. */
 function hubReady_() { return PropertiesService.getScriptProperties().getProperty('HUB_READY') === '1'; }
@@ -828,7 +895,7 @@ function weekClassHtml_(c) {
 // This week lists the buttons shown all that time and never pressed, so the ones nobody needs can go.
 var USAGE_TAB = 'Button use', USAGE_DAYS = 14, USAGE_MAX_ROWS = 600;
 function usageSheet_() {
-  var ss = SpreadsheetApp.openById(hubSheetId_()), sh = ss.getSheetByName(USAGE_TAB);
+  var ss = hubSs_(), sh = ss.getSheetByName(USAGE_TAB);
   if (!sh) { sh = ss.insertSheet(USAGE_TAB); sh.appendRow(['Button', 'Where', 'Pressed', 'First seen', 'Last pressed']); sh.setFrozenRows(1); }
   return sh;
 }
@@ -866,7 +933,7 @@ function apiUsage(pin, b) { checkPin_(pin); try { return usageAdd_(b); } catch (
 function usageUnused_() {
   var since = Number(PropertiesService.getScriptProperties().getProperty('USAGE_SINCE')) || 0, now = Date.now();
   if (!since || now - since < USAGE_DAYS * 86400000 || !hubReady_()) return null;
-  var sh = SpreadsheetApp.openById(hubSheetId_()).getSheetByName(USAGE_TAB);
+  var sh = hubSs_().getSheetByName(USAGE_TAB);
   if (!sh || sh.getLastRow() < 2) return null;
   var out = {};
   sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues().forEach(function (r) {
@@ -899,7 +966,7 @@ function setupChecks_() {
   }
   // The teacher PIN
   var pin = '';
-  try { pin = String(getSetting_('Teacher PIN') || ''); } catch (e) { pin = ''; }
+  try { pin = String(teacherPin_() || ''); } catch (e) { pin = ''; }
   if (!pin) add('pin', 'bad', 'There is no teacher PIN', 'Live Board sheet, Settings tab: type one next to Teacher PIN.');
   else if (/^(1234|0000|1111|123456)$/.test(pin)) add('pin', 'warn', 'The teacher PIN is easy to guess', 'Change it in the Live Board sheet, Settings tab. Your phone and projector will need pairing again.');
   else add('pin', 'ok', 'Teacher PIN', 'One PIN for the Teacher Hub, Live Board, your phone and the projector.');
@@ -994,6 +1061,7 @@ function api_t_setupFix(token, act) {
 }
 /* The sheet's menu: the same checks, in a dialog. */
 function menuSetupCheck() {
+  guardJob_('menuSetupCheck');
   var list = setupChecks_(), mark = { ok: '✓', warn: '!', bad: '✗', info: '·' };
   var html = '<div style="font:14px Arial,sans-serif;line-height:1.45">' + list.map(function (c) {
     var col = c.level === 'ok' ? '#1C7A4C' : c.level === 'bad' ? '#C23B35' : c.level === 'warn' ? '#B07A00' : '#555';
@@ -1003,6 +1071,7 @@ function menuSetupCheck() {
 }
 /* Show my links (sheet menu): the addresses of everything. */
 function showLinks() {
+  guardJob_('showLinks');
   var url = selfUrl_();
   var rows = url ? [['Teacher Hub (bookmark this)', url + '?teacher'], ['learnwithmrcedric, for students', url], ['Computing, for students (Spreadsheet Coaches)', url + '?computing'], ['Live Board teacher page', url + '?view=teacher'], ['Projector screen (on the laptop)', projectorUrl_() + '#app=' + encodeURIComponent(url)]] : [];
   var html = '<div style="font:14px Arial,sans-serif;line-height:1.5">' + (rows.length ? rows.map(function (r) {
@@ -1018,7 +1087,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 33;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 34;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
@@ -1059,7 +1128,17 @@ function api_t_updateUndo(token) { teacher_(token); throw new Error('Updates are
 // owner's switch, PAGES_LOCAL) means the copy pasted into this script, which always works.
 var PAGES_REPO = 'cedricboi/science-decks', PAGES_RAW = 'https://raw.githubusercontent.com/';
 var PAGES_REL_SECS = 600, PAGES_KEEP_SECS = 21600, PAGES_CHUNK = 90000;
-var PAGE_NAMES = ['Teacher', 'Student', 'HubTeacher', 'Homework', 'Guide', 'Rewards', 'Ink', 'Styles', 'Computing'];
+var PAGE_NAMES = ['Teacher', 'Student', 'HubTeacher', 'Homework', 'Guide', 'Rewards', 'Ink', 'Styles', 'Computing', 'Phone'];
+/* The teacher's phone (release 34). It comes from the lesson site only: if the site cannot be reached, the release-33
+   phone page opens instead. */
+function phonePage_(e) {
+  var html = null;
+  try { var set = pagesSet_(); html = set ? pageRemote_(set, 'Phone') : null; } catch (err) { html = null; }
+  if (html == null) return lbDoGet_({ parameter: { view: 'teacher', screen: 'phone' } });
+  return HtmlService.createHtmlOutput(html).setTitle('Mr Cedric\'s phone')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+}
 var PAGE_MEMO_ = {};   // for this request only: the page set chosen, and each page's text
 
 /* The release list from the lesson site (only what the pages need), cached ten minutes. null: none to use.
@@ -1096,6 +1175,7 @@ function pagesSet_() {
       var rel = pagesRelease_(), list = rel ? rel.pages : [];
       for (var i = 0; i < list.length && !set; i++) {
         var p = list[i];
+        if (p && PAGE_MEMO_.classic && Number(p.seq) >= 34) continue;   // the release-33 pages
         if (p && Number(p.needsServer) <= APP_SEQ && /^[0-9a-f]{40}$/.test(String(p.ref || '')) && Array.isArray(p.files)) set = p;
       }
     }
@@ -1591,3 +1671,548 @@ function api_t_libUpload(token, key, name, pdfB64, solB64, use) {
    Not you? on a student's iPad, still take the PIN: they show no names. */
 function glockOn_() { return PropertiesService.getScriptProperties().getProperty('GLOCK') === 'on'; }
 var GLOCK_MSG = 'The teacher PIN alone does not open this any more. Open the Teacher Hub signed in to Google with the account that owns learnwithmrcedric, or pair this phone or laptop from the Hub (Teach next > Pair my phone).';
+
+/* ================================================================== */
+/* Release 34: everything in one sheet                                 */
+/* ================================================================== */
+//
+// 1. Make (oneSheetMake, or Settings > One sheet > Make the one sheet): a new private sheet, "learnwithmrcedric (one
+//    sheet)", gets a copy of every tab of both old sheets (Sheet.copyTo keeps text formats, checkboxes and row
+//    positions), and each copy is checked against its original: rows, columns, a fingerprint of every value, the
+//    formats of the first rows, checkboxes, frozen rows, hidden and colour. Nothing is written to the old sheets.
+//    Nothing switches yet: the app keeps using the two old sheets.
+// 2. Switch (oneSheetSwitch, at a quiet time): saving pauses for at most 15 minutes (answers and hand-ins wait and
+//    send by themselves), every tab that changed since step 1 is copied again and checked again, then ONE_SS_ID is
+//    set, which is the switch. SS_ID and the old sheets stay as they were, so the old sheets are a full backup.
+// 3. Go back (oneSheetRollback): until the end of the first school day after the switch, one action returns to the
+//    old sheets (it deletes ONE_SS_ID). Work done in the new sheet since the switch is listed first.
+var ONE_STATE = 'ONE_STATE', ONE_NAME = 'learnwithmrcedric (one sheet)', ONE_LOG = 'Move log', ONE_OLD_STUDENTS = 'Students (old Live Board)';
+var ONE_BLOCK = 2000, ONE_CELLS_MAX = 7000000, ONE_FREEZE = 'FREEZE_UNTIL';
+var ONE_APPEND_TABS = ['Posts', 'Rewards log', 'Submissions', 'Help flags', 'Quick checks', 'Lesson debriefs'];
+
+function oneState_() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty(ONE_STATE) || 'null'); } catch (err) { return null; } }
+function oneSave_(st) { PropertiesService.getScriptProperties().setProperty(ONE_STATE, JSON.stringify(st)); }
+/* Saving is paused while the switch runs (at most 15 minutes, then it ends by itself). */
+function frozen_() {
+  try { var u = Number(CacheService.getScriptCache().get(ONE_FREEZE) || 0); return u > Date.now(); } catch (err) { return false; }
+}
+var FROZEN_MSG = 'Saving is paused for a minute while the sheet is updated. Nothing is lost. Try again in a minute.';
+function needUnfrozen_() { if (frozen_()) throw new Error('PAUSED: ' + FROZEN_MSG); }
+
+/* The two old sheets, always the originals (never the one sheet). */
+function oneSources_() {
+  var lb = SpreadsheetApp.getActiveSpreadsheet();
+  var hid = PropertiesService.getScriptProperties().getProperty('SS_ID') || '';
+  if (!hid) { try { hid = getSetting_('Class list sheet ID'); } catch (err) { hid = ''; } }
+  if (!hid) throw new Error('The Teacher Hub sheet is not linked, so there is nothing to bring together.');
+  var hub = SpreadsheetApp.openById(hid);
+  if (hub.getId() === lb.getId()) throw new Error('The Teacher Hub and Live Board already use the same sheet.');
+  return { lb: lb, hub: hub };
+}
+/* A fingerprint of a tab's values, read in blocks of 2,000 rows (dates are compared as moments in time). */
+function oneHash_(sh) {
+  var rows = sh.getLastRow(), cols = sh.getLastColumn(), parts = [];
+  for (var r = 1; r <= rows; r += ONE_BLOCK) {
+    var n = Math.min(ONE_BLOCK, rows - r + 1);
+    var vals = cols ? sh.getRange(r, 1, n, cols).getValues() : [];
+    // The Settings tab is compared without the two rows the move itself changes (the PIN leaves the sheet, and the
+    // class list names the one sheet).
+    if (sh.getName() === TAB.settings) vals = vals.map(function (row) { var k = String(row[0]).trim(); return k === 'Teacher PIN' || k === 'Class list sheet ID' ? [k] : row; });
+    parts.push(oneHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, JSON.stringify(vals), Utilities.Charset.UTF_8)));
+  }
+  return oneHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, rows + 'x' + cols + '|' + parts.join(','), Utilities.Charset.UTF_8)).slice(0, 32);
+}
+function oneHex_(bytes) { return bytes.map(function (b) { var h = ((b + 256) % 256).toString(16); return h.length < 2 ? '0' + h : h; }).join(''); }
+/* What must match between a tab and its copy, besides the values. */
+function oneShape_(sh) {
+  var cols = Math.max(1, sh.getLastColumn()), rows = sh.getLastRow(), fmt = '', dv = 0;
+  try { fmt = JSON.stringify(sh.getRange(1, 1, Math.min(2, Math.max(1, rows)), cols).getNumberFormats()); } catch (err) { fmt = ''; }
+  try {
+    var v = rows > 1 ? sh.getRange(2, 1, Math.min(50, rows - 1), cols).getDataValidations() : [];
+    v.forEach(function (r) { r.forEach(function (x) { if (x) dv++; }); });
+  } catch (err) { dv = -1; }
+  return { rows: rows, cols: sh.getLastColumn(), maxRows: sh.getMaxRows(), frozenR: sh.getFrozenRows(), frozenC: sh.getFrozenColumns(),
+    hidden: sh.isSheetHidden(), color: sh.getTabColor ? (sh.getTabColor() || '') : '', fmt: fmt, dv: dv };
+}
+function oneSame_(a, b) {
+  var bad = [];
+  ['rows', 'cols', 'maxRows', 'frozenR', 'frozenC', 'hidden', 'color', 'fmt', 'dv'].forEach(function (k) { if (a[k] !== b[k]) bad.push(k); });
+  return bad;
+}
+/* The plan: which tab goes where, or why it cannot. */
+function onePlan_(src) {
+  var plan = [], names = {}, problems = [];
+  var add = function (from, sh) {
+    var name = sh.getName(), to = name;
+    if (name === MOVE_TAB) { problems.push('The "' + MOVE_TAB + '" tab holds keys and must not be copied. In the script editor, run setupMyScience first, which deletes it.'); return; }
+    if (/^Sheet\d*$/.test(name) && sh.getLastRow() === 0) return;   // an empty starter tab
+    if (name === ONE_LOG) return;
+    if (from === 'lb' && name === TAB.students) to = ONE_OLD_STUDENTS;   // the Hub's Students tab is the class list
+    if (names[to]) { problems.push('Both sheets have a tab called "' + to + '". Rename one of them, then try again.'); return; }
+    names[to] = from;
+    plan.push({ from: from, name: name, to: to, hide: to === ONE_OLD_STUDENTS });
+  };
+  src.hub.getSheets().forEach(function (sh) { add('hub', sh); });
+  src.lb.getSheets().forEach(function (sh) { add('lb', sh); });
+  return { plan: plan, problems: problems };
+}
+function oneCells_(ss) { return ss.getSheets().reduce(function (t, sh) { return t + sh.getMaxRows() * sh.getMaxColumns(); }, 0); }
+function oneAuth_(token, pin) {
+  if (isOwner_()) return;
+  teacher_(token);
+  checkPinOnly_(pin);
+}
+/* The teacher PIN on its own (no device keys), for the one-sheet buttons. */
+function checkPinOnly_(pin) {
+  var real = teacherPin_();
+  // Its own wrong-try count: wrong PINs posted to the slides' address cannot lock the Hub's buttons.
+  var cache = CacheService.getScriptCache(), fails = Number(cache.get('pin_fails_hub') || 0);
+  if (fails >= 10) throw new Error('Wrong PIN. Too many wrong PINs: wait 15 minutes.');
+  if (!real || String(pin == null ? '' : pin).trim() !== real) { cache.put('pin_fails_hub', String(fails + 1), 900); throw new Error('Wrong PIN.'); }
+}
+/* The teacher PIN: kept in the script once the one sheet is in use (release 34), else in the Settings tab. */
+function teacherPin_() {
+  var p = '';
+  try { p = PropertiesService.getScriptProperties().getProperty('T_PIN') || ''; } catch (err) { p = ''; }
+  return p || getSetting_('Teacher PIN');
+}
+
+/* Step 1. Run from the script editor (owner only), or from the Hub's Settings with the teacher PIN. It can be run
+   again: it carries on where it stopped (the 6-minute limit), and checks every tab again. fresh: start a new sheet.
+   A sheet that was switched to and then gone back from is never used again (it keeps the work done in it). */
+function oneSheetMake(fresh) { needOwner_('oneSheetMake'); return oneMake_(!!fresh); }
+function t_oneMake(token, pin, fresh) { oneAuth_(token, pin); return oneMake_(!!fresh); }
+function oneMake_(fresh) {
+  var t0 = Date.now(), st = oneState_();
+  if (oneSsId_()) throw new Error('The app already uses the one sheet.');
+  var src = oneSources_();
+  var tz = src.lb.getSpreadsheetTimeZone(), loc = src.lb.getSpreadsheetLocale();
+  if (src.hub.getSpreadsheetTimeZone() !== tz) throw new Error('The two sheets use different time zones (' + tz + ' and ' + src.hub.getSpreadsheetTimeZone() + '). In each sheet, File > Settings, choose the same time zone, then try again.');
+  var p = onePlan_(src);
+  if (p.problems.length) return { ok: false, why: p.problems.join(' ') };
+  var cells = oneCells_(src.lb) + oneCells_(src.hub);
+  if (cells > ONE_CELLS_MAX) return { ok: false, why: 'The two sheets hold ' + cells + ' cells, more than one sheet should hold (7 million). Delete empty rows and columns at the end of the big tabs, then try again.' };
+  var ss = null;
+  if (st && st.newId && !fresh && !st.switchedAt && !st.rolledBackAt) { try { ss = SpreadsheetApp.openById(st.newId); } catch (err) { ss = null; } }
+  if (!ss) {
+    if (st && st.newId && !st.switchedAt && !st.rolledBackAt) { try { DriveApp.getFileById(st.newId).setName(ONE_NAME + ' (an earlier try, not used)'); } catch (err) { /* gone */ } }
+    ss = SpreadsheetApp.create(ONE_NAME);
+    ss.setSpreadsheetTimeZone(tz);
+    ss.setSpreadsheetLocale(loc);
+    st = { newId: ss.getId(), url: ss.getUrl(), madeAt: Date.now(), tabs: {}, verified: false, before: st && st.rolledBackAt ? { id: st.newId, url: st.url, at: st.rolledBackAt } : (st && st.before) || null };
+    oneSave_(st);
+  }
+  var priv = onePrivate_(ss.getId());
+  if (priv) return { ok: false, why: priv };
+  var from = { lb: src.lb, hub: src.hub }, report = [], partial = false;
+  for (var i = 0; i < p.plan.length; i++) {
+    if (Date.now() - t0 > 240000) { partial = true; break; }
+    var it = p.plan[i], sh = from[it.from].getSheetByName(it.name), rec = st.tabs[it.to];
+    var srcHash = oneHash_(sh), srcShape = oneShape_(sh);
+    var copy = ss.getSheetByName(it.to);
+    if (!(copy && rec && rec.hash === srcHash)) {
+      // Not copied yet, or the original changed since: copy it (again). Nothing has used this new sheet yet.
+      if (copy) ss.deleteSheet(copy);
+      copy = sh.copyTo(ss);
+      copy.setName(it.to);
+    }
+    oneDress_(sh, copy, it.hide);
+    var cHash = oneHash_(copy), cShape = oneShape_(copy), bad = oneSame_(it.hide ? oneUnhide_(srcShape) : srcShape, cShape);
+    if (cHash !== srcHash) bad.push('values');
+    st.tabs[it.to] = { from: it.from, name: it.name, hash: srcHash, rows: srcShape.rows, cols: srcShape.cols, ok: !bad.length, bad: bad.join(', ') };
+    report.push({ tab: it.to, from: it.from === 'lb' ? 'Live Board' : 'Teacher Hub', rows: srcShape.rows, cols: srcShape.cols, ok: !bad.length, note: bad.length ? 'Does not match: ' + bad.join(', ') : '' });
+    oneSave_(st);
+  }
+  // Tabs that are no longer in either old sheet are taken out of the copy.
+  var want = {};
+  p.plan.forEach(function (it) { want[it.to] = 1; });
+  if (!partial) {
+    ss.getSheets().forEach(function (sh) { var n = sh.getName(); if (!want[n] && n !== ONE_LOG && ss.getSheets().length > 1) ss.deleteSheet(sh); });
+    Object.keys(st.tabs).forEach(function (k) { if (!want[k]) delete st.tabs[k]; });
+  }
+  var allOk = !partial && Object.keys(st.tabs).every(function (k) { return st.tabs[k].ok; });
+  st.verified = allOk;
+  st.checkedAt = Date.now();
+  if (!partial) {
+    // The PIN is not left in the sheet: it moves into the script at the switch.
+    try { var sset = ss.getSheetByName(TAB.settings); if (sset) { var v = sset.getDataRange().getValues(); for (var r = 1; r < v.length; r++) if (String(v[r][0]).trim() === 'Teacher PIN') sset.getRange(r + 1, 2).setValue('Kept in the script. Change it in the Teacher Hub, Settings, Teacher PIN.'); } } catch (err) { /* checked at the switch */ }
+    oneLog_(ss, 'Made and checked', report);
+  }
+  oneSave_(st);
+  return { ok: allOk, partial: partial, url: st.url, report: report, why: partial ? 'Not finished yet (a run can last 6 minutes). Press it again to carry on.' : (allOk ? '' : 'Some tabs do not match. See the list.') };
+}
+function oneUnhide_(shape) { var c = {}; Object.keys(shape).forEach(function (k) { c[k] = shape[k]; }); c.hidden = true; return c; }
+/* copyTo keeps values, formats and checkboxes. These are set again to be sure. */
+function oneDress_(sh, copy, hide) {
+  try { if (copy.getFrozenRows() !== sh.getFrozenRows()) copy.setFrozenRows(sh.getFrozenRows()); } catch (err) { /* checked below */ }
+  try { if (copy.getFrozenColumns() !== sh.getFrozenColumns()) copy.setFrozenColumns(sh.getFrozenColumns()); } catch (err) { /* checked below */ }
+  try { var c = sh.getTabColor ? sh.getTabColor() : null; if (c && copy.setTabColor) copy.setTabColor(c); } catch (err) { /* checked below */ }
+  if (hide || sh.isSheetHidden()) { try { copy.hideSheet(); } catch (err) { /* the only visible tab cannot be hidden */ } }
+}
+/* The new sheet must be private: only the owner. Returns why not, or ''. */
+function onePrivate_(id) {
+  try {
+    var f = DriveApp.getFileById(id), me = '';
+    try { me = String(Session.getEffectiveUser().getEmail() || '').toLowerCase(); } catch (e) { me = ''; }
+    var others = function (list) { return (list || []).filter(function (u) { var e = ''; try { e = String(u.getEmail ? u.getEmail() : u).toLowerCase(); } catch (x) { e = ''; } return e && e !== me; }); };
+    if (f.getSharingAccess() !== DriveApp.Access.PRIVATE) return 'The new sheet is shared by link. In Drive, set its sharing to Restricted, then try again.';
+    if (others(f.getEditors()).length || others(f.getViewers()).length) return 'The new sheet is shared with other people. In Drive, remove them (only you should have it), then try again.';
+  } catch (err) { return 'The sharing of the new sheet could not be checked: ' + err.message; }
+  return '';
+}
+function oneLog_(ss, what, report) {
+  var sh = ss.getSheetByName(ONE_LOG);
+  if (!sh) { sh = ss.insertSheet(ONE_LOG); sh.appendRow(['When', 'What', 'Tab', 'From', 'Rows', 'Columns', 'Matches', 'Note']); sh.setFrozenRows(1); }
+  var now = new Date();
+  var rows = report.length ? report.map(function (r) { return [now, what, r.tab, r.from || '', r.rows, r.cols, r.ok === false ? 'NO' : 'yes', r.note || '']; }) : [[now, what, '', '', '', '', '', '']];
+  writeBelow_(sh, rows, 8);
+}
+
+/* Why the switch should wait, or ''. */
+function oneQuietWhy_() {
+  var why = [];
+  try { var run = runningFor_(Object.keys(readRoster_())); if (Object.keys(run).length) why.push('a lesson is running (' + Object.keys(run).join(', ') + ')'); } catch (err) { /* none */ }
+  try {
+    var soon = Date.now() + 2 * 3600000, now = Date.now();
+    getAssignments_().forEach(function (a) { if (a.open && a.dueAt && a.dueAt.getTime() > now && a.dueAt.getTime() < soon) why.push('"' + a.title + '" is due within 2 hours'); });
+  } catch (err) { /* none */ }
+  var recent = function (ss, tab, col) {
+    var sh = ss.getSheetByName(tab);
+    if (!sh || sh.getLastRow() < 2) return false;
+    var v = sh.getRange(sh.getLastRow(), col).getValue(), t = v instanceof Date ? v.getTime() : Date.parse(String(v));
+    return t && Date.now() - t < 15 * 60000;
+  };
+  try {
+    var src = oneSources_();
+    if (recent(src.lb, TAB.posts, 3)) why.push('students answered in the last 15 minutes');
+    if (recent(src.hub, 'Rewards log', 1)) why.push('points were given in the last 15 minutes');
+    if (recent(src.hub, 'Submissions', 13)) why.push('work was handed in in the last 15 minutes');
+  } catch (err) { /* the switch checks again */ }
+  return why.length ? 'Wait for a quiet time: ' + why.join(', ') + '.' : '';
+}
+/* The Hub's timers (hubTick: hand-ins and marking; the hourly tracker) take the document lock, not the script lock,
+   so they say when they are running. The switch and Go back wait for them (up to 90 s), and they do not start while
+   the move runs (they check the freeze first). */
+function oneTimerRun_(name, fn) {
+  var cache = CacheService.getScriptCache();
+  cachePut_('tmr_' + name, String(Date.now()), 360);
+  try { return fn(); } finally { try { cache.remove('tmr_' + name); } catch (err) { /* runs out in 6 minutes */ } }
+}
+function oneWaitTimers_() {
+  var cache = CacheService.getScriptCache(), end = Date.now() + 90000;
+  while (Date.now() < end) {
+    var got = cache.getAll(['tmr_tick', 'tmr_tracker']);
+    if (!got['tmr_tick'] && !got['tmr_tracker']) return true;
+    Utilities.sleep(2000);
+  }
+  return false;
+}
+/* Both locks: the script's (answers, sign-ins, lessons) and the Hub's (hand-ins, marking, the tracker). */
+function oneLocks_(fn) {
+  var a = LockService.getScriptLock(), b = null;
+  try { b = LockService.getDocumentLock(); } catch (err) { b = null; }
+  a.waitLock(30000);
+  try {
+    if (b) b.waitLock(30000);
+    try { return fn(); } finally { if (b) b.releaseLock(); }
+  } finally { a.releaseLock(); }
+}
+/* Step 2. The switch. force skips the quiet-time check (the owner, from the script editor, only). */
+function oneSheetSwitch(force) { needOwner_('oneSheetSwitch'); return oneSwitch_(!!force); }
+function t_oneSwitch(token, pin) { oneAuth_(token, pin); return oneSwitch_(false); }
+function oneSwitch_(force) {
+  var st = oneState_();
+  if (oneSsId_()) throw new Error('The app already uses the one sheet.');
+  if (!st || !st.newId || !st.verified || st.rolledBackAt) throw new Error('Make the one sheet first (it must check out).');
+  if (Object.keys(st.tabs || {}).some(function (k) { return String(st.tabs[k].hash || '').length !== 32; })) { st.verified = false; oneSave_(st); return { ok: false, why: 'Press Make the one sheet again first (it was made by an older version), then switch.' }; }
+  if (!force) { var q = oneQuietWhy_(); if (q) return { ok: false, why: q }; }
+  if (!oneWaitTimers_()) return { ok: false, why: 'The marking or tracker timer is running. Try again in a few minutes.' };
+  var cache = CacheService.getScriptCache();
+  cache.put(ONE_FREEZE, String(Date.now() + 15 * 60000), 900);
+  var out;
+  try {
+    Utilities.sleep(4000);   // answers and hand-ins already on their way finish first
+    out = oneLocks_(function () {
+      var src = oneSources_(), ss = SpreadsheetApp.openById(st.newId), p = onePlan_(src), report = [], bad = 0;
+      if (p.problems.length) return { ok: false, why: p.problems.join(' ') };
+      var from = { lb: src.lb, hub: src.hub }, last = {}, t0 = Date.now(), slow = false;
+      p.plan.forEach(function (it) {
+        if (slow) return;
+        var sh = from[it.from].getSheetByName(it.name), rec = st.tabs[it.to], h = oneHash_(sh), copy = ss.getSheetByName(it.to);
+        var again = !copy || !rec || rec.hash !== h;
+        // Copying many changed tabs again could pass the 6-minute limit: stop, and ask for Make first (it carries on).
+        if (again && Date.now() - t0 > 120000) { slow = true; return; }
+        if (again) { if (copy) ss.deleteSheet(copy); copy = sh.copyTo(ss); copy.setName(it.to); oneDress_(sh, copy, it.hide); }
+        var s0 = oneShape_(sh), miss = oneSame_(it.hide ? oneUnhide_(s0) : s0, oneShape_(copy));
+        if (oneHash_(copy) !== h) miss.push('values');
+        if (miss.length) bad++;
+        // Where each tab that only grows ends in the copy: rows the old sheet gets after this are added later.
+        if (ONE_APPEND_TABS.indexOf(it.to) >= 0) last[it.to] = { from: it.from, name: it.name, old: copy.getLastRow(), now: copy.getLastRow() };
+        st.tabs[it.to] = { from: it.from, name: it.name, hash: h, rows: s0.rows, cols: s0.cols, ok: !miss.length, bad: miss.join(', ') };
+        report.push({ tab: it.to, from: it.from === 'lb' ? 'Live Board' : 'Teacher Hub', rows: s0.rows, cols: s0.cols, ok: !miss.length, note: again ? 'Copied again (it changed)' + (miss.length ? '. Does not match: ' + miss.join(', ') : '') : (miss.length ? 'Does not match: ' + miss.join(', ') : '') });
+      });
+      if (slow) { st.verified = false; oneSave_(st); oneLog_(ss, 'Switch stopped (many tabs changed)', report); return { ok: false, why: 'Many tabs changed since the one sheet was made. Press Make the one sheet again (it brings the copy up to date), then switch. Nothing was switched.', report: report }; }
+      if (bad) { st.verified = false; oneSave_(st); oneLog_(ss, 'Switch stopped', report); return { ok: false, why: bad + ' tab(s) did not match after copying again. Nothing was switched.', report: report }; }
+      var priv = onePrivate_(st.newId);
+      if (priv) return { ok: false, why: priv };
+      // The PIN moves into the script, and the new sheet's Settings names itself as the class list.
+      var props = PropertiesService.getScriptProperties();
+      var pin = '';
+      try { var sv = src.lb.getSheetByName(TAB.settings).getDataRange().getValues(); for (var r = 1; r < sv.length; r++) if (String(sv[r][0]).trim() === 'Teacher PIN') pin = String(sv[r][1]).trim(); } catch (err) { pin = ''; }
+      if (pin && !props.getProperty('T_PIN')) props.setProperty('T_PIN', pin);
+      var ns = ss.getSheetByName(TAB.settings);
+      if (ns) {
+        var nv = ns.getDataRange().getValues(), found = false;
+        for (var j = 1; j < nv.length; j++) {
+          var k = String(nv[j][0]).trim();
+          if (k === 'Class list sheet ID') { ns.getRange(j + 1, 2).setValue(st.newId); found = true; }
+          if (k === 'Teacher PIN') ns.getRange(j + 1, 2).setValue('Kept in the script. Change it in the Teacher Hub, Settings, Teacher PIN.');
+        }
+        if (!found) ns.appendRow(['Class list sheet ID', st.newId]);
+      }
+      st.lastRows = last;
+      st.switchedAt = Date.now();
+      st.rollbackUntil = oneRollbackUntil_(st.switchedAt);
+      oneSave_(st);
+      oneLog_(ss, 'Switched to the one sheet', report);
+      props.setProperty('ONE_SS_ID', st.newId);   // the switch
+      ONE_ = { id: null, ss: null, hub: null };
+      return { ok: true, url: st.url, report: report, rollbackUntil: st.rollbackUntil };
+    });
+    if (out && out.ok) {
+      try { if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'onEditOne'; })) ScriptApp.newTrigger('onEditOne').forSpreadsheet(st.newId).onEdit().create(); } catch (err) { out.note = 'Edits typed into the new sheet by hand take a few minutes to show (the edit timer could not be made: ' + err.message + ').'; }
+      oneForget_();
+      try { verBump_('today'); verBump_('work'); } catch (err) { /* fine */ }
+    }
+  } finally {
+    cache.remove(ONE_FREEZE);
+  }
+  return out;
+}
+function oneForget_() {
+  var cache = CacheService.getScriptCache();
+  ['roster', 'pin', 'boards', 'deckboards', 'decks', 'tabs_v5', 'stu_cc', SETTINGS_KEY, 'stu_idx'].forEach(function (k) { try { cache.remove(k); } catch (err) { /* fine */ } });
+}
+/* The end of the first school day after the switch (23:59, Singapore). */
+function oneRollbackUntil_(at) {
+  for (var i = 1; i <= 7; i++) {
+    var x = new Date(at + i * 86400000), dow = Utilities.formatDate(x, TZ, 'u');   // 1 Monday ... 7 Sunday
+    if (Number(dow) <= 5) { var day = Utilities.formatDate(x, TZ, 'yyyy-MM-dd'); return new Date(day + 'T23:59:00+08:00').getTime(); }
+  }
+  return at + 86400000;
+}
+/* Rows of the tabs that only grow, added after a given row, as text keys (to tell rows already there). */
+function oneRowsAfter_(sh, after) {
+  var last = sh ? sh.getLastRow() : 0, cols = sh ? sh.getLastColumn() : 0;
+  if (!sh || last <= after || !cols) return { rows: [], cols: cols };
+  return { rows: sh.getRange(after + 1, 1, last - after, cols).getValues(), cols: cols };
+}
+function oneRowKey_(r) { return JSON.stringify(r.map(function (v) { return v instanceof Date ? v.getTime() : v; })); }
+/* Step 3. Back to the two old sheets, within the window. The rows added in the one sheet since the switch (hand-ins,
+   answers, points, quick checks, debriefs) are copied back into the old sheets first, so nothing is lost. Changes
+   made to rows that were already there (marks, scores) stay only in the one sheet, which is kept. */
+function oneSheetRollback() { needOwner_('oneSheetRollback'); return oneRollback_(); }
+function t_oneRollback(token, pin) { oneAuth_(token, pin); return oneRollback_(); }
+function oneRollback_() {
+  var st = oneState_();
+  if (!oneSsId_() || !st) throw new Error('The app is not using the one sheet, so there is nothing to go back from.');
+  if (Date.now() > (st.rollbackUntil || 0)) throw new Error('Going back was possible until the end of the first school day after the switch. Mistakes are now fixed in the one sheet.');
+  var cache = CacheService.getScriptCache();
+  cache.put(ONE_FREEZE, String(Date.now() + 15 * 60000), 900);
+  var back = [], kept = [];
+  try {
+    oneWaitTimers_();
+    Utilities.sleep(4000);
+    oneLocks_(function () {
+      var src = oneSources_(), ss = SpreadsheetApp.openById(st.newId), last = st.lastRows || {};
+      ONE_APPEND_TABS.forEach(function (k) {
+        var to = ss.getSheetByName(k);
+        if (!to) return;
+        var rec = last[k] || { from: 'lb', name: k, old: 0, now: 1 };
+        var oldFile = rec.from === 'lb' ? src.lb : src.hub, old = oldFile.getSheetByName(rec.name);
+        var added = oneRowsAfter_(to, rec.now);
+        if (!added.rows.length) return;
+        if (!old) { old = oldFile.insertSheet(rec.name); var head = to.getRange(1, 1, 1, to.getLastColumn()).getValues(); writeBelow_(old, head, head[0].length); old.setFrozenRows(1); }
+        // Rows the old sheet already has (late rows that were added to the one sheet by the drain) are not added twice.
+        var have = {};
+        oneRowsAfter_(old, Math.min(rec.old, rec.now)).rows.forEach(function (r) { have[oneRowKey_(r)] = 1; });
+        var rows = added.rows.filter(function (r) { return !have[oneRowKey_(r)]; });
+        if (!rows.length) return;
+        writeBelow_(old, rows, added.cols);
+        back.push({ tab: k, rows: rows.length });
+      });
+      // Every other tab that changed in the one sheet since the switch (chapter checks, Progress, marks, the decks)
+      // is put back as it is now, values only, so the old sheets carry on from where the one sheet is. Settings stays
+      // as it was in the old sheet (its class list link and PIN were changed in the copy). A tab with formulas is
+      // left, and named, so it can be checked by hand.
+      kept = [];
+      Object.keys(st.tabs || {}).forEach(function (k) {
+        var rec = st.tabs[k];
+        if (ONE_APPEND_TABS.indexOf(k) >= 0 || k === TAB.settings || k === ONE_OLD_STUDENTS || k === ONE_LOG) return;
+        var to = ss.getSheetByName(k), oldFile = rec.from === 'lb' ? src.lb : src.hub, old = oldFile.getSheetByName(rec.name);
+        if (!to || !old || oneHash_(to) === rec.hash) return;
+        var rng = to.getDataRange(), f = rng.getFormulas();
+        if (f.some(function (r) { return r.some(String); })) { kept.push(k); return; }
+        var v = rng.getValues(), rows = v.length, cols = v[0].length;
+        if (old.getMaxRows() < rows) old.insertRowsAfter(old.getMaxRows(), rows - old.getMaxRows());
+        if (old.getMaxColumns() < cols) old.insertColumnsAfter(old.getMaxColumns(), cols - old.getMaxColumns());
+        old.getRange(1, 1, Math.max(old.getLastRow(), 1), Math.max(old.getLastColumn(), 1)).clearContent();
+        old.getRange(1, 1, rows, cols).setValues(v);
+        back.push({ tab: k, rows: rows - 1, all: true });
+      });
+      PropertiesService.getScriptProperties().deleteProperty('ONE_SS_ID');
+      ONE_ = { id: null, ss: null, hub: null };
+      st.rolledBackAt = Date.now(); st.back = back;
+      delete st.switchedAt;
+      oneSave_(st);
+      try { DriveApp.getFileById(st.newId).setName(ONE_NAME + ' (gone back from on ' + Utilities.formatDate(new Date(), TZ, 'd MMM') + ', keep it)'); } catch (err) { /* only a name */ }
+    });
+  } finally { cache.remove(ONE_FREEZE); }
+  try { ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'onEditOne') ScriptApp.deleteTrigger(t); }); } catch (err) { /* fine */ }
+  oneForget_();
+  try { verBump_('today'); verBump_('work'); } catch (err) { /* fine */ }
+  return { ok: true, back: back, kept: kept, why: 'Back on the old sheets. ' + (back.length ? 'Copied back into them: ' + back.map(function (x) { return x.tab + (x.all ? ' (the whole tab)' : ' (' + x.rows + ' new rows)'); }).join(', ') + '. ' : 'Nothing had changed since the switch. ') +
+    (kept.length ? 'These tabs have formulas and changed in the one sheet, so check them by hand: ' + kept.join(', ') + '. ' : '') +
+    'The one sheet is kept (renamed "gone back from"). Making the one sheet again starts a new one.' };
+}
+/* Anything saved to an old sheet in the seconds around the switch (by a request that started before it) is added
+   to the one sheet. Runs from hubTick and from the Hub's Settings, under both locks, so it never adds a row twice. */
+function oneDrain_() {
+  var st0 = oneState_();
+  if (!oneSsId_() || !st0 || !st0.lastRows) return [];
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return [];
+  try {
+    var st = oneState_(), src = oneSources_(), ss = lbSs_(), moved = [];
+    Object.keys(st.lastRows || {}).forEach(function (k) {
+      var rec = st.lastRows[k], old = (rec.from === 'lb' ? src.lb : src.hub).getSheetByName(rec.name), to = ss.getSheetByName(k);
+      if (!old || !to) return;
+      var got = oneRowsAfter_(old, rec.old);
+      if (!got.rows.length) return;
+      // One row at a time, each counted as soon as it is in: a failure part-way leaves the rest for the next drain
+      // and never adds a row twice. appendRow, as answers use, so a row added at the same moment is never overwritten.
+      var n = 0;
+      try {
+        got.rows.forEach(function (r) { to.appendRow(r); n++; rec.old++; });
+      } finally { if (n) oneSave_(st); }
+      moved.push({ tab: k, rows: n });
+    });
+    if (moved.length) { try { oneLog_(ss, 'Added from the old sheets after the switch', moved.map(function (m) { return { tab: m.tab, rows: m.rows, cols: '', ok: true, note: '' }; })); } catch (err) { /* fine */ } }
+    return moved;
+  } finally { lock.releaseLock(); }
+}
+function t_oneStatus(token) {
+  if (!isOwner_()) teacher_(token);
+  var st = oneState_(), on = !!oneSsId_();
+  var made = !!(st && st.newId && !st.rolledBackAt);
+  var out = { state: on ? 'switched' : (made ? 'made' : 'two'), newUrl: st && made ? st.url || '' : '', made: st && made ? st.madeAt || 0 : 0,
+    verified: !!(st && made && st.verified), checkedAt: st ? st.checkedAt || 0 : 0, switchedAt: st ? st.switchedAt || 0 : 0, rollbackUntil: st ? st.rollbackUntil || 0 : 0,
+    report: st && made && st.tabs ? Object.keys(st.tabs).map(function (k) { var t = st.tabs[k]; return { tab: k, from: t.from === 'lb' ? 'Live Board' : 'Teacher Hub', rows: t.rows, cols: t.cols, ok: t.ok, note: t.bad ? 'Does not match: ' + t.bad : '' }; }) : [],
+    canSwitch: false, why: '', wentBack: st && st.rolledBackAt ? { at: st.rolledBackAt, url: st.url, back: st.back || [] } : null };
+  if (on) { try { out.drained = oneDrain_(); } catch (err) { out.drained = []; } out.canGoBack = Date.now() < out.rollbackUntil; }
+  else if (out.state === 'made' && out.verified) { var q = ''; try { q = oneQuietWhy_(); } catch (err) { q = ''; } out.canSwitch = !q; out.why = q; }
+  return out;
+}
+/* Edits typed by hand into the one sheet take effect straight away (an installable trigger, made at the switch). */
+function onEditOne(e) { try { onEditClear_(e.range.getSheet().getName()); } catch (err) { /* ignore */ } }
+
+/* ================================================================== */
+/* Release 34: pairing with a code, devices, the PIN, the NEXT switch  */
+/* ================================================================== */
+// The laptop shows a QR code for 2 minutes. The phone that scans it first shows a 4-digit code, and the teacher types
+// that code on the laptop. A student who scans the projected QR gets nothing: the code is on the teacher's phone.
+var PAIR_SECS = 120;
+function t_pairStart(token) {
+  teacher_(token);
+  var k = Utilities.getUuid().replace(/-/g, '').slice(0, 24);
+  cachePut_('pr_' + k, JSON.stringify({ state: 'wait', at: Date.now(), tries: 0 }), PAIR_SECS);
+  var url = selfUrl_();
+  return { k: k, url: (url || '') + '?phone#pair=' + k, until: Date.now() + PAIR_SECS * 1000 };
+}
+function pairRec_(k) { try { return JSON.parse(CacheService.getScriptCache().get('pr_' + String(k || '').replace(/[^a-f0-9]/g, '').slice(0, 24)) || 'null'); } catch (err) { return null; } }
+function pairPut_(k, r, secs) { cachePut_('pr_' + String(k).replace(/[^a-f0-9]/g, '').slice(0, 24), JSON.stringify(r), secs || 300); }
+/* The phone, after scanning. Only the first phone gets a code. */
+function t_pairJoin(k, device) {
+  var r = pairRec_(k);
+  if (!r) return { ok: false, gone: true, why: 'This code has run out. On the laptop, press Pair my phone again.' };
+  if (r.state !== 'wait') return { ok: false, taken: true, why: 'Another phone scanned this code first. On the laptop, press Pair my phone again.' };
+  r.state = 'asked';
+  r.device = clean_(device || 'Phone', 40);
+  r.code = String(1000 + Math.floor(Math.random() * 9000));
+  r.w = Utilities.getUuid().replace(/-/g, '');
+  pairPut_(k, r, 300);
+  return { ok: true, code: r.code, w: r.w };
+}
+/* The laptop: the teacher types the code shown on the phone. */
+function t_pairConfirm(token, k, code) {
+  teacher_(token);
+  var r = pairRec_(k);
+  if (!r || r.state === 'wait') return { ok: false, why: r ? 'Scan the QR code with your phone first.' : 'This code has run out. Press Pair my phone again.' };
+  if (r.state !== 'asked') return { ok: false, why: 'This phone is already paired.' };
+  if (String(code || '').replace(/\D/g, '') !== r.code) {
+    r.tries = (r.tries || 0) + 1;
+    if (r.tries >= 3) { CacheService.getScriptCache().remove('pr_' + k); return { ok: false, why: 'Wrong code three times. Press Pair my phone again.' }; }
+    pairPut_(k, r, 300);
+    return { ok: false, why: 'That is not the code on the phone. Try again.' };
+  }
+  r.state = 'ok';
+  pairPut_(k, r, 300);
+  return { ok: true, device: r.device };
+}
+/* The phone waits for the laptop. w proves it is the phone that scanned. */
+function t_pairWait(k, w) {
+  var r = pairRec_(k);
+  if (!r) return { ok: false, gone: true };
+  if (!r.w || String(w || '') !== r.w) return { ok: false, gone: true };
+  if (r.state !== 'ok') return { ok: true, state: r.state };
+  CacheService.getScriptCache().remove('pr_' + String(k).replace(/[^a-f0-9]/g, '').slice(0, 24));
+  return { ok: true, state: 'ok', key: devIssue_('phone', r.device || 'Phone') };
+}
+function t_devices(token) {
+  teacher_(token);
+  var now = Date.now(), mark = pinMark_();
+  return devList_().filter(function (d) { return d.until > now && d.p === mark; }).map(function (d) {
+    return { id: d.tk.slice(3, 15), name: d.name || '', kind: d.kind, at: d.at, last: Number(CacheService.getScriptCache().get('dvl_' + d.tk) || 0) };
+  }).reverse();
+}
+function t_unpair(token, id) {
+  teacher_(token);
+  var list = devList_(), cache = CacheService.getScriptCache(), gone = 0;
+  list = list.filter(function (d) {
+    if (d.tk.slice(3, 15) !== String(id || '')) return true;
+    try { cache.remove('dvk_' + d.tk); } catch (err) { /* fine */ }
+    gone++;
+    return false;
+  });
+  PropertiesService.getScriptProperties().setProperty('dv_list', JSON.stringify(list));
+  return { ok: gone > 0 };
+}
+/* Changing the PIN ends every paired device and sign-in made with the old one (as before). */
+function t_setPin(token, oldPin, newPin) {
+  teacher_(token);
+  checkPinOnly_(oldPin);
+  var p = String(newPin || '').trim();
+  if (!/^\d{6,8}$/.test(p)) throw new Error('The new PIN must be 6 to 8 numbers.');
+  if (oneSsId_() || PropertiesService.getScriptProperties().getProperty('T_PIN')) PropertiesService.getScriptProperties().setProperty('T_PIN', p);
+  else setSetting_('Teacher PIN', p);
+  CacheService.getScriptCache().remove('pin');
+  return { ok: true };
+}
+/* The new version switch: off (the release-33 pages), test (the TEST class, the preview, the Hub and the phone) or on. */
+function nextFlag_() {
+  var v = '';
+  try { v = CacheService.getScriptCache().get('flag_next'); } catch (err) { v = ''; }
+  if (v === null || v === undefined || v === '') {
+    v = PropertiesService.getScriptProperties().getProperty('NEXT') || 'test';
+    try { CacheService.getScriptCache().put('flag_next', v, 600); } catch (err) { /* fine */ }
+  }
+  return /^(off|test|on)$/.test(v) ? v : 'test';
+}
+function t_flags(token) { teacher_(token); return { NEXT: nextFlag_() }; }
+function t_flag(token, name, value) {
+  teacher_(token);
+  if (name !== 'NEXT' || !/^(off|test|on)$/.test(String(value))) throw new Error('Unknown setting.');
+  PropertiesService.getScriptProperties().setProperty('NEXT', String(value));
+  CacheService.getScriptCache().put('flag_next', String(value), 600);
+  return { NEXT: String(value) };
+}
