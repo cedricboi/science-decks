@@ -220,6 +220,15 @@
        "topicId": "ch1-physical-quantities-6091-v1",
        "live": true,
        "note": "Slides, interactives, and questions to submit"
+      },
+      {
+       "file": "Phy1-L5.html",
+       "num": "1.5",
+       "title": "Which instrument fits the job?",
+       "kind": "deck",
+       "topicId": "g3p-ch1-l5",
+       "live": true,
+       "note": "Slides, interactives, and questions to submit"
       }
      ]
     },

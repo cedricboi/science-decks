@@ -3457,7 +3457,26 @@ window.KIT=KIT;
      18. Version 14: the Streak Challenge. On the chapter check slide the projector can run the check as a class game,
         one question at a time. Speed gives nothing: right answers earn points, and answers right in a row earn a streak
         bonus. Each iPad shows the student's own result and place, the projector the top 5 and the longest streaks, and
-        the final score becomes Worksheet Hub points, once per deck (the solo chapter check is scored the same way). */
+        the final score becomes Worksheet Hub points, once per deck (the solo chapter check is scored the same way).
+     19. Version 15 (release 34, one canonical copy in kit/liveboard-bridge.v15.js, put into every deck by
+        tools/inject-bridge.js):
+        - Sign-in is a name and a password of 6 to 60 characters. A deck opened from the app (#lb=..&st=ticket) is
+          signed in with the ticket and shows no box. There is no guest button while the student's class lesson is
+          live (the roster reply's liveCls). "Not you? Sign out" replaces the teacher PIN on the iPad.
+        - No silent loss: an answer Live Board did not list in acceptedIds or heldIds stays in the bridge's own
+          outbox on the iPad and is sent again. Held answers (made just before the lesson) are sent again at Start.
+        - The page never reloads itself while the class's lesson is live, or while answers are waiting to send.
+        - Together moves the step as well as the slide (lead.step). Typed drafts are kept on the iPad before any
+          jump, and a card holding a draft is never redrawn by a jump.
+        - Quick checks open in a dock over the lower 35% of the deck. One tap answers ({api:'qa'}), the answer can
+          be changed until the check closes, and the student's own result and the counts show only after it closes.
+        - Presenter: the step and the slide kind go with lead. A strip with a status pill and a menu (quick check,
+          Eyes on me, Together or Own pace, Show answers, End with a 4 second Undo) calls t_do through the deck
+          channel ({api:'tdo'}). Keys: arrows and PgUp/PgDn move slides, B or . gives Eyes on me and blanks the
+          projector, A shows answers, Q opens the quick check picker, T switches Together and Own pace, E ends with
+          Undo. While a paired phone is live, the presenter long-polls for its commands ({api:'pgo'}) and draws
+          Show on screen (bars or words, never names).
+        - Arcade games send one score row per game instead of one row per round. */
   var cfgEl = document.getElementById('wave-tracking-config');
   if (!cfgEl || !window.fetch || window.__liveBoardBridge) return;
   window.__liveBoardBridge = true;
@@ -3465,7 +3484,7 @@ window.KIT=KIT;
   try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
   if (!cfg.endpoint) return;
 
-  var VERSION = 14;
+  var VERSION = 15;
   /* Older iPads (Safari before 16) have no AbortSignal.timeout, which newer decks use when they send answers;
      without it their answers would never send. */
   try {
@@ -3574,15 +3593,27 @@ window.KIT=KIT;
   /* ---------------- questions for Live Board ---------------- */
   var list = [], order = {}, byId = {};
   try { list = JSON.parse(document.getElementById('lesson-tasks').textContent) || []; } catch (e) { list = []; }
+  // Version 15: questions on slides parked out of the lesson (#l-held) are not this deck's questions.
+  list = list.filter(function (t) { var e = t && t.slide ? document.getElementById(t.slide) : null; return !!t && !(e && e.closest && e.closest('#l-held')); });
   list.forEach(function (t, i) { order[t.id] = i; byId[t.id] = t; });
-  var title = '', checkIds = [], summaryId = '';
+  var title = '', checkIds = [], summaryId = '', CHECK_ON = true;
   try {
     var man = JSON.parse(document.getElementById('science-topic-manifest').textContent) || {};
     title = man.title || '';
     summaryId = man.summaryId || '';
     checkIds = (Array.isArray(man.quizTasks) ? man.quizTasks : []).filter(function (id) { return byId[id]; });
+    // Version 15: a quiz is the chapter check unless the manifest says chapterCheck: false (a lesson's exit ticket).
+    CHECK_ON = man.chapterCheck !== false;
   } catch (e) { title = ''; }
   if (!title) title = document.title;
+  var CHECK_NAME = CHECK_ON ? 'chapter check' : 'exit ticket';
+  /* Arcade games (#lesson-game): their rounds go to Live Board as one score row per game. */
+  var GAME = null;
+  try {
+    var gEl = document.getElementById('lesson-game'), g0 = gEl ? JSON.parse(gEl.textContent) : null;
+    if (g0 && g0.id && !byId[g0.id]) GAME = { id: String(g0.id), slide: g0.slide || g0.id, title: g0.title || 'Game', win: Number(g0.win_score) || 0,
+      rounds: Array.isArray(g0.rounds) ? g0.rounds.length : 0 };
+  } catch (e) { GAME = null; }
   var sentKey = 'liveboard.q3:' + cfg.topicId + ':' + cfg.endpoint + ':' + list.length;
   var deckUrl = /^https:$/.test(location.protocol) ? location.origin + location.pathname : '';
 
@@ -3591,7 +3622,7 @@ window.KIT=KIT;
     var s = e ? (e.classList.contains('slide') ? e : e.closest('.slide')) : null;
     if (!s) { var h = document.querySelector('[data-task="' + t.id + '"]'); s = h ? h.closest('.slide') : null; }
     if (!s) return { n: 0, title: '' };
-    var all = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var all = slideList();
     var h1 = s.querySelector('h1');
     return { n: all.indexOf(s) + 1, title: h1 ? h1.textContent.replace(/\s+/g, ' ').trim() : '' };
   }
@@ -3611,34 +3642,142 @@ window.KIT=KIT;
         if (b && Number(b.version) === 2 && Array.isArray(b.events)) batch = b;
       }
     } catch (e) { batch = null; }
-    return sendOn(url, opts, batch);
+    if (batch) return sendBatch(url, opts, batch);
+    return original.call(window, url, opts);
   };
-  function sendOn(url, opts, b) {
+  function slideKinds() { return slideList().map(function (s, i) { return { n: i + 1, id: s.id || '', kind: s.getAttribute('data-kind') || '' }; }); }
+  /* Adds what Live Board needs to know about the deck to a batch of answers. */
+  function enrich(b) {
+    var info = {}, withAll = false;
+    b.events.forEach(function (e) {
+      var t = byId[e.task]; if (t && !info[t.id]) info[t.id] = describe(t);
+      if (GAME && e.task === GAME.id && !info[GAME.id]) info[GAME.id] = gameInfo();
+      if (e.action === 'submit') dropDrafts(e.task);
+      if (mode !== 'revise' && mode !== 'closed') noteFirst(e);
+      if (asking && e.task === asking.taskId && e.action === 'submit') answeredAsk();
+    });
+    b.liveBoard = { deckTitle: title, questions: info, deckUrl: deckUrl, chapterCheck: CHECK_ON ? checkIds : [], chapterCheckOn: CHECK_ON,
+      slideCount: slideCount(), read: readIds(), dev: DEV, v: VERSION, st: stNow() };
+    if (!sentAll()) { b.liveBoard.allQuestions = list.map(describe); b.liveBoard.slides = slideKinds(); withAll = true; }
+    return withAll;
+  }
+  /* One batch to Live Board, and what came back. Every event Live Board did not list in acceptedIds stays in the
+     bridge's outbox (held ones until the lesson starts), so nothing is lost even when the deck itself thinks it
+     was sent. */
+  function postBatch(url, opts, b, mine) {
     var withAll = false;
-    if (b) {
-      try {
-        var info = {};
+    try { withAll = enrich(b); opts = Object.assign({}, opts, { body: JSON.stringify(b) }); } catch (e) { /* send it as it is */ }
+    return original.call(window, url, opts).then(function (r) {
+      if (!r || !r.ok) return { r: r, j: null };
+      return r.clone().text().then(function (t) { var j = null; try { j = JSON.parse(t); } catch (x) { j = null; } return { r: r, j: j }; }, function () { return { r: r, j: null }; });
+    }).then(function (x) {
+      var j = x.j;
+      if (withAll && j && j.ok) { try { localStorage.setItem(sentKey, '1'); } catch (e) {} }
+      if (j && j.liveBoard && j.liveBoard.check) showCheck(j.liveBoard.check);
+      if (j && j.liveBoard && j.liveBoard.signedOut) { signedOutHere(); return x; }
+      if (j && j.ok === true && Array.isArray(j.acceptedIds)) {
+        var acc = {}, held = {};
+        j.acceptedIds.forEach(function (id) { acc[id] = 1; });
+        (Array.isArray(j.heldIds) ? j.heldIds : []).forEach(function (id) { held[id] = 1; });
+        var meta = { course: b.course, topicId: b.topicId, recordId: b.recordId, profile: b.profile };
         b.events.forEach(function (e) {
-          var t = byId[e.task]; if (t && !info[t.id]) info[t.id] = describe(t);
-          if (mode !== 'revise' && mode !== 'closed') noteFirst(e);
-          if (asking && e.task === asking.taskId && e.action === 'submit') answeredAsk();
+          if (!e || !e.id) return;
+          if (acc[e.id]) outboxDel(e.id); else outboxPut(meta, e, !!held[e.id]);
         });
-        b.liveBoard = { deckTitle: title, questions: info, deckUrl: deckUrl, chapterCheck: checkIds, slideCount: slideCount(),
-          read: readIds(), dev: DEV, v: VERSION, st: stNow() };
-        if (!sentAll()) { b.liveBoard.allQuestions = list.map(describe); withAll = true; }
-        opts = Object.assign({}, opts, { body: JSON.stringify(b) });
-      } catch (e) { /* send the batch unchanged */ }
+        outboxSave();
+        x.taken = true;
+      }
+      return x;
+    });
+  }
+  /* The deck's own batch: the deck is told every event arrived once the bridge holds what was not saved. */
+  function sendBatch(url, opts, b) {
+    var ids = b.events.map(function (e) { return e && e.id; }), rows = [];
+    if (GAME) {
+      b.events = b.events.filter(function (e) {
+        if (!isRound(e)) return true;
+        var row = noteRound(e);
+        if (row) { rows.push(row); outboxPut({ course: b.course, topicId: b.topicId, recordId: b.recordId, profile: b.profile }, row, false); outboxSave(); outAt = Math.max(outAt, Date.now() + 5000); }
+        return false;
+      });
+      b.events = b.events.concat(rows);
     }
-    var p = original.call(window, url, opts);
-    if (withAll) p.then(function (r) { if (r && r.ok) { try { localStorage.setItem(sentKey, '1'); } catch (e) {} } }, function () {});
-    if (String(url) === cfg.endpoint) {
-      p.then(function (r) { return r && r.ok ? r.clone().json() : null; })
-        .then(function (j) {
-          if (j && j.liveBoard && j.liveBoard.check) showCheck(j.liveBoard.check);
-          if (j && j.liveBoard && j.liveBoard.signedOut) signedOutHere();
-        }, function () {});
+    return postBatch(url, opts, b, true).then(function (x) {
+      if (!x.taken) return x.r;
+      var j = Object.assign({}, x.j, { acceptedIds: ids });
+      delete j.heldIds;
+      try { return new Response(JSON.stringify(j), { status: 200, headers: { 'Content-Type': 'application/json' } }); } catch (e) { return x.r; }
+    });
+  }
+
+  /* ---------------- the outbox: answers Live Board has not saved yet ---------------- */
+  var OUT_KEY = 'liveboard.outbox:' + (cfg.topicId || ''), outbox = readJ(OUT_KEY) || {};
+  if (!outbox || typeof outbox !== 'object' || Array.isArray(outbox)) outbox = {};
+  var outAt = 0, outFails = 0, outBusy = false, heldTry = 0, lessonLive = false;
+  function outboxPut(meta, e, held) {
+    var o = outbox[e.id] || { at: Date.now() };
+    o.ev = e; o.rec = meta; o.held = held; outbox[e.id] = o;
+  }
+  function outboxDel(id) { delete outbox[id]; }
+  function outboxSave() { writeJ(OUT_KEY, Object.keys(outbox).length ? outbox : null); }
+  function outboxCount() { return Object.keys(outbox).length; }
+  function flushOutbox() {
+    if (outBusy || !outboxCount() || !stNow() || presenting || navigator.onLine === false || document.hidden) return;
+    var now = Date.now(), due = [], waitHeld = false;
+    Object.keys(outbox).forEach(function (id) {
+      var o = outbox[id];
+      if (!o || !o.ev) { delete outbox[id]; return; }
+      // Held answers go again once the lesson is on (or after 25 minutes, when Live Board keeps them as practice).
+      if (o.held) { if ((lessonLive && now - heldTry > 20000) || now - (o.at || 0) > 25 * 60000) due.push(o); else waitHeld = true; return; }
+      if (now >= outAt) due.push(o);
+    });
+    if (!due.length) return;
+    var rec = due[0].rec || {};
+    var evs = due.filter(function (o) { return (o.rec || {}).recordId === rec.recordId; }).slice(0, 50).map(function (o) { return o.ev; });
+    if (due.some(function (o) { return o.held; })) heldTry = now;
+    outBusy = true;
+    var b = { version: 2, course: rec.course || cfg.course || '', topicId: rec.topicId || cfg.topicId, recordId: rec.recordId || '', profile: rec.profile || {},
+      currentSlide: (currentSlide() || {}).id || '', visits: [], events: evs };
+    postBatch(cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(b) }, b, false)
+      .then(function (x) { outBusy = false; if (x.taken) { outFails = 0; outAt = Date.now() + 1500; } else outFail(); }, function () { outBusy = false; outFail(); });
+  }
+  function outFail() { outFails++; outAt = Date.now() + Math.min(30000, 4000 * Math.pow(2, outFails - 1)) * (0.75 + Math.random() * 0.5); }
+  setInterval(flushOutbox, 2000);
+
+  /* ---------------- arcade: one score row per game ---------------- */
+  var GAME_KEY = 'liveboard.game:' + (cfg.topicId || '');
+  function isRound(e) {
+    if (!GAME || !GAME.rounds || !e || typeof e.task !== 'string') return false;
+    var p = GAME.id + '-r';
+    return e.task.indexOf(p) === 0 && /^\d+$/.test(e.task.slice(p.length));
+  }
+  function gameInfo() {
+    var sl = document.getElementById(GAME.slide), s = sl ? slideOf({ id: GAME.id, slide: GAME.slide }) : { n: 0, title: '' };
+    return { id: GAME.id, question: GAME.title + ': score for one game', kind: 'written', options: [], correct: '', model: '', unit: '',
+      order: list.length + 1, slideNo: s.n, slideTitle: s.title };
+  }
+  function noteRound(e) {
+    var st = readJ(GAME_KEY) || {};
+    st.seen = st.seen || {};
+    if (st.seen[e.id]) return null;
+    st.seen[e.id] = Date.now();
+    var ks = Object.keys(st.seen);
+    if (ks.length > 300) ks.sort(function (a, b) { return st.seen[a] - st.seen[b]; }).slice(0, ks.length - 300).forEach(function (k) { delete st.seen[k]; });
+    var n = Number(e.task.slice(GAME.id.length + 2));
+    if (n === 1 || !st.run) st.run = { start: e.id, score: 0, n: 0 };
+    var m = /\((\d+) points?\)/.exec(String(e.answer || ''));
+    st.run.score += m ? Number(m[1]) : (e.correct === true ? 10 : 0);
+    st.run.n = n;
+    var row = null;
+    if (n >= GAME.rounds) {
+      var sc = st.run.score, won = GAME.win ? sc >= GAME.win : null;
+      row = { id: 'game-' + st.run.start, task: GAME.id, slide: GAME.slide, at: e.at || new Date().toISOString(),
+        answer: 'Scored ' + sc + ' points in ' + n + ' rounds.' + (won === true ? ' Cleared.' : won === false ? ' Not cleared.' : ''),
+        feedback: '', action: 'submit', valid: true, correct: won, assisted: false };
+      st.run = null;
     }
-    return p;
+    writeJ(GAME_KEY, st);
+    return row;
   }
 
 
@@ -3863,6 +4002,61 @@ window.KIT=KIT;
     '.lbx .lbp-endrow{margin-top:16px}' +
     '.lbp-back{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:2147482900;font:900 16px Arial,sans-serif;padding:12px 20px;border:2px solid #101014;background:#12804f;color:#fff;box-shadow:4px 4px 0 #101014;cursor:pointer}';
   document.head.appendChild(css);
+  /* Version 15: the quick check dock, the presenter strip, the blank screen and the End bar. */
+  var css15 = el('style');
+  css15.textContent =
+    '.lbdock{position:fixed;left:0;right:0;bottom:0;height:35vh;min-height:210px;z-index:2147482550;background:#fff;color:#101014;border-top:4px solid #101014;box-shadow:0 -6px 0 #e9082b;font:17px/1.4 Arial,Helvetica,sans-serif;overflow:auto;-webkit-overflow-scrolling:touch;animation:lbDockIn .3s ease-out}' +
+    '@keyframes lbDockIn{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}' +
+    '.lbdock-in{max-width:980px;margin:0 auto;padding:12px 20px 16px;display:flex;flex-direction:column;gap:10px}' +
+    '.lbdock-head{display:flex;align-items:center;gap:10px}' +
+    '.lbdock-tag{background:#e9082b;color:#fff;font:900 13px Arial,sans-serif;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px}' +
+    '.lbdock-tag.shut{background:#12804f}' +
+    '.lbdock-round{font:700 14px Arial,sans-serif;color:#3a3740}' +
+    '.lbdock-q{font:900 clamp(18px,2.3vw,24px)/1.3 Arial,sans-serif;overflow-wrap:anywhere}' +
+    '.lbdock-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}' +
+    '.lbdock button.lbdock-opt{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 16px!important;text-align:left;font:900 20px/1.25 Arial,sans-serif!important;border:3px solid #101014!important;border-radius:0!important;background:#fff!important;color:#101014!important;box-shadow:4px 4px 0 #101014!important;transform:none!important;text-transform:none!important;font-style:normal!important;cursor:pointer}' +
+    '.lbdock button.lbdock-opt b{flex:none;display:grid;place-items:center;width:34px;height:34px;border:2px solid currentColor;font:900 18px Arial,sans-serif}' +
+    '.lbdock button.lbdock-opt.on{background:#101014!important;color:#fff!important;box-shadow:4px 4px 0 #e9082b!important}' +
+    '.lbdock button.lbdock-opt:disabled{opacity:.6;cursor:default}' +
+    '.lbdock-entry{display:flex;gap:10px;align-items:center;flex-wrap:wrap}' +
+    '.lbdock-entry input{flex:1;min-width:160px;font:20px Arial,sans-serif;padding:11px 12px;border:3px solid #101014;border-radius:0;min-height:52px;color:#101014;background:#fff}' +
+    '.lbdock-entry b{font:900 18px Arial,sans-serif}' +
+    '.lbdock button.lbdock-send{align-self:flex-start;font:900 17px Arial,sans-serif!important;padding:12px 22px!important;border:3px solid #101014!important;border-radius:0!important;background:#e9082b!important;color:#fff!important;box-shadow:4px 4px 0 #101014!important;min-height:52px;transform:none!important;text-transform:none!important;font-style:normal!important;cursor:pointer}' +
+    '.lbdock-note{margin:0;font-size:15px;color:#3a3740}.lbdock-note.bad{color:#b70020;font-weight:700}' +
+    '.lbdock-mine{margin:0;font:900 20px/1.3 Arial,sans-serif}.lbdock-mine.ok{color:#0b7a45}.lbdock-mine.no{color:#b70020}' +
+    '.lbdock-bars{display:grid;gap:6px}' +
+    '.lbdock-bar{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) 3em;gap:10px;align-items:center;font-size:16px}' +
+    '.lbdock-bar .l{font-weight:700;overflow-wrap:anywhere}.lbdock-bar .t{height:20px;background:#efece6;border:2px solid #101014;position:relative}' +
+    '.lbdock-bar .t i{position:absolute;left:0;top:0;bottom:0;background:#101014}.lbdock-bar b{text-align:right}' +
+    '.lbdock-bar.ok .l{color:#0b7a45}.lbdock-bar.ok .t i{background:#12a05c}.lbdock-bar.me .l{text-decoration:underline}' +
+    '@media (prefers-reduced-motion:reduce){.lbdock{animation:none}}' +
+    '.lbx-who button.lbx-out{border-color:rgba(255,255,255,.55)!important}' +
+    '.lbstrip{position:fixed;right:12px;bottom:76px;z-index:2147482350;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:min(560px,calc(100% - 24px));font:700 14px/1.2 Arial,Helvetica,sans-serif}' +
+    '.lbstrip-pill{background:#101014;color:#fff;padding:8px 12px;border:2px solid #fff;box-shadow:3px 3px 0 #e9082b;white-space:nowrap;font-variant-numeric:tabular-nums}' +
+    '.lbstrip.eyes .lbstrip-pill{background:#e9082b}' +
+    '.lbstrip button.lbstrip-more{font:900 20px/1 Arial,sans-serif!important;min-width:44px;min-height:36px;padding:4px 10px!important;background:#101014!important;color:#fff!important;border:2px solid #fff!important;border-radius:0!important;box-shadow:3px 3px 0 #e9082b!important;transform:none!important;cursor:pointer}' +
+    '.lbstrip-msg{flex-basis:100%;text-align:right;color:#fff;background:#101014;padding:4px 8px;font-weight:400}' +
+    '.lbstrip-menu{position:absolute;right:0;bottom:calc(100% + 8px);width:300px;background:#fff;color:#101014;border:3px solid #101014;box-shadow:6px 6px 0 #e9082b;padding:6px;display:flex;flex-direction:column;gap:4px}' +
+    '.lbstrip-menu>button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;font:700 15px Arial,sans-serif!important;padding:9px 10px!important;border:0!important;border-radius:0!important;background:#fff!important;color:#101014!important;box-shadow:none!important;transform:none!important;text-transform:none!important;cursor:pointer;min-height:0}' +
+    '.lbstrip-menu>button:hover{background:#101014!important;color:#fff!important}' +
+    '.lbstrip-menu>button.end{color:#b70020!important}' +
+    '.lbstrip-menu kbd{font:700 12px Arial,sans-serif;border:1px solid currentColor;padding:1px 6px}' +
+    '.lbstrip-h{margin:4px 8px;font-size:14px;color:#3a3740}' +
+    '.lbstrip-mark{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 8px}' +
+    '.lbstrip-mark span{flex-basis:100%;font-size:13px;color:#3a3740}' +
+    '.lbstrip-mark button{font:900 15px Arial,sans-serif!important;min-width:40px;padding:6px 10px!important;border:2px solid #101014!important;border-radius:0!important;background:#fff!important;color:#101014!important;box-shadow:none!important;transform:none!important;cursor:pointer;min-height:0}' +
+    '.lbblank{position:fixed;inset:0;z-index:2147483300;background:#000;display:flex;align-items:flex-end;justify-content:center;padding:18px;cursor:none}' +
+    '.lbblank span{color:#333;font:14px Arial,sans-serif}' +
+    '.lbend{position:fixed;left:50%;transform:translateX(-50%);top:16px;z-index:2147483350;display:flex;align-items:center;gap:16px;background:#101014;color:#fff;padding:12px 14px 12px 18px;border:3px solid #fff;box-shadow:6px 6px 0 #e9082b;font:700 18px Arial,sans-serif}' +
+    '.lbend button{font:900 17px Arial,sans-serif!important;padding:10px 18px!important;border:0!important;border-radius:0!important;background:#FFE45C!important;color:#101014!important;box-shadow:none!important;transform:none!important;cursor:pointer}' +
+    '.lbshow{z-index:2147483150}' +
+    '.lbshow-words{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:center;justify-content:center;padding:10px 0}' +
+    '.lbshow-word{font-weight:900;font-family:Arial,sans-serif;padding:6px 14px;border:2px solid #101014;box-shadow:4px 4px 0 #101014;line-height:1.15;overflow-wrap:anywhere}' +
+    '.lbshow-word small{font-size:.5em;color:#3a3740}' +
+    '.lbshow-word.c0{background:#fff6b8}.lbshow-word.c1{background:#d9f0ff}.lbshow-word.c2{background:#ffe0e6}.lbshow-word.c3{background:#dff7e6}.lbshow-word.c4{background:#efe4ff}.lbshow-word.c5{background:#ffe8d1}' +
+    '.lbx .lbpick button.lbx-class span{color:#3a3740;font-weight:400}' +
+    '.lbx .lbpick button.lbx-class:disabled span{display:none}';
+  document.head.appendChild(css15);
 
   var nameBox = document.getElementById('student-name');
   var classBox = document.getElementById('student-class');
@@ -3877,23 +4071,20 @@ window.KIT=KIT;
   var whoLine = el('div', 'lbx-who');
   if (identityBlock) { identityBlock.style.display = 'none'; identityBlock.parentNode.insertBefore(whoLine, identityBlock.nextSibling); }
 
-  // Version 13: the classes (and, from a Live Board before release 26, the names) are kept in memory only.
-  var typedSignIn = false;
-  function loadRoster() {
-    if (roster) return Promise.resolve(roster);
+  // Version 15: the classes only, kept in memory, with the classes whose lesson is live now (no guest button for them).
+  var liveCls = [];
+  function loadRoster(fresh) {
+    if (roster && !fresh) return Promise.resolve(roster);
     return api({ api: 'roster' }).then(function (r) {
       if (!r || !r.ok || !Array.isArray(r.classes)) throw new Error('bad reply');
-      typedSignIn = !!r.typed || !r.classes.some(function (c) { return c.names && c.names.length; });
-      roster = r.classes;
+      roster = r.classes.map(function (c) { return typeof c === 'string' ? { cls: c } : c; }).filter(function (c) { return c && c.cls; });
+      liveCls = Array.isArray(r.liveCls) ? r.liveCls.map(function (c) { return String(c).toUpperCase(); }) : [];
       return roster;
     }).catch(function (err) {
       var e = new Error('no class list'); e.kind = err && err.kind; throw e;
     });
   }
-  function onList(id) {
-    if (!roster || typedSignIn) return true;
-    return roster.some(function (c) { return c.cls === id.cls && (c.names || []).indexOf(id.name) >= 0; });
-  }
+  function classLive(c) { return !!c && liveCls.indexOf(String(c).toUpperCase()) >= 0; }
 
   function setDeckProfile(id) {
     if (nameBox.value === id.name && classBox.value === id.cls) return;
@@ -3902,6 +4093,7 @@ window.KIT=KIT;
     classBox.dispatchEvent(new Event('input', { bubbles: true }));
     saveBtn.click();
   }
+  var guest = false, guestCls = '', guestTimer = null;
   function showWho(id) {
     whoLine.innerHTML = '';
     if (id) {
@@ -3914,12 +4106,16 @@ window.KIT=KIT;
       rv.hidden = inLesson() || !stateKnown() || heldNow();
       rv.addEventListener('click', function (e) { if (e) e.preventDefault(); openRevise(); });
       whoLine.appendChild(rv);
+      var so = el('button', 'lbx-out', 'Not you? Sign out');
+      so.type = 'button';
+      so.addEventListener('click', function (e) { if (e) e.preventDefault(); askSignOut(); });
+      whoLine.appendChild(so);
       if (reviseWanted) { reviseWanted = false; setTimeout(openRevise, 700); }
     } else {
-      whoLine.appendChild(document.createTextNode('Your answers are not being saved yet.'));
+      whoLine.appendChild(document.createTextNode(guest ? 'You are looking at the lesson without signing in. Your answers are not saved.' : 'Your answers are not being saved yet.'));
       var go = el('button', '', 'Sign in');
       go.type = 'button';
-      go.addEventListener('click', function () { openGate(); });
+      go.addEventListener('click', function () { openGate('', { cls: guestCls }); });
       whoLine.appendChild(go);
     }
   }
@@ -3936,140 +4132,89 @@ window.KIT=KIT;
     return p;
   }
 
-  function openGate(msgText) {
+  /* Version 15: class, name and password (6 to 60 characters), checked together by Live Board. The guest button
+     shows only for a class whose lesson is not live now, so nobody in the lesson can slip past the sign-in. */
+  function openGate(msgText, pre) {
+    pre = pre || {};
     var p = panel();
+    overlay.setAttribute('data-lbx', 'gate');
     p.appendChild(el('h2', '', 'Who are you?'));
-    p.appendChild(el('p', '', 'Choose your class, then your name. Then type your own PIN.'));
-    var l1 = el('label', '', 'Class'), s1 = el('select'); l1.appendChild(s1); p.appendChild(l1);
-    var l2 = el('label', '', 'Name'), s2 = el('select'); l2.appendChild(s2); p.appendChild(l2);
-    var row = el('div', 'lbx-row'), go = el('button', 'lbx-go', 'This is me'); go.type = 'button'; go.disabled = true; row.appendChild(go); p.appendChild(row);
+    p.appendChild(el('p', '', 'Choose your class, type your name, then type your password.'));
+    var l1 = el('label', '', 'Class'), s1 = el('select'); s1.className = 'lbx-cls'; l1.appendChild(s1); p.appendChild(l1);
+    var l2 = el('label', '', 'Name'), nm = el('input', 'lbx-name');
+    nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = 'Your full name, as on the class list';
+    nm.setAttribute('autocapitalize', 'words'); nm.spellcheck = false;
+    if (pre.name) nm.value = pre.name;
+    l2.appendChild(nm); p.appendChild(l2);
+    var l3 = el('label', '', 'Password'), pw = el('input', 'lbx-pin lbx-pass');
+    pw.type = 'password'; pw.maxLength = 60; pw.autocomplete = 'current-password'; pw.spellcheck = false; pw.setAttribute('autocapitalize', 'none');
+    l3.appendChild(pw); p.appendChild(l3);
+    var row = el('div', 'lbx-row'), go = el('button', 'lbx-go', 'Sign in'); go.type = 'button'; go.disabled = true; row.appendChild(go); p.appendChild(row);
     var msg = el('p', 'lbx-msg', msgText || '');
     p.appendChild(msg);
-    // Only when the class list cannot load: look at the lesson now and choose a name later.
-    var skip = el('button', 'lbx-skip', 'Look at the lesson now and choose my name later'); skip.type = 'button';
-    skip.addEventListener('click', function () { closeOverlay(); showWho(null); });
-    skip.hidden = true;
+    var more = el('a', 'lbx-ms', 'First time, or forgot your password? Open learnwithmrcedric'); more.href = MS_URL; more.target = '_blank'; more.rel = 'noopener';
+    var links = el('div', 'lbx-links'); links.appendChild(more); p.appendChild(links);
+    var guestBtn = el('button', 'lbx-skip lbx-guest', 'Look at the lesson without signing in'); guestBtn.type = 'button'; guestBtn.hidden = true;
+    p.appendChild(guestBtn);
+    // Only when the class list cannot load: look at the lesson now and sign in later.
+    var skip = el('button', 'lbx-skip', 'Look at the lesson now and sign in later'); skip.type = 'button'; skip.hidden = true;
     p.appendChild(skip);
-    s1.disabled = true; s2.disabled = true;
+    s1.disabled = true;
     s1.appendChild(new Option('Loading the class list…', ''));
-    s2.appendChild(new Option('Choose your class first', ''));
-
-    function fill() {
+    var ready = function () {
+      go.disabled = !(s1.value && nm.value.trim() && pw.value.length >= 1);
+      guestBtn.hidden = !s1.value || classLive(s1.value);
+    };
+    var send = function () {
+      if (!(s1.value && nm.value.trim() && pw.value)) return;
+      if (pw.value.length < 6 || pw.value.length > 60) { msg.textContent = 'Your password has 6 to 60 characters.'; pw.focus(); return; }
+      go.disabled = true; msg.textContent = '';
+      api({ api: 'st', op: 'signin', cls: s1.value, name: nm.value.trim(), pin: pw.value }).then(function (x) {
+        if (!x || !x.ok || !x.st) { msg.textContent = (x && x.error) || 'That did not work. Try again.'; pw.value = ''; ready(); pw.focus(); return; }
+        lockIn({ cls: x.cls, name: x.name, st: x.st });
+      }).catch(function (err) { ready(); failNote(msg, err, 'Signing in'); });
+    };
+    s1.addEventListener('change', ready);
+    nm.addEventListener('input', ready);
+    nm.addEventListener('keydown', function (e) { if (e.key === 'Enter') pw.focus(); });
+    pw.addEventListener('input', ready);
+    pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+    go.addEventListener('click', send);
+    guestBtn.addEventListener('click', function () {
+      if (!s1.value || classLive(s1.value)) { ready(); return; }
+      guest = true; guestCls = s1.value;
+      closeOverlay(); setMode('revise'); showWho(null); watchGuest();
+    });
+    skip.addEventListener('click', function () { closeOverlay(); showWho(null); });
+    var fill = function () {
       s1.innerHTML = '';
       s1.appendChild(new Option('Choose your class', ''));
       roster.forEach(function (c) { s1.appendChild(new Option(c.cls, c.cls)); });
       s1.disabled = false;
-      if (typedSignIn) typedForm();
-    }
-    // Version 13: Live Board release 26 sends no names. The student types their own name and PIN, checked together.
-    function typedForm() {
-      p.querySelector('p').textContent = 'Choose your class, type your name, then your password.';
-      var nm = el('input', 'lbx-name'); nm.type = 'text'; nm.autocomplete = 'name'; nm.maxLength = 80; nm.placeholder = 'Your full name, as on the class list';
-      nm.setAttribute('autocapitalize', 'words'); nm.spellcheck = false;
-      l2.replaceChild(nm, s2);
-      var l3 = el('label', '', 'Password'), pin = el('input', 'lbx-pin lbx-pass'); pin.type = 'password'; pin.maxLength = 60; pin.autocomplete = 'current-password'; pin.spellcheck = false; pin.setAttribute('autocapitalize', 'none');
-      l3.appendChild(pin); p.insertBefore(l3, row);
-      var go2 = el('button', 'lbx-go', 'Sign in'); go2.type = 'button'; go2.disabled = true; row.replaceChild(go2, go); go = go2;
-      var more = el('a', 'lbx-ms', 'First time, or forgot your password? Open learnwithmrcedric'); more.href = MS_URL; more.target = '_blank'; more.rel = 'noopener';
-      var links = el('div', 'lbx-links'); links.appendChild(more); p.insertBefore(links, msg.nextSibling);
-      var ready = function () { go.disabled = !(s1.value && nm.value.trim() && pin.value.trim().length >= 1); };
-      var send = function () {
-        if (go.disabled) return;
-        go.disabled = true; msg.textContent = '';
-        api({ api: 'st', op: 'signin', cls: s1.value, name: nm.value.trim(), pin: pin.value }).then(function (x) {
-          if (!x || !x.ok || !x.st) { msg.textContent = (x && x.error) || 'That did not work. Try again.'; pin.value = ''; ready(); pin.focus(); return; }
-          lockIn({ cls: x.cls, name: x.name, st: x.st });
-        }).catch(function (err) { ready(); failNote(msg, err, 'Signing in'); });
-      };
-      s1.addEventListener('change', ready);
-      nm.addEventListener('input', ready);
-      nm.addEventListener('keydown', function (e) { if (e.key === 'Enter') pin.focus(); });
-      pin.addEventListener('input', ready);   // release 33: a password (an old 4-number PIN still works)
-      pin.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
-      go.addEventListener('click', send);
-      setTimeout(function () { (s1.value ? nm : s1).focus(); }, 50);
-    }
-    s1.addEventListener('change', function () {
-      s2.innerHTML = '';
-      var c = roster.filter(function (x) { return x.cls === s1.value; })[0];
-      if (!c) { s2.appendChild(new Option('Choose your class first', '')); s2.disabled = true; go.disabled = true; return; }
-      s2.appendChild(new Option('Choose your name', ''));
-      c.names.forEach(function (n) { s2.appendChild(new Option(n, n)); });
-      s2.disabled = false; go.disabled = true;
-    });
-    s2.addEventListener('change', function () { go.disabled = !s2.value; });
-    go.addEventListener('click', function () { confirmGate({ cls: s1.value, name: s2.value }); });
-
-    if (roster) fill();
-    else loadRoster().then(fill).catch(function (err) {
+      if (pre.cls && roster.some(function (c) { return c.cls === pre.cls; })) s1.value = pre.cls;
+      ready();
+      setTimeout(function () { try { (s1.value ? (nm.value ? pw : nm) : s1).focus(); } catch (e) {} }, 50);
+    };
+    loadRoster(true).then(fill).catch(function (err) {
       s1.innerHTML = ''; s1.appendChild(new Option('No class list', ''));
       failNote(msg, err, 'The class list');
       skip.hidden = false;
       var retry = el('button', 'lbx-go', 'Try again'); retry.type = 'button';
-      retry.addEventListener('click', function () { openGate(); });
+      retry.addEventListener('click', function () { openGate('', pre); });
       row.replaceChild(retry, go);
     });
   }
-
-  /* The student's own PIN. A student who has not set one up yet (or has forgotten it) does that in learnwithmrcedric.
-     legacy: the name was locked on this iPad before PINs, so only the teacher can choose another name. */
-  function confirmGate(id, legacy) {
-    var p = panel();
-    p.appendChild(el('h2', '', 'Type your PIN'));
-    p.appendChild(el('div', 'lbx-big', id.name + ', ' + id.cls));
-    var info = el('p', '', 'One moment…'); p.appendChild(info);
-    var body = el('div'); p.appendChild(body);
-    var msg = el('p', 'lbx-msg'); p.appendChild(msg);
-    var links = el('div', 'lbx-links'); p.appendChild(links);
-    var back = el('button', '', legacy ? 'Not you? Ask your teacher' : 'Go back'); back.type = 'button';
-    back.addEventListener('click', function () { if (legacy) askPinFor(function () { writeJ(ID_KEY, null); openGate(); }); else openGate(); });
-    links.appendChild(back);
-    var msLink = function (text) { var a = el('a', 'lbx-ms', text); a.href = MS_URL; a.target = '_blank'; a.rel = 'noopener'; return a; };
-    api({ api: 'st', op: 'start', cls: id.cls, name: id.name }).then(function (r) {
-      if (!overlay || !overlay.contains(p)) return;
-      if (r && r.ok === false && /Unknown request/.test(r.error || '')) { writeJ(OLD_KEY, Date.now()); lockIn({ cls: id.cls, name: id.name }); return; }
-      if (!r || !r.ok) { info.textContent = (r && r.error) || 'That did not work. Go back and try again.'; return; }
-      if (!r.set) {
-        info.textContent = 'You have not set up your PIN yet. Open learnwithmrcedric, set up your PIN, then open this lesson from learnwithmrcedric.';
-        body.appendChild(msLink('Open learnwithmrcedric'));
-        return;
-      }
-      info.textContent = 'Your own 4-digit PIN.';
-      var l = el('label', '', 'PIN'), inp = el('input', 'lbx-pin'); inp.type = 'password'; inp.inputMode = 'numeric'; inp.maxLength = 4; inp.autocomplete = 'off';
-      l.appendChild(inp); body.appendChild(l);
-      var row = el('div', 'lbx-row'), go = el('button', 'lbx-go', 'Sign in'); go.type = 'button'; row.appendChild(go); body.appendChild(row);
-      var forgot = el('a', '', 'Forgot your PIN? Open learnwithmrcedric'); forgot.href = MS_URL; forgot.target = '_blank'; forgot.rel = 'noopener';
-      links.appendChild(forgot);
-      if (r.locked) msg.textContent = 'Too many wrong tries. Wait 15 minutes, or ask your teacher.';
-      var send = function () {
-        var v = inp.value.replace(/\D/g, '');
-        if (v.length !== 4) { msg.textContent = 'Your PIN is 4 numbers.'; return; }
-        go.disabled = true; msg.textContent = '';
-        api({ api: 'st', op: 'login', cls: id.cls, name: id.name, pin: v }).then(function (x) {
-          go.disabled = false;
-          if (!x || !x.ok || !x.st) { msg.textContent = (x && x.error) || 'That did not work. Try again.'; inp.value = ''; inp.focus(); return; }
-          lockIn({ cls: x.cls, name: x.name, st: x.st });
-        }).catch(function (err) { go.disabled = false; failNote(msg, err, 'Signing in'); });
-      };
-      go.addEventListener('click', send);
-      inp.addEventListener('input', function () { inp.value = inp.value.replace(/\D/g, '').slice(0, 4); if (inp.value.length === 4) send(); });
-      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
-      setTimeout(function () { inp.focus(); }, 50);
-    }).catch(function (err) { if (overlay && overlay.contains(p)) { info.textContent = ''; failNote(msg, err, 'Signing in'); } });
+  /* A guest whose class lesson starts is asked to sign in (checked once a minute while the page is open). */
+  function watchGuest() {
+    clearInterval(guestTimer);
+    guestTimer = setInterval(function () {
+      if (!guest || document.hidden || overlay) return;
+      loadRoster(true).then(function () {
+        if (guest && classLive(guestCls)) openGate('Your class lesson has started. Sign in to take part.', { cls: guestCls });
+      }, function () {});
+    }, 60000);
   }
-  /* learnwithmrcedric opened the lesson for a different student from the one signed in here: only the teacher changes it. */
-  function otherName(id, handed) {
-    var p = panel();
-    p.appendChild(el('h2', '', 'Someone else is signed in'));
-    p.appendChild(el('p', '', 'The slides on this iPad are signed in as ' + id.name + ', ' + id.cls + '. Only your teacher can change the name.'));
-    var row = el('div', 'lbx-row');
-    var keep = el('button', '', 'Carry on as ' + id.name); keep.type = 'button';
-    var change = el('button', 'lbx-go', 'Teacher: change to ' + handed.name); change.type = 'button';
-    keep.addEventListener('click', function () { closeOverlay(); go(id); });
-    change.addEventListener('click', function () { askPinFor(function () { writeJ(ID_KEY, null); lockIn(handed); }); });
-    row.appendChild(keep); row.appendChild(change); p.appendChild(row);
-  }
-  /* The teacher signed this student out (Sign out or Reset PIN on the phone or in Classes): the iPad is free again. */
+  /* The teacher signed this student out (Sign out or Reset password on the phone or in the Hub): the iPad is free again. */
   function signedOutHere() {
     var me = readJ(ID_KEY);
     if (!me || presenting) return;
@@ -4078,9 +4223,9 @@ window.KIT=KIT;
     writeJ(OLD_KEY, null);
     setMode('wait');
     showWho(null);
-    openGate('You have been signed out. Sign in again with your PIN.');
+    openGate('You have been signed out. Sign in again with your password.', { cls: me.cls, name: me.name });
   }
-  /* The teacher's PIN, for something only the teacher may do on this iPad. */
+  /* The teacher's PIN, for the presenter on the teacher's own computer only. It is never asked on a student's iPad. */
   function askPinFor(done) {
     var p = panel();
     p.appendChild(el('h2', '', 'Teacher PIN'));
@@ -4095,53 +4240,60 @@ window.KIT=KIT;
         done(inp.value.trim());
       }).catch(function (err) { failNote(msg, err, 'The teacher PIN'); ok.disabled = false; });
     });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok.click(); });
     setTimeout(function () { inp.focus(); }, 50);
   }
 
   function lockIn(id) {
     id = { cls: id.cls, name: id.name, st: id.st || '', at: new Date().toISOString() };
+    guest = false; clearInterval(guestTimer);
     writeJ(ID_KEY, id);
     closeOverlay();
     start();
   }
 
-  /* Changing the name: the teacher types the PIN, then the deck starts a fresh record
-     (its own Change student, which keeps the old record as an archive on the iPad). */
-  function askPin() {
+  /* Version 15: "Not you? Sign out". The student signs out alone, after one confirm. Answers still waiting to send
+     must reach the teacher first. Then the deck starts a fresh record (its own Change student). */
+  function askSignOut() {
     var p = panel();
-    p.appendChild(el('h2', '', 'Change name'));
-    p.appendChild(el('p', '', 'Ask your teacher to type the PIN.'));
-    var l = el('label', '', 'Teacher PIN'), inp = el('input'); inp.type = 'password'; inp.inputMode = 'numeric'; inp.autocomplete = 'off'; l.appendChild(inp); p.appendChild(l);
+    p.appendChild(el('h2', '', 'Sign out?'));
+    p.appendChild(el('p', '', 'You will need your password to sign in again.'));
     var row = el('div', 'lbx-row');
     var cancel = el('button', '', 'Cancel'); cancel.type = 'button';
-    var ok = el('button', 'lbx-go', 'Change name'); ok.type = 'button';
+    var ok = el('button', 'lbx-go', 'Sign out'); ok.type = 'button';
     row.appendChild(cancel); row.appendChild(ok); p.appendChild(row);
     var msg = el('p', 'lbx-msg'); p.appendChild(msg);
     cancel.addEventListener('click', closeOverlay);
     ok.addEventListener('click', function () {
-      if (!inp.value.trim()) return;
-      ok.disabled = true; msg.textContent = '';
-      api({ api: 'unlock', pin: inp.value.trim() }).then(function (r) {
-        if (!r || r.ok !== true) { msg.textContent = 'That PIN is not right.'; ok.disabled = false; return; }
-        var keep = readJ(ID_KEY);
-        writeJ(ID_KEY, null);
-        if (deckChange && nameBox.value) {
-          var done = deckChange.call(changeBtn);
-          if (done === false) {
-            writeJ(ID_KEY, keep);
-            msg.textContent = 'This iPad still has answers that have not reached your teacher. Connect to the internet, wait a moment, then try again.';
-            ok.disabled = false;
-            return;
-          }
-        } else {
-          closeOverlay(); openGate();
-        }
-      }).catch(function (err) { failNote(msg, err, 'Changing the name'); ok.disabled = false; });
+      if (pendingCount()) {
+        msg.textContent = 'This iPad still has answers that have not reached your teacher. Connect to the internet, wait a moment, then try again.';
+        var S = window.ScienceSync;
+        if (S && typeof S.sync === 'function') Promise.resolve().then(function () { return S.sync(); }).catch(function () {});
+        outAt = 0; flushOutbox();
+        return;
+      }
+      signOutNow(msg);
     });
-    setTimeout(function () { inp.focus(); }, 50);
+  }
+  function signOutNow(msg) {
+    var me = readJ(ID_KEY);
+    if (me && me.st) api({ api: 'st', op: 'signout', st: me.st }).catch(function () { /* the ticket runs out by itself */ });
+    var keep = me;
+    writeJ(ID_KEY, null); writeJ(LIVE_KEY, null); writeJ(OLD_KEY, null);
+    writeJ(FIRST_KEY, null); writeJ(PFIX_KEY, null); writeJ(DWELL_KEY, null); writeJ(GAME_KEY, null);
+    clearDrafts();
+    if (deckChange && nameBox.value) {
+      var done = deckChange.call(changeBtn);   // the deck starts a fresh record and reloads itself
+      if (done === false) {
+        writeJ(ID_KEY, keep);
+        if (msg) msg.textContent = 'This iPad still has answers that have not reached your teacher. Connect to the internet, wait a moment, then try again.';
+      }
+      return;
+    }
+    closeOverlay(); setMode('wait'); showWho(null); openGate('You are signed out.');
   }
   if (changeBtn) {
-    changeBtn.onclick = function (e) { if (e) e.preventDefault(); askPin(); return false; };
+    changeBtn.onclick = function (e) { if (e) e.preventDefault(); askSignOut(); return false; };
   }
 
   /* A name handed over from the Live Board home page (#lb=CLASS|Name), and the question
@@ -4171,17 +4323,24 @@ window.KIT=KIT;
   (function () {
     var m = location.hash.match(/(?:^#|&)lb=([^&]+)/), q = location.hash.match(/(?:^#|&)q=([^&]+)/);
     if (q) { try { handedQ = decodeURIComponent(q[1]); } catch (e) { handedQ = ''; } }
-    if (m) {
-      var parts = []; try { parts = decodeURIComponent(m[1]).split('|'); } catch (e) { parts = []; }
-      if (parts.length === 2 && parts[0] && parts[1]) handedId = { cls: parts[0], name: parts[1] };
-      var stm = location.hash.match(/(?:^#|&)st=([^&]+)/);
-      if (handedId && stm) { try { handedId.st = decodeURIComponent(stm[1]); } catch (e) { handedId.st = ''; } }
+    // Version 15: the app hands over its ticket (#lb=<Live Board link>&st=<ticket>). An older link carries
+    // #lb=CLASS|Name&st=<ticket>. Either way the ticket is checked with Live Board, which names the student.
+    var stm = location.hash.match(/(?:^#|&)st=([^&]+)/);
+    if (m || stm) {
+      var parts = []; try { parts = m ? decodeURIComponent(m[1]).split('|') : []; } catch (e) { parts = []; }
+      if (parts.length === 2 && parts[0] && parts[1] && !/^https?:/i.test(parts[0])) handedId = { cls: parts[0], name: parts[1] };
+      if (stm) { var stv = ''; try { stv = decodeURIComponent(stm[1]); } catch (e) { stv = ''; } if (stv) { handedId = handedId || { cls: '', name: '' }; handedId.st = stv; } }
     }
     if (m || q || reviseWanted || /(?:^#|&)st=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search + (presentMode ? '#present' : '')); } catch (e) {} }
   })();
   function fromLink() { var h = handedId; handedId = null; return h; }
 
-  function slideList() { return Array.prototype.slice.call(document.querySelectorAll('.slide')); }
+  /* Version 15: slides parked out of the lesson (#l-held) and slides nested in another slide are not slides. */
+  function slideList() {
+    return Array.prototype.slice.call(document.querySelectorAll('.slide')).filter(function (s) {
+      return !(s.closest && s.closest('#l-held')) && !(s.parentElement && s.parentElement.closest && s.parentElement.closest('.slide'));
+    });
+  }
   function slideCount() { return slideList().length; }
   function currentSlide() {
     var all = slideList();
@@ -4204,6 +4363,135 @@ window.KIT=KIT;
     for (var j = 0; j < all.length; j++) if (!all[j].hidden) return j + 1;
     return 0;
   }
+
+  /* ---------------- steps inside a slide (version 15) ----------------
+     A staged card ([data-step], moved by its data-rl-go buttons), a story told in beats (.l-story .l-beat), a pager
+     of questions (.question-pager) or the check's pages (.quiz-nav). Steps count from 0. */
+  function getStep(sl) {
+    if (!sl) return 0;
+    var st = sl.querySelector('[data-step]');
+    if (st) return Math.max(0, Number(st.getAttribute('data-step')) || 0);
+    if (sl.classList.contains('l-story')) {
+      var beats = sl.querySelectorAll('.l-beat');
+      for (var i = 0; i < beats.length; i++) if (!beats[i].hidden) return i;
+      return 0;
+    }
+    var nav = sl.querySelector('.question-pager .pager-nav') || sl.querySelector('.quiz-nav');
+    if (nav) {
+      var bs = nav.querySelectorAll('button');
+      for (var k = 0; k < bs.length; k++) if (bs[k].classList.contains('selected')) return k;
+    }
+    return 0;
+  }
+  /* How many steps the slide has (0 when it has none), for the phone to walk them. */
+  function stepCount(sl) {
+    if (!sl) return 0;
+    var st = sl.querySelector('[data-step]');
+    if (st) { var stg = st.querySelectorAll('.rl-stages i'); if (stg.length) return stg.length; var gs = st.querySelectorAll('[data-rl-go]'); var mx = 0; Array.prototype.forEach.call(gs, function (b) { mx = Math.max(mx, Number(b.getAttribute('data-rl-go')) + 1); }); return Math.max(mx, getStep(sl) + 1); }
+    if (sl.classList.contains('l-story')) return sl.querySelectorAll('.l-beat').length;
+    var nav = sl.querySelector('.question-pager .pager-nav') || sl.querySelector('.quiz-nav');
+    return nav ? nav.querySelectorAll('button').length : 0;
+  }
+  function slideTitle(sl) {
+    var h = sl && sl.querySelector('h1, h2');
+    return h ? h.textContent.replace(/\s+/g, ' ').trim().slice(0, 120) : '';
+  }
+  function setStep(sl, n) {
+    n = Math.max(0, Math.round(Number(n) || 0));
+    if (!sl || getStep(sl) === n) return false;
+    var st = sl.querySelector('[data-step]');
+    if (st) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.hidden = true; b.setAttribute('data-rl-go', String(n));
+      st.appendChild(b); b.click(); if (b.parentNode) b.remove();
+      return true;
+    }
+    if (sl.classList.contains('l-story')) {
+      var beats = sl.querySelectorAll('.l-beat'), want = Math.min(n, beats.length - 1), tries = beats.length;
+      while (getStep(sl) !== want && tries-- > 0) {
+        var t = document.createElement('button'); t.type = 'button'; t.hidden = true;
+        t.className = getStep(sl) < want ? 'next' : 'prev';
+        sl.appendChild(t); t.click(); t.remove();
+      }
+      return true;
+    }
+    var nav = sl.querySelector('.question-pager .pager-nav') || sl.querySelector('.quiz-nav');
+    if (nav) { var bs = nav.querySelectorAll('button'); if (bs[n]) { bs[n].click(); return true; } }
+    return false;
+  }
+
+  /* ---------------- drafts (version 15) ----------------
+     What a student types in a slide is kept on the iPad as they type, so a jump by the teacher (or the deck
+     drawing a card again) never loses it. A draft goes back into its box when the box shows again empty, and it
+     is dropped once the answer is sent. */
+  var DRAFT_KEY = 'liveboard.drafts:' + (cfg.topicId || ''), drafts = readJ(DRAFT_KEY) || {}, draftTimer = null;
+  if (typeof drafts !== 'object' || Array.isArray(drafts)) drafts = {};
+  function draftOf(f) {
+    if (!f || !f.tagName || presenting) return null;
+    var tag = f.tagName;
+    if (tag !== 'TEXTAREA' && !(tag === 'INPUT' && /^(text|number|search|tel|)$/i.test(f.getAttribute('type') || ''))) return null;
+    if (f.closest('.lbx, .lbq, .lbdock, .sq, .lbres, .lbpres, .lbstrip')) return null;
+    var sl = f.closest('.slide');
+    if (!sl || !sl.id || slideList().indexOf(sl) < 0) return null;
+    var h = f.closest('[data-question]'), task = h ? h.getAttribute('data-question') : '';
+    if (!task) { h = f.closest('[data-task]'); task = h ? h.getAttribute('data-task') : ''; }
+    if (!task) { h = f.closest('[data-cur-task]'); task = h ? h.getAttribute('data-cur-task') : ''; }
+    var field = f.getAttribute('data-stg') || f.getAttribute('data-input') || f.getAttribute('name') || '';
+    if (!field) {
+      var box = h || sl, all = box.querySelectorAll('textarea, input');
+      field = 'f' + Array.prototype.indexOf.call(all, f);
+    }
+    return { key: sl.id + '|' + (task || '') + '|' + field, task: task || '', slide: sl };
+  }
+  function saveDraftsNow() { clearTimeout(draftTimer); draftTimer = null; writeJ(DRAFT_KEY, Object.keys(drafts).length ? drafts : null); }
+  function dropDrafts(task) {
+    if (!task) return;
+    var gone = false;
+    Object.keys(drafts).forEach(function (k) { if (drafts[k] && drafts[k].t === task) { delete drafts[k]; gone = true; } });
+    if (gone) saveDraftsNow();
+  }
+  function clearDrafts() { drafts = {}; saveDraftsNow(); }
+  document.addEventListener('input', function (e) {
+    var d = draftOf(e.target);
+    if (!d) return;
+    var v = String(e.target.value || '');
+    if (v.trim()) drafts[d.key] = { v: v, t: d.task, at: Date.now() }; else delete drafts[d.key];
+    clearTimeout(draftTimer); draftTimer = setTimeout(saveDraftsNow, 300);
+  }, true);
+  /* A card on the slide that holds typed work not sent yet. */
+  function hasDraft(sl) {
+    if (!sl) return false;
+    var fs = sl.querySelectorAll('textarea, input');
+    for (var i = 0; i < fs.length; i++) {
+      var f = fs[i];
+      if (!f.value || f.disabled || f.offsetParent === null) continue;
+      var d = draftOf(f);
+      if (d && drafts[d.key] && drafts[d.key].v === f.value) return true;
+    }
+    return false;
+  }
+  var restoring = false;
+  function restoreDrafts() {
+    if (restoring || presenting) return;
+    var sl = currentSlide();
+    if (!sl) return;
+    restoring = true;
+    try {
+      Array.prototype.forEach.call(sl.querySelectorAll('textarea, input'), function (f) {
+        if (f.value || f.disabled || f.readOnly) return;
+        var d = draftOf(f);
+        if (!d || !drafts[d.key]) return;
+        f.value = drafts[d.key].v;
+        f.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    } finally { restoring = false; }
+  }
+  var restorePend = false;
+  if (window.MutationObserver) new MutationObserver(function () {
+    if (restorePend) return;
+    restorePend = true;
+    (window.requestAnimationFrame || setTimeout)(function () { restorePend = false; restoreDrafts(); });
+  }).observe(document.body || document.documentElement, { childList: true, subtree: true });
 
   /* ---------------- chapter check result ---------------- */
   function showCheck(c) {
@@ -4372,12 +4660,161 @@ window.KIT=KIT;
     });
     document.body.appendChild(askBar);
   }
+  /* ---------------- quick check dock (version 15, Ruling A4) ----------------
+     The check opens over the lower 35% of the deck, the same for every check type, so the slide it is about stays
+     in view. One tap answers. The answer can be changed until the teacher closes the check. Nothing about how the
+     class answered shows while it is open: the student's own result and the counts come only after it closes. */
+  var dock = null, dockKey = '', dockMine = null, dockSending = false, dockShut = '', dockDrawn = '', dockErr = '', dockQ = null;
+  function dockOn() { return !!dock; }
+  function quickOptions(q) {
+    if (Array.isArray(q.options) && q.options.length) return q.options.map(String);
+    if (q.type === 'abcd') return ['A', 'B', 'C', 'D'];
+    if (q.type === 'tf') return ['True', 'False'];
+    if (q.type === 'gotit') return ['Got it', 'Nearly', 'Lost'];
+    if (q.type === 'slide') { var t = byId[q.taskId]; if (t && t.kind === 'choice') return (t.options || []).map(String); }
+    return [];
+  }
+  function closeDock() {
+    if (dock) { dock.remove(); dock = null; }
+    dockDrawn = '';
+    document.body.classList.remove('lb-docked');
+  }
+  function showQuick(q) {
+    if (presenting) return;
+    if (!q || !q.id) { dockQ = null; closeDock(); return; }
+    var key = q.id + ':' + (q.round || 1);
+    if (key !== dockKey) { dockKey = key; dockMine = null; dockSending = false; dockErr = ''; }
+    if (q.mine != null && !dockSending) dockMine = String(q.mine);
+    dockQ = q;
+    if (!q.open && dockShut === key) { closeDock(); return; }
+    var view = JSON.stringify([key, !!q.open, dockMine, dockSending, dockErr, q.result || null, q.prompt || '']);
+    if (view === dockDrawn && dock) return;
+    // Never redraw under a student typing a word.
+    var ae = document.activeElement;
+    if (dock && q.open && dockDrawn && ae && dock.contains(ae) && ae.tagName === 'INPUT' && !dockSending && JSON.parse(dockDrawn)[1] === true) return;
+    dockDrawn = view;
+    drawDock(q, key);
+  }
+  function drawDock(q, key) {
+    if (!dock) {
+      dock = el('div', 'lbdock');
+      dock.setAttribute('role', 'dialog');
+      dock.setAttribute('aria-label', 'Quick check');
+      document.body.appendChild(dock);
+      document.body.classList.add('lb-docked');
+    }
+    dock.innerHTML = '';
+    var inner = el('div', 'lbdock-in');
+    dock.appendChild(inner);
+    var head = el('div', 'lbdock-head');
+    head.appendChild(el('span', 'lbdock-tag' + (q.open ? '' : ' shut'), q.open ? 'Quick check' : 'Quick check closed'));
+    if ((q.round || 1) > 1) head.appendChild(el('span', 'lbdock-round', 'Round ' + q.round));
+    inner.appendChild(head);
+    var t = q.type === 'slide' ? byId[q.taskId] : null;
+    var prompt = q.prompt || (t ? t.question : '') ||
+      (q.type === 'gotit' ? 'How well do you understand this slide?' : q.type === 'word' ? 'Look at the board. Type one word as your answer.' : 'Look at the board, then answer here.');
+    inner.appendChild(el('div', 'lbdock-q', prompt));
+    var opts = quickOptions(q);
+    if (q.open) {
+      if (opts.length) {
+        var grid = el('div', 'lbdock-opts' + (opts.length > 4 ? ' many' : ''));
+        opts.forEach(function (o, i) {
+          var b = el('button', 'lbdock-opt' + (dockMine === o ? ' on' : ''));
+          b.type = 'button';
+          b.setAttribute('aria-pressed', dockMine === o ? 'true' : 'false');
+          if (q.type === 'slide' && opts.length > 1) b.appendChild(el('b', '', LETTERS.charAt(i)));
+          b.appendChild(el('span', '', o));
+          b.disabled = dockSending;
+          b.addEventListener('click', function () { sendQuick(o); });
+          grid.appendChild(b);
+        });
+        inner.appendChild(grid);
+        inner.appendChild(el('p', 'lbdock-note' + (dockErr ? ' bad' : ''), dockErr || (dockSending ? 'Sending your answer.' : dockMine != null
+          ? 'Your answer is ' + dockMine + '. You can change it until your teacher closes the check.'
+          : 'Tap your answer. You can change it until your teacher closes the check.')));
+      } else {
+        var row = el('div', 'lbdock-entry'), inp = el('input');
+        inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false;
+        inp.maxLength = q.type === 'word' ? 40 : 200;
+        inp.placeholder = q.type === 'word' ? 'One word' : 'Your answer';
+        inp.setAttribute('aria-label', 'Your answer');
+        if (t && t.kind === 'number') inp.inputMode = 'decimal';
+        inp.value = dockMine || '';
+        var sb = el('button', 'lbdock-send', dockMine != null ? 'Send again' : 'Send'); sb.type = 'button';
+        sb.disabled = dockSending;
+        var go = function () { var v = inp.value.trim(); if (v) sendQuick(v); };
+        sb.addEventListener('click', go);
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+        row.appendChild(inp);
+        if (t && t.kind === 'number' && t.unit) row.appendChild(el('b', '', t.unit));
+        row.appendChild(sb);
+        inner.appendChild(row);
+        inner.appendChild(el('p', 'lbdock-note' + (dockErr ? ' bad' : ''), dockErr || (dockSending ? 'Sending your answer.' : dockMine != null
+          ? 'You sent ' + dockMine + '. You can send a different answer until your teacher closes the check.'
+          : 'Type your answer, then tap Send.')));
+      }
+      return;
+    }
+    // Closed: the student's own result first, then the counts (never names).
+    var res = q.result || null, line;
+    var said = q.type === 'gotit' ? 'You chose ' : 'You answered ';
+    if (dockMine == null) line = 'You did not answer this check.' + (res && res.correct ? ' The answer is ' + res.correct + '.' : '');
+    else if (res && res.right === true) line = said + dockMine + '. That is right.';
+    else if (res && res.right === false) line = said + dockMine + '.' + (res.correct ? ' The answer is ' + res.correct + '.' : '');
+    else line = said + dockMine + '.';
+    inner.appendChild(el('p', 'lbdock-mine' + (res && res.right === true ? ' ok' : res && res.right === false ? ' no' : ''), line));
+    if (res && res.counts && typeof res.counts === 'object') {
+      var keys = opts.length ? opts.slice() : Object.keys(res.counts).sort(function (a, b) { return (res.counts[b] || 0) - (res.counts[a] || 0); }).slice(0, 6);
+      var total = Number(res.total) || keys.reduce(function (n, k) { return n + (Number(res.counts[k]) || 0); }, 0);
+      var most = 1; keys.forEach(function (k) { most = Math.max(most, Number(res.counts[k]) || 0); });
+      var bars = el('div', 'lbdock-bars');
+      keys.forEach(function (k) {
+        var n = Number(res.counts[k]) || 0, rowb = el('div', 'lbdock-bar' + (res.correct != null && String(res.correct) === k ? ' ok' : '') + (dockMine === k ? ' me' : ''));
+        rowb.appendChild(el('span', 'l', k));
+        var tr = el('span', 't'), fill = el('i'); fill.style.width = Math.round(100 * n / most) + '%'; tr.appendChild(fill); rowb.appendChild(tr);
+        rowb.appendChild(el('b', '', String(n)));
+        bars.appendChild(rowb);
+      });
+      inner.appendChild(bars);
+      if (total) inner.appendChild(el('p', 'lbdock-note', total + (total === 1 ? ' answer' : ' answers') + ' from the class.'));
+    }
+    var okb = el('button', 'lbdock-send', 'OK'); okb.type = 'button';
+    okb.addEventListener('click', function () { dockShut = key; closeDock(); });
+    inner.appendChild(okb);
+  }
+  function sendQuick(answer) {
+    var q = dockQ;
+    if (!q || !q.open || dockSending) return;
+    var key = q.id + ':' + (q.round || 1), was = dockMine;
+    dockMine = String(answer); dockSending = true; dockErr = '';
+    showQuick(q);
+    api({ api: 'qa', st: stNow(), qid: q.id, round: q.round || 1, answer: String(answer) }).then(function (r) {
+      if (dockKey !== key) return;
+      dockSending = false;
+      if (r && r.ok) { dockMine = r.mine != null ? String(r.mine) : String(answer); q.mine = dockMine; }
+      else if (r && r.closed) { q.open = false; dockMine = was; clearTimeout(quickTimer); quickTimer = setTimeout(checkAsk, 300); }
+      else if (r && r.signedOut) { signedOutHere(); return; }
+      else { dockMine = was; dockErr = (r && r.error) || 'That did not send. Tap your answer again.'; }
+      showQuick(q);
+    }, function () {
+      if (dockKey !== key) return;
+      dockSending = false; dockMine = was;
+      dockErr = 'That did not send. Check the wifi, then tap your answer again.';
+      showQuick(q);
+    });
+  }
   var ctl = null, ctlKnown = false, fails = 0, followedAt = 0, readSecs = 15;
-  function pendingCount() { try { return window.ScienceSync && typeof window.ScienceSync.pending === 'function' ? window.ScienceSync.pending().length : 0; } catch (e) { return 0; } }
+  /* Answers not yet saved by Live Board: the deck's own queue and the bridge's outbox. */
+  function pendingCount() {
+    var n = 0;
+    try { n = window.ScienceSync && typeof window.ScienceSync.pending === 'function' ? window.ScienceSync.pending().length : 0; } catch (e) { n = 0; }
+    return n + outboxCount();
+  }
+  var lessonMode = '';
   function checkAsk() {
     clearTimeout(askTimer); clearTimeout(quickTimer);
     askTimer = setTimeout(checkAsk, 8000 + Math.floor(Math.random() * 4000));   // replaced by Live Board's own timing below
-    if (document.hidden) return;
+    if (document.hidden) { clearTimeout(askTimer); return; }   // never while hidden: the check runs again when the page shows
     // One check at a time, so answers never arrive out of order (a check out for 10 s is given up).
     if (checkBusy && Date.now() - checkBusy < 10000) { checkAgain = true; return; }
     checkBusy = Date.now(); checkAgain = false;
@@ -4392,13 +4829,17 @@ window.KIT=KIT;
     var me = readJ(ID_KEY), cur = currentSlide();
     var rd = readIds().map(slideNo).filter(Boolean).join(',');
     api({ api: 'live', topicId: cfg.topicId, who: me && me.cls ? { cls: me.cls, name: me.name } : null, st: me && me.st ? me.st : '', slide: slideNow(), total: slideCount(),
-      dev: DEV, v: VERSION, on: Math.round((Date.now() - curSince) / 1000), rd: rd, pend: pendingCount(), sid: cur ? cur.id : '' }).then(function (r) {
+      dev: DEV, v: VERSION, on: Math.round((Date.now() - curSince) / 1000), rd: rd, pend: pendingCount(), sid: cur ? cur.id : '', step: getStep(cur) }).then(function (r) {
       if (!checkDone()) return;   // an older check, answered after a newer one
       fails = 0; offlineNote();
-      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, pollSecs(r) * 1000 * (0.9 + Math.random() * 0.2)); }
+      if (r && r.poll) { clearTimeout(askTimer); askTimer = setTimeout(checkAsk, pollSecs(r) * 1000 * (0.85 + Math.random() * 0.3)); }
       if (r && r.readSecs) readSecs = r.readSecs;
       if (r && r.reset) { resetHere(); return; }
       if (r && r.signedOut) { signedOutHere(); return; }
+      var wasLive = lessonLive;
+      lessonLive = !!(r && r.live);
+      lessonMode = r && r.mode ? String(r.mode) : '';
+      if (lessonLive && !wasLive && outboxCount()) { heldTry = 0; setTimeout(flushOutbox, 300 + Math.random() * 2500); }   // answers held before Start go now
       if (r && r.bv && r.bv > VERSION) reloadForNewer();
       if (r && r.ok && r.ctl && r.live === undefined && me && !me.st) setMode('live');   // Live Board not updated yet
       if (r && r.who && me && me.st) {
@@ -4409,6 +4850,7 @@ window.KIT=KIT;
       ctlKnown = true;
       applyLook(); enforce();
       try { sqStudent(r && r.ok && r.live ? r.game : null); } catch (e) { /* the slides carry on */ }
+      try { showQuick(r && r.ok && r.live && me && me.st ? r.quick || null : null); } catch (e) { /* the slides carry on */ }
       if (!mineAsked && me && me.cls) askMine(me);
       var a = r && r.ok && r.ask && byId[r.ask.taskId] ? r.ask : null;
       if (handedQ) {   // opened from learnwithmrcedric: show the asked question, or go to the slide if it is no longer asked
@@ -4423,14 +4865,20 @@ window.KIT=KIT;
       if (readJ(DISMISS_KEY) === askKey(a)) return;
       if (a.ends && a.ends < Date.now()) return;
       showAsk(a, !!a.quiet);
-    }).catch(function () { if (!checkDone()) return; fails++; offlineNote(); });
+    }).catch(function () {
+      if (!checkDone()) return;
+      fails++; offlineNote();
+      // Errors back off, with jitter, up to 30 seconds.
+      clearTimeout(askTimer);
+      askTimer = setTimeout(checkAsk, Math.min(30000, 2000 * Math.pow(2, Math.min(fails, 5))) * (0.85 + Math.random() * 0.3));
+    });
   }
-  /* How long until the next check. Live Board says 14 seconds (6 while it is asking or leading). While the
-     class is in a lesson (a lesson started for the class, the teacher presenting, Follow me, Hold answers, Pause,
-     or a question asked) the iPad checks every 3 seconds, so the teacher's slide, Pause and Follow reach it in a
-     few seconds, and the phone sees where it is. Outside a lesson it keeps to Live Board's slower pace. */
+  /* How long until the next check. Release 34 sets it: 4 s in a live lesson, 2 s while a quick check waits for this
+     student's answer or just after a teacher command, 14 s outside a lesson. An older Live Board says 14 (6 while it
+     is asking or leading), and then the iPad checks every 3 seconds in a lesson, as version 14 did. */
   var FAST_SECS = 3, lastCheckAt = 0, quickTimer = null, checkBusy = 0, checkAgain = false;
   function pollSecs(r) {
+    if (r.mode !== undefined || r.quick !== undefined) return Math.max(1, Number(r.poll) || 4);
     var c = r.ctl || {};
     var lesson = !!(r.ask || r.live || c.pause || c.follow || c.hold || c.lead);
     return lesson ? Math.min(r.poll, FAST_SECS) : r.poll;
@@ -4464,7 +4912,7 @@ window.KIT=KIT;
   }
 
   /* ---------------- lesson control ---------------- */
-  var block = null, blockKey = '';
+  var block = null, blockKey = '', stepFollowed = '';
   function isCheckSlide(sl) {
     if (sl.getAttribute('data-kind') === 'assessment') return true;
     var t = checkIds.length ? byId[checkIds[0]] : null;
@@ -4490,7 +4938,7 @@ window.KIT=KIT;
       btn('Back to slide ' + b.limit, function () { goSlide(slideList()[b.limit - 1].id); }, 'go');
       if (summaryId) btn('My checklist', function () { goSlide(summaryId); });
     } else if (b.kind === 'check') {
-      inner.appendChild(el('h2', '', 'The chapter check is not open yet'));
+      inner.appendChild(el('h2', '', 'The ' + CHECK_NAME + ' is not open yet'));
       inner.appendChild(el('p', '', 'Your teacher will open it when the class is ready.'));
       btn('Go back', function () { var n = b.n - 1; if (n >= 1) goSlide(slideList()[n - 1].id); }, 'go');
     } else if (b.kind === 'together') {
@@ -4515,7 +4963,17 @@ window.KIT=KIT;
     var lead = ctl.lead && ctl.lead.id ? ctl.lead : null;
     if (ctl.follow && lead && lead.at > followedAt) {
       followedAt = lead.at;
-      if (lead.id !== sl.id && document.getElementById(lead.id)) { setBlock(null); aheadNote(0); goSlide(lead.id); return; }
+      // Version 15: drafts are kept before the jump, so nothing typed is lost.
+      if (lead.id !== sl.id && document.getElementById(lead.id)) { saveDraftsNow(); setBlock(null); aheadNote(0); goSlide(lead.id); return; }
+    }
+    // Version 15: Together moves the step too. A card holding a draft is never drawn again by a jump: the step
+    // waits until the answer is sent (or the box is emptied), and the student can always move on by themselves.
+    if (ctl.follow && lead && lead.step != null && lead.id === sl.id) {
+      var sk = lead.id + '|' + lead.at + '|' + lead.step + '|' + (lead.sat || '');
+      if (sk !== stepFollowed && !hasDraft(sl)) {
+        stepFollowed = sk;
+        if (getStep(sl) !== Number(lead.step)) { saveDraftsNow(); setStep(sl, lead.step); }
+      }
     }
     var limit = Number(ctl.to) || 0, byLead = false;
     if (ctl.follow && lead && lead.n && (!limit || lead.n < limit)) { limit = lead.n; byLead = true; }
@@ -4589,9 +5047,15 @@ window.KIT=KIT;
       Promise.resolve().then(function () { return S.sync(); }).catch(function () {});
     }
   }
+  var curStep = 0;
   function seeSlide() {
     var sl = currentSlide(), id = sl ? sl.id : '';
-    if (id !== curId) { curId = id; curSince = Date.now(); if (id) onSlideChange(id); }
+    if (id !== curId) { curId = id; curSince = Date.now(); curStep = getStep(sl); if (id) onSlideChange(id); }
+    else if (presenting && sl) {
+      // Version 15: the presenter's step goes to Live Board as well, so Together moves the class's step.
+      var stp = getStep(sl);
+      if (stp !== curStep) { curStep = stp; sendLead(); }
+    }
     return id;
   }
   /* A key, a tap or a click may change the slide: look straight away (and once more after the deck's move), so the
@@ -4655,7 +5119,8 @@ window.KIT=KIT;
 
   /* ---------------- a newer copy on the site ---------------- */
   function reloadForNewer() {
-    if (presenting || presentEarly || overlay || pendingCount()) return;
+    // Version 15: never while the class's lesson is live, never with answers waiting, never with typed drafts.
+    if (presenting || presentEarly || overlay || pendingCount() || lessonLive || inLesson() || mode === 'live' || dockOn() || hasDraft(currentSlide())) return;
     var last = 0;
     try { last = Number(sessionStorage.getItem('liveboard.reloadAt')) || 0; } catch (e) { return; }
     if (Date.now() - last < 30 * 60000) return;   // the site may still serve the old copy for a few minutes
@@ -4881,8 +5346,10 @@ window.KIT=KIT;
     sendLead();
     clearInterval(leadTimer); leadTimer = setInterval(sendLead, presentPj ? 5000 : 12000);
     resultsButton(true);
+    presLesson = null; presQuick = null; presActive = null; phoneLive = false; pgoSig = '';
+    drawStrip();
   }
-  function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); resultsButton(false); }
+  function showOnly() { presCls = ''; clearInterval(leadTimer); drawPresLine(); resultsButton(false); clearTimeout(pgoTimer); phoneLive = false; drawStrip(); }
   /* Show answers: how the class answered the question on the slide being shown, full size for the projector. No
      names. The whole question, then the choices as bars, or the class's written answers as a wall of cards. The right
      answer shows only when the teacher asks for it. It follows the slide, and asks again every 3 seconds. */
@@ -5068,13 +5535,22 @@ window.KIT=KIT;
     var sl = currentSlide();
     if (!sl) return;
     leadBusy = Date.now(); leadAgain = false;
-    var body = { api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1 };
+    // Version 15: the step inside the slide and the slide's kind go too (Together moves the step, and the kind
+    // sets the lesson's default mode).
+    var body = { api: 'lead', pin: presPin, topicId: cfg.topicId, cls: presCls, slide: sl.id, n: slideList().indexOf(sl) + 1,
+      step: getStep(sl), steps: stepCount(sl), kind: sl.getAttribute('data-kind') || '', total: slideCount(), title: slideTitle(sl) };
+    curStep = body.step;
     if (presentPj) body.pj = presentPj;
     var mine = leadBusy;
     var done = function () { if (leadBusy !== mine) return; leadBusy = 0; if (leadAgain) sendLead(); };
     api(body).then(function (r) {
       if (r && r.ok === false && /PIN|sign-in|paired/i.test(r.error || '')) presAuthLost();
-      if (r && r.go && presentPj) goNext(r.go);
+      if (r && r.go && presentPj && typeof r.go === 'string') goNext(r.go);
+      if (r && r.ok !== false) {
+        takeLesson(r);
+        // No word about a phone from this Live Board: ask the phone channel itself now and then.
+        if (r.phone === undefined && !phoneLive && Date.now() - lastProbe > 12000) { lastProbe = Date.now(); phoneLive = true; pgoLoop(); }
+      }
       done();
     }, done);
   }
@@ -5090,6 +5566,326 @@ window.KIT=KIT;
     location.href = url;
     if (samePage) location.reload();   // only the address after # changed: load the page again for the new part
   }
+
+  /* ---------------- presenter strip (version 15) ----------------
+     A status pill ("34 of 38 in · Together") and a menu, on the teacher's projector copy only. Every command goes to
+     Live Board's t_do through the deck channel ({api:'tdo'}), idempotent by its cmdId, so a repeated tap or a resend
+     does nothing twice. Nothing in the strip ever shows a student's name. */
+  var strip = null, stripMenu = null, stripMsg = null, stripMsgTimer = null, presLesson = null, presQuick = null, presMode = '', presActive = null;
+  var blankBox = null, endBar = null, endTimer = null, showBox = null, showKey = '';
+  var phoneLive = false, pgoBusy = false, pgoSig = '', pgoShortUntil = 0, pgoTimer = null, lastGoCmd = '', lastProbe = 0;
+  var MODE_WORD = { together: 'Together', own: 'Own pace', eyes: 'Eyes on me' };
+  function cmdId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function takeLesson(r) {
+    if (!r) return;
+    if (r.lesson && typeof r.lesson === 'object') { presLesson = r.lesson; if (r.lesson.mode) presMode = r.lesson.mode; }
+    else if (r.lesson === null) presLesson = null;
+    if (r.ctl && !(r.lesson && r.lesson.mode)) presMode = r.ctl.pause ? 'eyes' : r.ctl.follow ? 'together' : 'own';
+    if (typeof r.active === 'number') presActive = r.active;
+    if (r.quick !== undefined) presQuick = r.quick;
+    if (r.show !== undefined) renderShow(r.show);
+    if (r.phone === true && !phoneLive) { phoneLive = true; pgoLoop(); }
+    if (r.phone === false) phoneLive = false;
+    drawStrip();
+  }
+  function pillText() {
+    var mw = MODE_WORD[presMode] || '';
+    var n = presLesson && presLesson.inCount != null ? presLesson.inCount + ' of ' + (presLesson.of != null ? presLesson.of : '?') + ' in'
+      : presActive != null ? presActive + ' in' : presCls;
+    return n + (mw ? ' · ' + mw : '');
+  }
+  function drawStrip() {
+    if (!presenting || !presCls) { if (strip) { strip.remove(); strip = null; } closeStripMenu(); return; }
+    if (!strip) {
+      strip = el('div', 'lbstrip');
+      strip.setAttribute('role', 'toolbar');
+      strip.setAttribute('aria-label', 'Lesson controls');
+      var pill = el('span', 'lbstrip-pill'); strip.appendChild(pill);
+      var more = el('button', 'lbstrip-more', '⋯'); more.type = 'button'; more.setAttribute('aria-label', 'Lesson controls'); more.title = 'Lesson controls';
+      more.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (stripMenu) closeStripMenu(); else openStripMenu(); });
+      strip.appendChild(more);
+      stripMsg = el('span', 'lbstrip-msg'); stripMsg.hidden = true; strip.appendChild(stripMsg);
+      document.body.appendChild(strip);
+    }
+    var p = strip.querySelector('.lbstrip-pill'), t = pillText();
+    if (p.textContent !== t) p.textContent = t;
+    strip.classList.toggle('eyes', presMode === 'eyes');
+    if (stripMenu) openStripMenu();
+  }
+  function stripNote(text, keep) {
+    if (!stripMsg) return;
+    stripMsg.textContent = text; stripMsg.hidden = !text;
+    clearTimeout(stripMsgTimer);
+    if (text && !keep) stripMsgTimer = setTimeout(function () { if (stripMsg) stripMsg.hidden = true; }, 2600);
+  }
+  function closeStripMenu() { if (stripMenu) { stripMenu.remove(); stripMenu = null; } }
+  function openStripMenu() {
+    closeStripMenu();
+    stripMenu = el('div', 'lbstrip-menu');
+    stripMenu.setAttribute('role', 'menu');
+    var add = function (text, key, go, cls) {
+      var b = el('button', cls || '', ''); b.type = 'button'; b.setAttribute('role', 'menuitem');
+      b.appendChild(el('span', '', text)); if (key) b.appendChild(el('kbd', '', key));
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); closeStripMenu(); go(); });
+      stripMenu.appendChild(b);
+      return b;
+    };
+    var q = presQuick;
+    if (q && q.open) {
+      stripMenu.appendChild(el('p', 'lbstrip-h', 'A quick check is open.'));
+      var opts = quickOptions(q);
+      if (opts.length && q.type !== 'gotit') {
+        var row = el('div', 'lbstrip-mark');
+        row.appendChild(el('span', '', 'Mark the right answer'));
+        opts.forEach(function (o, i) {
+          var b = el('button', '', q.type === 'slide' ? LETTERS.charAt(i) : o); b.type = 'button'; b.title = o;
+          b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); closeStripMenu(); tdo('mark', { correct: o }); });
+          row.appendChild(b);
+        });
+        stripMenu.appendChild(row);
+      }
+      add('Close the check', '', function () { tdo('close', {}); });
+    } else {
+      add('Quick check', 'Q', openPicker);
+      if (q && !q.open) {
+        add(presShowOn() ? 'Take the results off the screen' : 'Show the results on the screen', '', function () { tdo('show', { on: !presShowOn() }); });
+        add('Ask again', '', function () { tdo('again', {}); });
+      }
+    }
+    add(presMode === 'eyes' ? 'Release the iPads' : 'Eyes on me', 'B', toggleEyes);
+    add(presMode === 'together' ? 'Switch to Own pace' : 'Switch to Together', 'T', toggleMode);
+    add(resBox ? 'Hide the answers' : 'Show answers', 'A', function () { if (resBox) closeResults(); else openResults(); });
+    add('End the lesson', 'E', endWithUndo, 'end');
+    strip.appendChild(stripMenu);
+  }
+  function presShowOn() { return !!showBox; }
+  function tdo(op, args) {
+    if (!presPin || !presCls) return Promise.resolve(null);
+    stripNote('Sending', true);
+    return api({ api: 'tdo', pin: presPin, topicId: cfg.topicId, cls: presCls, op: op, args: args || {}, cmdId: cmdId() }).then(function (r) {
+      if (r && r.ok === false && /PIN|sign-in/i.test(r.error || '')) { stripNote(''); presAuthLost(); return null; }
+      if (!r || r.ok === false) {
+        stripNote(r && r.error && !/Unknown request/.test(r.error) ? r.error : 'Live Board did not take that. It needs the release 34 server code.');
+        return null;
+      }
+      stripNote('Done');
+      takeLesson(r);
+      return r;
+    }, function () { stripNote('Not sent. Check the connection, then try again.'); return null; });
+  }
+  function toggleEyes() {
+    var on = presMode !== 'eyes';
+    blankScreen(on);
+    presMode = on ? 'eyes' : (presMode === 'eyes' ? '' : presMode);
+    drawStrip();
+    tdo('mode', { v: on ? 'eyes' : 'release' });
+  }
+  function toggleMode() { tdo('mode', { v: presMode === 'together' ? 'own' : 'together' }); }
+  function blankScreen(on) {
+    if (on && !blankBox) {
+      blankBox = el('div', 'lbblank');
+      blankBox.setAttribute('role', 'presentation');
+      blankBox.appendChild(el('span', '', 'Eyes on me. Press B to show the slides again.'));
+      document.body.appendChild(blankBox);
+    } else if (!on && blankBox) { blankBox.remove(); blankBox = null; }
+  }
+  /* The quick check picker: the kind of check only, never a name. Question on this slide uses the slide's question. */
+  function slideTask() {
+    var sl = currentSlide();
+    if (!sl) return '';
+    var c = sl.getAttribute('data-cur-task') || '';
+    if (!c) { var h = sl.querySelector('[data-cur-task]'); c = h ? h.getAttribute('data-cur-task') : ''; }
+    if (c && byId[c]) return c;
+    var ts = tasksOn(slideNow());
+    return ts.length ? ts[0].id : '';
+  }
+  function openPicker() {
+    if (!presCls) return;
+    var p = panel();
+    overlay.setAttribute('data-lbx', 'picker');
+    p.appendChild(el('h2', '', 'Quick check'));
+    p.appendChild(el('p', '', 'The check opens on every iPad in the class, over the lower part of the slides.'));
+    var box = el('div', 'lbx-classes lbpick');
+    var task = slideTask();
+    [['abcd', 'A B C D'], ['tf', 'True or false'], ['gotit', 'Got it, Nearly, Lost'], ['word', 'Type a word'], ['slide', 'Question on this slide']].forEach(function (x) {
+      var b = el('button', 'lbx-class'); b.type = 'button'; b.setAttribute('data-type', x[0]);
+      b.appendChild(el('b', '', x[1]));
+      if (x[0] === 'slide') { b.disabled = !task; if (task) b.appendChild(el('span', '', String(byId[task].question || '').slice(0, 60))); }
+      b.addEventListener('click', function () { closeOverlay(); tdo('quick', x[0] === 'slide' ? { type: 'slide', taskId: task } : { type: x[0] }); });
+      box.appendChild(b);
+    });
+    p.appendChild(box);
+    var row = el('div', 'lbx-row'), cancel = el('button', '', 'Cancel'); cancel.type = 'button'; cancel.addEventListener('click', closeOverlay); row.appendChild(cancel); p.appendChild(row);
+  }
+  /* End: one tap, then 4 seconds to undo. Live Board ends the lesson itself when the 4 seconds are up. */
+  function endWithUndo() {
+    if (endBar || !presCls) return;
+    var cls = presCls;
+    endBar = el('div', 'lbend');
+    endBar.setAttribute('role', 'alert');
+    var tx = el('span', '', 'Ending the lesson for ' + cls + '.');
+    var u = el('button', '', 'Undo'); u.type = 'button';
+    u.addEventListener('click', function (e) { e.preventDefault(); undoEnd(); });
+    endBar.appendChild(tx); endBar.appendChild(u);
+    document.body.appendChild(endBar);
+    var until = Date.now() + 4000;
+    tdo('end', {}).then(function (r) { if (r && r.undoUntil) until = Number(r.undoUntil) || until; });
+    clearInterval(endTimer);
+    endTimer = setInterval(function () {
+      var left = Math.ceil((until - Date.now()) / 1000);
+      if (left > 0) { tx.textContent = 'Ending the lesson for ' + cls + ' in ' + left + ' s.'; return; }
+      clearInterval(endTimer); endTimer = null;
+      if (endBar) { endBar.remove(); endBar = null; }
+      lessonEnded();
+    }, 250);
+  }
+  function undoEnd() {
+    if (!endBar) return;
+    clearInterval(endTimer); endTimer = null;
+    endBar.remove(); endBar = null;
+    tdo('undo', {});
+  }
+  function lessonEnded() {
+    try { sessionStorage.setItem(PRES_NOW, '-'); } catch (e) {}
+    blankScreen(false); renderShow(null);
+    presLesson = null; presQuick = null; presMode = ''; phoneLive = false;
+    showOnly();
+    whoLine.textContent = 'The lesson has ended. ';
+    var ch = el('button', '', 'Choose a class'); ch.type = 'button';
+    ch.addEventListener('click', function (e) { if (e) e.preventDefault(); askClass(); });
+    whoLine.appendChild(ch);
+  }
+  /* Show on screen: the bars or the grouped words for the whole class, never names. */
+  function renderShow(sh) {
+    var key = sh ? JSON.stringify(sh) : '';
+    if (key === showKey) return;
+    showKey = key;
+    if (!sh) { if (showBox) { showBox.remove(); showBox = null; } return; }
+    if (!showBox) {
+      showBox = el('div', 'lbres lbb lbshow'); showBox.setAttribute('role', 'dialog'); showBox.setAttribute('aria-label', 'The class\'s answers');
+      document.body.appendChild(showBox);
+    }
+    showBox.innerHTML = '';
+    var p = el('div', 'lbres-panel'), top = el('div', 'lbres-top');
+    top.appendChild(el('h2', '', 'Quick check'));
+    var tot = Number(sh.total) || 0;
+    if (sh.kind === 'bars') top.appendChild(el('span', 'lbres-sub', tot + (tot === 1 ? ' answer' : ' answers')));
+    var x = el('button', 'lbres-x', 'Close'); x.type = 'button';
+    x.addEventListener('click', function () { tdo('show', { on: false }); renderShow(null); });
+    top.appendChild(x);
+    p.appendChild(top);
+    var body = el('div', 'lbb-body');
+    if (sh.kind === 'bars') {
+      var counts = sh.counts || {}, opts = Array.isArray(sh.options) && sh.options.length ? sh.options.map(String) : Object.keys(counts);
+      var most = 1; opts.forEach(function (o) { most = Math.max(most, Number(counts[o]) || 0); });
+      var total = tot || opts.reduce(function (n, o) { return n + (Number(counts[o]) || 0); }, 0);
+      var bars = el('div', 'lbb-bars');
+      opts.forEach(function (o, k) {
+        var n = Number(counts[o]) || 0;
+        var row = el('div', 'lbb-bar' + (sh.correct != null && String(sh.correct) === o ? ' ok' : ''));
+        row.appendChild(el('span', 'k', /^[A-D]$/.test(o) ? o : LETTERS.charAt(k)));
+        var w = el('div', 'w'); w.appendChild(el('span', 'l', o));
+        var rr = el('div', 'r'), tr = el('span', 't'), fill = el('i'); fill.style.width = Math.round(100 * n / most) + '%'; tr.appendChild(fill);
+        var cnt = el('b', '', String(n)); cnt.appendChild(el('small', '', '  ' + (total ? Math.round(100 * n / total) : 0) + '%'));
+        rr.appendChild(tr); rr.appendChild(cnt); w.appendChild(rr); row.appendChild(w);
+        bars.appendChild(row);
+      });
+      body.appendChild(bars);
+    } else if (sh.kind === 'words') {
+      var words = Array.isArray(sh.words) ? sh.words : [], top1 = 1;
+      words.forEach(function (w) { top1 = Math.max(top1, Number(w.n) || 1); });
+      var wall = el('div', 'lbshow-words');
+      if (!words.length) wall.appendChild(el('p', 'lbb-empty', 'No words yet.'));
+      words.forEach(function (w, k) {
+        var c = el('span', 'lbshow-word c' + (k % 6), String(w.text || ''));
+        c.style.fontSize = Math.round(22 + 34 * ((Number(w.n) || 1) / top1)) + 'px';
+        if ((Number(w.n) || 1) > 1) c.appendChild(el('small', '', ' ' + w.n));
+        wall.appendChild(c);
+      });
+      body.appendChild(wall);
+    }
+    p.appendChild(body);
+    showBox.appendChild(p);
+  }
+  /* While a paired phone is live, its commands (Back, Next, a named slide and step) reach the projector at once. */
+  function pgoLoop() {
+    clearTimeout(pgoTimer);
+    if (!presenting || !presCls || !presPin || pgoBusy || !phoneLive || document.hidden) return;
+    var short = Date.now() < pgoShortUntil, mine = presCls;
+    pgoBusy = true;
+    api({ api: 'pgo', pin: presPin, topicId: cfg.topicId, cls: presCls, sig: pgoSig, maxMs: short ? 0 : 20000 }).then(function (r) {
+      pgoBusy = false;
+      if (mine !== presCls) return;
+      if (!r || r.ok === false) {
+        if (r && /PIN|sign-in/i.test(r.error || '')) { presAuthLost(); return; }
+        phoneLive = false; return;   // an older Live Board: the 12 second lead carries on alone
+      }
+      if (r.sig != null) pgoSig = r.sig;
+      if (r.poll) { pgoShortUntil = Date.now() + 120000; pgoTimer = setTimeout(pgoLoop, Number(r.poll) * (0.85 + Math.random() * 0.3)); return; }
+      if (r.go) applyGo(r.go);
+      if (r.show !== undefined) renderShow(r.show);
+      if (r.lesson !== undefined || r.quick !== undefined) takeLesson(r);
+      if (r.phone === false) { phoneLive = false; return; }
+      pgoTimer = setTimeout(pgoLoop, short ? 3000 * (0.85 + Math.random() * 0.3) : 30);
+    }, function () {
+      pgoBusy = false;
+      // Too many calls at once, or a dropped connection: short polls every 3 seconds for 2 minutes.
+      pgoShortUntil = Date.now() + 120000;
+      pgoTimer = setTimeout(pgoLoop, 3000 * (0.85 + Math.random() * 0.3));
+    });
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && presenting && phoneLive) pgoLoop(); });
+  function applyGo(g) {
+    if (!g) return;
+    if (g.cmd && g.cmd === lastGoCmd) return;
+    lastGoCmd = g.cmd || '';
+    var all = slideList(), target = null;
+    if (typeof g.slide === 'number' || /^\d+$/.test(String(g.slide))) target = all[Number(g.slide) - 1] || null;
+    else if (g.slide) target = document.getElementById(String(g.slide));
+    if (!target) target = currentSlide();
+    if (!target) return;
+    if (target !== currentSlide()) {
+      goSlide(target.id);
+      if (g.step != null) setTimeout(function () { setStep(target, g.step); seeSlide(); }, 350);
+    } else if (g.step != null) { setStep(target, g.step); }
+    setTimeout(seeSlide, 60);
+  }
+  /* The deck's own Back and Next, for the clicker keys a deck does not handle itself. */
+  function navBtn(dir) {
+    var ids = dir > 0 ? ['nextBtn', 'next'] : ['prevBtn', 'prev'];
+    for (var i = 0; i < ids.length; i++) { var b = document.getElementById(ids[i]); if (b && b.offsetParent !== null && !b.disabled) return b; }
+    var c = document.querySelector(dir > 0 ? '.footer .next, footer .next' : '.footer .prev, footer .prev');
+    if (c && c.offsetParent !== null) return c;
+    var xs = document.querySelectorAll('footer button, nav button, .footer button');
+    var re = dir > 0 ? /^\W*\s*(next)\b/i : /^\W*\s*(previous|prev|back)\b/i;
+    for (var k = 0; k < xs.length; k++) if (re.test(String(xs[k].textContent || '').trim()) && xs[k].offsetParent !== null) return xs[k];
+    return null;
+  }
+  function typing(t) { return !!(t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)); }
+  // The presenter's keys (the teacher's laptop or clicker). Letters work only while presenting to a class.
+  document.addEventListener('keydown', function (e) {
+    if (!presenting || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+    if (endBar && (e.key === 'u' || e.key === 'U' || e.key === 'Escape')) { e.preventDefault(); e.stopPropagation(); undoEnd(); return; }
+    if (overlay || !presCls) return;
+    var k = e.key, hit = true;
+    if (k === 'b' || k === 'B' || k === '.') toggleEyes();
+    else if (k === 'a' || k === 'A') { if (resBox) closeResults(); else openResults(); }
+    else if (k === 'q' || k === 'Q') openPicker();
+    else if (k === 't' || k === 'T') toggleMode();
+    else if (k === 'e' || k === 'E') endWithUndo();
+    else if (k === 'Escape' && stripMenu) closeStripMenu();
+    else hit = false;
+    if (hit) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  // Arrows and PgUp/PgDn move the slides: the deck's own handler first, the bridge's when the deck has none.
+  window.addEventListener('keydown', function (e) {
+    if (!presenting || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e.target) || overlay) return;
+    var dir = e.key === 'PageDown' || e.key === 'ArrowRight' ? 1 : e.key === 'PageUp' || e.key === 'ArrowLeft' ? -1 : 0;
+    if (!dir) return;
+    var b = navBtn(dir);
+    if (b) { e.preventDefault(); b.click(); setTimeout(seeSlide, 80); }
+  });
+  document.addEventListener('click', function (e) { if (stripMenu && strip && !strip.contains(e.target)) closeStripMenu(); }, true);
 
   /* ---------------- revise: My mistakes and Practise ---------------- */
   /* After the lesson, students revise in the deck itself (the Revise card on the last slide, the Revise button
@@ -5207,8 +6003,8 @@ window.KIT=KIT;
       var m = mistakes();
       line = (m.todo.length ? m.todo.length + (m.todo.length === 1 ? ' mistake' : ' mistakes') + ' to put right. '
         : m.done.length ? 'Every mistake put right. ' : 'No mistakes to put right. ') +
-        (!checkIds.length ? 'Practise the questions in a new order.' : checkTried() ? 'Practise the chapter check with new numbers.'
-          : 'After the chapter check, practise it here with new numbers.');
+        (!checkIds.length ? 'Practise the questions in a new order.' : checkTried() ? 'Practise the ' + CHECK_NAME + ' with new numbers.'
+          : 'After the ' + CHECK_NAME + ', practise it here with new numbers.');
     }
     if (line === cardKey) return;
     cardKey = line;
@@ -5268,13 +6064,13 @@ window.KIT=KIT;
       function () { startPractice(m.todo, 'mistakes'); }));
     if (checkIds.length) {
       var nv = checkIds.filter(function (id) { return variants[id]; }).length;
-      if (checkTried()) acts.appendChild(bigBtn('Practise the chapter check', checkIds.length + ' questions in a new order' + (nv ? ', with new numbers in the calculations' : ''),
+      if (checkTried()) acts.appendChild(bigBtn('Practise the ' + CHECK_NAME, checkIds.length + ' questions in a new order' + (nv ? ', with new numbers in the calculations' : ''),
         function () { startPractice(checkIds, 'check'); }));
-      else if (state === 'loading') acts.appendChild(el('p', 'lbv-wait', 'Checking your chapter check…'));
+      else if (state === 'loading') acts.appendChild(el('p', 'lbv-wait', 'Checking your ' + CHECK_NAME + '…'));
       else {
         var first = el('div', 'lbv-first'), at = slideInfo(checkIds[0]).n;
-        first.appendChild(el('p', '', 'Do the chapter check first' + (at ? ' (slide ' + at + ')' : '') + '. Your first try is the one that counts. After that you can practise it here as often as you like.'));
-        var g = el('button', 'lbv-plain', 'Go to the chapter check'); g.type = 'button';
+        first.appendChild(el('p', '', 'Do the ' + CHECK_NAME + ' first' + (at ? ' (slide ' + at + ')' : '') + '. Your first try is the one that counts. After that you can practise it here as often as you like.'));
+        var g = el('button', 'lbv-plain', 'Go to the ' + CHECK_NAME); g.type = 'button';
         g.addEventListener('click', function () { closeOverlay(); goToTask(checkIds[0]); });
         first.appendChild(g);
         acts.appendChild(first);
@@ -5627,7 +6423,7 @@ window.KIT=KIT;
   var SQ_LETTERS = 'ABCDEF';
   var sqOn = false, sqBox = null, sqDrawn = '', sqGid = '', sqJoined = '', sqPick = '', sqSkew = 0, sqTick = null, sqMsg = '';
   var SQ_SEEN = 'liveboard.sqSeen:' + (cfg.topicId || '');
-  function sqQs() { return checkIds.filter(function (id) { return byId[id] && (byId[id].kind === 'choice' || byId[id].kind === 'number'); }); }
+  function sqQs() { if (!CHECK_ON) return []; return checkIds.filter(function (id) { return byId[id] && (byId[id].kind === 'choice' || byId[id].kind === 'number'); }); }
   function sqAnswerText(t) { return String(t.correct == null ? '' : t.correct) + (t.kind === 'number' && t.unit ? ' ' + t.unit : ''); }
   function sqMark(t, value) {
     if (t.kind === 'choice') return value === String(t.correct);
@@ -5696,6 +6492,8 @@ window.KIT=KIT;
       '.sq-top5 li{display:flex!important;align-items:center!important;gap:12px!important;padding:10px 12px!important;border-radius:10px!important;background:rgba(255,255,255,.08)!important;margin-bottom:8px!important;font-size:21px!important}' +
       '.sq-top5 li b{flex:none!important;width:44px!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important;color:#ffd75e!important}' +
       '.sq-top5 li span{flex:1!important;font-weight:700!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}' +
+      '.sq .sq-top5 li span.sq-disc,.sq-disc{flex:none!important;display:inline-grid!important;place-items:center!important;width:46px!important;height:46px!important;border-radius:50%!important;color:#fff!important;font:900 17px/1 "Arial Black",Arial,sans-serif!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important;margin:0 6px!important}' +
+      '.sq-top5 li span.sq-gap{flex:1!important}' +
       '.sq-top5 li em{font-style:normal!important;font:900 22px/1 "Arial Black",Arial,sans-serif!important}' +
       '.sq-meter{height:12px!important;border-radius:999px!important;background:rgba(255,255,255,.15)!important;overflow:hidden!important}' +
       '.sq-meter i{display:block!important;height:100%!important;background:#5df2a6!important;transition:width .4s!important}' +
@@ -6110,6 +6908,15 @@ window.KIT=KIT;
     if (h) h.textContent = n + ' of ' + of + ' have answered' + (of && n >= of ? '. Everyone is in, so you can show the answer.' : '');
     if (f) f.style.setProperty('width', (of ? Math.round(100 * n / of) : 0) + '%', 'important');
   }
+  /* Version 15 (Ruling A2): the projector never shows a name. Each player is their initials on a disc in two
+     colours from their avatar (c1 fills it, c2 rings it). */
+  function sqDisc(x) {
+    var d = el('span', 'sq-disc', String(x.initials || '?').slice(0, 3));
+    var c1 = /^#[0-9a-f]{3,8}$/i.test(String(x.c1 || '')) ? x.c1 : '#5b4bd6', c2 = /^#[0-9a-f]{3,8}$/i.test(String(x.c2 || '')) ? x.c2 : '#ffd75e';
+    d.style.setProperty('background', c1, 'important');
+    d.style.setProperty('box-shadow', '0 0 0 4px ' + c2, 'important');
+    return d;
+  }
   function sqBoard(r, final) {
     var wrap = el('div', 'sq-board');
     var c1 = el('div', 'sq-card');
@@ -6118,7 +6925,7 @@ window.KIT=KIT;
     (r.top || []).forEach(function (x) {
       var li = el('li');
       li.appendChild(el('b', '', sqPlace(x.place)));
-      li.appendChild(el('span', '', x.name));
+      li.appendChild(sqDisc(x));
       if (x.streak >= 2 && !final) li.appendChild(el('span', 'sq-flame', sqStreakText(x.streak)));
       li.appendChild(el('em', '', String(x.score)));
       ol.appendChild(li);
@@ -6131,7 +6938,7 @@ window.KIT=KIT;
     if (final) c2.appendChild(el('div', 'sq-big', r.best ? r.best + ' in a row' : 'None'));
     else if ((r.streaks || []).length) {
       var ul = el('ol', 'sq-top5');
-      r.streaks.forEach(function (x) { var li = el('li'); li.appendChild(el('span', '', x.name)); li.appendChild(el('span', 'sq-flame', sqStreakText(x.streak))); ul.appendChild(li); });
+      r.streaks.forEach(function (x) { var li = el('li'); li.appendChild(sqDisc(x)); li.appendChild(el('span', 'sq-gap')); li.appendChild(el('span', 'sq-flame', sqStreakText(x.streak))); ul.appendChild(li); });
       c2.appendChild(ul);
     } else c2.appendChild(el('p', 'sq-note', 'No streaks yet. Two right in a row starts one.'));
     wrap.appendChild(c2);
@@ -6144,22 +6951,25 @@ window.KIT=KIT;
     var id = readJ(ID_KEY), handed = fromLink();
     if (!id) writeJ(RESET_KEY, null);
     if (handed && handed.st) {
-      if (id && id.st && (id.cls !== handed.cls || id.name !== handed.name)) { otherName(id, handed); return; }
       if (!id || !id.st || id.st !== handed.st) {
-        // A sign-in from learnwithmrcedric: checked, then kept.
+        // Version 15: a sign-in handed over by the app. It is checked, then kept, with no box to fill in. A different
+        // student signed in on the app takes over this iPad (the deck sends the last student's answers first).
         api({ api: 'st', op: 'me', st: handed.st }).then(function (r) {
-          if (r && r.ok) { lockIn({ cls: r.cls, name: r.name, st: handed.st }); return; }
+          if (r && r.ok && r.cls && r.name) { lockIn({ cls: r.cls, name: r.name, st: handed.st }); return; }
           if (id && id.st) go(id);
-          else { showWho(null); openGate('Your sign-in has run out. Sign in again with your PIN.'); }
-        }).catch(function () { if (id && id.st) go(id); else lockIn(handed); });
+          else { showWho(null); openGate('Your sign-in has run out. Sign in again with your password.', { cls: handed.cls, name: handed.name }); }
+        }).catch(function () {
+          if (id && id.st) go(id);
+          else if (handed.cls && handed.name) lockIn(handed);
+          else { showWho(null); openGate('', {}); }
+        });
         return;
       }
     }
     if (id && id.cls && id.name && (id.st || oldLb())) { if (!id.st) mode = 'live'; go(id); return; }
-    // A name locked on this iPad before PINs: that student signs in with their PIN once.
-    if (id && id.cls && id.name) { showWho(null); confirmGate({ cls: id.cls, name: id.name }, true); return; }
+    // A name kept on this iPad before passwords: that student signs in once with their password.
     showWho(null);
-    openGate();
+    openGate('', id && id.cls ? { cls: id.cls, name: id.name } : {});
   }
   start();
 })();</script>
