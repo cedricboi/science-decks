@@ -1,21 +1,21 @@
 {
-  "build": "2026-10-24-streak",
-  "seq": 29,
-  "ref": "e90e4d261b772e5aa6fd87cc8c715da3d895d2d0",
-  "title": "learnwithmrcedric: the Streak Challenge",
+  "build": "2026-10-25-passwords",
+  "seq": 33,
+  "ref": "06b1834f69c890265470d7d0fe0c2aab007186eb",
+  "title": "learnwithmrcedric: names and passwords",
   "notes": [
-    "Streak Challenge (release 29): on the chapter check slide, the projector runs the check as a class game, one question at a time. Speed gives nothing: a right answer is worth 100, each right answer in a row adds 50 more (up to 300 a question), and a wrong answer ends the streak",
-    "The projector shows how many have answered, then the answer, the class's choices, the top 5 and the longest streaks. Each iPad shows only the student's own result and place",
-    "At the end each score becomes Worksheet Hub points: the full score earns the Chapter check points in Settings (30), a lower score its share, once per lesson. The game counts as the student's chapter check",
-    "The chapter check done alone is scored the same way, so the pass mark is no longer used",
-    "Paste: Code.gs and App.gs. The lesson slides update themselves"
+    "Students sign in with their name and a password (Science or Computing, chosen on the card). Old 4-number PINs still work once, then the page asks for a proper password",
+    "The Teacher Hub signs in with a username and password. The first time, the Hub asks for your teacher PIN to set them. Change them in the T menu, Username and password",
+    "The portal: a roomier card, a small teacher link, and stars and galaxies bent by the black hole's gravity behind NASA's simulation",
+    "The decks' own sign-in box takes a password",
+    "Includes release 29 (Streak Challenge). Paste: App.gs, Code.gs, Hub.gs and ComputingCode.gs, then deploy a new version. The pages update themselves"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "b1d87876a38280b2792f7a124015e074bcabbf933da8640ca9f4c382f079695b"
+      "sha256": "a1692fa3b0519f5cf9ca7262e8e4efc714895045bd4c45c16d21ca911d4f28d9"
     },
     {
       "name": "appsscript",
@@ -27,19 +27,19 @@
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "4b4e3ccf365aa8bccebbc01f7cfc05cb001c88a2302cd55f57f5085ab840e937"
+      "sha256": "b31d76296222706f241866937eb4fbe46dd9a5c04f883aa0a67a061b1ba79688"
     },
     {
       "name": "Computing",
       "type": "HTML",
       "path": "Computing.html",
-      "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
+      "sha256": "aa83be8a1bb636d469f7dd9238ea93c2c8a98551fef2b98bb077a9e23f61a03f"
     },
     {
       "name": "ComputingCode",
       "type": "SERVER_JS",
       "path": "ComputingCode.gs",
-      "sha256": "a373ce2635a5ead17b7aa5c72841ff60afc5597176664cb09f98aea2d50b8e71"
+      "sha256": "c52b820ae4032ae0450f1f1bf959943012694de4148a271e2dfc05111fc70459"
     },
     {
       "name": "Guide",
@@ -57,13 +57,13 @@
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "b896282403ff0b116d5cb8e4bb3c5ec4e25f4c060502ada8486928f4a2f588e1"
+      "sha256": "d3c498b6a64be28f59b00ddacfe2672fc44fc1d9944eaf6f5c2271c3f9a6a7dd"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "6c792412f3a62548f52ed40eab785501515ce543153516104339daac7b7d258b"
+      "sha256": "d4e46b36ba719de272432c1dc1ca96c381b8fb9d86a0644e75f53f17729ef0a4"
     },
     {
       "name": "Ink",
@@ -81,7 +81,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "e28f3506f77508aa2179defbc4f561352e5c72e8021de07bf5d544953fc08aba"
+      "sha256": "aed3123b46454a5865aaebdec154bba29ba8b041e62fd77cf397d4dd6e0f31ff"
     },
     {
       "name": "Styles",
@@ -93,10 +93,63 @@
       "name": "Teacher",
       "type": "HTML",
       "path": "Teacher.html",
-      "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+      "sha256": "933f6429cff389aba5b35d8bae3ea7a5d45f9d486b74fb84a009b62e037c2f1b"
     }
   ],
   "pages": [
+    {
+      "seq": 33,
+      "build": "2026-10-25-passwords",
+      "ref": "06b1834f69c890265470d7d0fe0c2aab007186eb",
+      "needsServer": 33,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "d4e46b36ba719de272432c1dc1ca96c381b8fb9d86a0644e75f53f17729ef0a4"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "aed3123b46454a5865aaebdec154bba29ba8b041e62fd77cf397d4dd6e0f31ff"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "933f6429cff389aba5b35d8bae3ea7a5d45f9d486b74fb84a009b62e037c2f1b"
+        },
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "aa83be8a1bb636d469f7dd9238ea93c2c8a98551fef2b98bb077a9e23f61a03f"
+        }
+      ]
+    },
     {
       "seq": 32,
       "build": "2026-10-24-portal-video",
@@ -460,6 +513,22 @@
     }
   ],
   "server": [
+    {
+      "seq": 33,
+      "files": [
+        "App.gs",
+        "Code.gs",
+        "Hub.gs",
+        "ComputingCode.gs"
+      ],
+      "notes": [
+        "Students sign in with their name and a password (Science or Computing, chosen on the card). Old 4-number PINs still work once, then the page asks for a proper password",
+        "The Teacher Hub signs in with a username and password. The first time, the Hub asks for your teacher PIN to set them. Change them in the T menu, Username and password",
+        "The portal: a roomier card, a small teacher link, and stars and galaxies bent by the black hole's gravity behind NASA's simulation",
+        "The decks' own sign-in box takes a password",
+        "Includes release 29 (Streak Challenge). Paste: App.gs, Code.gs, Hub.gs and ComputingCode.gs, then deploy a new version. The pages update themselves"
+      ]
+    },
     {
       "seq": 29,
       "files": [
