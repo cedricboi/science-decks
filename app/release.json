@@ -4,6 +4,7 @@
   "ref": "73f1d6742a52c746e317789029580bd77638c327",
   "title": "learnwithmrcedric: Computing and the Spreadsheet Coaches",
   "notes": [
+    "Palm guard (page release 29, nothing to paste): once an iPad has used an Apple Pencil, a resting palm no longer writes on worksheets or drops ticks on the checking screen, and a Pencil that lands while a palm is down takes over",
     "Computing: a Computing door on the portal opens the students' Computing page (class tiles, name, PIN keypad), with the Spreadsheet Coaches open to their class and every Excel file they have checked",
     "Computing students are listed in their own tab, Computing students, in the Teacher Hub sheet, and have their own PINs, apart from Science",
     "Each file a Coach checks is saved to Drive (Worksheet Hub > Computing > class > sub-chapter > student code), every try kept, named by code, never by name",
@@ -98,6 +99,59 @@
     }
   ],
   "pages": [
+    {
+      "seq": 29,
+      "build": "2026-10-24-palm-guard",
+      "ref": "4d2fa365ffb7cb4429d2287a260721ece916f819",
+      "needsServer": 28,
+      "files": [
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "cbb754148e5eaced565f79408753a14ea8d31df7a0a8a982ec0236a19772a1ba"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
+        },
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
+        }
+      ]
+    },
     {
       "seq": 28,
       "build": "2026-10-21-computing",
@@ -273,7 +327,7 @@
       ],
       "notes": [
         "Students' names stay in your sheets: students sign in by typing their own name and PIN (no class list is sent to iPads, and the slides keep none)",
-        "Hand-ins are named by class and a student code (S001, S002\u2026) instead of a name, and Claude marking sees only codes",
+        "Hand-ins are named by class and a student code (S001, S002…) instead of a name, and Claude marking sees only codes",
         "Worksheets are checked for a Name line: students are told not to write there, and anything written on it is left out of the PDF they hand in; the Hub flags Name lines when you upload, with Cover it for me",
         "The Rewards leaderboard shows initials; and Setup check has a switch so the Teacher Hub needs your Google account, not only the PIN"
       ]
