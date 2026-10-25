@@ -1598,16 +1598,17 @@
   .nx-later.none { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
   .nx-later.none p { margin: 0; }
   /* In the room: what the class has waiting, each part a verb */
-  .nx-hero.room { padding-top: 26px; padding-bottom: 26px; }
-  .nx-hero.room h2 { font-size: 36px; }
-  .nx-room { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-top: 2px; font-size: 16px; }
+  .nx-hero.room { padding-top: 24px; padding-bottom: 24px; }
+  .nx-hero.room .nx-hero-t { gap: 8px; }
+  .nx-hero.room h2 { font-size: 34px; }
+  .nx-room { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin-top: 2px; font-size: 15px; }
   .nx-room i { font-style: normal; color: var(--nx-hero-muted); }
   .nx-roomk { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nx-hero-muted); margin-right: 4px; }
-  .nx-roombtn { padding: 2px 0; border: 0; background: none; color: var(--nx-hero-ink); font: 700 16px var(--text); cursor: pointer; white-space: nowrap; text-decoration: underline; text-decoration-color: var(--nx-hero-line); text-underline-offset: 4px; }
+  .nx-roombtn { padding: 2px 0; border: 0; background: none; color: var(--nx-hero-ink); font: 700 15px var(--text); cursor: pointer; white-space: nowrap; text-decoration: underline; text-decoration-color: var(--nx-hero-line); text-underline-offset: 4px; }
   .nx-roombtn:hover { text-decoration-color: currentColor; }
   .nx-roombtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px; }
   .nx-card { background: var(--nx-surface); border-radius: 24px; padding: 20px 22px; box-sizing: border-box; }
-  .nx-later { flex: 1 1 340px; max-width: 440px; display: flex; flex-direction: column; gap: 12px; }
+  .nx-later { flex: 1 1 340px; max-width: 440px; display: flex; flex-direction: column; gap: 10px; }
   .nx-lrow { display: flex; align-items: center; gap: 12px; }
   .nx-ltime { width: 52px; flex: none; font-weight: 700; font-size: 15px; color: var(--nx-muted); }
   .nx-lt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -8539,12 +8540,12 @@
     });
     (d.worksheets || []).filter(function (w) { return !w.practice && w.open && w.dueTs && w.dueTs - now < 3 * 864e5 && mine(w.classes); }).sort(function (a, b) { return a.dueTs - b.dueTs; }).slice(0, 2).forEach(function (w) {
       var left = (sxPc(w, cls).notHanded || []).length; if (!left) return;
-      out.push({ t: left + ' owe ' + nxShort(w) + ', due ' + (sameDay(w.dueTs, now) ? 'today' : sameDay(w.dueTs, now + 864e5) ? 'tomorrow' : NX_DAYS[new Date(w.dueTs).getDay()]), run: function () { sxWho(w.id, cls); } });
+      out.push({ s: left + ' owe ' + nxShort(w), t: left + ' owe ' + nxShort(w) + ', due ' + (sameDay(w.dueTs, now) ? 'today' : sameDay(w.dueTs, now + 864e5) ? 'tomorrow' : NX_DAYS[new Date(w.dueTs).getDay()]), run: function () { sxWho(w.id, cls); } });
     });
     (d.worksheets || []).forEach(function (w) {
       if (w.practice || !w.showMarked || !w.correctionsOpen || !mine(w.classes)) return;
       var n = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
-      if (n) out.push({ t: n + ' owe corrections for ' + nxShort(w), run: function () { openDetail(w.id, 'corr'); } });
+      if (n) out.push({ s: n + ' owe ' + nxShort(w) + ' corrections', t: n + ' owe corrections for ' + nxShort(w), run: function () { openDetail(w.id, 'corr'); } });
     });
     att.filter(function (n) { return n.kind === 'release' && n.action !== 'answers'; }).forEach(function (n) { var w = byId(n.id); if (w && mine(w.classes)) out.push({ t: nxShort(w) + ' ready to return', run: function () { nxReturn(n.id); } }); });
     var hw = nxSetRows(cls);
@@ -8553,7 +8554,7 @@
   }
   function nxRoomHtml(cls, live) {
     var parts = nxRoomParts(cls);
-    if (!live) return esc(parts.filter(function (p) { return !p.all; }).slice(0, 3).map(function (p) { return p.t; }).join(' · '));
+    if (!live) return esc(parts.filter(function (p) { return !p.all; }).slice(0, 3).map(function (p) { return p.s || p.t; }).join(' · '));
     return parts.slice(0, 6).map(function (p) { var i = NX.roomActs.length; NX.roomActs.push(p); return '<button type="button" class="nx-roombtn" data-nxroom="' + i + '">' + esc(p.t) + '</button>'; }).join('<i aria-hidden="true">·</i>');
   }
   // Scroll to a Needs you card and put the focus on its first verb.
@@ -8651,7 +8652,7 @@
       var rows = nxSetRows(cls); if (!rows.length) return;
       var key = 'sethw|' + cls, r0 = rows[0];
       g.sethw.push({ key: key, local: true, snoozed: snz[key] === today, title: cls + ' · ' + plural(rows.length, 'sheet', 'sheets') + ' taught, not set',
-        sub: rows.map(function (x) { return x.r.name; }).join(', ') + '.', age: 'Deploy sets ' + nxShort({ title: r0.r.name }) + ' first, due ' + sxDueText(sxDue(r0.r)) + '.', verb: 'Deploy ' + nxShort({ title: r0.r.name }),
+        sub: listJoin(rows.map(function (x) { return nxShort({ title: x.r.name }); })) + '. Deploy sets ' + r0.r.name + ' first.', age: 'Due ' + sxDueText(sxDue(r0.r)) + '.', verb: 'Deploy ' + nxShort({ title: r0.r.name }),
         run: function (b) { sxDeployPart(r0.r, r0.ch.key, cls, b); } });
     });
     g.sethw.sort(function (a, b) { return (a.local ? 0 : 1) - (b.local ? 0 : 1); });
@@ -8675,7 +8676,7 @@
   }
   // The class split for the parents and keep-an-eye lines, from the Students list when it has loaded (no extra call).
   function nxFollowSplit(parent, count) {
-    var by = {}, n = 0, all = ', across all classes.';
+    var by = {}, n = 0, all = ' · all classes.';
     if (!H.tracker) return all;
     H.tracker.forEach(function (c) { (c.flagged || []).forEach(function (f) { if (f.seen || !!f.parent !== parent) return; by[f.cls] = (by[f.cls] || 0) + 1; n++; }); });
     if (n !== count) return all;
