@@ -1858,6 +1858,159 @@
   .nx-fres small { color: var(--nx-muted); }
   .nx-fres p { margin: 8px 12px; }
 
+  /* ================= Release 35: the older screens in the new style (D12) =================
+     Yellow means Teach only. Every other Hub button is dark (do it), outline (optional) or green (return), as on
+     Today, Chapters and Students. Scoped to the Hub's own page, drawer and dialogs, so Styles.html and the student
+     pages are not touched. The Teach links keep their yellow (.btn.yellow, the sign-in button is styled by #signin). */
+  :root { --nx-btnfill: var(--nx-ink); --nx-btnink: var(--nx-surface); }
+  :root[data-theme="dark"] { --nx-btnfill: #343C66; --nx-btnink: #EEF0F8; }
+  #app .btn, .nx-dpanel .btn, #veil .btn, #review .btn, .pop .btn, #guide-view .btn { background: var(--nx-btnfill); color: var(--nx-btnink); box-shadow: none; border-radius: 23px; font-family: var(--text); }
+  #app .btn:active:not(:disabled), .nx-dpanel .btn:active:not(:disabled), #veil .btn:active:not(:disabled), #review .btn:active:not(:disabled) { transform: none; box-shadow: none; }
+  #app .btn.small, .nx-dpanel .btn.small, #veil .btn.small, #review .btn.small, .pop .btn.small, #guide-view .btn.small { border-radius: 20px; }
+  #app .btn.ghost, .nx-dpanel .btn.ghost, #veil .btn.ghost, #review .btn.ghost, .pop .btn.ghost, #guide-view .btn.ghost,
+  #app .btn.key, .nx-dpanel .btn.key, #veil .btn.key { background: var(--nx-surface); color: var(--nx-ink); box-shadow: inset 0 0 0 2px var(--nx-line); }
+  #app .btn.ghost:hover, .nx-dpanel .btn.ghost:hover, #veil .btn.ghost:hover, #review .btn.ghost:hover, .pop .btn.ghost:hover { box-shadow: inset 0 0 0 2px var(--nx-line2); background: var(--nx-surface); }
+  :root[data-theme="dark"] #app .btn.ghost, :root[data-theme="dark"] .nx-dpanel .btn.ghost, :root[data-theme="dark"] #veil .btn.ghost, :root[data-theme="dark"] #review .btn.ghost, :root[data-theme="dark"] .pop .btn.ghost,
+  :root[data-theme="dark"] #app .btn.key, :root[data-theme="dark"] .nx-dpanel .btn.key, :root[data-theme="dark"] #veil .btn.key { background: transparent; color: var(--nx-ink); }
+  #app .btn.quiet, .nx-dpanel .btn.quiet, #veil .btn.quiet, #review .btn.quiet, .pop .btn.quiet { background: transparent; color: var(--nx-link); box-shadow: none; }
+  #app .btn.quiet:hover, .nx-dpanel .btn.quiet:hover, #veil .btn.quiet:hover, #review .btn.quiet:hover { background: var(--nx-soft); }
+  #app .btn.green, .nx-dpanel .btn.green, #veil .btn.green, #review .btn.green { background: var(--nx-green); color: #fff; box-shadow: none; }
+  :root[data-theme="dark"] #app .btn.green, :root[data-theme="dark"] .nx-dpanel .btn.green, :root[data-theme="dark"] #veil .btn.green { background: #1E6E4D; color: #EEF0F8; }
+  /* Mark with Claude and Claude's other buttons: dark, as on Today and Chapters (not orange) */
+  #app .btn.claude, .nx-dpanel .btn.claude, #veil .btn.claude, #review .btn.claude { background: var(--nx-btnfill); color: var(--nx-btnink); box-shadow: none; font-family: var(--text); }
+  /* Teach stays yellow: the only yellow button. Teach links carry data-go (they open the slides for a class);
+     any other button the older pages marked yellow (Deploy, Give, New worksheet, a setup fix) is dark like the rest. */
+  #app .btn.yellow, .nx-dpanel .btn.yellow, #veil .btn.yellow, .pop .btn.yellow { background: var(--nx-btnfill); color: var(--nx-btnink); box-shadow: none; }
+  #app .btn[data-go]:not(.ghost):not(.green):not(.quiet), .nx-dpanel .btn[data-go]:not(.ghost):not(.green):not(.quiet), #veil .btn[data-go]:not(.ghost):not(.green):not(.quiet) { background: var(--nx-yellow); color: #1B1F3B; }
+  /* the score pill in the marks table keeps its own look */
+  .nx-dpanel .spill.chkbtn { border-radius: 999px; font-family: var(--text); }
+  /* the Claude and solution boxes: a quiet blue edge instead of orange */
+  .nx-dpanel .claude-box, .nx-dpanel .solbox { border-left-color: var(--nx-blue); }
+  .nx-dpanel .pulse { background: var(--nx-blue); }
+  .nx-dpanel .job-line { color: var(--nx-link); }
+  .nx-dpanel .job-line.done { color: var(--nx-green-ink); } .nx-dpanel .job-line.error { color: var(--nx-red-ink); }
+  .nx-dpanel .cprog span.now { background: var(--nx-blue-soft); color: var(--nx-link); }
+
+  /* one heading per page: the Students bar carries the class and the view, the older page drops its own title */
+  #view-tr .trhead > .h, #view-rw > .row:first-child > .h, #view-pg .lbv-h > .h { display: none; }
+  #view-tr .trhead, #view-rw > .row:first-child, #view-pg .lbv-h { justify-content: flex-end; margin: 0 0 14px; min-height: 0; }
+  /* on a wide screen the page's own tools sit on the Students bar's line, so there is no empty row */
+  @media (min-width: 1200px) {
+    #view-tr .trhead, #view-rw > .row:first-child, #view-pg .lbv-h { margin-top: -60px; min-height: 46px; pointer-events: none; position: relative; z-index: 1; }
+    #view-tr .trhead > *, #view-rw > .row:first-child > *, #view-pg .lbv-h > * { pointer-events: auto; }
+    #view-pg .lbv-h .tn-note { max-width: 420px; text-align: right; }
+  }
+  /* the class chips inside the grid and Points: the header pills are the one class switch */
+  #view-tr > .class-chips, #view-rw .rwsec .class-chips { display: none; }
+  /* cards: the new surfaces, no hard borders */
+  #view-tr .sheet, #view-rw .sheet, .nx-dpanel .sheet, #view-cmp .cmp-box { background: var(--nx-surface); border: 0; border-radius: 22px; box-shadow: none; }
+  #view-tr .trk { border: 0; border-radius: 22px; box-shadow: none; background: var(--nx-surface); }
+  #view-tr .tile, #view-rw .rgroup, .nx-dpanel .tile { background: var(--nx-soft); border-radius: 16px; }
+  #view-tr .tile b { font-size: 32px; }
+  #view-tr .follow h3, #view-rw .rwsec h3, #view-rw .rules h3, .nx-dpanel .panel > h3, .nx-dpanel .marks h3, .nx-dpanel .missing-box h3 { font: 600 20px var(--display); color: var(--nx-ink); }
+  #view-tr .follow h3 .n, #view-rw .rwsec h3 .n { background: var(--nx-badge); border-radius: 11px; min-width: 22px; height: 22px; padding: 0 6px; display: inline-grid; place-items: center; }
+  /* the follow-up cards: a red or amber tab on the left, like the Students rows */
+  #view-tr .fcard { border: 0; border-radius: 20px; box-shadow: none; background: var(--nx-surface); padding: 16px; position: relative; overflow: hidden; }
+  #view-tr .fcard::before { content: ""; position: absolute; left: 0; top: 18px; width: 6px; height: 34px; border-radius: 0 6px 6px 0; background: var(--nx-amber); }
+  #view-tr .fcard.red::before { background: var(--nx-red); }
+  #view-tr .fcard.seen::before { background: var(--nx-line2); }
+  #view-tr .fcard .av, .nx-dpanel .av { background: #BFD9FF; color: #1B1F3B; }
+  #view-tr .fx .why.red { background: var(--nx-red-soft); color: var(--nx-red-ink); }
+  #view-tr .fx .why.amb { background: var(--nx-amber-soft); color: var(--nx-amber); }
+  #view-tr .facts { gap: 8px; }
+  #view-tr .facts .btn.small { min-height: 40px; padding: 0 14px; font-size: 14px; }
+  #view-tr .seenl { color: var(--nx-green-ink); }
+  /* the grid itself */
+  #view-tr table.tk thead th, #view-tr table.tk thead th.nm { background: var(--nx-soft); color: var(--nx-ink); border-bottom: 1px solid var(--nx-line); }
+  #view-tr table.tk td, #view-tr table.tk .nm { background: var(--nx-surface); border-bottom-color: var(--nx-chip); }
+  #view-tr table.tk tbody tr:hover td { background: var(--nx-soft); }
+  #view-tr table.tk tfoot td, #view-tr table.tk tfoot .nm { background: var(--nx-soft); color: var(--nx-muted); }
+  #view-tr .dot.onTime, #view-tr td.dc.onTime i { background: var(--nx-green); }
+  #view-tr .dot.missing, #view-tr td.dc.missing i { box-shadow: inset 0 0 0 2.5px var(--nx-red); }
+  #view-tr .dot.late, #view-tr td.dc.late i { box-shadow: inset 0 0 0 3.5px var(--nx-amber); }
+  #view-tr .rbar i.good { background: var(--nx-green); } #view-tr .rbar i.mid { background: var(--nx-amber); } #view-tr .rbar i.low { background: var(--nx-red); }
+  #view-tr .flag.red { background: var(--nx-red); } #view-tr .flag.amb { background: var(--nx-amber); }
+  #view-tr td.ms b { color: var(--nx-red-ink); }
+  #view-tr button.who:hover { color: var(--nx-link); }
+  #view-tr .legend { color: var(--nx-muted); }
+  #view-pg .lbframe { border-radius: 22px; box-shadow: none; }
+
+  /* one chart style: the grid's trend line, the Points weekly bars and the drawer's score spread share ink, grid and type */
+  svg.trend .tl, svg.pchart .tl, .spread .sp-t { font: 600 12px var(--text); fill: var(--nx-muted); }
+  .spread .sp-n { font: 700 12px var(--text); fill: var(--nx-ink); }
+  svg.trend .tg, svg.pchart .tg { stroke: var(--nx-line); }
+  svg.trend .tp { stroke: var(--nx-blue); stroke-width: 2; }
+  svg.trend .ta { fill: var(--nx-blue-soft); opacity: .7; }
+  svg.trend .td { fill: var(--nx-surface); stroke: var(--nx-blue); stroke-width: 2; }
+  svg.pchart .be, .pkey .be { fill: var(--nx-blue); background: var(--nx-blue); }
+  svg.pchart .bs, .pkey .bs { fill: var(--nx-chart2); background: var(--nx-chart2); }
+  .pkey, .trendbox .cap { color: var(--nx-muted); font: 600 13px var(--text); }
+  .spread rect.sp-b { fill: var(--nx-blue); }
+  .spread .sum b { font: 800 30px var(--display); color: var(--nx-ink); }
+  .spread .sum span { color: var(--nx-muted); }
+  :root { --nx-chart2: #C4701A; }
+  :root[data-theme="dark"] { --nx-chart2: #E39A4A; }
+
+  /* Points */
+  #view-rw .ticket { background: var(--nx-soft); }
+  #view-rw .ticket .tl { border-right-color: var(--nx-line2); }
+  #view-rw .ticket .btn.small { min-height: 40px; }
+  #view-rw .prize { background: var(--nx-soft); border: 0; border-radius: 18px; }
+  #view-rw .prize:hover { background: var(--nx-chip); }
+  #view-rw .prize.add { background: transparent; border: 1px dashed var(--nx-line2); }
+  #view-rw .prize .tk { background: var(--nx-blue-soft); color: var(--nx-link); }
+  #view-rw ol.lb li { border-bottom-color: var(--nx-chip); }
+  #view-rw ol.lb li:nth-child(-n+3) .rk { color: var(--nx-ink); }
+  #view-rw .lbar i { background: var(--nx-blue) !important; }
+  #view-rw ol.lb .av { background: #BFD9FF !important; color: #1B1F3B; }
+  #view-rw .example { background: var(--nx-soft); color: var(--nx-ink); }
+  #view-rw .bchip { background: var(--nx-green-soft); color: var(--nx-green-ink); }
+  #view-rw .goal .gc { color: var(--nx-ink); }
+  #view-rw ul.stk .lbar i { background: var(--nx-chart2) !important; }
+
+  /* the worksheet drawer: the five stage words as the Chapters strip, the current one dark, done ones green */
+  .nx-dpanel .stepbar { background: var(--nx-surface); border: 0; border-radius: 22px; box-shadow: none; padding: 6px; }
+  .nx-dpanel .stepbar button { border-radius: 16px; }
+  .nx-dpanel .stepbar button:hover { background: var(--nx-soft); }
+  .nx-dpanel .stepbar .sn { background: var(--nx-chip); color: var(--nx-muted); }
+  .nx-dpanel .stepbar .done .sn { background: var(--nx-green); color: #fff; }
+  .nx-dpanel .stepbar b { font: 700 15px var(--text); color: var(--nx-ink); }
+  .nx-dpanel .stepbar small { color: var(--nx-muted); font-size: 13px; }
+  .nx-dpanel .stepbar button[aria-selected="true"] { background: var(--nx-ink); box-shadow: none; }
+  .nx-dpanel .stepbar button[aria-selected="true"] b { color: var(--nx-surface); }
+  .nx-dpanel .stepbar button[aria-selected="true"] small { color: var(--nx-hero-muted); }
+  .nx-dpanel .stepbar button[aria-selected="true"] .sn { background: var(--nx-surface); color: var(--nx-ink); }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] { background: #E6E9F5; }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] b { color: #121522; }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] small { color: #474D6B; }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] .sn { background: #121522; color: #E6E9F5; }
+  .nx-dpanel .dhead h2, .nx-dpanel .detail-head h2 { font: 800 30px/1.1 var(--display); color: var(--nx-ink); }
+  .nx-dpanel .dhead p { color: var(--nx-muted); }
+  .nx-dpanel .back { color: var(--nx-link); font-family: var(--text); }
+  .nx-dpanel .marks-head { border-bottom-color: var(--nx-line); }
+  .nx-dpanel .notin { background: var(--nx-soft); border-bottom-color: var(--nx-line); }
+  .nx-dpanel table.mk th { background: var(--nx-soft); color: var(--nx-muted); border-bottom-color: var(--nx-line); }
+  .nx-dpanel table.mk td { border-bottom-color: var(--nx-chip); }
+  .nx-dpanel table.mk tbody tr:hover td { background: var(--nx-soft); }
+  .nx-dpanel .chip { background: var(--nx-red-soft); color: var(--nx-red-ink); }
+  .nx-dpanel .chip.green { background: var(--nx-green-soft); color: var(--nx-green-ink); }
+  .nx-dpanel .file { border: 0; background: var(--nx-soft); border-radius: 16px; }
+  .nx-dpanel .switch input:checked + .track { background: var(--nx-green); }
+  .nx-dpanel .switch input:focus-visible + .track { outline-color: var(--nx-blue); }
+  .nx-dpanel .autoline span { background: var(--nx-soft); color: var(--nx-ink2); }
+  .nx-dpanel .savebar { background: var(--nx-surface); border: 0; border-radius: 20px; box-shadow: 0 14px 34px rgba(27,31,59,.25); }
+
+  /* Computing keeps its layout and takes the Hub's surfaces and buttons */
+  #view-cmp .cmp-cls button[aria-pressed="true"] { background: var(--nx-ink); color: var(--nx-surface); }
+  :root[data-theme="dark"] #view-cmp .cmp-cls button[aria-pressed="true"] { background: #E6E9F5; color: #121522; }
+  #view-cmp .cmp-coach { background: var(--nx-soft); }
+
+  /* Check and return: the footer with Return stays in view on a short screen (S2 at 1366 x 768) */
+  .modal.nx-retm { display: flex; flex-direction: column; overflow: hidden; padding: 0; max-height: calc(100vh - 32px); }
+  .modal.nx-retm > .nx-retbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 28px 28px 0; }
+  .modal.nx-retm .nx-retfoot { position: sticky; bottom: 0; z-index: 1; margin: 0 -28px; padding: 14px 28px 22px; background: var(--nx-surface); box-shadow: 0 -1px 0 var(--nx-line); }
+  .modal.nx-retm .nx-retbody > h2:first-child, .modal.nx-retm .nx-retbody > .spinner { margin-bottom: 24px; }
+
   @media (max-width: 1400px) { .nx-priv span { display: none; } .nx-cls button { padding: 0 12px; } }
   @media (max-width: 1100px) {
     .nx-ngrid { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
@@ -3633,12 +3786,12 @@
   function stageOf(w) {
     if (w.practice) return { k: 'practice', act: 'open', label: 'Open' };
     var j = w.job, connected = !!(H.dash && H.dash.claude && H.dash.claude.connected);
-    if (w.showMarked && w.hasAnswerKey && !w.showAnswers) return { k: 'answers', act: 'answers', label: 'Release answers', icon: ICON.key };
+    if (w.showMarked && w.hasAnswerKey && !w.showAnswers) return { k: 'answers', act: 'answers', label: 'Show the key', icon: ICON.key };
     if (w.showMarked) return { k: 'released', act: 'open', label: 'Open' };
     if (j && j.status === 'sample_ready') return { k: 'sample', act: 'open', label: 'Check the sample', icon: ICON.pen };
     if (j && j.status === 'solution_ready' && !w.hasSolution) return { k: 'solution', act: 'solution', label: 'Check the solution', icon: ICON.pen };
     if (jobBusy(w)) return { k: 'marking', act: 'open', label: 'Open' };
-    if (w.markedFiles > 0 || w.scored > 0) return { k: 'marked', act: 'release', label: 'Release marking' };
+    if (w.markedFiles > 0 || w.scored > 0) return { k: 'marked', act: 'release', label: 'Return to students' };
     if (w.handed > 0 && (w.isDue || w.handed >= w.total)) return connected ? { k: 'ready', act: 'claude', label: 'Mark with Claude', icon: ICON.spark, cls: 'claude' } : { k: 'ready', act: 'zip', label: 'Download zip', icon: ICON.down };
     return { k: 'collecting', act: 'open', label: 'Open' };
   }
@@ -3678,9 +3831,9 @@
     if (main.act !== 'open') items.push(['open', 'Open', ICON.tabWs]);
     if (w.handed && !jobBusy(w) && main.act !== 'claude') items.push(['claude', 'Mark with Claude', ICON.spark]);
     if (main.act !== 'zip') items.push(['zip', 'Download zip', ICON.down]);
-    items.push(['return', 'Return marked work', ICON.up]);
-    if ((w.markedFiles || w.scored) && !w.showMarked && main.act !== 'release') items.push(['release', 'Release marking', ICON.tabRw]);
-    if (w.hasAnswerKey && !w.showAnswers && main.act !== 'answers') items.push(['answers', 'Release answers', ICON.key]);
+    items.push(['return', 'Upload marked work', ICON.up]);
+    if ((w.markedFiles || w.scored) && !w.showMarked && main.act !== 'release') items.push(['release', 'Return to students', ICON.tabRw]);
+    if (w.hasAnswerKey && !w.showAnswers && main.act !== 'answers') items.push(['answers', 'Show the key', ICON.key]);
     items.push(['edit', 'Edit details', ICON.pen]);
     items.push(['copy', 'Copy to classes', ICON.copy]);
     if (!w.inLibrary) items.push(['library', 'Save to my library', ICON.folder]);
@@ -3784,9 +3937,9 @@
     return hit;
   }
   function flowWhy(f) {
-    return f === 'hands' ? 'Saved work hands itself in at the due time' + (claudeOn() ? ', Claude marks it, and you check it and release.' : ', then you mark it and release.') + ' Corrections close 7 days later, then the answers show.'
-      : f === 'self' ? 'Saved work hands itself in at the due time. You mark it and release. Corrections close 7 days later, then the answers show.'
-      : f === 'open' ? 'Students hand in when they are ready. Late work is taken and shown as late. Corrections close 7 days after you release, then the answers show.'
+    return f === 'hands' ? 'Saved work hands itself in at the due time' + (claudeOn() ? ', Claude marks it, and you check it and return it.' : ', then you mark it and return it.') + ' Corrections close 7 days later, then the answers show.'
+      : f === 'self' ? 'Saved work hands itself in at the due time. You mark it and return it. Corrections close 7 days later, then the answers show.'
+      : f === 'open' ? 'Students hand in when they are ready. Late work is taken and shown as late. Corrections close 7 days after you return it, then the answers show.'
       : 'Your own settings, under Advanced.';
   }
   function scheduleFields(w) {
@@ -3799,8 +3952,8 @@
       '<label class="check-row"><input type="checkbox" id="sc-auto"' + (w.autoHandIn ? ' checked' : '') + '><span>Hand in saved work by itself at the due time<br><span class="muted">Anyone who wrote on it but did not tap Hand in is handed in, on time. Hand-in closes then. Needs a due date.</span></span></label>' +
       '<label class="check-row"><input type="checkbox" id="sc-close"' + (w.autoClose || w.autoHandIn ? ' checked' : '') + (w.autoHandIn ? ' disabled' : '') + '><span>Close hand-in at the due time<br><span class="muted">Leave this off to accept late work and track it as late.</span></span></label>' +
       '<label class="check-row"><input type="checkbox" id="sc-mark"' + (w.autoMark ? ' checked' : '') + (connected || w.autoMark ? '' : ' disabled') + '><span>Start Claude\'s marking when it closes<br><span class="muted">' + (connected ? 'Claude marks one sample by itself. You check it, then let Claude mark the rest.' : 'Connect Claude marking first (top of the Hub).') + '</span></span></label>' +
-      '<label class="check-row"><input type="checkbox" id="sc-corr"' + (w.corrDays ? ' checked' : '') + '><span>Close corrections <input type="number" id="sc-days" min="1" max="60" value="' + (w.corrDays || 7) + '" style="width:64px;padding:4px 6px;font-size:15px"> days after I release the marking</span></label>' +
-      '<label class="check-row"><input type="checkbox" id="sc-ans"' + (w.answersAfter ? ' checked' : '') + '><span>Release the answers when corrections close</span></label></details></div>';
+      '<label class="check-row"><input type="checkbox" id="sc-corr"' + (w.corrDays ? ' checked' : '') + '><span>Close corrections <input type="number" id="sc-days" min="1" max="60" value="' + (w.corrDays || 7) + '" style="width:64px;padding:4px 6px;font-size:15px"> days after I return the marking</span></label>' +
+      '<label class="check-row"><input type="checkbox" id="sc-ans"' + (w.answersAfter ? ' checked' : '') + '><span>Show the answer key when corrections close</span></label></details></div>';
   }
   function scheduleValues() {
     return { autoClose: $('sc-close').checked || $('sc-auto').checked, corrDays: $('sc-corr').checked ? Math.max(1, Number($('sc-days').value) || 7) : 0, answersAfter: $('sc-ans').checked,
@@ -3859,7 +4012,7 @@
       var it = lib.on && lib.item, hint = $('nw-shint');
       if (it && it.sol && !sol) {
         hint.innerHTML = '<b style="color:var(--green-ink)">' + ICON.tick + ' Your marked solution is in the library:</b> ' + esc(it.sol.name) + '. Claude marks against it. Upload a different one here to use that instead.' +
-          (it.key ? ' The answer key from last time comes too, hidden from students until you release it.' : '') +
+          (it.key ? ' The answer key from last time comes too, hidden from students until you show it.' : '') +
           (it.notes ? ' Claude starts from its marking notes from last time.' : '');
         if ($('nw-draft')) { $('nw-draft').checked = false; $('nw-draft').disabled = true; }
       } else if (it && (it.key || it.notes) && !sol) {
@@ -4188,7 +4341,8 @@
   }
 
   /* ---------- the worksheet page: five steps ---------- */
-  var STEPS = [['set', 'Set'], ['hand', 'Hand in'], ['mark', 'Mark'], ['return', 'Return'], ['corr', 'Corrections']];
+  // Release 35: the Chapters stage words (NX_STAGE_WORDS), plus Corrections.
+  var STEPS = [['set', 'Set'], ['hand', 'Collecting'], ['mark', 'Marking'], ['return', 'Back'], ['corr', 'Corrections']];
   H.step = {};
   function defaultStep(w) {
     var marked = w.markedFiles > 0 || w.scored > 0;
@@ -4207,8 +4361,8 @@
       case 'set': return [true, w.hasSolution ? 'Solution added' : solDrafting(w) ? 'Claude is drafting' : w.job && w.job.status === 'solution_ready' ? 'Draft to check' : 'No solution yet'];
       case 'hand': return [!w.open || w.isDue, (w.open ? 'Open · ' : 'Closed · ') + w.handed + ' of ' + w.total + ' in'];
       case 'mark': return [marked, jobBusy(w) ? 'Claude is marking' : marked ? w.markedFiles + ' marked' : 'Not marked'];
-      case 'return': return [!!w.showMarked, w.showMarked ? (w.showAnswers ? 'Marking and answers out' : 'Released') : 'Not released'];
-      case 'corr': return [w.showMarked && (!w.correctionsOpen || (w.corrDue && w.corrDone >= w.corrDue)), w.showMarked ? (w.correctionsOpen ? w.corrDone + ' of ' + w.corrDue + ' in' : 'Closed') : 'After release'];
+      case 'return': return [!!w.showMarked, w.showMarked ? (w.showAnswers ? 'With students, key shown' : 'With students') : 'Not back yet'];
+      case 'corr': return [w.showMarked && (!w.correctionsOpen || (w.corrDue && w.corrDone >= w.corrDue)), w.showMarked ? (w.correctionsOpen ? w.corrDone + ' of ' + w.corrDue + ' in' : 'Closed') : 'Once it is back'];
     }
   }
   function sw(id, on, disabled, title, small) {
@@ -4243,7 +4397,7 @@
     }
     if (j && j.status === 'error' && j.phase === 'solution') return '<div class="missing-box claude-box solbox"><p class="job-line error">Claude could not draft the marked solution. ' + esc(j.message || '') + '</p>' +
       '<div class="detail-acts" style="margin-top:8px"><button class="btn claude" id="d-soldraft' + (inMark ? '2' : '') + '">Try again</button></div></div>';
-    if (!w.hasSolution && connected) return '<div class="detail-acts" style="margin:0 0 12px"><button class="btn claude" id="d-soldraft' + (inMark ? '2' : '') + '">' + ICON.spark + 'Let Claude draft the marked solution</button>' +
+    if (!w.hasSolution && connected) return '<div class="detail-acts" style="margin:0 0 12px"><button class="btn ' + (inMark ? 'ghost' : 'claude') + '" id="d-soldraft' + (inMark ? '2' : '') + '">' + ICON.spark + 'Let Claude draft the marked solution</button>' +
       '<span class="muted" style="font-size:13px;align-self:center">Or upload your own below.</span></div>';
     return '';
   }
@@ -4287,7 +4441,7 @@
     if (w.autoHandIn) autoBits.push(w.isDue ? 'Saved work was handed in at the due time' : 'Saved work hands itself in at the due time');
     if (w.auto) autoBits.push(plural(w.auto, 'student', 'students') + ' handed in automatically' + (w.pending ? ' (' + w.pending + ' being made into PDFs)' : ''));
     if (w.autoMark) autoBits.push(!w.isDue ? 'Claude starts marking when it closes' : w.hasSolution ? 'Claude started marking by itself' : 'Claude starts marking once the marked solution is saved');
-    P.hand = '<h3>Hand in</h3>' + (autoBits.length ? '<div class="autoline">' + autoBits.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + '</div>' : '') + '<div class="switches">' +
+    P.hand = '<h3>Collecting</h3>' + (autoBits.length ? '<div class="autoline">' + autoBits.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + '</div>' : '') + '<div class="switches">' +
       sw('sw-open', w.open, false, w.open ? 'Students can hand in' + (w.dueTs ? ', due ' + esc(dueWords(w)) : '') : 'Hand-in is closed',
         w.open ? 'Students can still write and hand in.' : 'Closed. Students cannot change it.') + '</div>' +
       '<div class="missing-box"><h3 style="font-size:16px">' + (w.isDue ? 'Not handed in' : 'Not handed in yet') + '</h3>' +
@@ -4295,24 +4449,25 @@
         '<div class="detail-acts"><button class="btn ghost" id="d-nudge">' + ICON.student + 'Copy a reminder</button></div>' : '<p class="muted" style="margin:0">Everyone has handed in.</p>') + '</div>' +
       '<div class="detail-acts" style="margin-top:14px"><button class="btn ghost" id="d-zip">' + ICON.down + 'Download zip</button></div>' +
       '<div class="helpbox" id="d-help"></div>';
-    P.mark = '<h3>Mark</h3><p class="lead">' + (w.hasSolution ? 'Claude marks against your marked solution, or mark by hand.' : 'Add your marked solution first, then Claude can mark against it.') + '</p>' +
+    var claudeBtn = w.handed && !jobBusy(w) && !(w.job && /^(sample_ready|solution_ready)$/.test(w.job.status));
+    P.mark = '<h3>Marking</h3><p class="lead">' + (w.hasSolution ? 'Claude marks against your marked solution, or mark by hand.' : 'Add your marked solution first, then Claude can mark against it.') + '</p>' +
       (w.hasSolution ? '' : solutionLine(w, true)) +
       '<div class="detail-acts">' +
-      (w.handed && !jobBusy(w) && !(w.job && /^(sample_ready|solution_ready)$/.test(w.job.status)) ? '<button class="btn claude" id="d-claude">' + ICON.spark + 'Mark with Claude</button>' : '') +
-      (w.handed ? '<button class="btn" id="d-check">' + ICON.pen + (w.markedFiles ? 'Check marking' : 'Mark by hand') + '</button>' : '') +
-      '<button class="btn ghost" id="d-ret">' + ICON.up + 'Return marked work</button>' +
+      (claudeBtn ? '<button class="btn claude" id="d-claude">' + ICON.spark + 'Mark with Claude</button>' : '') +
+      (w.handed ? '<button class="btn' + (claudeBtn || live ? ' ghost' : '') + '" id="d-check">' + ICON.pen + (w.markedFiles ? 'Check marking' : 'Mark by hand') + '</button>' : '') +
+      '<button class="btn ghost" id="d-ret">' + ICON.up + 'Upload marked work</button>' +
       (w.reportUrl ? '<a class="btn ghost" href="' + esc(w.reportUrl) + '" target="_blank" rel="noopener">Class report</a>' : '') +
       '<label class="btn ghost keyfile">' + ICON.up + (w.hasSolution ? 'Replace marked solution' : 'Upload marked solution') + '<input type="file" id="d-sol-m" accept=".pdf,application/pdf"></label></div>' +
       (j && j.status === 'done' ? claudeBox(w, rows, true) : '');
-    P['return'] = '<h3>Return</h3><div class="switches">' +
+    P['return'] = '<h3>Back with students</h3><div class="switches">' +
       sw('sw-rel', w.showMarked, false, w.showMarked ? 'Students can see their marking' : 'Marking is hidden from students', w.showMarked ? 'Marked copy, score and comment are on their profile.' : 'Hidden until you turn this on.') +
       sw('sw-ans', w.showAnswers, !w.hasAnswerKey, !w.hasAnswerKey ? 'No answer key yet' : w.showAnswers ? 'Students can see the answer key' : 'The answer key is hidden',
         !w.hasAnswerKey ? 'No answer key yet. It comes in the return file.' : w.showAnswers ? 'The answer key is on their profile.' : 'Answer key uploaded. Hidden until you turn this on.') + '</div>' +
       '<div class="detail-acts">' + (w.answerUrl ? '<a class="btn ghost" href="' + esc(w.answerUrl) + '" target="_blank" rel="noopener">' + ICON.key + 'Answer key</a>' : '') +
       '<label class="btn ghost keyfile">' + ICON.up + (w.hasAnswerKey ? 'Replace answer key' : 'Upload answer key') + '<input type="file" id="d-key" accept=".pdf,application/pdf"></label></div>';
     P.corr = '<h3>Corrections</h3><div class="switches">' +
-      sw('sw-corr', w.correctionsOpen, false, !w.showMarked ? 'Corrections open after you release the marking' : w.correctionsOpen ? 'Students can hand in corrections' : 'Corrections are closed',
-        !w.showMarked ? 'Students can do corrections once you release the marking.' : w.correctionsOpen ? 'Students can hand in corrections in green.' : 'Closed. Students cannot hand in corrections.') + '</div>';
+      sw('sw-corr', w.correctionsOpen, false, !w.showMarked ? 'Corrections open once the marking is back' : w.correctionsOpen ? 'Students can hand in corrections' : 'Corrections are closed',
+        !w.showMarked ? 'Students can do corrections once the marking is back with them.' : w.correctionsOpen ? 'Students can hand in corrections in green.' : 'Closed. Students cannot hand in corrections.') + '</div>';
     if (w.showMarked && w.corrDue) {
       P.corr += '<div class="missing-box"><p class="muted" style="margin:0 0 8px">' + w.corrDone + ' of ' + w.corrDue + ' handed in' + (w.correctionsOpen ? '' : '. Corrections are closed') + '. Students with full marks do not need to do corrections.</p>';
       if (w.corrOwed.length) P.corr += '<div class="cls-label">' + (w.correctionsOpen ? 'Still to hand in' : 'Did not hand in') + ', ' + w.corrOwed.length + '</div><div class="chips">' + chipsFor(w.corrOwed) + '</div>';
@@ -4325,7 +4480,7 @@
     // the marks table
     var vis = rows.filter(function (r) { return !H.cls || r.cls === H.cls; });
     var many = vis.some(function (r) { return r.cls !== (vis[0] || {}).cls; });
-    h += '<div class="sheet marks"><div class="marks-head"><h3 style="margin:0">Marks' + (H.cls ? ' for ' + esc(H.cls) : '') + '</h3>' + tip('Type a score in the box. Tap a student for their comment and the Mostly blank tick. Students see them when marking is released. J and K move between students, S saves.') +
+    h += '<div class="sheet marks"><div class="marks-head"><h3 style="margin:0">Marks' + (H.cls ? ' for ' + esc(H.cls) : '') + '</h3>' + tip('Type a score in the box. Tap a student for their comment and the Mostly blank tick. Students see them once the marking is back with them. J and K move between students, S saves.') +
       '<span class="spacer"></span><button class="btn ghost small noprint" id="d-print">' + ICON.print + 'Print</button><span class="printonly">' + esc(w.title + ' · ' + w.classText + (w.due ? ' · due ' + w.due : '')) + '</span></div>' +
       spreadHtml(vis) +
       (notIn.length ? '<div class="notin"><b>Not handed in</b><div class="chips">' + chipsFor(notIn.reduce(function (a, pc) { return a.concat(pc.notHanded); }, [])) + '</div><button class="btn small ghost" id="d-nudge2">Copy a reminder</button></div>' : '') +
@@ -4369,7 +4524,7 @@
     var pct = ps.map(function (p) { return p.got / p.max; }).sort(function (a, c) { return a - c; }), mid = pct[Math.floor(pct.length / 2)];
     var svg = '<svg viewBox="0 -14 ' + W + ' ' + (Hh + 30) + '" role="img" aria-label="How the scores are spread">' + bins.map(function (c, i) {
       var bh = top ? Math.max(c ? 4 : 0, Hh * c / top) : 0, x = i * bw + 3;
-      return '<rect x="' + x.toFixed(1) + '" y="' + (Hh - bh).toFixed(1) + '" width="' + (bw - 6).toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="4" fill="' + (i / (n - 1) >= 0.7 ? '#1C7A4C' : i / (n - 1) >= 0.5 ? '#E0A100' : '#C9695A') + '"/>' +
+      return '<rect x="' + x.toFixed(1) + '" y="' + (Hh - bh).toFixed(1) + '" width="' + (bw - 6).toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="4" class="sp-b"/>' +
         (c ? '<text class="sp-n" x="' + (x + (bw - 6) / 2).toFixed(1) + '" y="' + (Hh - bh - 4).toFixed(1) + '" text-anchor="middle">' + c + '</text>' : '') +
         '<text class="sp-t" x="' + (x + (bw - 6) / 2).toFixed(1) + '" y="' + (Hh + 14) + '" text-anchor="middle">' + (same ? i : i * 10 + '%') + '</text>';
     }).join('') + '</svg>';
@@ -4594,16 +4749,16 @@
   function confirmRelease(id, show) {
     var w = retWs(id);
     var title = w ? w.title : id, full = show && !!returnPatch(w).correctionsOpen;
-    modal('<h2>' + (show ? 'Release marking?' : 'Hide marking?') + '</h2><p>' +
+    modal('<h2>' + (show ? 'Return the marking?' : 'Hide marking?') + '</h2><p>' +
       (show ? 'Students will see their marked copy, score and comment for <b>' + esc(title) + '</b> on their homework profile straight away.'
             : 'Students will no longer see the marking for <b>' + esc(title) + '</b>.') + '</p>' +
       (full ? '<p>' + esc(returnWords(w)) + '</p>' : '') +
-      '<div class="foot"><button class="btn ghost" id="rl-no">Cancel</button><button class="btn" id="rl-yes">' + (show ? 'Release to students' : 'Hide from students') + '</button></div>');
+      '<div class="foot"><button class="btn ghost" id="rl-no">Cancel</button><button class="btn' + (show ? ' green' : '') + '" id="rl-yes">' + (show ? 'Return to students' : 'Hide from students') + '</button></div>');
     $('rl-no').onclick = closeModal;
     $('rl-yes').onclick = function () {
-      busy(show ? 'Releasing...' : 'Hiding...');
+      busy(show ? 'Returning...' : 'Hiding...');
       (show ? sendReturn(id, w) : tcall('api_t_update', id, { showMarked: false }).then(function () {
-        toast('Marking hidden', { undo: function () { undoPatch(id, { showMarked: true }, 'Marking released again'); } });
+        toast('Marking hidden', { undo: function () { undoPatch(id, { showMarked: true }, 'The marking is back with students again'); } });
       })).then(function () {
         closeModal();
         return H.view === 'detail' ? openDetail(id) : loadDash();
@@ -4651,7 +4806,7 @@
     return tcall('api_t_update', id, patch).then(function () {
       var dd = H.dash ? byId(id) : null; if (dd) { dd.showMarked = true; if (patch.correctionsOpen) dd.correctionsOpen = true; }
       // Already back with students (new marked files for it): nothing to take back.
-      if (was) toast('Marking released');
+      if (was) toast('The new marking is back with students');
       else toast(title + ' is back with ' + listJoin(classes) + '.' + (patch.correctionsOpen ? ' Corrections are due ' + nxDay(due) + '.' : ''),
         { undo: function () { undoPatch(id, back, 'Taken back. Students cannot see the marks.'); }, ms: 8000 });
       return patch;
@@ -4668,25 +4823,25 @@
   function confirmAnswers(id, show) {
     var w = byId(id) || (H.marks && H.marks.worksheet);
     var title = w ? w.title : id, open = !!(w && w.open);
-    var h = '<h2>' + (show ? 'Release the answers?' : 'Hide the answers?') + '</h2><p>' +
+    var h = '<h2>' + (show ? 'Show the answer key?' : 'Hide the answer key?') + '</h2><p>' +
       (show ? 'Students will see the answer key for <b>' + esc(title) + '</b> on their homework profile, next to their marked work.'
             : 'Students will no longer see the answer key for <b>' + esc(title) + '</b>.') + '</p>';
     if (show && open) h += '<div class="warnbox">This worksheet is still open for hand-in. Students who have not handed in will not see the answers until they hand in or you close it. Those who have handed in could still pass the answers on.</div>';
     h += '<div class="foot"><button class="btn ghost" id="an-no">Cancel</button>' +
-      (show && open ? '<button class="btn ghost" id="an-only">Release only</button><button class="btn key" id="an-close">Close hand-in and release</button>'
-                    : '<button class="btn' + (show ? ' key' : '') + '" id="an-yes">' + (show ? 'Release answers' : 'Hide answers') + '</button>') + '</div>';
+      (show && open ? '<button class="btn ghost" id="an-only">Show it only</button><button class="btn" id="an-close">Close hand-in and show it</button>'
+                    : '<button class="btn" id="an-yes">' + (show ? 'Show the key' : 'Hide the key') + '</button>') + '</div>';
     modal(h);
     var go = function (patch, done) {
-      busy(show ? 'Releasing the answers...' : 'Hiding the answers...');
+      busy(show ? 'Showing the answer key...' : 'Hiding the answer key...');
       tcall('api_t_update', id, patch).then(function () {
         var back = { showAnswers: !patch.showAnswers }; if (patch.open === false) back.open = true;
-        closeModal(); toast(done, { undo: function () { undoPatch(id, back, show ? 'Answers hidden again' : 'Answers released again'); } }); return H.view === 'detail' ? openDetail(id) : loadDash();
+        closeModal(); toast(done, { undo: function () { undoPatch(id, back, show ? 'Answer key hidden again' : 'Answer key shown again'); } }); return H.view === 'detail' ? openDetail(id) : loadDash();
       }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
     };
     $('an-no').onclick = closeModal;
-    if ($('an-yes')) $('an-yes').onclick = function () { go({ showAnswers: show }, show ? 'Answers released' : 'Answers hidden'); };
-    if ($('an-only')) $('an-only').onclick = function () { go({ showAnswers: true }, 'Answers released'); };
-    if ($('an-close')) $('an-close').onclick = function () { go({ showAnswers: true, open: false }, 'Closed and answers released'); };
+    if ($('an-yes')) $('an-yes').onclick = function () { go({ showAnswers: show }, show ? 'Answer key shown' : 'Answer key hidden'); };
+    if ($('an-only')) $('an-only').onclick = function () { go({ showAnswers: true }, 'Answer key shown'); };
+    if ($('an-close')) $('an-close').onclick = function () { go({ showAnswers: true, open: false }, 'Closed and answer key shown'); };
   }
 
   /* ---------------- marking by Claude ---------------- */
@@ -4740,7 +4895,7 @@
     var nFlag = (rows || []).filter(function (r) { return r.handedAt && flagged(r, (j.checks || []).map(function (c) { return String(c).toLowerCase(); })); }).length;
     if (st === 'done' && nFlag) h += '<p class="flagnote">Claude asks you to look at ' + plural(nFlag, 'script', 'scripts') + '. Check the marking opens those first.</p>';
     if (st === 'done' || st === 'sample_ready') h += '<p style="margin:10px 0 0">' + (w.checked ? plural(w.checked, 'script', 'scripts') + ' checked by you. ' : '') + 'Open any script to check it, erase or change Claude\'s marks, or add your own.</p>';
-    if (st === 'done' && !w.showMarked) h += '<div class="acts" style="margin-top:10px"><button class="btn ghost" id="cl-check">' + ICON.pen + 'Check the marking</button><button class="btn" id="cl-release">Release to students</button></div>';
+    if (st === 'done' && !w.showMarked) h += '<div class="acts" style="margin-top:10px"><button class="btn ghost" id="cl-check">' + ICON.pen + 'Check the marking</button><button class="btn green" id="cl-release">Return to students</button></div>';
     if (st === 'error') h += '<div class="acts" style="margin-top:10px"><button class="btn claude" id="cl-again">Try again</button></div>';
     if (j.sessionUrl) h += '<p style="margin:10px 0 0"><a href="' + esc(j.sessionUrl) + '" target="_blank" rel="noopener">See what Claude is doing</a></p>';
     return h + '</div></div>';
@@ -4774,7 +4929,7 @@
     if (!w) return;
     if (!(H.dash && H.dash.claude && H.dash.claude.connected)) { claudeSettings(); return; }
     var newOnes = w.handed - w.markedFiles;
-    var h = '<h2>Mark with Claude</h2><p>Claude marks <b>' + esc(w.title) + '</b> against your marked solution. Nothing reaches students until you release it.</p>';
+    var h = '<h2>Mark with Claude</h2><p>Claude marks <b>' + esc(w.title) + '</b> against your marked solution. Nothing reaches students until you return it.</p>';
     if (!w.hasSolution) h += '<div class="field"><span class="lbl">Your marked solution (PDF)</span><label class="drop" id="mc-drop"><input type="file" id="mc-file" accept="application/pdf,.pdf"><b>Choose your marked solution</b> or drop it here</label><div class="picked" id="mc-picked"></div></div>';
     h += '<label class="check-row"><input type="checkbox" id="mc-sample" checked><span><b>Check one sample first</b><br><span class="muted">Claude marks one student, you look at it, then Claude marks the rest.</span></span></label>';
     if (w.markedFiles > 0 && newOnes > 0) h += '<label class="check-row"><input type="checkbox" id="mc-new" checked><span><b>Only the ' + newOnes + ' not marked yet</b></span></label>';
@@ -4785,7 +4940,7 @@
       if (!sure || !$('mc-sample')) return;
       $('mc-sample').checked = false;
       var p = document.createElement('p'); p.className = 'muted';
-      p.textContent = 'Claude has marked this worksheet for another class and you released it, so it can mark them all at once. Tick the box to check a sample first anyway.';
+      p.textContent = 'Claude has marked this worksheet for another class and you returned it, so it can mark them all at once. Tick the box to check a sample first anyway.';
       $('mc-sample').closest('label').insertAdjacentElement('afterend', p);
     }).catch(function () { /* the sample stays ticked */ });
     var sol = null;
@@ -6257,7 +6412,7 @@
 
   function returnWork(id) {
     var w = byId(id) || (H.marks && H.marks.worksheet) || { id: id, title: id };
-    modal('<h2>Return marked work</h2><p>For <b>' + esc(w.title) + '</b>. Choose the return file Claude gave you (a .zip). You can also choose marked PDFs and a scores.csv on their own.</p>' +
+    modal('<h2>Upload marked work</h2><p>For <b>' + esc(w.title) + '</b>. Choose the return file Claude gave you (a .zip). You can also choose marked PDFs and a scores.csv on their own.</p>' +
       '<label class="drop" id="rt-drop"><input type="file" id="rt-file" accept=".zip,.pdf,.csv,application/zip,application/pdf,text/csv" multiple>' +
       '<b>Choose the return file</b> or drop it here</label><div id="rt-body"></div>' +
       '<div class="foot" id="rt-foot"><button class="btn ghost" id="rt-cancel">Cancel</button></div>', 'wide');
@@ -6275,10 +6430,10 @@
       '<li><b>' + got.pdfs.length + '</b> marked PDF' + (got.pdfs.length === 1 ? '' : 's') + '</li>' +
       '<li><b>' + (got.scores ? got.scores.length : 0) + '</b> ' + (got.scores ? 'scores and comments from scores.csv' : 'scores. No scores.csv was found, so only the marked files will be linked.') + '</li>' +
       '<li><b>' + (got.report ? 1 : 0) + '</b> class report' + (got.report ? '' : '. None was found.') + '</li>' +
-      '<li><b>' + (got.answers ? 1 : 0) + '</b> answer key' + (got.answers ? '. Students will not see it until you press Release answers.' : '. None was found.') + '</li></ul>';
+      '<li><b>' + (got.answers ? 1 : 0) + '</b> answer key' + (got.answers ? '. Students will not see it until you show the key.' : '. None was found.') + '</li></ul>';
     if (got.other.length) h += '<p class="muted" style="font-size:14px">Ignored: ' + esc(got.other.slice(0, 6).join(', ')) + (got.other.length > 6 ? ' and more' : '') + '.</p>';
     if (big.length) h += '<div class="problems">These PDFs are over ' + MAX_MB + ' MB and will be skipped: ' + esc(big.map(function (b) { return b.name; }).join(', ')) + '</div>';
-    if (got.pdfs.length || got.scores) h += '<label class="check-row"><input type="checkbox" id="rt-auto" checked><span><b>Release to students straight away</b><br><span class="muted">Untick to check the marking in the Hub first.</span></span></label>';
+    if (got.pdfs.length || got.scores) h += '<label class="check-row"><input type="checkbox" id="rt-auto" checked><span><b>Return to students straight away</b><br><span class="muted">Untick to check the marking in the Hub first.</span></span></label>';
     $('rt-body').innerHTML = h;
     var nothing = !got.pdfs.length && !got.scores && !got.report && !got.answers;
     $('rt-foot').innerHTML = '<button class="btn ghost" id="rt-cancel2">Cancel</button><button class="btn" id="rt-go"' + (nothing ? ' disabled' : '') + '>Upload</button>';
@@ -6323,7 +6478,7 @@
       var h = '<ul class="found" style="margin-top:14px"><li><b>' + linked + '</b> marked file' + (linked === 1 ? '' : 's') + ' linked to students</li>' +
         (scoreRes ? '<li><b>' + sOk + '</b> score' + (sOk === 1 ? '' : 's') + ' and comments saved</li>' : '') +
         (results.some(function (x) { return x.r.report; }) ? '<li><b>1</b> class report saved</li>' : '') +
-        (keyRes ? '<li><b>1</b> answer key saved' + (keyRes.r.released ? '. The answers were already released, so students see the new key.' : ', not released') + '</li>' : '') + '</ul>';
+        (keyRes ? '<li><b>1</b> answer key saved' + (keyRes.r.released ? '. The key was already shown, so students see the new one.' : ', not shown to students yet') + '</li>' : '') + '</ul>';
       if (probs.length || sBad.length) {
         h += '<div class="problems"><b>Please check these</b><ul>' +
           probs.map(function (x) { return '<li>' + esc(x.name) + ': ' + esc(x.r.reason || 'Not linked.') + '</li>'; }).join('') +
@@ -6331,21 +6486,21 @@
       }
       if (autoRelease && (linked || sOk)) {
         return sendReturn(w.id, w).then(function (pt) {
-          h += '<p><b>Released.</b> Students can see their marked work now.' + (pt.correctionsOpen ? ' ' + esc(returnWords(w)) : keyRes && !keyRes.r.released ? ' The answers stay hidden until you release them or corrections close.' : '') + '</p>';
+          h += '<p><b>Back with students.</b> They can see their marked work now.' + (pt.correctionsOpen ? ' ' + esc(returnWords(w)) : keyRes && !keyRes.r.released ? ' The answer key stays hidden until you show it or corrections close.' : '') + '</p>';
           $('rt-body').innerHTML = h;
           $('rt-foot').innerHTML = '<button class="btn" id="rt-done">Done</button>';
           $('rt-done').onclick = function () { closeModal(); H.view === 'detail' ? openDetail(w.id) : loadDash(); };
         });
       }
-      h += '<p>Students cannot see any of this until you release it.' + (keyRes && !keyRes.r.released ? ' The answers stay hidden until you press Release answers on the worksheet.' : '') + '</p>';
+      h += '<p>Students cannot see any of this until you return it.' + (keyRes && !keyRes.r.released ? ' The answer key stays hidden until you show it on the worksheet.' : '') + '</p>';
       $('rt-body').innerHTML = h;
-      $('rt-foot').innerHTML = '<button class="btn ghost" id="rt-later">Release later</button><button class="btn" id="rt-rel">Release to students</button>';
+      $('rt-foot').innerHTML = '<button class="btn ghost" id="rt-later">Return later</button><button class="btn green" id="rt-rel">Return to students</button>';
       $('rt-later').onclick = function () { closeModal(); H.view === 'detail' ? openDetail(w.id) : loadDash(); };
       $('rt-rel').onclick = function () {
-        busy('Releasing...');
+        busy('Returning...');
         sendReturn(w.id, w).then(function () {
           closeModal(); return H.view === 'detail' ? openDetail(w.id) : loadDash();
-        }).catch(function (e) { alertBox('Not released', msg(e)); });
+        }).catch(function (e) { alertBox('Not returned', msg(e)); });
       };
     }).catch(function (e) {
       if (!/TEACHER_SIGNED_OUT/.test(e.message)) { $('rt-body').innerHTML = '<div class="problems">' + esc(msg(e)) + '</div>'; $('rt-foot').innerHTML = '<button class="btn" id="rt-close">Close</button>'; $('rt-close').onclick = closeModal; }
@@ -6430,10 +6585,7 @@
       '<button class="btn ghost small" id="tr-print">' + ICON.print + 'Print</button></div>';
     if (!c) { $('view-tr').innerHTML = h + '<div class="sheet" style="margin-top:14px">' + emptyState('No students yet', 'Add students in the Sheet to see the tracker.') + '</div>'; bindTr(); return; }
     var open = c.flagged.filter(function (f) { return !f.seen; }).length;
-    h += '<div class="class-chips">' + all.map(function (x) {
-      var n = x.flagged.filter(function (f) { return !f.seen; }).length;
-      return '<button data-cls="' + esc(x.cls) + '" aria-pressed="' + (x.cls === c.cls) + '" style="--cc:' + ccOf(x.cls) + '">' + esc(x.cls) + (n ? ' (' + n + ')' : '') + '</button>';
-    }).join('') + '</div>';
+    // Release 35: no class chips here. The header pills are the one class switch, and the follow-up heading has the count.
 
     // how the class is doing
     var st = trackerStats(c), chart = trendSvg(c);
@@ -6450,7 +6602,8 @@
     h += '<div class="follow"><h3>To follow up in ' + esc(c.cls) + (open ? ' <span class="n">' + open + '</span>' : '') + '</h3>' +
       '<p class="muted small" style="margin:-4px 0 10px">A worksheet that is missing, late or under 50% is a problem. After ' + PARENT_AFTER + ' since you last messaged a parent, the card asks you to message them.</p>';
     if (!fl.length) h += '<div class="sheet">' + emptyState('No one to follow up', 'Everyone in ' + c.cls + ' is keeping up.') + '</div>';
-    else h += '<div class="fgrid">' + fl.map(function (f) {
+    var firstParent = fl.filter(function (f) { return f.parent && !f.seen; })[0];   // only this card's Message parent is filled
+    if (fl.length) h += '<div class="fgrid">' + fl.map(function (f) {
       var probs = f.problems || [];
       return '<div class="fcard ' + f.level + (f.seen ? ' seen' : '') + '" data-name="' + esc(f.name) + '">' +
         '<button class="av" data-who="' + esc(f.name) + '" style="--cc:' + ccOf(c.cls) + '" aria-label="Open ' + esc(f.name) + '">' + esc(initials(f.name)) + '</button>' +
@@ -6460,7 +6613,7 @@
         (f.parent ? '' : '<div class="pcount">' + probs.length + ' of ' + PARENT_AFTER + ' before a parent message</div>') +
         (f.parentSent ? '<div class="pcount">Parent last messaged ' + esc(f.parentSent) + '</div>' : '') +
         '<div class="facts">' + (f.seen ? '<span class="seenl">' + ICON.tick + 'Seen ' + (f.seenToday ? 'today' : esc(f.seen)) + '</span><button class="btn quiet small" data-unseen="' + esc(f.name) + '">Undo</button>'
-          : (f.parent ? '<button class="btn small" data-parent="' + esc(f.name) + '">Message parent</button><button class="btn ghost small" data-psent="' + esc(f.name) + '">' + ICON.tick + 'Parent messaged</button>' : '') +
+          : (f.parent ? '<button class="btn small' + (f === firstParent ? '' : ' ghost') + '" data-parent="' + esc(f.name) + '">Message parent</button><button class="btn ghost small" data-psent="' + esc(f.name) + '">' + ICON.tick + 'Parent messaged</button>' : '') +
             '<button class="btn ghost small" data-seen="' + esc(f.name) + '">' + ICON.tick + 'Seen today</button>') +
         '</div></div></div>';
     }).join('') + '</div>';
@@ -7157,15 +7310,15 @@
       '<div class="field countfield' + (m.open ? ' hidden' : '') + '"><label for="rw-at">Opens by itself at</label><div class="row"><input type="datetime-local" id="rw-at" value="' + (m.opensAt ? isoLocal(m.opensAt) : '') + '"><button class="btn ghost small" id="rw-saveat">' + (m.opensAt ? 'Change' : 'Start the countdown') + '</button>' + (m.opensAt ? '<button class="btn quiet small" id="rw-clearat">Stop</button>' : '') + '</div>' +
         '<p class="muted small" style="margin:4px 0 0">' + (m.opensAt ? 'Students see a countdown on their homework page. It opens on ' + esc(new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })) + '.' : 'Students see a countdown on their homework page, and the market opens by itself.') + '</p></div></div>';
     // tickets
-    h += '<div class="sheet rwsec"><h3>Tickets to hand out' + (waiting.length ? ' <span class="n">' + waiting.length + '</span>' : '') + '</h3>' +
-      (waiting.length ? '<p class="muted small">The student shows you the code. Tap Handed over when they have the prize.</p><div class="tickets">' +
+    h += '<div class="sheet rwsec" id="rw-hand"><h3>Prizes to hand out' + (waiting.length ? ' <span class="n">' + waiting.length + '</span>' : '') + '</h3>' +
+      (waiting.length ? '<p class="muted small">Check the code on the student\'s ticket, then tap Given.</p><div class="tickets">' +
         waiting.map(function (o) {
           return '<div class="ticket"><div class="tl">' + prizePic(artOf[o.prize] || 'mystery') + '</div><div class="tm"><span class="code" aria-label="Code ' + esc(o.code.split('').join(' ')) + '">' + esc(o.code) + '</span>' +
             '<b>' + esc(o.prize) + '</b><small>' + esc(o.cls + ' ' + o.name) + ' · ' + esc(o.when) + '</small></div>' +
-            '<div class="tr"><button class="btn small" data-hand="' + o.row + '">Handed over</button></div></div>';
+            '<div class="tr"><button class="btn small' + (o === waiting[0] ? '' : ' ghost') + '" data-hand="' + o.row + '">Given</button></div></div>';
         }).join('') + '</div>'
         : emptyState('No tickets waiting', 'Prizes students get at the night market show here.')) +
-      (done.length ? '<details class="handed"><summary>Handed over (' + done.length + ')</summary><ul>' +
+      (done.length ? '<details class="handed"><summary>Given (' + done.length + ')</summary><ul>' +
         done.map(function (o) { return '<li><span class="code sm">' + esc(o.code) + '</span><span>' + esc(o.cls + ' ' + o.name) + '</span><span class="muted">' + esc(o.prize) + ', ' + esc(o.done) + '</span><button class="btn quiet small" data-undo="' + o.row + '">Undo</button></li>'; }).join('') +
         '</ul></details>' : '') + '</div>';
     // prizes
@@ -7190,7 +7343,7 @@
     var board = list.map(function (s) { return { s: s, b: s.board != null ? s.board : Math.max(0, s.earned - s.lost) }; }).sort(function (a, b) { return b.b - a.b || a.s.name.localeCompare(b.s.name); });
     var topB = Math.max.apply(null, board.map(function (x) { return x.b; }).concat([1]));
     var rank = 0, last = null;
-    h += '<div class="sheet rwsec"><div class="row"><h3>Students</h3><span class="spacer"></span><div class="class-chips">' + r.classes.map(function (c) { return '<button data-rwcls="' + esc(c) + '" aria-pressed="' + (c === H.rwCls) + '" style="--cc:' + ccOf(c) + '">' + esc(c) + '</button>'; }).join('') + '</div></div>' +
+    h += '<div class="sheet rwsec"><div class="row"><h3>Students in ' + esc(H.rwCls) + '</h3></div>' +
       '<p class="muted small">Ranked like the leaderboard: points earned less points taken away. Tap + to give or take points.</p><ol class="lb">' +
       board.map(function (x, i) {
         if (x.b !== last) { rank = i + 1; last = x.b; }
@@ -7221,7 +7374,7 @@
         (g[0] === 'shop' ? '<div class="stepper"><label for="ru-board">Leaderboard</label><select id="ru-board">' + [['class', 'Each class sees its own'], ['all', 'All classes together'], ['off', 'Hidden']].map(function (o) { return '<option value="' + o[0] + '"' + (ru.board === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' : '') +
         '</div>'; }).join('') + '</div>' +
       '<p class="example" id="ru-ex">' + esc(ruleExample(ru)) + '</p>' +
-      '<div class="row"><div class="bonusedit"><b>Quick bonuses</b>' + (r.bonus || []).map(function (bn, i) { return '<span class="bchip">' + (bn.points > 0 ? '+' : '') + bn.points + ' ' + esc(bn.label) + '</span>'; }).join('') + '<button class="btn quiet small" id="rw-bonus">Change</button></div><span class="spacer"></span><button class="btn" id="rw-saver">Save the rules</button></div></div>';
+      '<div class="row"><div class="bonusedit"><b>Quick bonuses</b>' + (r.bonus || []).map(function (bn, i) { return '<span class="bchip">' + (bn.points > 0 ? '+' : '') + bn.points + ' ' + esc(bn.label) + '</span>'; }).join('') + '<button class="btn quiet small" id="rw-bonus">Change</button></div><span class="spacer"></span><button class="btn ghost" id="rw-saver">Save the rules</button></div></div>';
     $('view-rw').innerHTML = h;
     bindRewards();
   }
@@ -7473,7 +7626,7 @@
         b.disabled = true;
         var row = Number(b.getAttribute(hand ? 'data-hand' : 'data-undo'));
         tcall('api_t_rwCollected', row, hand).then(function () {
-          toast(hand ? 'Handed over' : 'Moved back to waiting', hand ? { undo: function () {
+          toast(hand ? 'Given' : 'Moved back to waiting', hand ? { undo: function () {
             tcall('api_t_rwCollected', row, false).then(function () { toast('Moved back to waiting'); return loadRewards(); }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
           } } : null);
           return loadRewards();
@@ -8956,8 +9109,17 @@
     if (k === 'released' || k === 'answers') return { n: 3, k: k };
     return { n: 2, k: k };
   }
+  // Release 35: one set of stage words everywhere (Chapters rows, the worksheet drawer, toasts and dialogs).
+  // Corrections follows Back where a sheet's corrections are shown (the drawer).
+  var NX_STAGE_WORDS = ['Set', 'Collecting', 'Marking', 'Back', 'Corrections'];
+  // The word for where a sheet is now: Set, Collecting, Marking, Back, or Corrections while they are open.
+  function nxStageWord(w) {
+    if (w.practice) return 'Practice';
+    var n = nxStage(w).n;
+    return n === 3 && w.showMarked && w.correctionsOpen && w.corrDue && w.corrDone < w.corrDue ? NX_STAGE_WORDS[4] : NX_STAGE_WORDS[n];
+  }
   function nxStages(n) {
-    return '<ol class="nx-stages" aria-label="Stage">' + ['Set', 'Collecting', 'Marking', 'Back'].map(function (l, i) {
+    return '<ol class="nx-stages" aria-label="Stage">' + NX_STAGE_WORDS.slice(0, 4).map(function (l, i) {
       return '<li class="' + (n > i ? 'done' : n === i ? 'now' : '') + '"' + (n === i ? ' aria-current="step"' : '') + '>' + l + '</li>';
     }).join('') + '</ol>';
   }
@@ -9277,7 +9439,7 @@
     bar.innerHTML = '<div class="nx-stuh"><h1 class="nx-h1">' + esc(cls) + (c ? ' · ' + plural(c.rows.length, 'student', 'students') : '') + '</h1>' +
       (view === 'list' ? '<div class="nx-seg" role="group" aria-label="Show">' + seg('all', 'Everyone', NX.stuFilter !== 'nudge') + seg('nudge', 'Needs a nudge', NX.stuFilter === 'nudge') + '</div>' : '') +
       '<div class="nx-seg" role="group" aria-label="View">' + seg('list', 'List', view === 'list') + seg('grid', 'Whole grid', view === 'grid') + seg('pts', 'Points', view === 'pts') + '</div>' +
-      (view === 'grid' ? '<label class="nx-sel">Show <select id="nx-gridk"><option value="tr"' + (under === 'tr' ? ' selected' : '') + '>Worksheets</option><option value="pg"' + (under === 'pg' ? ' selected' : '') + '>Slides in lessons</option></select></label>' : '') +
+      (view === 'grid' ? '<div class="nx-seg" role="group" aria-label="Show in the grid"><button type="button" data-nxgk="tr" aria-pressed="' + (under !== 'pg') + '">Worksheets</button><button type="button" data-nxgk="pg" aria-pressed="' + (under === 'pg') + '">Slides in lessons</button></div>' : '') +
       (view === 'list' ? '<label class="nx-findname"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nx-stuq" placeholder="Find a name" aria-label="Find a student" value="' + esc(NX.stuQ) + '"></label>' : '') + '</div>';
     Array.prototype.forEach.call(bar.querySelectorAll('[data-nxsv]'), function (b) {
       b.onclick = function () {
@@ -9288,7 +9450,9 @@
         else if (k === 'pts') showTab('rw');
       };
     });
-    if ($('nx-gridk')) $('nx-gridk').onchange = function () { lsSet('nx_grid', this.value); if (this.value === 'pg') openProgress(cls, '', false); else showTab('tr'); };
+    Array.prototype.forEach.call(bar.querySelectorAll('[data-nxgk]'), function (b) {
+      b.onclick = function () { var k = b.getAttribute('data-nxgk'); lsSet('nx_grid', k); if (k === 'pg') openProgress(cls, '', false); else showTab('tr'); };
+    });
     if ($('nx-stuq')) $('nx-stuq').oninput = function () { NX.stuQ = this.value; nxStudents(true); };
   }
   function nxStuLoad(fresh) {
