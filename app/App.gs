@@ -17,7 +17,7 @@
 //   /exec?phone           the teacher's phone during a lesson (release 34; paired with a code from the Hub)
 //   ?classic              any page as it was in release 33 (the fallback while the new pages settle in)
 
-var APP_BUILD = '2026-10-25-one-platform';
+var APP_BUILD = '2026-10-25-teacher-hub-glance';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -629,7 +629,12 @@ function apiPhoneNeedAct(pin, a, o) {
   o = o || {};
   var tk = phoneHubTk_(), done = 'Done';
   if (a === 'letin' || a === 'letno') { api_t_letin(tk, o.cls, o.gkey, a === 'letin'); done = a === 'letin' ? 'Let in' : 'Not let in'; }
-  else if (a === 'release') { api_t_update(tk, o.id, { showMarked: true }); done = 'Marking released'; }
+  else if (a === 'release') {
+    // Release 35: the same as the Hub's Check and return. Marks shown, corrections open for 7 days, answer key after corrections.
+    var ra = findAssignment_(o.id);
+    api_t_update(tk, o.id, ra && !ra.practice && !ra.showMarked ? { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true } : { showMarked: true });
+    done = 'Marking released';
+  }
   else if (a === 'answers') { api_t_update(tk, o.id, { showAnswers: true }); done = 'Answers released'; }
   else if (a === 'close') { api_t_update(tk, o.id, { open: false }); done = 'Hand-in closed'; }
   else if (a === 'given') { api_t_rwCollected(tk, o.row, true); done = 'Given'; }
@@ -1087,7 +1092,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 34;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 35;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;

@@ -2511,7 +2511,7 @@ function api_t_marks(token, id) {
     var sub = subs[a.id + '|' + studentKey_(s)];
     var c = trackCell_(a, sub, now);
     return {
-      cls: s.cls, reg: s.reg, name: s.name, kind: c.kind,
+      cls: s.cls, reg: s.reg, name: s.name, code: studentCode_(s), kind: c.kind,   // code: release 35, so Claude's notes (written by code) flag the script
       status: c.kind === 'onTime' ? 'On time' : c.kind === 'late' ? c.text.split(' ').slice(0, 2).join(' ') : c.kind === 'missing' ? 'Missing' : 'Not yet',
       handedAt: sub ? sub.at : '', fileUrl: sub ? fileCol[sub.row] || '' : '', markedUrl: sub ? sub.marked : '',
       score: sub ? sub.score : '', comment: sub ? sub.comment : '',
