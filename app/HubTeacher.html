@@ -1587,16 +1587,41 @@
   .nx-teachbtn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
   .nx-pairbtn { height: 44px; border-radius: 22px; border: 1px solid var(--nx-hero-line); background: transparent; color: var(--nx-hero-ink); font: 700 15px var(--text); cursor: pointer; }
   .nx-pairbtn:hover { border-color: var(--nx-hero-muted); }
+  /* the next lesson more than an hour away: a slim strip */
+  .nx-toprow.slim { align-items: flex-start; }
+  .nx-hero.slim { padding: 12px 14px 12px 28px; border-radius: 22px; min-height: 72px; box-sizing: border-box; flex-wrap: nowrap; gap: 20px; }
+  .nx-hero.slim .nx-hero-t { flex-direction: row; align-items: baseline; gap: 16px; flex: 1 1 auto; }
+  .nx-hero.slim .nx-kick { flex: none; font-size: 14px; }
+  .nx-hero.slim h2 { font-size: 22px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .nx-hero.slim .nx-hero-a { flex-direction: row; align-items: center; flex: none; }
+  .nx-hero.slim .nx-teachbtn { height: 48px; padding: 0 32px; font-size: 18px; border-radius: 24px; }
+  .nx-hero.slim .nx-pairbtn { padding: 0 16px; }
+  .nx-toprow.slim .nx-later { padding: 14px 20px; gap: 8px; }
+  .nx-later.none { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .nx-later.none p { margin: 0; }
+  /* In the room: what the class has waiting, each part a verb */
+  .nx-hero.room { padding-top: 24px; padding-bottom: 24px; }
+  .nx-hero.room .nx-hero-t { gap: 8px; }
+  .nx-hero.room h2 { font-size: 34px; }
+  .nx-room { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; margin-top: 2px; font-size: 15px; }
+  .nx-room i { font-style: normal; color: var(--nx-hero-muted); }
+  .nx-roomk { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nx-hero-muted); margin-right: 4px; }
+  .nx-roombtn { padding: 2px 0; border: 0; background: none; color: var(--nx-hero-ink); font: 700 15px var(--text); cursor: pointer; white-space: nowrap; text-decoration: underline; text-decoration-color: var(--nx-hero-line); text-underline-offset: 4px; }
+  .nx-roombtn:hover { text-decoration-color: currentColor; }
+  .nx-roombtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px; }
   .nx-card { background: var(--nx-surface); border-radius: 24px; padding: 20px 22px; box-sizing: border-box; }
-  .nx-later { flex: 1 1 340px; max-width: 440px; display: flex; flex-direction: column; gap: 12px; }
+  .nx-later { flex: 1 1 340px; max-width: 440px; display: flex; flex-direction: column; gap: 10px; }
   .nx-lrow { display: flex; align-items: center; gap: 12px; }
   .nx-ltime { width: 52px; flex: none; font-weight: 700; font-size: 15px; color: var(--nx-muted); }
   .nx-lt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .nx-lt b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nx-lt b { font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .nx-lt span { font-size: 14px; color: var(--nx-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nx-lt .nx-lstate { font-size: 13px; font-weight: 600; color: var(--nx-ink2); white-space: normal; }
   .nx-needs { display: flex; flex-direction: column; gap: 10px; }
-  .nx-ngrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
-  .nx-ncard { background: var(--nx-surface); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .nx-ngrid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; }
+  .nx-ncard { background: var(--nx-surface); border-radius: 22px; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .nx-ncard.flash { animation: nxflash 1.2s ease-out; }
+  @keyframes nxflash { 0% { box-shadow: 0 0 0 3px var(--nx-blue); } 100% { box-shadow: 0 0 0 3px transparent; } }
   .nx-nnum { font: 800 36px/1 var(--display); }
   .nx-nlab { font-weight: 700; font-size: 17px; }
   .nx-nline { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 10px 0 0; border-top: 1px solid var(--nx-chip); }
@@ -1607,9 +1632,23 @@
   .nx-ntxt { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
   .nx-ntxt b { overflow-wrap: anywhere; }
   .nx-ntxt span { color: var(--nx-muted); }
+  .nx-ntxt .nx-age { font-size: 13px; font-weight: 700; color: var(--nx-ink2); }
   .nx-nline.one .nx-ntxt { flex: 1 0 auto; }
-  .nx-tmr { height: 32px; border: 0; background: transparent; color: var(--nx-muted); font: 700 13px var(--text); cursor: pointer; padding: 0 6px; border-radius: 8px; }
-  .nx-tmr:hover { color: var(--nx-ink); background: var(--nx-soft); }
+  .nx-nacts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .nx-nline.one .nx-nacts > .nx-btn { flex: 1 1 auto; }
+  .nx-nclasses { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .nx-ncl { flex: 1 1 100%; font-size: 13px; font-weight: 700; color: var(--nx-ink2); }
+  .nx-ncard .nx-btn.sm { padding: 0 14px; }
+  .nx-btn.ogreen { background: var(--nx-surface); border-color: var(--nx-green); color: var(--nx-green-ink); }
+  .nx-tmr { height: auto; border: 0; background: transparent; color: var(--nx-muted); font: 600 13px var(--text); cursor: pointer; padding: 4px 0; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+  .nx-tmr:hover, .nx-tmr:focus-visible { color: var(--nx-ink); text-decoration-color: currentColor; }
+  .nx-solflag { margin: 0; padding: 8px 12px; border-radius: 12px; background: var(--nx-amber-soft); color: var(--nx-ink); font-size: 14px; }
+  /* dark: the verbs stay quieter than the yellow Teach, and the class pills are outlines */
+  :root[data-theme="dark"] .nx-ncard .nx-btn.dark { background: #343C66; border-color: #343C66; color: #EEF0F8; }
+  :root[data-theme="dark"] .nx-ncard .nx-btn.green { background: #1E6E4D; border-color: #1E6E4D; color: #EEF0F8; }
+  :root[data-theme="dark"] .nx-ncard .nx-btn.ghost, :root[data-theme="dark"] .nx-later .nx-btn.ghost { background: transparent; }
+  :root[data-theme="dark"] .nx-cls { background: transparent; box-shadow: inset 0 0 0 1px var(--nx-line2); }
+  :root[data-theme="dark"] .nx-cls:not(.dim) button[aria-pressed="true"] { background: transparent; box-shadow: inset 0 0 0 2px var(--nx-ink2); }
   .nx-calm { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-radius: 18px; background: var(--nx-surface); color: var(--nx-green-ink); font-weight: 700; }
   .nx-calm svg { width: 20px; height: 20px; }
   .nx-snzl { margin: 0; }
@@ -1821,6 +1860,7 @@
 
   @media (max-width: 1400px) { .nx-priv span { display: none; } .nx-cls button { padding: 0 12px; } }
   @media (max-width: 1100px) {
+    .nx-ngrid { grid-auto-flow: row; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
     .nx-top-in, #app main { padding-left: 18px; padding-right: 18px; }
     .nx-hero h2 { font-size: 32px; }
   }
@@ -8432,6 +8472,7 @@
       if (!H.dash || Date.now() - (H.dashAt || 0) > 60000) loadDash();
       if (!H.tn || Date.now() - (H.tnAt || 0) > 40000) loadTeachNext(false).then(function () { nxToday(); });
       nxDevices(false);
+      nxTodayLinks();
     } else if (v === 'chx') {
       if (nxLessonPick()) nxClassChips(v);
       nxChapters();
@@ -8446,8 +8487,7 @@
   }
   function nxAfterDash(first) {
     pvCollect();
-    var n = nxNeeds().reduce(function (t, g) { return t + g.items.filter(function (x) { return !x.snoozed; }).length; }, 0);
-    $('nx-bd-today').textContent = n || '';
+    nxBadge();
     if (first) {
       var cur = H.view === 'detail' ? H.backTo : H.view;
       if (NX_VIEWS.indexOf(cur) < 0 && ['ws', 'tr', 'rw', 'te', 'cmp', 'chap', 'pg', 'cl'].indexOf(cur) < 0) cur = 'today';
@@ -8475,6 +8515,7 @@
     });
   }
   setInterval(nxPing, 60000);
+  setInterval(function () { if (H.token && H.view === 'today' && !document.hidden) nxToday(); }, 60000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) nxPing(); });
 
   /* ================= Today ================= */
@@ -8548,7 +8589,8 @@
     nxDebriefs();
   }
   function nxHeroHtml() {
-    var x = nxHeroOf(), L = nxLessonOf(x), h = '<div class="nx-toprow">';
+    var x = nxHeroOf(), L = nxLessonOf(x), h = '<div class="nx-toprow">', slim = false;
+    NX.roomActs = [];
     if (!H.links || !H.links.liveboard) h += '<section class="nx-hero" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">LESSONS</span><h2>Live Board is not linked yet</h2><span class="nx-hsub">Setup check shows what to do.</span></div><div class="nx-hero-a"><button type="button" class="nx-teachbtn" data-nxa="setup">Setup check</button></div></section>';
     else if (!H.tn) h += '<section class="nx-hero" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">NEXT</span><h2>' + (H.tnErr ? 'Live Board did not answer' : 'Finding your next lesson') + '</h2><span class="nx-hsub">' + esc(H.tnErr || 'One moment.') + '</span></div>' +
       (H.tnErr ? '<div class="nx-hero-a"><button type="button" class="nx-teachbtn" data-nxa="tnretry">Try again</button></div>' : '') + '</section>';
@@ -8556,24 +8598,77 @@
     else {
       var hw = nxHwAfter(L), deb = NX.deb[L.cls], hard = deb && deb.questions ? deb.questions.filter(function (q) { return q.hard; }).length : 0;
       var pair = !nxPhonePaired();
-      h += '<section class="nx-hero' + (L.run ? ' run' : '') + '" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">' + esc(L.kick) + '</span><h2>' + esc(L.title) + '</h2>' +
-        '<span class="nx-hsub">' + esc([L.sub || (L.run ? '' : 'The whole lesson'), L.range, hw].filter(Boolean).join(' · ') || 'The slides are open for ' + L.cls + '.') + '</span>' +
-        (hard ? '<span class="nx-chip-y"><i></i>' + plural(hard, 'hard question', 'hard questions') + ' from last lesson</span>' : '') + '</div>' +
-        '<div class="nx-hero-a"><a class="nx-teachbtn" id="nx-teach" data-go href="' + esc(L.href) + '" target="' + NX_TAB + '" aria-label="' + esc((L.run ? 'Back to the slides of ' : 'Teach ') + L.title + ' to ' + L.cls) + '">' + esc(L.label) + '</a>' +
-        (pair ? '<button type="button" class="nx-pairbtn" data-nxa="pair">Pair my phone</button>' : '') + '</div></section>';
+      // More than 60 minutes away (or another day): a slim strip with the title and Teach. Close to it, or teaching: the full card.
+      slim = !L.run && !(x && x.slot) && !!L.at && (L.at - Date.now() > 3600000 || !sameDay(L.at, Date.now()));
+      var aria = esc((L.run ? 'Back to the slides of ' : 'Teach ') + L.title + ' to ' + L.cls);
+      if (slim) h += '<section class="nx-hero slim" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">' + esc(L.kick) + '</span><h2>' + esc(L.title) + '</h2></div>' +
+        '<div class="nx-hero-a">' + (pair ? '<button type="button" class="nx-pairbtn" data-nxa="pair">Pair my phone</button>' : '') +
+        '<a class="nx-teachbtn" id="nx-teach" data-go href="' + esc(L.href) + '" target="' + NX_TAB + '" aria-label="' + aria + '">' + esc(L.label) + '</a></div></section>';
+      else {
+        var room = nxRoomHtml(L.cls, true);
+        h += '<section class="nx-hero' + (L.run ? ' run' : '') + (room ? ' room' : '') + '" aria-label="Next lesson"><div class="nx-hero-t"><span class="nx-kick">' + esc(L.kick) + '</span><h2>' + esc(L.title) + '</h2>' +
+          '<span class="nx-hsub">' + esc([L.sub || (L.run ? '' : 'The whole lesson'), L.range, hw].filter(Boolean).join(' · ') || 'The slides are open for ' + L.cls + '.') + '</span>' +
+          (hard ? '<span class="nx-chip-y"><i></i>' + plural(hard, 'hard question', 'hard questions') + ' from last lesson</span>' : '') +
+          (room ? '<div class="nx-room" aria-label="In the room, ' + esc(L.cls) + '"><span class="nx-roomk">In the room</span>' + room + '</div>' : '') + '</div>' +
+          '<div class="nx-hero-a"><a class="nx-teachbtn" id="nx-teach" data-go href="' + esc(L.href) + '" target="' + NX_TAB + '" aria-label="' + aria + '">' + esc(L.label) + '</a>' +
+          (pair ? '<button type="button" class="nx-pairbtn" data-nxa="pair">Pair my phone</button>' : '') + '</div></section>';
+      }
     }
     // later today
     var later = ((H.tn && H.tn.classes) || []).filter(function (c) { return c !== x && c.cls !== 'TEST' && !c.running && ((c.slot && c.slot.start > Date.now()) || (c.nextAt && sameDay(c.nextAt, Date.now()))); })
       .map(function (c) { return { c: c, at: c.slot ? c.slot.start : c.nextAt }; }).sort(function (a, b) { return a.at - b.at; });
-    h += '<section class="nx-card nx-later" aria-label="Later today"><h2 class="nx-cap">LATER TODAY</h2>';
+    h += '<section class="nx-card nx-later' + (!later.length ? ' none' : '') + '" aria-label="Later today"><h2 class="nx-cap">LATER TODAY</h2>';
     if (!later.length) h += '<p class="nx-muted">Nothing else on your timetable today.</p>';
     later.slice(0, 4).forEach(function (o) {
-      var Lx = nxLessonOf(o.c);
-      h += '<div class="nx-lrow"><span class="nx-ltime">' + esc(nxHm(o.at)) + '</span><span class="nx-lt"><b>' + esc(o.c.cls) + (Lx ? ' · ' + esc(Lx.title) : '') + '</b><span>' + esc(Lx ? (Lx.sub || Lx.range || 'Next in this subject') : 'Choose a lesson in Chapters') + '</span></span>' +
+      var Lx = nxLessonOf(o.c), st = nxRoomHtml(o.c.cls, false);
+      h += '<div class="nx-lrow"><span class="nx-ltime">' + esc(nxHm(o.at)) + '</span><span class="nx-lt"><b>' + esc(o.c.cls) + (Lx ? ' · ' + esc(Lx.title) : '') + '</b><span>' + esc(Lx ? (Lx.sub || Lx.range || 'Next in this subject') : 'Choose a lesson in Chapters') + '</span>' +
+        (st ? '<span class="nx-lstate">' + st + '</span>' : '') + '</span>' +
         (Lx ? '<a class="nx-btn sm ghost" data-go href="' + esc(Lx.href) + '" target="' + NX_TAB + '" aria-label="Teach ' + esc(Lx.title + ' to ' + o.c.cls) + '">Teach</a>' : '') + '</div>';
     });
     h += '<button type="button" class="nx-link" data-nxa="week">See the week</button></section></div>';
-    return h;
+    return slim ? h.replace('<div class="nx-toprow">', '<div class="nx-toprow slim">') : h;
+  }
+  // A short number for a worksheet: "2.1" from "2.1 Scalars and vectors", or the title up to its colon.
+  function nxShort(w) { var t = String((w && w.title) || ''), m = /^(\d+(?:\.\d+)*)\s/.exec(t); return m ? m[1] : t.split(':')[0]; }
+  // What a class has waiting, in a few counts. Built only from Today's own data, never with a name.
+  // live: each part is a button (an existing verb or a jump to its Needs you line). Otherwise plain words.
+  function nxRoomParts(cls) {
+    var d = H.dash, out = [], cn = chNorm(cls), now = Date.now(); if (!d) return out;
+    var mine = function (list) { return (list || []).some(function (c) { return chNorm(c) === cn; }); };
+    var att = d.attention || [];
+    var lets = att.filter(function (n) { return n.kind === 'letin' && mine(n.classes || [n.cls]); });
+    if (lets.length) out.push({ t: lets.length + ' to let in', run: function () { nxJump('letin'); } });
+    att.filter(function (n) { return n.kind === 'prizes' && chNorm(n.cls) === cn && n.count; }).forEach(function (n) { out.push({ t: plural(n.count, 'prize', 'prizes'), run: function () { prizesBox(n); } }); });
+    att.filter(function (n) { return n.kind === 'stuck'; }).forEach(function (n) {
+      var w = byId(n.id); if (!w || !mine(w.classes)) return;
+      var many = (w.classes || []).length > 1;
+      out.push({ all: many, t: (n.count || 0) + ' stuck on ' + nxShort(w) + ' ' + (n.q || '') + (many ? ' (all classes)' : ''), run: function () { H.focusHelp = true; openDetail(n.id, 'hand'); } });
+    });
+    (d.worksheets || []).filter(function (w) { return !w.practice && w.open && w.dueTs && w.dueTs - now < 3 * 864e5 && mine(w.classes); }).sort(function (a, b) { return a.dueTs - b.dueTs; }).slice(0, 2).forEach(function (w) {
+      var left = (sxPc(w, cls).notHanded || []).length; if (!left) return;
+      out.push({ s: left + ' owe ' + nxShort(w), t: left + ' owe ' + nxShort(w) + ', due ' + (sameDay(w.dueTs, now) ? 'today' : sameDay(w.dueTs, now + 864e5) ? 'tomorrow' : NX_DAYS[new Date(w.dueTs).getDay()]), run: function () { sxWho(w.id, cls); } });
+    });
+    (d.worksheets || []).forEach(function (w) {
+      if (w.practice || !w.showMarked || !w.correctionsOpen || !mine(w.classes)) return;
+      var n = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
+      if (n) out.push({ s: n + ' owe ' + nxShort(w) + ' corrections', t: n + ' owe corrections for ' + nxShort(w), run: function () { openDetail(w.id, 'corr'); } });
+    });
+    att.filter(function (n) { return n.kind === 'release' && n.action !== 'answers'; }).forEach(function (n) { var w = byId(n.id); if (w && mine(w.classes)) out.push({ t: nxShort(w) + ' ready to return', run: function () { nxReturn(n.id); } }); });
+    var hw = nxSetRows(cls);
+    if (hw.length) out.push({ t: plural(hw.length, 'sheet', 'sheets') + ' to set', run: function () { nxJump('sethw'); } });
+    return out;
+  }
+  function nxRoomHtml(cls, live) {
+    var parts = nxRoomParts(cls);
+    if (!live) return esc(parts.filter(function (p) { return !p.all; }).slice(0, 3).map(function (p) { return p.s || p.t; }).join(' · '));
+    return parts.slice(0, 6).map(function (p) { var i = NX.roomActs.length; NX.roomActs.push(p); return '<button type="button" class="nx-roombtn" data-nxroom="' + i + '">' + esc(p.t) + '</button>'; }).join('<i aria-hidden="true">·</i>');
+  }
+  // Scroll to a Needs you card and put the focus on its first verb.
+  function nxJump(k) {
+    var c = document.querySelector('.nx-ncard[data-g="' + k + '"]'); if (!c) return;
+    c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var b = c.querySelector('[data-nverb]'); if (b) setTimeout(function () { b.focus(); }, 250);
+    c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
   }
   function nxDebriefHtml() {
     var out = '';
@@ -8590,45 +8685,123 @@
     });
     return out ? '<div class="nx-debs">' + out + '</div>' : '';
   }
-  // Needs you, the only inbox, in a fixed order. Each line has one verb and Tomorrow.
-  var NX_GROUPS = [['letin', 'Let in'], ['check', 'Check and return'], ['sol', 'Marked solution needed'], ['hand', 'Hand out'], ['follow', 'Follow up'], ['corr', 'Corrections overdue'], ['notset', 'Not set by itself']];
+  // Needs you, the only inbox: five cards in order of consequence. Each line has one verb and Tomorrow.
+  // Snooze keys are the server's own (kind|id) or the local ones (corrlate|id, sethw|cls), so a line that moved
+  // card keeps its snooze. A line made of several items (a merged worksheet, the prize line) snoozes all of them.
+  var NX_GROUPS = [['letin', 'Let in'], ['check', 'Check and return'], ['sethw', 'Set homework'], ['follow', 'Follow up'], ['hand', 'Hand out']];
   function nxLocalSnz() { if (!NX.snz) { try { NX.snz = JSON.parse(lsGet('nx_snz') || '{}') || {}; } catch (e) { NX.snz = {}; } } return NX.snz; }
+  // "due Fri 23 Oct, 6 days ago"
+  function nxAge(ts) {
+    if (!ts) return '';
+    var a = new Date(ts), b = new Date(); a.setHours(12, 0, 0, 0); b.setHours(12, 0, 0, 0);
+    var d = Math.round((b - a) / 864e5);
+    return 'Due ' + nxDay(ts) + ', ' + (d === 0 ? 'today' : d === 1 ? 'yesterday' : d === -1 ? 'tomorrow' : d > 0 ? d + ' days ago' : 'in ' + (-d) + ' days');
+  }
+  function nxIn(w) { return w ? w.handed + ' of ' + w.total + ' in · ' + (w.classes || []).join(', ') : ''; }
+  // Linked homework a class has been taught but not given yet: the rows Chapters shows with Deploy.
+  function nxSetRows(cls) {
+    if (!H.te || !H.wl) return [];
+    var out = [];
+    sxAllChapters(cls).filter(function (c) { return c.given; }).forEach(function (ch) {
+      ch.items.forEach(function (it) { sxHw(it, cls).forEach(function (r) { if (r.linked && r.ready && !r.w && !r.pending) out.push({ r: r, ch: ch }); }); });
+    });
+    return out;
+  }
   function nxNeeds() {
     var d = H.dash; if (!d) return [];
     var g = {}; NX_GROUPS.forEach(function (x) { g[x[0]] = []; });
-    var claude = claudeOn();
+    var claude = claudeOn(), snz = nxLocalSnz(), today = isoDate(Date.now());
+    var check = {};   // the Check and return items for each worksheet, merged below
+    var prizes = [];
     (d.attention || []).forEach(function (n) {
       var w = n.id ? byId(n.id) : null, t = w ? w.title : '';
       var add = function (k, o) { o.n = n; o.key = n.key; o.snoozed = !!n.snoozed; g[k].push(o); };
+      var chk = function (o) { o.n = n; o.ns = [n]; o.key = n.key; o.snoozed = !!n.snoozed; o.w = w; o.title = t; o.id = n.id; (check[n.id + '|' + o.snoozed] = check[n.id + '|' + o.snoozed] || []).push(o); };
       switch (n.kind) {
         case 'letin': add('letin', { title: pvName(n.name) + ' · ' + n.cls, sub: 'Asking to be let in to set up a password' + (n.twice ? '. Two iPads are asking.' : '.'), verb: 'Let in', run: function (b) { letIn(n, true, b); } }); break;
         case 'mark':
-          if (n.action === 'sample') add('check', { title: t, sub: 'Claude marked one sample. Check it, then Claude marks the rest.', verb: 'Check the sample', run: function () { openDetail(n.id, 'mark'); } });
-          else add('check', { title: t, sub: (w ? w.handed : '') + ' handed in. Not marked yet.', verb: claude ? 'Mark with Claude' : 'Mark', run: function () { if (claude) markWithClaude(n.id); else openDetail(n.id, 'mark'); } });
+          if (n.action === 'sample') chk({ rank: 2, sub: 'Claude marked one sample. Check it, then Claude marks the rest.', verb: 'Check the sample', run: function () { openDetail(n.id, 'mark'); } });
+          else chk({ rank: 4, sol: !!(claude && w && !w.hasSolution), sub: nxIn(w) + '. Not marked yet.', verb: claude ? 'Mark with Claude' : 'Mark', run: function () { if (claude) markWithClaude(n.id); else openDetail(n.id, 'mark'); } });
           break;
         case 'release':
-          if (n.action === 'answers') { if (w && w.answersAfter) return; add('check', { title: t, sub: 'The answer key is not out yet.', verb: 'Show the key', run: function () { confirmAnswers(n.id, true); } }); }
-          else add('check', { title: t, sub: (w && w.job && w.job.status === 'done' ? 'Claude marked ' + plural(w.markedFiles, 'script', 'scripts') : plural(w ? Math.max(w.markedFiles, w.scored) : 0, 'script', 'scripts') + ' marked') + '. Not back with students yet.', verb: 'Check and return', green: true, run: function () { nxReturn(n.id); } });
+          if (n.action === 'answers') { if (w && w.answersAfter) return; chk({ rank: 1.5, sub: 'The answer key is not out yet · ' + ((w && w.classes) || []).join(', ') + '.', verb: 'Show the key', run: function () { confirmAnswers(n.id, true); } }); }
+          else chk({ rank: 1, sub: (w && w.job && w.job.status === 'done' ? 'Claude marked ' + plural(w.markedFiles, 'script', 'scripts') : plural(w ? Math.max(w.markedFiles, w.scored) : 0, 'script', 'scripts') + ' marked') + ' · ' + ((w && w.classes) || []).join(', ') + '. Not back with students yet.', verb: 'Check and return', green: true, run: function () { nxReturn(n.id); } });
           break;
-        case 'error': add('check', { title: t, sub: 'Claude could not finish. ' + String(w && w.job && w.job.message || ''), verb: 'Open', run: function () { openDetail(n.id, 'mark'); } }); break;
-        case 'overdue': add('check', { title: t, sub: (n.left ? n.left + ' not in' : 'Everyone is in') + ', and it is still open after the due date.', verb: 'Close and mark', run: function () { openDetail(n.id, 'hand'); } }); break;
-        case 'solution': add('sol', { title: t, sub: 'Claude drafted the marked solution. Check it before Claude marks.', verb: 'Check it', run: function () { openSolution(n.id); } }); break;
-        case 'nosolution': add('sol', { title: t, sub: 'No marked solution yet. Claude marks against it when hand-in closes.', verb: 'Add it', run: function () { openDetail(n.id, 'set'); } }); break;
-        case 'prizes': add('hand', { title: plural(n.count || 0, 'prize', 'prizes') + ' to hand out', sub: 'Night market, ' + n.cls + '.', verb: 'Hand out', run: function () { prizesBox(n); } }); break;
-        case 'parent': add('follow', { title: plural(n.count || 0, 'parent', 'parents') + ' to message', sub: '3 or more worksheets missing, late or under 50%.', verb: 'See them', run: function () { NX.stuFilter = 'nudge'; showTab('stu'); } }); break;
-        case 'follow': add('follow', { title: plural(n.count || 0, 'student', 'students') + ' to keep an eye on', sub: '1 or 2 worksheets missing, late or under 50%.', verb: 'See them', run: function () { NX.stuFilter = 'nudge'; showTab('stu'); } }); break;
-        case 'stuck': add('follow', { title: t, sub: plural(n.count || 0, 'student is', 'students are') + ' stuck on ' + (n.q || 'a question') + '.', verb: 'See who', run: function () { H.focusHelp = true; openDetail(n.id, 'hand'); } }); break;
-        case 'linkerr': add('notset', { title: n.name, sub: 'Not set for ' + n.cls + ' by itself. ' + String(n.text || '').replace(/^.*by itself: /, '').replace(/^./, function (c) { return c.toUpperCase(); }).replace(/([^.])$/, '$1.'), verb: 'Seen', run: function (b) { b.disabled = true; tcall('api_t_linkSeen', n.k, n.cls).then(loadDash).catch(function (e) { b.disabled = false; if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); }); } }); break;
+        case 'solution': chk({ rank: 2.4, sub: 'Claude drafted the marked solution. Check it before Claude marks.', verb: 'Check it', run: function () { openSolution(n.id); } }); break;
+        case 'nosolution': chk({ rank: 2.6, sol: true, sub: 'No marked solution yet. Claude marks against it when hand-in closes.', verb: 'Add it', run: function () { openDetail(n.id, 'set'); } }); break;
+        case 'error': chk({ rank: 3.5, sub: 'Claude could not finish. ' + String(w && w.job && w.job.message || ''), verb: 'Open', run: function () { openDetail(n.id, 'mark'); } }); break;
+        case 'overdue': chk({ rank: 3, sub: (w ? (n.left || 0) + ' of ' + w.total + ' not in · ' + (w.classes || []).join(', ') : (n.left ? n.left + ' not in' : 'Everyone is in')) + '. Still open after the due date.', verb: 'Close and mark', run: function () { openDetail(n.id, 'hand'); } }); break;
+        case 'prizes': prizes.push(n); break;
+        case 'parent': add('follow', { title: plural(n.count || 0, 'parent', 'parents') + ' to message', sub: '3 or more worksheets missing, late or under 50%' + nxFollowSplit(true, n.count), verb: 'See them', run: function () { NX.stuFilter = 'nudge'; showTab('stu'); } }); break;
+        case 'follow': add('follow', { title: plural(n.count || 0, 'student', 'students') + ' to keep an eye on', sub: '1 or 2 worksheets missing, late or under 50%' + nxFollowSplit(false, n.count), verb: 'See them', run: function () { NX.stuFilter = 'nudge'; showTab('stu'); } }); break;
+        case 'stuck': add('follow', { title: t, sub: plural(n.count || 0, 'student is', 'students are') + ' stuck on ' + (n.q || 'a question') + (w && (w.classes || []).length ? ' · ' + w.classes.join(', ') : '') + '.', verb: 'See who', run: function () { H.focusHelp = true; openDetail(n.id, 'hand'); } }); break;
+        case 'linkerr': add('sethw', { title: n.name + ' · ' + n.cls, sub: 'Not set by itself. ' + String(n.text || '').replace(/^.*by itself: /, '').replace(/^./, function (c) { return c.toUpperCase(); }).replace(/([^.])$/, '$1.'), verb: 'Seen', run: function (b) { b.disabled = true; tcall('api_t_linkSeen', n.k, n.cls).then(loadDash).catch(function (e) { b.disabled = false; if (!/TEACHER_SIGNED_OUT/.test(e.message)) toast(msg(e)); }); } }); break;
       }
     });
-    // corrections past their due date that are still owed (worked out here)
-    var snz = nxLocalSnz(), today = isoDate(Date.now());
+    // One line per worksheet: the most useful verb, and every fact.
+    Object.keys(check).forEach(function (k) {
+      var list = check[k].sort(function (a, b) { return a.rank - b.rank; }), top = list[0];
+      if (list.length > 1) {
+        var over = list.filter(function (o) { return o.n.kind === 'overdue'; })[0], mk = list.filter(function (o) { return o.n.kind === 'mark' && o.n.action !== 'sample'; })[0];
+        if (over && mk && over === top) top.sub = nxIn(top.w) + '. Still open after the due date, not marked yet.';
+        else top.sub += ' ' + list.slice(1).map(function (o) { return o.sub; }).join(' ');
+        top.ns = list.map(function (o) { return o.n; });
+        top.sol = list.some(function (o) { return o.sol; });
+      }
+      top.age = top.w && top.w.dueTs && top.n.kind !== 'solution' && top.n.kind !== 'nosolution' ? nxAge(top.w.dueTs) : '';
+      g.check.push(top);
+    });
+    // Ready to return first, then Claude's sample, then sheets to close, then marking with the oldest due first.
+    g.check.sort(function (a, b) { return a.rank - b.rank || ((a.w && a.w.dueTs) || 9e15) - ((b.w && b.w.dueTs) || 9e15); });
+    // Linked homework taught but not set, one line per class (the Deploy rows on Chapters).
+    teClasses().forEach(function (cls) {
+      var rows = nxSetRows(cls); if (!rows.length) return;
+      var key = 'sethw|' + cls, r0 = rows[0];
+      g.sethw.push({ key: key, local: true, snoozed: snz[key] === today, title: cls + ' · ' + plural(rows.length, 'sheet', 'sheets') + ' taught, not set',
+        sub: listJoin(rows.map(function (x) { return nxShort({ title: x.r.name }); })) + '. Deploy sets ' + r0.r.name + ' first.', age: 'Due ' + sxDueText(sxDue(r0.r)) + '.', verb: 'Deploy ' + nxShort({ title: r0.r.name }),
+        run: function (b) { sxDeployPart(r0.r, r0.ch.key, cls, b); } });
+    });
+    g.sethw.sort(function (a, b) { return (a.local ? 0 : 1) - (b.local ? 0 : 1); });
+    // corrections past their due date that are still owed (worked out here), with the class split
     (d.worksheets || []).forEach(function (w) {
       if (w.practice || !w.showMarked || w.correctionsOpen || !(w.corrDue > w.corrDone) || (w.dueTs && Date.now() - w.dueTs > 40 * 864e5)) return;
-      var key = 'corrlate|' + w.id;
-      g.corr.push({ key: key, local: true, snoozed: snz[key] === today, title: w.title, sub: plural(w.corrDue - w.corrDone, 'student still owes', 'students still owe') + ' corrections.', verb: 'See who', run: function () { openDetail(w.id, 'corr'); } });
+      var key = 'corrlate|' + w.id, by = {};
+      (w.corrOwed || []).forEach(function (x) { var c = String(x).split(' ')[0]; by[c] = (by[c] || 0) + 1; });
+      var split = Object.keys(by).sort().map(function (c) { return c + ' ' + by[c]; }).join(', ');
+      g.follow.push({ key: key, local: true, snoozed: snz[key] === today, title: w.title, sub: plural(w.corrDue - w.corrDone, 'student still owes', 'students still owe') + ' corrections' + (split ? ' · ' + split : '') + '.', verb: 'See who', run: function () { openDetail(w.id, 'corr'); } });
+    });
+    // Night market prizes: one line, a button for each class.
+    [false, true].forEach(function (off) {
+      var list = prizes.filter(function (n) { return !!n.snoozed === off; }); if (!list.length) return;
+      var total = list.reduce(function (t, n) { return t + (n.count || 0); }, 0);
+      g.hand.push({ n: list[0], ns: list, key: list[0].key, snoozed: off, title: plural(total, 'prize', 'prizes') + ' to hand out', sub: 'Night market · ' + list.map(function (n) { return n.cls + ' ' + (n.count || 0); }).join(', ') + '.',
+        verb: list.length === 1 ? 'Hand out' : '', classes: list.map(function (n) { return { label: n.cls, aria: 'Hand out ' + plural(n.count || 0, 'prize', 'prizes') + ' in ' + n.cls, run: function () { prizesBox(n); } }; }),
+        run: function () { prizesBox(list[0]); } });
     });
     return NX_GROUPS.map(function (x) { return { k: x[0], label: x[1], items: g[x[0]] }; }).filter(function (x) { return x.items.length; });
+  }
+  // The class split for the parents and keep-an-eye lines, from the Students list when it has loaded (no extra call).
+  function nxFollowSplit(parent, count) {
+    var by = {}, n = 0, all = ' · all classes.';
+    if (!H.tracker) return all;
+    H.tracker.forEach(function (c) { (c.flagged || []).forEach(function (f) { if (f.seen || !!f.parent !== parent) return; by[f.cls] = (by[f.cls] || 0) + 1; n++; }); });
+    if (n !== count) return all;
+    return ' · ' + Object.keys(by).sort().map(function (c) { return c + ' ' + by[c]; }).join(', ') + '.';
+  }
+  // Set homework needs the lesson list and the homework links (what Chapters reads for its Deploy rows). Today reads
+  // them once in the background, after the dashboard, and again only when they are 10 minutes old.
+  function nxTodayLinks() {
+    if (NX.linkT || (H.te && H.wl && Date.now() - (H.wlAt || 0) < 600000)) return;
+    NX.linkT = setTimeout(function () {
+      Promise.all([sxCatalog(), sxLinks(false)].map(function (p) { return p && p.then ? p.then(null, function () {}) : p; })).then(function () {
+        NX.linkT = 0; nxBadge(); if (H.view === 'today') nxToday();
+      });
+    }, H.dash ? 300 : 1500);
+  }
+  function nxBadge() {
+    var n = nxNeeds().reduce(function (t, g) { return t + g.items.filter(function (x) { return !x.snoozed; }).length; }, 0);
+    if ($('nx-bd-today')) $('nx-bd-today').textContent = n || '';
+    return n;
   }
   function nxNeedsHtml() {
     var groups = nxNeeds(), live = 0, off = 0;
@@ -8640,31 +8813,49 @@
     groups.forEach(function (gr, gi) {
       var items = gr.items.filter(function (it) { return H.showSnoozed || !it.snoozed; });
       if (!items.length) return;
-      var one = items.length === 1, open = NX.open[gr.k], shown = open ? items : items.slice(0, 3);
+      var one = false, open = NX.open[gr.k];
+      // "And N more" never hides a line that is ready to return.
+      var shown = open ? items : items.filter(function (it, i) { return i < 3 || it.green; });
       h += '<div class="nx-ncard" data-g="' + gr.k + '"><span class="nx-nnum">' + items.filter(function (x) { return !x.snoozed; }).length + '</span><span class="nx-nlab">' + esc(gr.label) + '</span>';
+      if (gr.k === 'check') {
+        var sol = items.filter(function (it) { return it.sol && !it.snoozed && it.w; });
+        if (sol.length) h += '<p class="nx-solflag"><b>Marked solution needed</b> for ' + esc(listJoin(sol.map(function (it) { return nxShort(it.w); }))) + '. Claude marks against it.</p>';
+      }
+      var first = true;
       shown.forEach(function (it) {
-        var ii = gr.items.indexOf(it);
-        h += '<div class="nx-nline' + (one ? ' one' : '') + (it.snoozed ? ' snz' : '') + '"><span class="nx-ntxt"><b>' + esc(it.title) + '</b><span>' + esc(it.sub) + '</span></span>' +
+        var ii = gr.items.indexOf(it), lead = first && !it.snoozed;
+        if (!it.snoozed) first = false;
+        var kind = it.green ? (lead ? 'green' : 'ogreen') : (lead ? 'dark' : 'ghost');
+        var acts = it.classes && it.classes.length > 1 ? '<span class="nx-nclasses" role="group" aria-label="Hand out in"><span class="nx-ncl">Hand out in</span>' + it.classes.map(function (c, ci) {
+          return '<button type="button" class="nx-btn sm ' + (lead && !ci ? 'dark' : 'ghost') + '" data-nverb="' + gi + '|' + ii + '|' + ci + '" aria-label="' + esc(c.aria) + '">' + esc(c.label) + '</button>'; }).join('') + '</span>'
+          : '<button type="button" class="nx-btn ' + (one ? '' : 'sm ') + kind + '" data-nverb="' + gi + '|' + ii + '">' + esc(it.verb) + '</button>';
+        h += '<div class="nx-nline' + (one ? ' one' : '') + (it.snoozed ? ' snz' : '') + '"><span class="nx-ntxt"><b>' + esc(it.title) + '</b><span>' + esc(it.sub) + '</span>' + (it.age ? '<small class="nx-age">' + esc(it.age) + '</small>' : '') + '</span>' +
           (it.snoozed ? '<button type="button" class="nx-btn sm ghost" data-nwake="' + gi + '|' + ii + '">Bring back</button>' :
-            '<button type="button" class="nx-btn ' + (one ? '' : 'sm ') + (it.green ? 'green' : 'dark') + '" data-nverb="' + gi + '|' + ii + '">' + esc(it.verb) + '</button>' +
-            '<button type="button" class="nx-tmr" data-nsnz="' + gi + '|' + ii + '" aria-label="Tomorrow: put ' + esc(it.title) + ' away until tomorrow">Tomorrow</button>') + '</div>';
+            '<span class="nx-nacts">' + acts + '<button type="button" class="nx-tmr" data-nsnz="' + gi + '|' + ii + '" aria-label="Tomorrow: put ' + esc(it.title) + ' away until tomorrow">Tomorrow</button></span>') + '</div>';
       });
-      if (items.length > 3) h += '<button type="button" class="nx-link" data-nmore="' + gr.k + '">' + (open ? 'Show fewer' : 'And ' + (items.length - 3) + ' more') + '</button>';
+      if (items.length > shown.length || open && items.length > 3) h += '<button type="button" class="nx-link" data-nmore="' + gr.k + '">' + (open ? 'Show fewer' : 'And ' + (items.length - shown.length) + ' more') + '</button>';
       h += '</div>';
     });
     h += '</div>';
     if (off) h += '<p class="nx-muted nx-snzl">' + plural(off, 'line is', 'lines are') + ' put away until tomorrow. <button type="button" class="nx-link" data-nxa="snz">' + (H.showSnoozed ? 'Hide them' : 'Show them') + '</button></p>';
     return h + '</section>';
   }
-  function nxNeedItem(v) { var p = String(v).split('|'), gr = NX.needs[Number(p[0])]; return gr ? gr.items[Number(p[1])] : null; }
+  function nxNeedItem(v) { var p = String(v).split('|'), gr = NX.needs[Number(p[0])], it = gr ? gr.items[Number(p[1])] : null; return it && p.length > 2 && it.classes ? it.classes[Number(p[2])] : it; }
   function nxSnooze(it, on) {
     if (it.local) {
       var s = nxLocalSnz(); if (on) s[it.key] = isoDate(Date.now()); else delete s[it.key];
-      lsSet('nx_snz', JSON.stringify(s)); nxToday();
+      lsSet('nx_snz', JSON.stringify(s)); nxToday(); nxBadge();
       if (on) toast('Put away until tomorrow', { undo: function () { nxSnooze(it, false); } });
       return;
     }
-    snooze(it.n, on);
+    var list = it.ns || [it.n];
+    if (list.length === 1) { snooze(list[0], on); return; }
+    // several items in one line: each keeps its own key on the server, one toast for the line
+    list.forEach(function (n) { n.snoozed = !!on; });
+    renderDash(H.dash);
+    Promise.all(list.map(function (n) { return tcall('api_t_snooze', n.key, !!on); })).then(function () {
+      if (on) toast('Put away until tomorrow', { undo: function () { nxSnooze(it, false); } });
+    }).catch(function (e) { list.forEach(function (n) { n.snoozed = !on; }); renderDash(H.dash); if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
   }
   function nxRunningHtml() {
     var d = H.dash, bits = [], now = Date.now(), byDue = {};
@@ -8683,13 +8874,14 @@
     Array.prototype.forEach.call(el.querySelectorAll('[data-nxa]'), function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-nxa');
-        if (a === 'pair') nxPair(); else if (a === 'chx') showTab('chx'); else if (a === 'week') showTab('chx'); else if (a === 'setup') openSetup();
+        if (a === 'pair') nxPair(); else if (a === 'chx') showTab('chx'); else if (a === 'week') openWeek(); else if (a === 'setup') openSetup();
         else if (a === 'tnretry') { H.tnErr = ''; loadTeachNext(true).then(nxToday); nxToday(); }
         else if (a === 'snz') { H.showSnoozed = !H.showSnoozed; nxToday(); }
         else if (a === 'upx') { lsSet('wsh_up_x', String(H.update.pasteSeq)); nxToday(); }
       };
     });
     Array.prototype.forEach.call(el.querySelectorAll('[data-nverb]'), function (b) { b.onclick = function () { var it = nxNeedItem(b.getAttribute('data-nverb')); if (it) it.run(b); }; });
+    Array.prototype.forEach.call(el.querySelectorAll('[data-nxroom]'), function (b) { b.onclick = function () { var p = (NX.roomActs || [])[Number(b.getAttribute('data-nxroom'))]; if (p) p.run(b); }; });
     Array.prototype.forEach.call(el.querySelectorAll('[data-nsnz]'), function (b) { b.onclick = function () { var it = nxNeedItem(b.getAttribute('data-nsnz')); if (it) nxSnooze(it, true); }; });
     Array.prototype.forEach.call(el.querySelectorAll('[data-nwake]'), function (b) { b.onclick = function () { var it = nxNeedItem(b.getAttribute('data-nwake')); if (it) nxSnooze(it, false); }; });
     Array.prototype.forEach.call(el.querySelectorAll('[data-nmore]'), function (b) { b.onclick = function () { var k = b.getAttribute('data-nmore'); NX.open[k] = !NX.open[k]; nxToday(); }; });
