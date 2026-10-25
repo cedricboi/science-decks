@@ -7828,7 +7828,7 @@
   function nxChapterMenu(key, cls) {
     var c = chByKey(key), items = [];
     if (!c) return items;
-    items.push({ note: 'Give ' + chShort(c) + ' to' });
+    items.push({ note: chShort(c) + ': which classes have it' });
     teClasses().forEach(function (k) {
       var on = chHas(k, key);
       items.push({ label: on ? 'Take it back from ' + k : 'Give it to ' + k, danger: on, run: function () { giveChapter(key, k, !on, function () { nxChapters(); }); } });
