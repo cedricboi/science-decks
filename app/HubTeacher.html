@@ -4532,20 +4532,70 @@
   }
 
   function confirmRelease(id, show) {
-    var w = byId(id) || (H.marks && H.marks.worksheet);
-    var title = w ? w.title : id;
+    var w = retWs(id);
+    var title = w ? w.title : id, full = show && !!returnPatch(w).correctionsOpen;
     modal('<h2>' + (show ? 'Release marking?' : 'Hide marking?') + '</h2><p>' +
       (show ? 'Students will see their marked copy, score and comment for <b>' + esc(title) + '</b> on their homework profile straight away.'
             : 'Students will no longer see the marking for <b>' + esc(title) + '</b>.') + '</p>' +
+      (full ? '<p>' + esc(returnWords(w)) + '</p>' : '') +
       '<div class="foot"><button class="btn ghost" id="rl-no">Cancel</button><button class="btn" id="rl-yes">' + (show ? 'Release to students' : 'Hide from students') + '</button></div>');
     $('rl-no').onclick = closeModal;
     $('rl-yes').onclick = function () {
       busy(show ? 'Releasing...' : 'Hiding...');
-      tcall('api_t_update', id, { showMarked: show }).then(function () {
-        closeModal(); toast(show ? 'Marking released' : 'Marking hidden', { undo: function () { undoPatch(id, { showMarked: !show }, show ? 'Marking hidden again' : 'Marking released again'); } });
+      (show ? sendReturn(id, w) : tcall('api_t_update', id, { showMarked: false }).then(function () {
+        toast('Marking hidden', { undo: function () { undoPatch(id, { showMarked: true }, 'Marking released again'); } });
+      })).then(function () {
+        closeModal();
         return H.view === 'detail' ? openDetail(id) : loadDash();
       }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
     };
+  }
+
+  /* Release 35: every way of returning marked work does what Check and return does. That is Check and return
+     itself, the worksheet's Return switch, Release marking on a card or a chapter row, Release to students in
+     Claude's box, and the return file. Each sends the same patch, so students get the same thing: the marked copy,
+     corrections open for 7 days, and the answer key once their corrections are in. Undo puts back every field the
+     return changed. */
+  // The worksheet as the teacher sees it now: the open worksheet page's copy, otherwise the dashboard's.
+  function retWs(id) {
+    var m = H.marks && H.marks.worksheet && H.marks.worksheet.id === id ? H.marks.worksheet : null, d = H.dash ? byId(id) : null;
+    return (H.view === 'detail' || H.view === 'review' ? m || d : d || m) || null;
+  }
+  // Two cases only show the marks. A practice sheet has nothing to correct. Work that is already back keeps its
+  // corrections and answer key as they are, so a second upload never opens corrections that have closed.
+  function returnPatch(w, keyNow) {
+    if (w && (w.practice || w.showMarked)) return { showMarked: true };
+    var p = { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true };
+    if (keyNow) p.showAnswers = true;
+    return p;
+  }
+  // The Undo: each field the return changed, back to its value before the return.
+  function returnUndo(w, patch) {
+    w = w || {};
+    var back = { showMarked: !!w.showMarked };
+    if (patch.correctionsOpen !== undefined) back.correctionsOpen = w.correctionsOpen !== false;
+    if (patch.corrDays !== undefined) back.corrDays = Number(w.corrDays) || 0;
+    if (patch.answersAfter !== undefined) back.answersAfter = !!w.answersAfter;
+    if (patch.showAnswers !== undefined) back.showAnswers = !!w.showAnswers;
+    return back;
+  }
+  function returnWords(w) {
+    return 'Corrections open in green, due ' + nxDay(Date.now() + 7 * 864e5) + '. ' +
+      (w && w.hasAnswerKey ? 'The answer key opens for each student once their corrections are in, or on the due date.' : 'There is no answer key yet.');
+  }
+  // Sends the return and shows its toast with Undo. w is the worksheet as it was before, for the Undo.
+  function sendReturn(id, w, keyNow) {
+    if (!w || w.showMarked === undefined) w = retWs(id) || w;
+    var patch = returnPatch(w, keyNow), back = returnUndo(w, patch), due = Date.now() + 7 * 864e5;
+    var classes = w && w.classes && w.classes.length ? w.classes : [nxCls()], title = w ? w.title : id, was = !!(w && w.showMarked);
+    return tcall('api_t_update', id, patch).then(function () {
+      var dd = H.dash ? byId(id) : null; if (dd) { dd.showMarked = true; if (patch.correctionsOpen) dd.correctionsOpen = true; }
+      // Already back with students (new marked files for it): nothing to take back.
+      if (was) toast('Marking released');
+      else toast(title + ' is back with ' + listJoin(classes) + '.' + (patch.correctionsOpen ? ' Corrections are due ' + nxDay(due) + '.' : ''),
+        { undo: function () { undoPatch(id, back, 'Taken back. Students cannot see the marks.'); }, ms: 8000 });
+      return patch;
+    });
   }
 
   // Puts a worksheet setting back the way it was (the Undo on a toast).
@@ -6213,8 +6263,8 @@
           sBad.map(function (x) { return '<li>' + esc(x.who) + ': ' + esc(x.reason) + '</li>'; }).join('') + '</ul></div>';
       }
       if (autoRelease && (linked || sOk)) {
-        return tcall('api_t_update', w.id, { showMarked: true }).then(function () {
-          h += '<p><b>Released.</b> Students can see their marked work now.' + (keyRes && !keyRes.r.released ? ' The answers stay hidden until you release them or corrections close.' : '') + '</p>';
+        return sendReturn(w.id, w).then(function (pt) {
+          h += '<p><b>Released.</b> Students can see their marked work now.' + (pt.correctionsOpen ? ' ' + esc(returnWords(w)) : keyRes && !keyRes.r.released ? ' The answers stay hidden until you release them or corrections close.' : '') + '</p>';
           $('rt-body').innerHTML = h;
           $('rt-foot').innerHTML = '<button class="btn" id="rt-done">Done</button>';
           $('rt-done').onclick = function () { closeModal(); H.view === 'detail' ? openDetail(w.id) : loadDash(); };
@@ -6226,8 +6276,8 @@
       $('rt-later').onclick = function () { closeModal(); H.view === 'detail' ? openDetail(w.id) : loadDash(); };
       $('rt-rel').onclick = function () {
         busy('Releasing...');
-        tcall('api_t_update', w.id, { showMarked: true }).then(function () {
-          closeModal(); toast('Marking released'); return H.view === 'detail' ? openDetail(w.id) : loadDash();
+        sendReturn(w.id, w).then(function () {
+          closeModal(); return H.view === 'detail' ? openDetail(w.id) : loadDash();
         }).catch(function (e) { alertBox('Not released', msg(e)); });
       };
     }).catch(function (e) {
@@ -8880,13 +8930,9 @@
         b.onclick = function () { var i = Number(b.getAttribute('data-rtlook')); closeModal(); H.nxAfterReview = function () { loadDash(); nxReturn(id); }; openReview(i); };
       });
       $('rt-go').onclick = function () {
-        var patch = { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true };
-        if ($('rt-key') && $('rt-key').checked) patch.showAnswers = true;
         this.disabled = true; this.textContent = 'Returning...';
-        tcall('api_t_update', id, patch).then(function () {
+        sendReturn(id, w2, !!($('rt-key') && $('rt-key').checked)).then(function () {
           closeModal();
-          var dd = byId(id); if (dd) { dd.showMarked = true; dd.correctionsOpen = true; }
-          toast(w2.title + ' is back with ' + listJoin(classes) + '. Corrections are due ' + nxDay(due.getTime()) + '.', { undo: function () { undoPatch(id, { showMarked: false }, 'Taken back. Students cannot see the marks.'); }, ms: 8000 });
           loadDash();
         }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) { var b = $('rt-go'); if (b) { b.disabled = false; b.textContent = 'Return to ' + listJoin(classes); } toast(msg(e)); } });
       };
