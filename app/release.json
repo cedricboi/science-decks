@@ -1,25 +1,23 @@
 {
-  "build": "2026-10-25-one-platform",
-  "seq": 34,
-  "ref": "206f8718224592ad9a81f55a4cdd68af0c5e0736",
-  "title": "learnwithmrcedric: one platform",
+  "build": "2026-10-25-teacher-hub-glance",
+  "seq": 35,
+  "ref": "bb8c1f7585d4a36e5017fe2ac05909c7d621b009",
+  "title": "learnwithmrcedric: Teacher Hub at a glance",
   "notes": [
-    "Students: one app. Now shows the one thing to do, My file is the binder (red means I owe it, green means it is in), Me holds the avatar, points, shop, night market, arcade and badges. Handing in takes two taps and the tab turns green at once. The answer key opens after corrections are handed in",
-    "Teacher Hub: Today, Chapters and Students, with Settings in the menu. Teach is one click, Check and return then Return is two. Needs you is the one list of things to do. While you teach, names turn into initials on the laptop",
-    "Your phone (open /exec?phone, paired with a 4-digit code from the Hub): Back and Next, quick checks (A B C D, True or false, Got it / Nearly / Lost, a word, or the question on the slide), Eyes on me, Together or Own pace, Who is stuck, Let in, and End with 4 seconds to undo",
-    "The slides (bridge 15): quick checks appear at the bottom of the slide, students sign in from learnwithmrcedric with no typing, work done just before Teach is kept, and the projector never shows a name. The Streak top 5 shows initials",
-    "Lesson 5 (1.5 Which instrument fits the job?) is its own lesson now, with its own place in Chapter 1",
-    "One sheet: Settings, One sheet, Make the one sheet copies every tab of both old sheets into a new private sheet and checks each tab. Switch to the one sheet runs at a quiet time. The two old sheets are never changed, and Go back to the old sheets works until the end of the next school day",
-    "Faster: the iPads ask less often and never while hidden, a whole class opening the app at once reads the sheet once, and answers no longer wait for each other",
-    "Safer: only you (the owner) can make, switch or go back from the one sheet, going back copies new hand-ins, answers and points back into the old sheets, End always finishes even if the laptop is closed straight after, and Sign out signs a student out on every device",
-    "Fallback: the New version switch in Settings (off, test, on), or add ?classic to any link for the release 33 pages"
+    "Teacher Hub only. No server code to paste: the pages update themselves within about ten minutes",
+    "Today: five cards in order (Let in, Check and return, Set homework, Follow up, Hand out). The first line in each card is the one to do first. Check and return lists work ready to return first, and every line shows how long it has waited and which classes it covers",
+    "The next lesson card shows what is waiting for that class in the room. It shrinks to a strip when the lesson is more than an hour away",
+    "Red now means past due and not handed in, including missed sheets. Work not due yet is grey",
+    "Every Return does the same thing as Check and return: marks shown, corrections opened and the answer key timed",
+    "Chapters and Students open on the class you are about to teach. Older duplicate screens are folded into Chapters and Students, and yellow now means Teach only",
+    "Fallback: add ?classic to the Hub link for the release 33 pages. That page set is pinned and kept in this list"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "3a4ba6ef258a3e658f27b85676451dc14b3cbebb03569ca353d18f1ab0333f56"
+      "sha256": "a94dc0206d151d283d17ee6ef8840007c9e13cbfc55fdb2d3fbd5a75e8265773"
     },
     {
       "name": "Code",
@@ -55,13 +53,13 @@
       "name": "Hub",
       "type": "SERVER_JS",
       "path": "Hub.gs",
-      "sha256": "d049e952298cec8a09412c241b19af1724d526aedda49d3c865ff45e488ffb28"
+      "sha256": "0cd2ab8309ab9009e6c8a388d5f1fdcfd8fcd9f59dcbdba2e578b93854ce637a"
     },
     {
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "fa56e9203c9c8bfaf8c16e69b3dd47f0861f4e820a05ffcd3ec03e8de7630e77"
+      "sha256": "2d84457094f3759685292b2a95e138e3bc063afbcb704d5e3663ee416e7585e2"
     },
     {
       "name": "Ink",
@@ -107,6 +105,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 35,
+      "build": "2026-10-25-teacher-hub-glance",
+      "ref": "bb8c1f7585d4a36e5017fe2ac05909c7d621b009",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "2d84457094f3759685292b2a95e138e3bc063afbcb704d5e3663ee416e7585e2"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 34,
       "build": "2026-10-25-one-platform",
@@ -216,323 +272,22 @@
           "path": "Computing.html",
           "sha256": "aa83be8a1bb636d469f7dd9238ea93c2c8a98551fef2b98bb077a9e23f61a03f"
         }
-      ]
-    },
-    {
-      "seq": 32,
-      "build": "2026-10-24-portal-video",
-      "ref": "fccb21c36af8b3d0aa0f09a5846c9bc11fc2194c",
-      "needsServer": 28,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "6c792412f3a62548f52ed40eab785501515ce543153516104339daac7b7d258b"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "e28f3506f77508aa2179defbc4f561352e5c72e8021de07bf5d544953fc08aba"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
-        }
-      ]
-    },
-    {
-      "seq": 31,
-      "build": "2026-10-24-portal-sky",
-      "ref": "ce87a85e026e9c0eed32b10d20c84fe81947b2b6",
-      "needsServer": 28,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "6c792412f3a62548f52ed40eab785501515ce543153516104339daac7b7d258b"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "a00befef92150aea3cfa40197792bb90babb10f44b546d35de91aa9572c3cbf9"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
-        }
-      ]
-    },
-    {
-      "seq": 30,
-      "build": "2026-10-24-mark-by-page",
-      "ref": "be7a825633ee63a4f3ed7129d3432378de4511b7",
-      "needsServer": 28,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "6c792412f3a62548f52ed40eab785501515ce543153516104339daac7b7d258b"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
-        }
-      ]
-    },
-    {
-      "seq": 29,
-      "build": "2026-10-24-palm-guard",
-      "ref": "4d2fa365ffb7cb4429d2287a260721ece916f819",
-      "needsServer": 28,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "80a854ee0839a34bb14abc0221d55883d53699b4a2f48a7b8b148f80f663aba5"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "cbb754148e5eaced565f79408753a14ea8d31df7a0a8a982ec0236a19772a1ba"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
-        }
-      ]
-    },
-    {
-      "seq": 28,
-      "build": "2026-10-21-computing",
-      "ref": "73f1d6742a52c746e317789029580bd77638c327",
-      "needsServer": 28,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "5b06bae965e55a4817911dffedafe237de9d82ac40eca4444fc869433570e7b1"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "bb191dc9c65b37ec011334517631591161a294ba41622e1c0d1013ee7f3ab5af"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "791790d584d4801fea642db1ba755ae327605dc84770f1514c5859dbdab7f079"
-        }
-      ]
-    },
-    {
-      "seq": 27,
-      "build": "2026-10-21-student-file",
-      "ref": "1cf376881e331faf6ec47f22a890d1324a8688f5",
-      "needsServer": 26,
-      "files": [
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "c24ecf4687c62eda21a646632a85ca14ac378fe6aaea8534545c8879134b8bf7"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "312f0fc2f98b94f25e70f1f6d7b967781f1f4d992b5b6faaec84b9126485d39b"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "d61e89bef2c6b828de4d1af0681c75fcd3132107e56d3c8d874acb3a56f7d1de"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "29f03ae047a05239d6331d2febb20a1247b67ac69aacf0833ac44a22ad023c87"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "8e134d19e8065ad936460fa8bc7e6d36140830c5f65c96a5ad8406f8a23e2b2d"
-        }
-      ]
+      ],
+      "pinned": true
     }
   ],
   "server": [
+    {
+      "seq": 35,
+      "files": [
+        "App.gs",
+        "Hub.gs"
+      ],
+      "notes": [
+        "Release 35: the new Teacher Hub pages already work on your current server code, so nothing breaks if you wait",
+        "Paste App.gs and Hub.gs, then deploy a new version, when you have a few minutes. It lets Claude's \"please check\" notes flag the right scripts in Check and return, and makes Release marking on your phone open corrections the same way the Hub does"
+      ]
+    },
     {
       "seq": 34,
       "files": [
@@ -607,6 +362,6 @@
       ]
     }
   ],
-  "codePage": "https://claude.ai/artifact/AFmqx6xRHBp6MCrBc9sWuy",
+  "codePage": "https://claude.ai/artifact/CiL47ZmvkhvUeHKTCjumog",
   "classicRef": "06b1834f69c890265470d7d0fe0c2aab007186eb"
 }
