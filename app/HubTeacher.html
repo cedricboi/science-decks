@@ -7543,7 +7543,7 @@
   }
   // The class split for the parents and keep-an-eye lines, from the Students list when it has loaded (no extra call).
   function nxFollowSplit(parent, count) {
-    var by = {}, n = 0, all = '.';   // before the split is known, no guess
+    var by = {}, n = 0, all = ' · all classes.';   // the count covers every class; the split shows once the Students list has loaded
     if (!H.tracker) return all;
     H.tracker.forEach(function (c) { (c.flagged || []).forEach(function (f) { if (f.seen || !!f.parent !== parent) return; by[f.cls] = (by[f.cls] || 0) + 1; n++; }); });
     if (n !== count) return all;
