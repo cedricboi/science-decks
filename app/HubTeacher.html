@@ -3937,9 +3937,9 @@
     return hit;
   }
   function flowWhy(f) {
-    return f === 'hands' ? 'Saved work hands itself in at the due time' + (claudeOn() ? ', Claude marks it, and you check it and release.' : ', then you mark it and release.') + ' Corrections close 7 days later, then the answers show.'
-      : f === 'self' ? 'Saved work hands itself in at the due time. You mark it and release. Corrections close 7 days later, then the answers show.'
-      : f === 'open' ? 'Students hand in when they are ready. Late work is taken and shown as late. Corrections close 7 days after you release, then the answers show.'
+    return f === 'hands' ? 'Saved work hands itself in at the due time' + (claudeOn() ? ', Claude marks it, and you check it and return it.' : ', then you mark it and return it.') + ' Corrections close 7 days later, then the answers show.'
+      : f === 'self' ? 'Saved work hands itself in at the due time. You mark it and return it. Corrections close 7 days later, then the answers show.'
+      : f === 'open' ? 'Students hand in when they are ready. Late work is taken and shown as late. Corrections close 7 days after you return it, then the answers show.'
       : 'Your own settings, under Advanced.';
   }
   function scheduleFields(w) {
@@ -3952,8 +3952,8 @@
       '<label class="check-row"><input type="checkbox" id="sc-auto"' + (w.autoHandIn ? ' checked' : '') + '><span>Hand in saved work by itself at the due time<br><span class="muted">Anyone who wrote on it but did not tap Hand in is handed in, on time. Hand-in closes then. Needs a due date.</span></span></label>' +
       '<label class="check-row"><input type="checkbox" id="sc-close"' + (w.autoClose || w.autoHandIn ? ' checked' : '') + (w.autoHandIn ? ' disabled' : '') + '><span>Close hand-in at the due time<br><span class="muted">Leave this off to accept late work and track it as late.</span></span></label>' +
       '<label class="check-row"><input type="checkbox" id="sc-mark"' + (w.autoMark ? ' checked' : '') + (connected || w.autoMark ? '' : ' disabled') + '><span>Start Claude\'s marking when it closes<br><span class="muted">' + (connected ? 'Claude marks one sample by itself. You check it, then let Claude mark the rest.' : 'Connect Claude marking first (top of the Hub).') + '</span></span></label>' +
-      '<label class="check-row"><input type="checkbox" id="sc-corr"' + (w.corrDays ? ' checked' : '') + '><span>Close corrections <input type="number" id="sc-days" min="1" max="60" value="' + (w.corrDays || 7) + '" style="width:64px;padding:4px 6px;font-size:15px"> days after I release the marking</span></label>' +
-      '<label class="check-row"><input type="checkbox" id="sc-ans"' + (w.answersAfter ? ' checked' : '') + '><span>Release the answers when corrections close</span></label></details></div>';
+      '<label class="check-row"><input type="checkbox" id="sc-corr"' + (w.corrDays ? ' checked' : '') + '><span>Close corrections <input type="number" id="sc-days" min="1" max="60" value="' + (w.corrDays || 7) + '" style="width:64px;padding:4px 6px;font-size:15px"> days after I return the marking</span></label>' +
+      '<label class="check-row"><input type="checkbox" id="sc-ans"' + (w.answersAfter ? ' checked' : '') + '><span>Show the answer key when corrections close</span></label></details></div>';
   }
   function scheduleValues() {
     return { autoClose: $('sc-close').checked || $('sc-auto').checked, corrDays: $('sc-corr').checked ? Math.max(1, Number($('sc-days').value) || 7) : 0, answersAfter: $('sc-ans').checked,
@@ -4012,7 +4012,7 @@
       var it = lib.on && lib.item, hint = $('nw-shint');
       if (it && it.sol && !sol) {
         hint.innerHTML = '<b style="color:var(--green-ink)">' + ICON.tick + ' Your marked solution is in the library:</b> ' + esc(it.sol.name) + '. Claude marks against it. Upload a different one here to use that instead.' +
-          (it.key ? ' The answer key from last time comes too, hidden from students until you release it.' : '') +
+          (it.key ? ' The answer key from last time comes too, hidden from students until you show it.' : '') +
           (it.notes ? ' Claude starts from its marking notes from last time.' : '');
         if ($('nw-draft')) { $('nw-draft').checked = false; $('nw-draft').disabled = true; }
       } else if (it && (it.key || it.notes) && !sol) {
