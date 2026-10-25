@@ -632,7 +632,7 @@ function apiPhoneNeedAct(pin, a, o) {
   else if (a === 'release') {
     // Release 35: the same as the Hub's Check and return. Marks shown, corrections open for 7 days, answer key after corrections.
     var ra = findAssignment_(o.id);
-    api_t_update(tk, o.id, ra && !ra.practice && !ra.showMarked ? { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true } : { showMarked: true });
+    api_t_update(tk, o.id, ra && !ra.practice && !ra.showMarked && !ra.releasedAt ? { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true } : { showMarked: true });
     done = 'Marking released';
   }
   else if (a === 'answers') { api_t_update(tk, o.id, { showAnswers: true }); done = 'Answers released'; }

@@ -1094,6 +1094,7 @@
     --nx-green: #0B7A4E; --nx-green-ink: #0B6E47; --nx-green-soft: #E2F6EC;
     --nx-red: #C62F36; --nx-red-ink: #B4232A; --nx-red-soft: #FDECEA; --nx-badge: #E5484D;
     --nx-yellow: #FFE45C; --nx-amber-soft: #FFF6D6; --nx-amber: #8A6400;
+    --nx-privb: #FFE45C;
     --nx-hero: #1B1F3B; --nx-hero-ink: #FFFFFF; --nx-hero-muted: #C9CEE6; --nx-hero-chip: #2A3160; --nx-hero-line: #5A607D;
     --nx-shadow: 0 1px 3px rgba(27,31,59,.12);
     /* the older pages inside the Hub sit on the same cool canvas */
@@ -1106,6 +1107,7 @@
     --nx-green: #2E9E6E; --nx-green-ink: #7FDCAE; --nx-green-soft: #173528;
     --nx-red: #E0565C; --nx-red-ink: #FF9B9F; --nx-red-soft: #3A1E24; --nx-badge: #E5484D;
     --nx-yellow: #FFE45C; --nx-amber-soft: #3A3218; --nx-amber: #F2CF6B;
+    --nx-privb: #6B4E00;
     --nx-hero: #0A0C17; --nx-hero-ink: #FFFFFF; --nx-hero-muted: #B8BEDB; --nx-hero-chip: #232A55; --nx-hero-line: #4A5070;
     --nx-shadow: 0 1px 3px rgba(0,0,0,.5);
     --paper: var(--nx-canvas); --ink: var(--nx-ink); --muted: var(--nx-muted); --line: var(--nx-line); --rule: var(--nx-line2); --soft: var(--nx-soft); --surface: var(--nx-surface); --surface-2: #20253A; --blue: var(--nx-link); --blue-soft: var(--nx-blue-soft); --ink-fill: #E6E9F5;
@@ -1148,7 +1150,7 @@
   .nx-priv svg { width: 18px; height: 18px; flex: none; }
   .nx-priv b { color: var(--nx-link); }
   .nx-priv.on { background: var(--nx-ink); color: var(--nx-surface); border-color: var(--nx-ink); }
-  .nx-priv.on b { color: var(--nx-yellow); }
+  .nx-priv.on b { color: var(--nx-privb); }
   #pop-nx { min-width: 260px; max-height: calc(100vh - 90px); overflow-y: auto; }
 
   /* buttons */
@@ -1229,6 +1231,7 @@
   @keyframes nxflash { 0% { box-shadow: 0 0 0 3px var(--nx-blue); } 100% { box-shadow: 0 0 0 3px transparent; } }
   .nx-nnum { font: 800 36px/1 var(--display); }
   .nx-nlab { font-weight: 700; font-size: 17px; }
+  .nx-nline.nx-ph { color: var(--nx-muted); font-style: italic; }
   .nx-nline { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 10px 0 0; border-top: 1px solid var(--nx-chip); }
   .nx-nline:first-of-type { border-top: 0; }
   .nx-nline.one { flex-direction: column; align-items: stretch; border-top: 0; padding: 0; flex: 1; }
@@ -1421,6 +1424,7 @@
   .nx-tiles > div { background: var(--nx-soft); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .nx-tiles b { font: 800 22px var(--display); }
   .nx-tiles span { font-size: 12px; color: var(--nx-muted); text-align: center; }
+  .nx-tiles .nx-tgrey { font-size: 11px; color: var(--nx-muted); text-align: center; line-height: 1.2; }
   .nx-recsec { display: flex; flex-direction: column; gap: 6px; }
   .nx-recsec > summary { cursor: pointer; }
   .nx-fl { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--nx-soft); border: 0; font: inherit; color: var(--nx-ink); text-align: left; cursor: pointer; width: 100%; }
@@ -3792,6 +3796,7 @@
     $('rl-yes').onclick = function () {
       busy(show ? 'Returning...' : 'Hiding...');
       (show ? sendReturn(id, w) : tcall('api_t_update', id, { showMarked: false }).then(function () {
+        try { localStorage.setItem('nx_hid_' + id, '1'); } catch (e) { /* the release 35 server knows anyway */ }
         toast('Marking hidden', { undo: function () { undoPatch(id, { showMarked: true }, 'The marking is back with students again'); } });
       })).then(function () {
         closeModal();
@@ -3812,8 +3817,15 @@
   }
   // Two cases only show the marks. A practice sheet has nothing to correct. Work that is already back keeps its
   // corrections and answer key as they are, so a second upload never opens corrections that have closed.
+  // Marks hidden with Hide from students and then shown again also only show the marks: the corrections window and
+  // answer key stay as he set them. The page remembers which sheets it hid (an Undo of a return is not a hide, so a
+  // return after an Undo is a full return again).
+  function wasReturned(w) {
+    if (!w) return false;
+    try { return localStorage.getItem('nx_hid_' + w.id) === '1'; } catch (e) { return false; }
+  }
   function returnPatch(w, keyNow) {
-    if (w && (w.practice || w.showMarked)) return { showMarked: true };
+    if (w && (w.practice || w.showMarked || wasReturned(w))) return { showMarked: true };
     var p = { showMarked: true, correctionsOpen: true, corrDays: 7, answersAfter: true };
     if (keyNow) p.showAnswers = true;
     return p;
@@ -5831,7 +5843,7 @@
     var rows = parts.length ? parts.map(function (p, i) { return { key: partKey(p, i), t: p.t, num: p.num || '', sub: 'slides ' + p.from + '–' + p.to }; })
       : [{ key: '#all', t: name, num: it.num || '', sub: 'the whole lesson' }];
     var unnumbered = parts.length > 1 && !parts.some(function (p) { return p.num; });
-    modal('<h2>Homework for ' + esc(name) + '</h2><p>Link a worksheet to each sub-chapter. It waits in the chapter\'s page in Chapters, and reaches a class only when you press <b>Deploy</b> there. Once you have taught the sub-chapter, it shows as ready, due at the start of their next lesson. It hands itself in at the due time' + (claudeOn() ? ' and Claude marks it' : '') + '; you check and release. A worksheet in your library named with the sub-chapter\'s number (such as <b>3.2 Heat capacity.pdf</b>, or in a <b>3.2 …</b> folder) links itself.</p>' +
+    modal('<h2>Homework for ' + esc(name) + '</h2><p>Link a worksheet to each sub-chapter. It waits in the chapter\'s page in Chapters, and reaches a class only when you press <b>Deploy</b> there. Once you have taught the sub-chapter, it shows as ready, due at the start of their next lesson. It hands itself in at the due time' + (claudeOn() ? ' and Claude marks it' : '') + '. You check it and return it to students. A worksheet in your library named with the sub-chapter\'s number (such as <b>3.2 Heat capacity.pdf</b>, or in a <b>3.2 …</b> folder) links itself.</p>' +
       (unnumbered ? '<p class="hint">These parts have no textbook numbers yet. Rebuild the slides with a sub-chapter in each part (for example 3.2 · Heat capacity) to number them.</p>' : '') +
       '<div class="hwlist" id="hw-list"><p class="muted">Opening your library…</p></div>' +
       '<div class="err" id="hw-err"></div><div class="foot"><button class="btn" id="hw-done">Done</button></div>', 'wide');
@@ -7505,6 +7517,12 @@
         run: function (b) { sxDeployPart(r0.r, r0.ch.key, cls, b); } });
     });
     g.sethw.sort(function (a, b) { return (a.local ? 0 : 1) - (b.local ? 0 : 1); });
+    // While the homework links are still loading (a few seconds after Today opens), the card keeps its place, so the
+    // other cards do not shift sideways under his pointer when it arrives. It counts for nothing and has no button.
+    if (!g.sethw.length && H.links && H.links.lessons && (!H.te || !H.wl) && !H.teErr) {
+      if (!NX.phAt) NX.phAt = Date.now();
+      if (Date.now() - NX.phAt < 30000) g.sethw.push({ ph: true, key: 'sethw|ph', title: 'Checking which homework is ready to set', sub: '' });
+    }
     // corrections past their due date that are still owed (worked out here), with the class split
     (d.worksheets || []).forEach(function (w) {
       if (w.practice || !w.showMarked || w.correctionsOpen || !(w.corrDue > w.corrDone) || (w.dueTs && Date.now() - w.dueTs > 40 * 864e5)) return;
@@ -7525,7 +7543,7 @@
   }
   // The class split for the parents and keep-an-eye lines, from the Students list when it has loaded (no extra call).
   function nxFollowSplit(parent, count) {
-    var by = {}, n = 0, all = ' · all classes.';
+    var by = {}, n = 0, all = '.';   // before the split is known, no guess
     if (!H.tracker) return all;
     H.tracker.forEach(function (c) { (c.flagged || []).forEach(function (f) { if (f.seen || !!f.parent !== parent) return; by[f.cls] = (by[f.cls] || 0) + 1; n++; }); });
     if (n !== count) return all;
@@ -7542,14 +7560,14 @@
     }, H.dash ? 300 : 1500);
   }
   function nxBadge() {
-    var n = nxNeeds().reduce(function (t, g) { return t + g.items.filter(function (x) { return !x.snoozed; }).length; }, 0);
+    var n = nxNeeds().reduce(function (t, g) { return t + g.items.filter(function (x) { return !x.snoozed && !x.ph; }).length; }, 0);
     if ($('nx-bd-today')) $('nx-bd-today').textContent = n || '';
     return n;
   }
   function nxNeedsHtml() {
     var groups = nxNeeds(), live = 0, off = 0;
     NX.needs = groups;
-    groups.forEach(function (gr) { gr.items.forEach(function (it) { if (it.snoozed) off++; else live++; }); });
+    groups.forEach(function (gr) { gr.items.forEach(function (it) { if (it.ph) return; if (it.snoozed) off++; else live++; }); });
     var h = '<section class="nx-needs" aria-label="Needs you"><h2 class="nx-h2">Needs you</h2>';
     if (!live) h += '<div class="nx-calm">' + NX_ICON.ok + (off ? 'Nothing else needs you today. The rest can wait until tomorrow.' : 'Nothing needs you right now.') + '</div>';
     h += '<div class="nx-ngrid">';
@@ -7559,13 +7577,14 @@
       var one = false, open = NX.open[gr.k];
       // "And N more" never hides a line that is ready to return.
       var shown = open ? items : items.filter(function (it, i) { return i < 3 || it.green; });
-      h += '<div class="nx-ncard" data-g="' + gr.k + '"><span class="nx-nnum">' + items.filter(function (x) { return !x.snoozed; }).length + '</span><span class="nx-nlab">' + esc(gr.label) + '</span>';
+      h += '<div class="nx-ncard" data-g="' + gr.k + '"><span class="nx-nnum">' + (items.every(function (x) { return x.ph; }) ? '&middot;' : items.filter(function (x) { return !x.snoozed && !x.ph; }).length) + '</span><span class="nx-nlab">' + esc(gr.label) + '</span>';
       if (gr.k === 'check') {
         var sol = items.filter(function (it) { return it.sol && !it.snoozed && it.w; });
         if (sol.length) h += '<p class="nx-solflag"><b>Marked solution needed</b> for ' + esc(listJoin(sol.map(function (it) { return nxShort(it.w); }))) + '. Claude marks against it.</p>';
       }
       var first = true;
       shown.forEach(function (it) {
+        if (it.ph) { h += '<div class="nx-nline nx-ph"><span class="nx-ntxt"><span>' + esc(it.title) + '</span></span></div>'; return; }
         var ii = gr.items.indexOf(it), lead = first && !it.snoozed;
         if (!it.snoozed) first = false;
         var kind = it.green ? (lead ? 'green' : 'ogreen') : (lead ? 'dark' : 'ghost');
@@ -7577,6 +7596,7 @@
             '<span class="nx-nacts">' + acts + '<button type="button" class="nx-tmr" data-nsnz="' + gi + '|' + ii + '" aria-label="Tomorrow: put ' + esc(it.title) + ' away until tomorrow">Tomorrow</button></span>') + '</div>';
       });
       if (items.length > shown.length || open && items.length > 3) h += '<button type="button" class="nx-link" data-nmore="' + gr.k + '">' + (open ? 'Show fewer' : 'And ' + (items.length - shown.length) + ' more') + '</button>';
+      if (gr.k === 'hand') h += '<button type="button" class="nx-link" data-nxa="pts">Points and prizes</button>';
       h += '</div>';
     });
     h += '</div>';
@@ -7617,7 +7637,7 @@
     Array.prototype.forEach.call(el.querySelectorAll('[data-nxa]'), function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-nxa');
-        if (a === 'pair') nxPair(); else if (a === 'chx') showTab('chx'); else if (a === 'week') openWeek(); else if (a === 'setup') openSetup();
+        if (a === 'pair') nxPair(); else if (a === 'chx') showTab('chx'); else if (a === 'week') openWeek(); else if (a === 'setup') openSetup(); else if (a === 'pts') showTab('rw');
         else if (a === 'tnretry') { H.tnErr = ''; loadTeachNext(true).then(nxToday); nxToday(); }
         else if (a === 'snz') { H.showSnoozed = !H.showSnoozed; nxToday(); }
         else if (a === 'upx') { lsSet('wsh_up_x', String(H.update.pasteSeq)); nxToday(); }
@@ -8001,7 +8021,7 @@
 
   /* ---------- All chapters: every worksheet for the class in one list (it replaces All worksheets) ----------
      The Chapters rows, with To mark, To return and Open (and Back), by chapter or by stage, as a list or a grid. */
-  var NX_ALLF = [['all', 'All'], ['open', 'Open'], ['mark', 'To mark'], ['ret', 'To return'], ['back', 'Back']];
+  var NX_ALLF = [['all', 'All'], ['open', 'Open'], ['mark', 'Marking'], ['ret', 'To return'], ['back', 'Back']];
   function nxAllSheets(cls) { return ((H.dash && H.dash.worksheets) || []).filter(function (w) { return !(w.classes || []).length || w.classes.some(function (c) { return chNorm(c) === chNorm(cls); }); }); }
   // Where a sheet sits for the filters: open (Collecting, or practice still open), to mark, to return, or back.
   function nxAllKey(w) {
@@ -8035,7 +8055,7 @@
     };
     var secs = [];
     if (grp === 'status') {
-      [['ret', 'To return'], ['mark', 'To mark'], ['open', 'Open'], ['back', 'Back']].forEach(function (s) {
+      [['ret', 'To return'], ['mark', 'Marking'], ['open', 'Open'], ['back', 'Back']].forEach(function (s) {
         var l = shown.filter(function (w) { return nxAllKey(w) === s[0]; });
         if (l.length) secs.push({ k: 's:' + s[0], title: s[1], list: order(l), pre: true });
       });
@@ -8245,7 +8265,7 @@
       (p && p.seen ? '<span class="nx-muted">Seen for a follow-up on ' + esc(p.seen) + '.</span>' : '') + '</span></div>';
     var avg = null;
     if (p && p.record) { var ps = p.record.map(function (x) { return parseScore(x.score); }).filter(Boolean); if (ps.length) avg = Math.round(100 * ps.reduce(function (t, s) { return t + s.got / s.max; }, 0) / ps.length); }
-    var h = head + '<div class="nx-tiles' + (p && p.slides != null ? ' four' : '') + '"><div><b>' + (done ? r.onTime + '/' + done : 'None') + '</b><span>on time</span></div><div><b>' + (avg == null ? 'None' : avg + '%') + '</b><span>average</span></div><div class="nx-tred"><b>' + nxRedOf(cls, name) + '</b><span>' + (nxRedOf(cls, name) === 1 ? 'red tab' : 'red tabs') + (nxGreyOf(cls, name) ? ' · ' + nxGreyOf(cls, name) + ' not due yet' : '') + '</span></div>' +
+    var h = head + '<div class="nx-tiles' + (p && p.slides != null ? ' four' : '') + '"><div><b>' + (done ? r.onTime + '/' + done : 'None') + '</b><span>on time</span></div><div><b>' + (avg == null ? 'None' : avg + '%') + '</b><span>average</span></div><div class="nx-tred"><b>' + nxRedOf(cls, name) + '</b><span>' + (nxRedOf(cls, name) === 1 ? 'red tab' : 'red tabs') + '</span>' + (nxGreyOf(cls, name) ? '<small class="nx-tgrey">' + nxGreyOf(cls, name) + ' not due yet</small>' : '') + '</div>' +
       (p && p.slides != null ? '<div><b>' + esc(p.slides) + '</b><span>slides done</span></div>' : '') + '</div>';
     if (!p) { box.innerHTML = h + skeleton('list'); }
     else {
@@ -8264,7 +8284,8 @@
         return '<div class="nx-flx">' + row + ((x.due || x.comment || x.blank || url) ? '<p class="nx-muted">' + esc([x.due ? 'Due ' + x.due : '', x.blank ? 'Mostly blank' : '', x.comment].filter(Boolean).join(' · ')) +
           (url ? ' <a href="' + esc(url) + '" target="_blank" rel="noopener">' + (x.markedUrl ? 'Marked copy' : 'Handed in') + '</a>' : '') + '</p>' : '') + '</div>';
       }).join('') : '<p class="nx-muted">No worksheets yet.</p>') + (file.length < p.record.length ? '<button type="button" class="nx-link" data-nxr="all">See all ' + p.record.length + ' worksheets</button>' : '') + '</div>';
-      if (p.parent && (p.parent.due || p.parent.problems.length)) {
+      // Shown after a message too, so Take back the last message is always there (as the older drawer had).
+      if (p.parent && (p.parent.due || p.parent.problems.length || p.parent.sent)) {
         h += '<div class="nx-pbox' + (p.parent.due ? ' due' : '') + '"><b>' + (p.parent.due ? plural(p.parent.problems.length, 'problem worksheet', 'problem worksheets') + ' since the last message' : p.parent.problems.length + ' of ' + p.parent.after + ' before a parent message') + '</b>' +
           '<span class="nx-muted">Parent last messaged ' + esc(p.parent.sent || 'never') + '.</span><div class="nx-acts"><button type="button" class="nx-btn sm dark" data-nxr="parent">Message parent</button><button type="button" class="nx-btn sm ghost" data-nxr="sent">Parent messaged today</button><button type="button" class="nx-btn sm ghost" data-nxr="seen">Seen today</button>' +
           (p.parent.sent ? '<button type="button" class="nx-btn sm ghost" data-nxr="unsent">Take back the last message</button>' : '') + '</div></div>';
