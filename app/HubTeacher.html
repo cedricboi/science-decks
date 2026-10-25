@@ -1530,8 +1530,10 @@
   .nx-cls { display: flex; gap: 4px; padding: 4px; background: var(--nx-canvas); border-radius: 24px; flex-wrap: wrap; }
   .nx-cls button { height: 40px; padding: 0 15px; border-radius: 20px; border: 0; background: transparent; color: var(--nx-ink2); font: 700 15px var(--text); cursor: pointer; }
   .nx-cls button:hover { color: var(--nx-ink); }
-  .nx-cls button[aria-pressed="true"] { background: var(--nx-surface); color: var(--nx-ink); box-shadow: var(--nx-shadow); }
-  .nx-cls.dim button[aria-pressed="true"] { box-shadow: none; background: transparent; color: var(--nx-ink2); }
+  .nx-cls button[aria-pressed="true"] { background: var(--nx-surface); color: var(--nx-ink); box-shadow: inset 0 0 0 2px var(--nx-ink), var(--nx-shadow); }
+  /* On Today no class is chosen: the pills are plain links to each class's Chapters page (release 35) */
+  .nx-cls.dim button { color: var(--nx-ink); }
+  .nx-cls.dim button:hover { background: var(--nx-surface); box-shadow: var(--nx-shadow); }
   .nx-cls .nx-cmpchip { border-left: 1px solid var(--nx-line2); border-radius: 0 20px 20px 0; margin-left: 2px; }
   .nx-cls .nx-cmpchip[aria-pressed="true"] { border-radius: 20px; }
   .nx-ib { width: 44px; height: 44px; border-radius: 22px; border: 1px solid var(--nx-line); background: var(--nx-surface); color: var(--nx-ink); display: grid; place-items: center; cursor: pointer; flex: none; }
@@ -1646,6 +1648,12 @@
   .nx-cht b { font-size: 16px; }
   .nx-cht span { font-size: 14px; color: var(--nx-muted); }
   .nx-owe { font-size: 13px; font-weight: 700; color: var(--nx-red-ink); background: var(--nx-red-soft); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+  .nx-chbadges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .nx-cht .nx-chbadges span { font-size: 12px; padding: 3px 8px; }
+  .nx-cht .nx-owe { color: var(--nx-red-ink); }
+  .nx-cht .nx-owe.mk { color: var(--nx-ink); background: var(--nx-chip); }
+  .nx-cht .nx-owe.rt { color: var(--nx-green-ink); background: var(--nx-green-soft); }
+  .nx-cht .nx-owe.gy { color: var(--nx-muted); background: transparent; border: 1px solid var(--nx-line2); font-weight: 600; }
   .nx-chadd { height: 48px; border-radius: 14px; border: 1px dashed var(--nx-line2); background: var(--nx-surface); color: var(--nx-link); font: 700 15px var(--text); cursor: pointer; }
   .nx-chmain { flex: 999 1 640px; min-width: 0; background: var(--nx-surface); border-radius: 24px; overflow: hidden; }
   .nx-chhead { color: #fff; padding: 16px 24px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
@@ -1714,17 +1722,25 @@
   .nx-findname input { border: 0; outline: 0; background: transparent; flex: 1; min-width: 0; font-size: 15px; color: var(--nx-ink); }
   .nx-stu { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
   .nx-stulist { flex: 999 1 560px; min-width: 0; background: var(--nx-surface); border-radius: 22px; padding: 6px 10px; display: flex; flex-direction: column; }
-  .nx-sth, .nx-str { display: grid; grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.4fr) 96px 80px; gap: 12px; align-items: center; padding: 11px 12px; }
+  .nx-sth, .nx-str { display: grid; grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.4fr) 136px 64px; gap: 12px; align-items: center; padding: 11px 12px; }
   .nx-sth { font-size: 12px; font-weight: 700; color: var(--nx-muted); padding-top: 10px; }
   .nx-str { border: 0; border-radius: 12px; background: transparent; font: inherit; color: var(--nx-ink); text-align: left; cursor: pointer; width: 100%; box-sizing: border-box; }
   .nx-str:hover { background: var(--nx-soft); }
   .nx-str.sel { background: var(--nx-blue-soft); }
   .nx-str b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nx-reg { font-size: 14px; color: var(--nx-muted); }
-  .nx-now { font-size: 14px; color: var(--nx-ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nx-now { font-size: 14px; color: var(--nx-ink2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
   .nx-now.bad { color: var(--nx-red-ink); font-weight: 700; }
   .nx-reds { display: flex; gap: 4px; align-items: center; font-size: 14px; }
-  .nx-reds i { width: 18px; height: 12px; border-radius: 4px 4px 0 0; background: var(--nx-red); }
+  .nx-reds i { width: 18px; height: 12px; border-radius: 4px 4px 0 0; background: var(--nx-red); flex: none; }
+  .nx-reds em, .nx-greys em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--nx-red-ink); }
+  .nx-greys { display: inline-flex; gap: 4px; align-items: center; margin-left: 4px; }
+  .nx-greys i.g { background: transparent; border: 2px solid var(--nx-line2); border-bottom: 0; box-sizing: border-box; }
+  .nx-greys em { color: var(--nx-muted); font-weight: 600; }
+  .nx-stushared { display: flex; flex-direction: column; gap: 4px; margin: 8px 2px 4px; padding: 10px 14px; border-radius: 14px; background: var(--nx-soft); font-size: 15px; color: var(--nx-ink2); }
+  .nx-stushared span { display: flex; align-items: center; gap: 8px; }
+  .nx-stushared i { width: 18px; height: 12px; border: 2px solid var(--nx-line2); border-bottom: 0; border-radius: 4px 4px 0 0; box-sizing: border-box; flex: none; }
+  .nx-stushared b { color: var(--nx-ink); }
   .nx-pts { font-size: 15px; font-weight: 700; }
   .nx-rec { flex: 1 1 360px; max-width: 440px; background: var(--nx-surface); border-radius: 24px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; position: sticky; top: 90px; max-height: calc(100vh - 110px); overflow-y: auto; }
   .nx-rech { display: flex; align-items: center; gap: 14px; }
@@ -1733,6 +1749,8 @@
   .nx-rech .nx-muted { font-size: 14px; }
   .nx-av { width: 56px; height: 56px; border-radius: 28px; background: #BFD9FF; color: #1B1F3B; display: grid; place-items: center; font: 800 18px var(--display); flex: none; }
   .nx-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .nx-tiles.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .nx-tiles.four b { font-size: 20px; }
   .nx-tiles > div { background: var(--nx-soft); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .nx-tiles b { font: 800 22px var(--display); }
   .nx-tiles span { font-size: 12px; color: var(--nx-muted); text-align: center; }
@@ -1740,7 +1758,9 @@
   .nx-recsec > summary { cursor: pointer; }
   .nx-fl { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--nx-soft); border: 0; font: inherit; color: var(--nx-ink); text-align: left; cursor: pointer; width: 100%; }
   .nx-fl:hover { background: var(--nx-chip); }
-  .nx-fl i { width: 22px; height: 14px; border-radius: 5px 5px 0 0; flex: none; }
+  .nx-fl i { width: 22px; height: 14px; border-radius: 5px 5px 0 0; flex: none; box-sizing: border-box; }
+  .nx-fl i.r { background: var(--nx-red); } .nx-fl i.k { background: var(--nx-green); } .nx-fl i.o { background: var(--nx-red); opacity: .4; }
+  .nx-fl i.g { background: transparent; border: 2px solid var(--nx-line2); border-bottom: 0; }
   .nx-fl span { flex: 1; min-width: 0; font-size: 15px; }
   .nx-fl small { font-size: 14px; color: var(--nx-muted); }
   .nx-fl small.bad { color: var(--nx-red-ink); font-weight: 700; }
@@ -2732,7 +2752,7 @@
     else if (k === '1' || k === '2' || k === '3') { e.preventDefault(); if (H.view === 'detail') closeDrawer(); showTab(['today', 'chx', 'stu'][Number(k) - 1]); }
     else if (k === '[' || k === ']') { e.preventDefault(); nxCycleClass(k === ']' ? 1 : -1); }
     else if ((k === 't' || k === 'T') && H.view !== 'detail') { e.preventDefault(); nxTeachKey(); }
-    else if ((k === 'n' || k === 'N') && (H.view === 'ws' || H.view === 'chx')) { e.preventDefault(); newWorksheet(); }
+    else if ((k === 'n' || k === 'N') && (H.view === 'ws' || H.view === 'chx')) { e.preventDefault(); var aw = H.view === 'chx' && document.querySelector('#view-chx [data-nxc2="addw"]'); if (aw) aw.click(); else newWorksheet(); }
     else if ((k === 's' || k === 'S') && H.view === 'detail' && $('savebar') && !$('savebar').classList.contains('hidden')) { e.preventDefault(); $('save-go').click(); }
     else if ((k === 'j' || k === 'k') && H.view === 'detail') { e.preventDefault(); moveRow(document.activeElement, k === 'j' ? 1 : -1); }
   });
@@ -7961,7 +7981,7 @@
         };
       });
     };
-    var done = function (text) { closeModal(); toast(text); sxRender(); };
+    var done = function (text) { closeModal(); toast(text); sxRender(); nxChapters(); };
     var go = function () {
       keep();
       var r = useOf(), kind = r ? 'part' : st.use, btn = $('sa-go');
@@ -8021,7 +8041,7 @@
      ===================================================================================================== */
   var NX_VIEWS = ['today', 'chx', 'stu', 'set'];
   var NX_TAB = 'lwmc-present';            // every Teach opens the slides in this one tab (Ruling A15)
-  var NX_TABOF = { today: 'today', home: 'today', chx: 'chx', chap: 'chx', te: 'chx', ws: 'chx', cmp: 'chx', stu: 'stu', tr: 'stu', pg: 'stu', cl: 'stu', rw: 'stu', set: '' };
+  var NX_TABOF = { today: 'today', home: 'today', chx: 'chx', chap: 'chx', te: 'chx', ws: 'chx', cmp: '', stu: 'stu', tr: 'stu', pg: 'stu', cl: 'stu', rw: 'stu', set: '' };
   var NX = { tab: 'today', ping: '', devices: null, devAt: 0, deb: {}, debAsked: {}, stuSel: lsGet('nx_stusel') || '', stuFilter: 'all', stuQ: '', chap: lsGet('nx_chap') || '',
     room: {}, roomAt: {}, rec: {}, open: {}, snz: null, flags: null, one: null };
   var NX_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], NX_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -8042,6 +8062,30 @@
     return NX_DAYS[new Date(ts).getDay()] + ' ' + nxHm(ts);
   }
   function nxNotFound(e) { return /not found|is not defined|unknown function|Script function|reading 'apply'|not a function/i.test(msg(e)); }
+  // The class a lesson is on for: running now, timetabled now, or starting within 60 minutes (release 35).
+  function nxLessonCls() {
+    var list = teClasses(), now = Date.now(), best = null;
+    ((H.tn && H.tn.classes) || []).forEach(function (x) {
+      var c = list.filter(function (k) { return chNorm(k) === chNorm(x.cls); })[0]; if (!c) return;
+      var at = x.running ? 0 : x.slot && x.slot.start <= now && (!x.slot.end || x.slot.end > now) ? 1 : (x.slot ? x.slot.start : x.nextAt) || 0;
+      if (at > 1 && (at < now || at - now > 60 * 60000)) return;
+      if (!best || at < best.at) best = { c: c, at: at };
+    });
+    return best ? best.c : '';
+  }
+  // Within 60 minutes of a lesson or during it, Chapters and Students open on that class, once per lesson. A class
+  // he picks after that stays, as before (the last class used, wsh_cls). Picking a class himself counts as seen.
+  function nxLessonKey() { var lc = nxLessonCls(); return lc ? { c: lc, k: lc + '|' + new Date().toDateString() } : null; }
+  function nxLessonSeen() { var o = nxLessonKey(); if (o) lsSet('nx_lsnk', o.k); NX.pickWait = false; }
+  function nxLessonPick() {
+    if (!H.tn || !H.dash) { NX.pickWait = true; return false; }
+    NX.pickWait = false;
+    var o = nxLessonKey(); if (!o || lsGet('nx_lsnk') === o.k) return false;
+    lsSet('nx_lsnk', o.k);
+    if (H.cls === o.c) return false;
+    H.cls = o.c; lsSet('wsh_cls', o.c);
+    return true;
+  }
   function nxCls() {
     var list = teClasses();
     if (H.cls && list.indexOf(H.cls) >= 0) return H.cls;
@@ -8247,7 +8291,7 @@
     var el = $('nx-cls'); if (!el) return;
     var list = teClasses(), cur = nxCls(), cmp = under === 'cmp', show = NX.tab !== 'today' && NX.tab !== '';
     el.classList.toggle('dim', !show && !cmp);
-    el.innerHTML = list.map(function (c) { return '<button type="button" data-nxc="' + esc(c) + '" aria-pressed="' + (!cmp && c === cur) + '">' + esc(c) + '</button>'; }).join('') +
+    el.innerHTML = list.map(function (c) { return '<button type="button" data-nxc="' + esc(c) + '" aria-pressed="' + (show && !cmp && c === cur) + '" title="' + esc(show ? 'Show ' + c : 'Open ' + c + ' in Chapters') + '">' + esc(c) + '</button>'; }).join('') +
       '<button type="button" data-nxc="" class="nx-cmpchip" aria-pressed="' + cmp + '" title="Computing classes and Coaches">Computing</button>';
     Array.prototype.forEach.call(el.querySelectorAll('[data-nxc]'), function (b) {
       b.onclick = function () {
@@ -8255,6 +8299,7 @@
         if (H.view === 'detail') closeDrawer();
         if (!c) { showTab('cmp'); return; }
         var was = H.view;
+        nxLessonSeen();
         setClass(c);
         if (was === 'cmp' || NX.tab === 'today' || NX.tab === '') showTab('chx');
       };
@@ -8263,6 +8308,7 @@
   function nxCycleClass(d) {
     var list = teClasses(); if (!list.length) return;
     var i = list.indexOf(nxCls());
+    nxLessonSeen();
     setClass(list[(i + d + list.length) % list.length]);
     if (H.view === 'cmp') showTab('chx');
     toast('Class ' + H.cls, { ms: 1200 });
@@ -8330,12 +8376,15 @@
       if (!H.tn || Date.now() - (H.tnAt || 0) > 40000) loadTeachNext(false).then(function () { nxToday(); });
       nxDevices(false);
     } else if (v === 'chx') {
+      if (nxLessonPick()) nxClassChips(v);
       nxChapters();
-      sxLoad(false).then(nxChapters);
+      sxLoad(false).then(function () { if (NX.pickWait && nxLessonPick()) nxRedraw(); nxChapters(); });
       if (!H.dash || Date.now() - (H.dashAt || 0) > 20000) loadDash();
     } else if (v === 'stu') {
+      if (nxLessonPick()) nxClassChips(v);
       nxStudents();
       nxStuLoad(false);
+      if (NX.pickWait) loadTeachNext(false).then(function () { if (NX.pickWait && nxLessonPick() && H.view === 'stu') { nxRedraw(); nxStuLoad(false); } });
     } else if (v === 'set') nxSettings();
   }
   function nxAfterDash(first) {
@@ -8689,17 +8738,95 @@
     if (s === 'marked') return pc.handed + ' of ' + pc.total + ' in · ' + (w.job && w.job.status === 'done' ? 'marked by Claude' : 'marked');
     return pc.handed + ' of ' + pc.total + ' back' + (w.corrDue ? ' · corrections ' + w.corrDone + ' of ' + w.corrDue + ' in' : '');
   }
-  function nxOwed(w, cls) {
-    if (w.practice) return 0;
-    var pc = sxPc(w, cls), n = w.open ? (pc.notHanded || []).length : 0, cn = chNorm(cls);
-    if (w.showMarked && w.correctionsOpen) n += (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
+  // What is owed (release 35). Red: past due and not in, which includes closed sheets the student missed and
+  // corrections whose window has closed, for 40 days after the due date (as Corrections overdue on Today).
+  // Grey: not due yet (still open before its due date, or corrections still open). Grey stays visible.
+  function nxPastDue(w) { return !w.open || !!(w.dueTs && w.dueTs <= Date.now()); }
+  function nxRecent(w) { return !w.dueTs || Date.now() - w.dueTs <= 40 * 864e5; }
+  // nxOwed: how many owe it past due (red). nxOwedSplit: { red, grey } with grey for not due yet.
+  function nxOwed(w, cls) { return nxOwedSplit(w, cls).red; }
+  function nxOwedSplit(w, cls) {
+    var o = { red: 0, grey: 0 };
+    if (w.practice) return o;
+    var left = (sxPc(w, cls).notHanded || []).length, cn = chNorm(cls);
+    if (left) { if (!nxPastDue(w)) o.grey += left; else if (nxRecent(w)) o.red += left; }
+    if (w.showMarked) {
+      var c = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
+      if (c) { if (w.correctionsOpen) o.grey += c; else if (nxRecent(w)) o.red += c; }
+    }
+    return o;
+  }
+  // One student's owed work: [{ w, corr, red }], newest first.
+  function nxOweItems(cls, name) {
+    var out = [], cn = chNorm(cls), nn = norm(name), ck = norm(cls + ' ' + name);
+    ((H.dash && H.dash.worksheets) || []).forEach(function (w) {
+      if (w.practice) return;
+      var pc = (w.perClass || []).filter(function (p) { return chNorm(p.cls) === cn; })[0];
+      if (pc && (pc.notHanded || []).some(function (x) { return norm(x) === nn; })) {
+        if (!nxPastDue(w)) out.push({ w: w, corr: false, red: false });
+        else if (nxRecent(w)) out.push({ w: w, corr: false, red: true });
+      }
+      if (w.showMarked && (w.corrOwed || []).some(function (x) { return norm(x) === ck; })) {
+        if (w.correctionsOpen) out.push({ w: w, corr: true, red: false });
+        else if (nxRecent(w)) out.push({ w: w, corr: true, red: true });
+      }
+    });
+    return out;
+  }
+  // A chapter's worksheets for a class, as the rail counts them: owed (red and grey), to mark, to return.
+  // red and grey count students, each once: red owe past-due work here, grey owe work here that is not due yet.
+  function nxChCounts(sheets, cls) {
+    var n = { red: 0, grey: 0, mark: 0, ret: 0 }, r = {}, g = {}, cn = chNorm(cls);
+    sheets.forEach(function (w) {
+      var k = w.practice ? '' : stageOf(w).k;
+      if (k === 'ready' || k === 'sample' || k === 'solution') n.mark++;
+      else if (k === 'marked') n.ret++;
+      if (w.practice) return;
+      var put = function (who, red) { (red ? r : g)[norm(who)] = 1; };
+      var left = sxPc(w, cls).notHanded || [];
+      if (!nxPastDue(w)) left.forEach(function (x) { put(x, false); }); else if (nxRecent(w)) left.forEach(function (x) { put(x, true); });
+      if (w.showMarked) (w.corrOwed || []).forEach(function (x) {
+        var s = String(x); if (chNorm(s.split(' ')[0]) !== cn) return;
+        if (w.correctionsOpen) put(s.replace(/^\S+\s+/, ''), false); else if (nxRecent(w)) put(s.replace(/^\S+\s+/, ''), true);
+      });
+    });
+    n.red = Object.keys(r).length; n.grey = Object.keys(g).length;
     return n;
+  }
+  function nxChBadges(n) {
+    return (n.red || n.grey || n.mark || n.ret ? '<span class="nx-chbadges">' +
+      (n.red ? '<span class="nx-owe">' + n.red + ' owe work</span>' : '') +
+      (n.mark ? '<span class="nx-owe mk">' + n.mark + ' to mark</span>' : '') +
+      (n.ret ? '<span class="nx-owe rt">' + n.ret + ' to return</span>' : '') +
+      (n.grey ? '<span class="nx-owe gy">' + n.grey + ' not due yet</span>' : '') + '</span>' : '');
+  }
+  // How far the class is in a chapter: "Module 5 of 8 next", "Lesson 2 of 3 now", "All 8 parts taught".
+  function nxChProgress(c, cls) {
+    var units = [], x = tnFor(cls);
+    c.items.forEach(function (it) {
+      var parts = deckParts(it.topicId);
+      if (parts.length) parts.forEach(function (p, i) { units.push({ t: p.t || '', deck: it.topicId, i: i, multi: true, taught: !!sxTaught(cls, it.topicId, i, p.from, p.to) }); });
+      else units.push({ t: it.title || '', deck: it.topicId, i: -1, multi: false, taught: !!sxTaught(cls, it.topicId, -1, null, null) });
+    });
+    if (!units.length) return '';
+    var mods = units.every(function (u) { return /^Module\s+\d/i.test(u.t); }), whole = units.every(function (u) { return !u.multi; });
+    var one = mods ? 'Module' : whole ? 'Lesson' : 'Part', many = mods ? 'modules' : whole ? 'lessons' : 'parts', at = -1, run = false;
+    if (x && x.running) {
+      run = true;
+      units.forEach(function (u, j) { if (at < 0 && u.deck === x.running.deck.id && (!u.multi || u.t === x.running.lesson)) at = j; });
+      if (at < 0) units.forEach(function (u, j) { if (at < 0 && u.deck === x.running.deck.id && !u.taught) at = j; });
+    } else if (x && x.next) units.forEach(function (u, j) { if (at < 0 && u.deck === x.next.deck.id && (u.i === x.next.part || x.next.part < 0)) at = j; });
+    if (at >= 0) return one + ' ' + (at + 1) + ' of ' + units.length + (run ? ' now' : ' next');
+    var done = units.filter(function (u) { return u.taught; }).length;
+    return done === units.length ? 'All ' + units.length + ' ' + many + ' taught' : done ? done + ' of ' + units.length + ' ' + many + ' taught' : 'Not taught yet';
   }
   function nxChWorksheets(key, cls) {
     return ((H.dash && H.dash.worksheets) || []).filter(function (w) { return (w.chapter || '') === key && (!(w.classes || []).length || w.classes.some(function (c) { return chNorm(c) === chNorm(cls); })); });
   }
   function nxWeekStrip(cls) {
-    var x = tnFor(cls), now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)), days = [];
+    // From Friday 12:00 (and over the weekend) the strip shows next week.
+    var x = tnFor(cls), now = new Date(), nextWk = now.getDay() === 6 || now.getDay() === 0 || (now.getDay() === 5 && now.getHours() >= 12);
+    var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7) + (nextWk ? 7 : 0)), days = [];
     for (var i = 0; i < 5; i++) days.push({ t: new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i).getTime(), bits: [], kind: '' });
     var dayOf = function (ts) { for (var j = 0; j < days.length; j++) if (sameDay(days[j].t, ts)) return days[j]; return null; };
     var taught = {};
@@ -8710,12 +8837,12 @@
       if (it && !dd.bits.some(function (b) { return b.t === it.title; })) dd.bits.push({ t: (it.num ? it.num + ' ' : '') + it.title, s: 'Taught', at: at, c: 'ok' });
     });
     if (x && x.running) { var dr = dayOf(x.running.at || Date.now()); if (dr) dr.bits.unshift({ t: deckName(x.running.deck), s: 'Teaching now', at: x.running.at, c: 'now' }); }
-    else if (x && x.next && (x.slot || x.nextAt)) { var at2 = x.slot ? x.slot.start : x.nextAt, dn = dayOf(at2); if (dn) dn.bits.unshift({ t: deckName(x.next.deck), s: sameDay(at2, Date.now()) ? 'Today' : 'Next', at: at2, c: 'next' }); }
+    else if (x && x.next && (x.slot || x.nextAt)) { var at2 = x.slot ? x.slot.start : x.nextAt, dn = dayOf(at2); if (dn) dn.bits.unshift({ t: deckName(x.next.deck), s: 'Next lesson', at: at2, c: 'next' }); }
     ((H.dash && H.dash.worksheets) || []).forEach(function (w) {
       if (w.practice || !w.dueTs || !(!(w.classes || []).length || w.classes.some(function (c) { return chNorm(c) === chNorm(cls); }))) return;
       var dd = dayOf(w.dueTs); if (dd) dd.bits.push({ t: w.title, s: w.dueTs < Date.now() ? 'Collected' : 'Due ' + nxHm(w.dueTs), at: w.dueTs, c: 'due' });
     });
-    var h = '<section class="nx-week" aria-label="This week"><span class="nx-weekl">' + esc(cls) + ' this week</span>';
+    var h = '<section class="nx-week" aria-label="' + (nextWk ? 'Next week' : 'This week') + '"><span class="nx-weekl">' + esc(cls) + (nextWk ? ' next week' : ' this week') + '</span>';
     days.forEach(function (dd) {
       var today = sameDay(dd.t, Date.now()), b = dd.bits[0], d = new Date(dd.t);
       h += '<div class="nx-day' + (today ? ' today' : '') + (b ? ' ' + b.c : ' none') + '"><span class="nx-dayk">' + (today ? 'TODAY' : NX_DAYS[d.getDay()].toUpperCase() + ' ' + d.getDate()) + (b && b.at && b.c !== 'due' ? ' · ' + nxHm(b.at) : '') + '</span>' +
@@ -8739,14 +8866,13 @@
     else if (!cur) cur = list.filter(function (c) { return sxChapterStats(c, cls).here; })[0] || list[list.length - 1] || null;
     var h = nxWeekStrip(cls) + '<div class="nx-chlayout"><aside class="nx-chaside" aria-label="Chapters">';
     list.forEach(function (c) {
-      var sheets = nxChWorksheets(c.key, cls), owe = sheets.reduce(function (t, w) { return t + nxOwed(w, cls); }, 0), st = sxChapterStats(c, cls);
+      var sheets = nxChWorksheets(c.key, cls), cnt = nxChCounts(sheets, cls), st = sxChapterStats(c, cls), prog = nxChProgress(c, cls);
       h += '<button type="button" class="nx-chbtn" data-nxch="' + esc(c.key) + '" aria-pressed="' + (cur === c) + '"><span class="nx-chbar" style="background:' + esc(c.sub.color || '#2F5BFF') + '"></span>' +
-        '<span class="nx-cht"><b>' + esc(c.c.num ? 'Chapter ' + c.c.num : chShort(c.c)) + '</b><span>' + esc((st.here ? 'This week · ' : '') + plural(sheets.length, 'sheet', 'sheets')) + '</span></span>' +
-        (owe ? '<span class="nx-owe">' + owe + ' owe work</span>' : '') + '</button>';
+        '<span class="nx-cht"><b>' + esc(c.c.num ? 'Chapter ' + c.c.num : chShort(c.c)) + '</b><span>' + esc([st.here ? 'This week' : '', prog, plural(sheets.length, 'sheet', 'sheets')].filter(Boolean).join(' · ')) + '</span>' +
+        nxChBadges(cnt) + '</span></button>';
     });
     if (loose.length) {
-      var oweL = loose.reduce(function (t, w) { return t + nxOwed(w, cls); }, 0);
-      h += '<button type="button" class="nx-chbtn" data-nxch="-" aria-pressed="' + (!cur) + '"><span class="nx-chbar" style="background:#8A90AA"></span><span class="nx-cht"><b>Not in a chapter</b><span>' + plural(loose.length, 'sheet', 'sheets') + '</span></span>' + (oweL ? '<span class="nx-owe">' + oweL + ' owe work</span>' : '') + '</button>';
+      h += '<button type="button" class="nx-chbtn" data-nxch="-" aria-pressed="' + (!cur) + '"><span class="nx-chbar" style="background:#8A90AA"></span><span class="nx-cht"><b>Not in a chapter</b><span>' + plural(loose.length, 'sheet', 'sheets') + '</span>' + nxChBadges(nxChCounts(loose, cls)) + '</span></button>';
     }
     if (!list.length && !loose.length) h += '<p class="nx-muted">' + esc(cls) + ' has no chapters yet. Give one with New chapter.</p>';
     h += '<button type="button" class="nx-chadd" data-nxc2="lib">+ New chapter</button><button type="button" class="nx-link" data-nxc2="te">All lessons</button></aside>';
@@ -8835,7 +8961,8 @@
   function nxWsRowHtml(w, cls, acts) {
     var st = nxStage(w), v = nxVerb(w, cls), ai = acts.length, main = { act: '' };
     acts.push({ w: w, verb: v });
-    return '<div class="nx-row ws"><span class="nx-tab" style="background:' + (w.practice ? '#8A90AA' : nxOwed(w, cls) ? '#C62F36' : st.n === 3 ? '#0B7A4E' : '#2F5BFF') + '" aria-hidden="true"></span>' +
+    var ow = nxOwedSplit(w, cls);
+    return '<div class="nx-row ws"><span class="nx-tab" data-owe="' + (ow.red ? 'red' : ow.grey ? 'grey' : '') + '" style="background:' + (w.practice ? '#8A90AA' : ow.red ? '#C62F36' : st.n === 3 ? '#0B7A4E' : '#2F5BFF') + '" aria-hidden="true"></span>' +
       '<button type="button" class="nx-rt nx-rtb" data-nxopen="' + esc(w.id) + '" aria-label="Open ' + esc(w.title) + '"><b>' + esc(w.title) + '</b><span>' + esc(nxWsSub(w, cls)) + '</span></button>' +
       (w.practice ? '<span class="nx-rwhen">Open to practise any time</span>' : nxStages(st.n)) +
       '<span class="nx-racts"><button type="button" class="nx-btn sm ' + (v.kind || '') + '" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' + moreMenu(w, main).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-nw-') + '</span></div>';
@@ -8928,16 +9055,17 @@
     } else if (!(x && x.running)) NX.room[cls] = null;
     return Promise.all(jobs.map(function (p) { return p.then(null, function (e) { if (!/TEACHER_SIGNED_OUT/.test(msg(e))) NX.stuErr = msg(e); }); })).then(function () { pvCollect(); if (H.view === 'stu') { nxStudents(); nxStuBar('stu'); } });
   }
-  function nxRedOf(cls, name) {
-    var n = 0, cn = chNorm(cls), nn = norm(name);
-    ((H.dash && H.dash.worksheets) || []).forEach(function (w) {
-      if (w.practice) return;
-      (w.perClass || []).forEach(function (pc) { if (chNorm(pc.cls) === cn && w.open && (pc.notHanded || []).some(function (x) { return norm(x) === nn; })) n++; });
-      if (w.showMarked && w.correctionsOpen && (w.corrOwed || []).some(function (x) { return norm(x) === norm(cls + ' ' + name); })) n++;
-    });
-    return n;
+  function nxRedOf(cls, name) { return nxOweItems(cls, name).filter(function (x) { return x.red; }).length; }
+  function nxGreyOf(cls, name) { return nxOweItems(cls, name).filter(function (x) { return !x.red; }).length; }
+  // A not-yet-due sheet most of the class still owes: said once above the list, not on every row (release 35).
+  function nxSharedOwed(cls, total) {
+    if (!total) return [];
+    return ((H.dash && H.dash.worksheets) || []).filter(function (w) {
+      if (w.practice || nxPastDue(w) || !(!(w.classes || []).length || w.classes.some(function (c) { return chNorm(c) === chNorm(cls); }))) return false;
+      return (sxPc(w, cls).notHanded || []).length * 2 > total;
+    }).sort(function (a, b) { return (a.dueTs || 9e15) - (b.dueTs || 9e15); });
   }
-  function nxNowOf(cls, r) {
+  function nxNowOf(cls, r, skip) {
     var room = NX.room[cls];
     if (room && room.who) {
       var me = room.who.filter(function (x) { return x.n === r.name; })[0], fl = (room.flags || []).filter(function (f) { return f.name === r.name && (f.k === 'stuck' || f.k === 'wrong'); })[0];
@@ -8951,11 +9079,16 @@
         if (me.s === 'absent') return { t: 'Absent' };
       }
     }
-    var owed = ((H.dash && H.dash.worksheets) || []).filter(function (w) { return !w.practice && w.open && (w.perClass || []).some(function (pc) { return chNorm(pc.cls) === chNorm(cls) && (pc.notHanded || []).some(function (x) { return norm(x) === norm(r.name); }); }); })
-      .sort(function (a, b) { return (a.dueTs || 9e15) - (b.dueTs || 9e15); })[0];
-    if (owed) return { t: 'Owes ' + owed.title + (owed.dueTs ? ' · due ' + (dueWords(owed) || owed.due) : ''), bad: !!(owed.dueTs && owed.dueTs < Date.now()) };
-    if (r.missing) return { t: plural(r.missing, 'worksheet', 'worksheets') + ' missed', bad: r.missing >= 2 };
-    return { t: 'Up to date' };
+    // Not in a lesson: only what is out of the ordinary. A sheet most of the class owes is said once above the list.
+    var items = nxOweItems(cls, r.name), red = items.filter(function (x) { return x.red; }).sort(function (a, b) { return (b.w.dueTs || 0) - (a.w.dueTs || 0); });
+    if (red.length) {
+      var a = red[0], num = /^(\d+(\.\d+)*)\s/.exec(a.w.title), more = red.length > 1 ? ', plus ' + (red.length - 1) + ' more' : '';
+      return { t: (a.corr ? (num ? num[1] + ' corrections overdue' : 'Corrections overdue for ' + a.w.title) : a.w.open ? a.w.title + ' is overdue' : 'Missed ' + a.w.title) + more, bad: true };
+    }
+    var grey = items.filter(function (x) { return !x.red && !(skip && skip[x.w.id] && !x.corr); }).sort(function (a, b) { return (a.w.dueTs || 9e15) - (b.w.dueTs || 9e15); })[0];
+    if (grey) return { t: grey.corr ? 'Owes corrections for ' + grey.w.title : 'Owes ' + grey.w.title + (grey.w.dueTs ? ' · due ' + (dueWords(grey.w) || grey.w.due) : '') };
+    if (r.missing) return { t: plural(r.missing, 'worksheet', 'worksheets') + ' missed earlier', bad: r.missing >= 2 };
+    return { t: '' };
   }
   function nxPointsOf(cls, name) {
     var s = ((H.rw && H.rw.students) || []).filter(function (x) { return x.cls === cls && x.name === name; })[0];
@@ -8966,13 +9099,24 @@
     var cls = nxCls(), c = (H.tracker || []).filter(function (x) { return x.cls === cls; })[0];
     if (!c) { box._h = ''; box.innerHTML = H.tracker ? '<p class="nx-note">No students in ' + esc(cls) + ' yet. Add them in the Students tab of your sheet.</p>' : '<div class="nx-stu"><div class="nx-stulist">' + skeleton('list') + '</div></div>'; return; }
     var rows = c.rows.slice().sort(function (a, b) { return (Number(a.reg) || 999) - (Number(b.reg) || 999) || a.name.localeCompare(b.name); });
-    var data = rows.map(function (r) { var red = nxRedOf(cls, r.name), now = nxNowOf(cls, r); return { r: r, red: red, now: now, pts: nxPointsOf(cls, r.name), nudge: red >= 2 || !!r.follow.level || now.bad }; });
+    var room = NX.room[cls], live = !!(room && room.who), shared = live ? [] : nxSharedOwed(cls, rows.length), skip = {};
+    shared.forEach(function (w) { skip[w.id] = 1; });
+    var data = rows.map(function (r) { var red = nxRedOf(cls, r.name), grey = nxGreyOf(cls, r.name), now = nxNowOf(cls, r, skip);
+      // Needs a nudge, as before: 2 or more red, a follow-up, a live problem, an open sheet past due, 2 or more missed
+      var late = !live && nxOweItems(cls, r.name).some(function (o) { return o.red && !o.corr && o.w.open; });
+      return { r: r, red: red, grey: grey, now: now, pts: nxPointsOf(cls, r.name), nudge: red >= 2 || !!r.follow.level || (live && now.bad) || late || r.missing >= 2 }; });
+    var banner = shared.length ? '<div class="nx-stushared" role="note">' + shared.map(function (w) { var left = (sxPc(w, cls).notHanded || []).length; return '<span><i></i><span><b>' + esc(w.title) + '</b> is due ' + esc(w.dueTs ? dueWords(w) || w.due : 'with no date') + ' · ' + left + ' of ' + rows.length + ' still to hand in</span></span>'; }).join('') + '</div>' : '';
+    var tabs = function (x) {
+      if (!x.red && !x.grey) return '<span class="nx-muted">none</span>';
+      return (x.red ? new Array(Math.min(x.red, 3) + 1).join('<i></i>') + (x.red > 3 ? '<em>+' + (x.red - 3) + '</em>' : '') : '') +
+        (x.grey ? '<span class="nx-greys" title="' + esc(plural(x.grey, 'sheet', 'sheets') + ' not due yet') + '">' + new Array(Math.min(x.grey, 2) + 1).join('<i class="g"></i>') + (x.grey > 2 ? '<em>+' + (x.grey - 2) + '</em>' : '') + '</span>' : '');
+    };
     var q = norm(NX.stuQ), shown = data.filter(function (x) { return (NX.stuFilter !== 'nudge' || x.nudge) && (!q || norm(x.r.name).indexOf(q) >= 0 || String(x.r.reg) === q); });
     if (!NX.stuSel || !rows.some(function (r) { return r.name === NX.stuSel; })) NX.stuSel = (shown[0] || data[0] || { r: {} }).r.name || '';
-    var list = '<div class="nx-stulist" role="list"><div class="nx-sth" aria-hidden="true"><span>#</span><span>NAME</span><span>RIGHT NOW</span><span>RED TABS</span><span>POINTS</span></div>' +
+    var list = '<div class="nx-stulist" role="list">' + banner + '<div class="nx-sth" aria-hidden="true"><span>#</span><span>NAME</span><span>RIGHT NOW</span><span>RED TABS</span><span>POINTS</span></div>' +
       shown.map(function (x) {
         return '<button type="button" class="nx-str' + (x.r.name === NX.stuSel ? ' sel' : '') + '" role="listitem" data-nxst="' + esc(x.r.name) + '" aria-pressed="' + (x.r.name === NX.stuSel) + '"><span class="nx-reg">' + esc(x.r.reg || '') + '</span><b>' + esc(pvName(x.r.name)) + '</b>' +
-          '<span class="nx-now' + (x.now.bad ? ' bad' : '') + '">' + esc(x.now.t) + '</span><span class="nx-reds">' + (x.red ? new Array(Math.min(x.red, 6) + 1).join('<i></i>') + (x.red > 6 ? '+' + (x.red - 6) : '') : '<span class="nx-muted">none</span>') + '</span>' +
+          '<span class="nx-now' + (x.now.bad ? ' bad' : '') + '">' + esc(x.now.t) + '</span><span class="nx-reds" aria-label="' + esc(plural(x.red, 'red tab', 'red tabs') + (x.grey ? ', ' + x.grey + ' not due yet' : '')) + '">' + tabs(x) + '</span>' +
           '<span class="nx-pts">' + (x.pts == null ? '<span class="nx-muted">...</span>' : esc(Number(x.pts).toLocaleString('en-GB'))) + '</span></button>';
       }).join('') + (shown.length ? '' : '<p class="nx-muted" style="padding:12px">' + (q ? 'No one matches.' : 'No one needs a nudge right now.') + '</p>') + '</div>';
     if (onlyList && box.querySelector('.nx-stulist')) { box.querySelector('.nx-stulist').outerHTML = list; nxBindStu(box, cls); return; }
@@ -8999,14 +9143,19 @@
     var head = '<div class="nx-rech"><span class="nx-av">' + esc(pvInit(name)) + '</span><span><b>' + esc(pvName(name)) + '</b><span class="nx-muted">' + esc(cls) + (r.reg ? ' · Register ' + esc(r.reg) : '') + (pts != null ? ' · ' + Number(pts).toLocaleString('en-GB') + ' points' : '') + '</span></span></div>';
     var avg = null;
     if (p && p.record) { var ps = p.record.map(function (x) { return parseScore(x.score); }).filter(Boolean); if (ps.length) avg = Math.round(100 * ps.reduce(function (t, s) { return t + s.got / s.max; }, 0) / ps.length); }
-    var h = head + '<div class="nx-tiles"><div><b>' + (done ? r.onTime + '/' + done : 'None') + '</b><span>on time</span></div><div><b>' + (avg == null ? 'None' : avg + '%') + '</b><span>average</span></div><div><b>' + (p && p.slides != null ? esc(p.slides) : nxRedOf(cls, name)) + '</b><span>' + (p && p.slides != null ? 'slides done' : 'red tabs') + '</span></div></div>';
+    var h = head + '<div class="nx-tiles' + (p && p.slides != null ? ' four' : '') + '"><div><b>' + (done ? r.onTime + '/' + done : 'None') + '</b><span>on time</span></div><div><b>' + (avg == null ? 'None' : avg + '%') + '</b><span>average</span></div><div class="nx-tred"><b>' + nxRedOf(cls, name) + '</b><span>' + (nxRedOf(cls, name) === 1 ? 'red tab' : 'red tabs') + (nxGreyOf(cls, name) ? ' · ' + nxGreyOf(cls, name) + ' not due yet' : '') + '</span></div>' +
+      (p && p.slides != null ? '<div><b>' + esc(p.slides) + '</b><span>slides done</span></div>' : '') + '</div>';
     if (!p) { box.innerHTML = h + skeleton('list'); }
     else {
-      h += '<div class="nx-recsec"><span class="nx-cap">THEIR FILE</span>' + (p.record.length ? p.record.slice(0, 6).map(function (x) {
-        var wd = wsById(x.id), owes = wd && wd.open && (wd.perClass || []).some(function (q) { return chNorm(q.cls) === chNorm(cls) && (q.notHanded || []).some(function (y) { return norm(y) === norm(name); }); });
-        var col = x.kind === 'missing' || owes ? '#C62F36' : '#0B7A4E';
-        var txt = x.score || (x.kind === 'missing' ? 'Not handed in' : owes ? 'Not handed in yet' : x.kind === 'late' ? 'Late' : x.kind === 'notDue' ? 'Handed in' : 'Handed in');
-        return '<button type="button" class="nx-fl" data-nxw="' + esc(x.id) + '"><i style="background:' + col + '"></i><span>' + esc(x.title) + '</span><small class="' + (x.kind === 'missing' ? 'bad' : '') + '">' + esc(txt) + '</small></button>';
+      // The same rule as the red tabs: red is past due and not in, grey is not due yet. Every owed sheet is listed.
+      var ow = {}; nxOweItems(cls, name).forEach(function (o) { var q = ow[o.w.id] = ow[o.w.id] || {}; q[o.corr ? 'corr' : 'sheet'] = o.red ? 'red' : 'grey'; });
+      var file = p.record.filter(function (x, i) { return i < 6 || ow[x.id]; });
+      h += '<div class="nx-recsec"><span class="nx-cap">THEIR FILE</span>' + (file.length ? file.map(function (x) {
+        var o = ow[x.id] || {}, st = o.sheet || o.corr || '';
+        var txt = o.sheet === 'red' ? 'Not handed in' : o.sheet === 'grey' ? 'Not due yet' : x.kind === 'missing' ? 'Not handed in' : x.score || (x.kind === 'late' ? 'Late' : 'Handed in');
+        if (o.corr) txt = (x.score ? x.score + ' · ' : '') + (o.corr === 'red' ? 'Corrections overdue' : 'Corrections due');
+        var cl = st ? 'nx-flt ' + (st === 'red' ? 'r' : 'g') : x.kind === 'missing' ? 'nx-flt o' : 'nx-flt k';
+        return '<button type="button" class="nx-fl" data-nxw="' + esc(x.id) + '" data-owe="' + st + '"><i class="' + cl + '"></i><span>' + esc(x.title) + '</span><small class="' + (st === 'red' ? 'bad' : '') + '">' + esc(txt) + '</small></button>';
       }).join('') : '<p class="nx-muted">No worksheets yet.</p>') + '</div>';
       if (p.parent && (p.parent.due || p.parent.problems.length)) {
         h += '<div class="nx-pbox' + (p.parent.due ? ' due' : '') + '"><b>' + (p.parent.due ? plural(p.parent.problems.length, 'problem worksheet', 'problem worksheets') + ' since the last message' : p.parent.problems.length + ' of ' + p.parent.after + ' before a parent message') + '</b>' +
@@ -9218,7 +9367,7 @@
     nxFindClose();
     if (H.view === 'detail' && it.k !== 'w') closeDrawer();
     if (it.k === 'w') openDetail(it.w.id);
-    else if (it.k === 'p') { if (teClasses().indexOf(it.p.cls) >= 0) { H.cls = it.p.cls; lsSet('wsh_cls', H.cls); } NX.stuSel = it.p.name; NX.stuQ = ''; NX.stuFilter = 'all'; showTab('stu'); }
+    else if (it.k === 'p') { nxLessonSeen(); if (teClasses().indexOf(it.p.cls) >= 0) { H.cls = it.p.cls; lsSet('wsh_cls', H.cls); } NX.stuSel = it.p.name; NX.stuQ = ''; NX.stuFilter = 'all'; showTab('stu'); }
     else { var key = chKey(it.x.s.id, it.x.g.name); NX.chap = key; lsSet('nx_chap', key); SX.chap = key; showTab('chx'); }
   }
   $('nx-q').addEventListener('input', function () { nxFindRun(); if (!SQ.people) peopleIndex().then(function () { if (!$('nx-find').classList.contains('hidden')) nxFindRun(); }); });
