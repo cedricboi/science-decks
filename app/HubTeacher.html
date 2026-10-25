@@ -4669,7 +4669,7 @@
         return '<li><label><input type="checkbox" data-chk="' + i + '"' + (ticked.indexOf(i) >= 0 ? ' checked' : '') + '><span>' + esc(c) + '</span></label></li>'; }).join('') + '</ul>';
     }
     if (st === 'sample_ready') {
-      var r = (rows || []).filter(function (x) { return x.markedUrl && j.sampleFile && x.name && j.sampleFile.indexOf(x.name) >= 0; })[0];
+      var r = (rows || []).filter(function (x) { return x.markedUrl && j.sampleFile && namesScript(x, j.sampleFile); })[0];
       var fid = r ? fileId(r.markedUrl) : '';
       h += '<div class="sample-grid' + (fid ? '' : ' one') + '"><div>' + (fid ? '<iframe title="The marked sample" src="https://drive.google.com/file/d/' + esc(fid) + '/preview" loading="lazy"></iframe>' : '') +
         (r ? '<p style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap"><a class="btn small ghost" href="' + esc(r.markedUrl) + '" target="_blank" rel="noopener">Open the PDF</a><button class="btn small" id="cl-checksample" data-i="' + rows.indexOf(r) + '">' + ICON.pen + 'Check the sample (' + esc(r.name) + ')</button></p>' : '') + '</div>' +
@@ -4908,7 +4908,14 @@
   // The students with a hand-in on this worksheet, in the order of the marks table.
   // The scripts Claude asked you to check come first (named in its "Please check" list).
   function claudeChecks(id) { var j = ((byId(id) || {}).job) || (H.marks && H.marks.worksheet && H.marks.worksheet.job) || {}; return (j.checks || []).map(function (c) { return String(c).toLowerCase(); }); }
-  function flagged(r, checks) { var n = String(r.name || '').toLowerCase().trim(); return !!n && checks.some(function (c) { return c.indexOf(n) >= 0; }); }
+  // Release 35: Claude sees only the class and the code ("1E2 S004: ...", files "1E2_S004_WS04.pdf"), so a note
+  // names the script by its code as often as by its name. A code counts only as a whole word, so S04 is not S041.
+  function namesScript(r, text) {
+    var t = String(text || '').toLowerCase(), n = String(r.name || '').toLowerCase().trim(), c = String(r.code || '').toLowerCase().trim();
+    if (n && t.indexOf(n) >= 0) return true;
+    return !!c && new RegExp('(^|[^a-z0-9])' + c.replace(/[^a-z0-9-]/g, '') + '(?![a-z0-9])').test(t);
+  }
+  function flagged(r, checks) { return checks.some(function (c) { return namesScript(r, c); }); }
   function reviewQueue() {
     var rows = (H.marks.rows || []).filter(function (r) { return !!r.handedAt && !r.pending; });
     var checks = claudeChecks(H.marks.worksheet && H.marks.worksheet.id);
@@ -8901,7 +8908,9 @@
       var w2 = m.worksheet, rows = m.rows || [], handed = rows.filter(function (r) { return r.handedAt; });
       var scores = handed.map(function (r) { return parseScore(r.score); }).filter(Boolean), avg = scores.length ? Math.round(100 * scores.reduce(function (t, p) { return t + p.got / p.max; }, 0) / scores.length) : null;
       var checks = claudeChecks(id), look = [];
-      handed.forEach(function (r, i) { if (flagged(r, checks) || r.blank) look.push(r); });
+      // Claude's flagged scripts first, then the mostly blank ones (only the first 4 are listed).
+      handed.forEach(function (r) { if (flagged(r, checks)) look.push(r); });
+      handed.forEach(function (r) { if (r.blank && look.indexOf(r) < 0) look.push(r); });
       var unscored = handed.filter(function (r) { return !String(r.score || '').trim(); });
       var notIn = rows.filter(function (r) { return !r.handedAt; }).map(function (r) { return r.name; });
       var classes = (w2.classes && w2.classes.length ? w2.classes : [nxCls()]);
@@ -8910,7 +8919,7 @@
         '<button type="button" class="nx-x" id="rt-x" aria-label="Close">' + NX_ICON.x + '</button></div>';
       if (look.length) {
         h += '<div class="nx-look"><span class="nx-cap">LOOK OVER ' + (look.length === 1 ? 'THIS ONE' : 'THESE ' + look.length) + '</span>' + look.slice(0, 4).map(function (r) {
-          var i = rows.indexOf(r), why = r.blank ? 'Most of it was left blank' : 'Claude asked you to check this one';
+          var i = rows.indexOf(r), why = flagged(r, checks) ? 'Claude asked you to check this one' : 'Most of it was left blank';
           return '<div class="nx-lk' + (r.checked ? ' done' : '') + '"><span><b>' + esc(pvName(r.name)) + (r.score ? ' · ' + esc(r.score) : '') + '</b><small>' + esc(r.checked ? 'Looked at. Mark kept.' : why) + '</small></span>' +
             (r.checked ? '' : '<button type="button" class="nx-btn sm ghost" data-rtlook="' + i + '">Look</button>') + '</div>';
         }).join('') + '</div>';
