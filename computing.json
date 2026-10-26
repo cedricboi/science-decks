@@ -173,6 +173,41 @@
    "files": [
     "WORKSHOPS.xlsx"
    ]
+  },
+  {
+   "id": "9.1",
+   "title": "Formulas",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.1.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "PURCHASE.xlsx",
+    "MEMBERSHIP.xlsx",
+    "BOOKSHOP.xlsx",
+    "DRINKS_Farah.xlsx",
+    "POOL.xlsx"
+   ]
   }
  ]
 }
