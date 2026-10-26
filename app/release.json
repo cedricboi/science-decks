@@ -1,14 +1,14 @@
 {
-  "build": "2026-10-26-night-design",
-  "seq": 36,
-  "ref": "59b35830eda33521f4bf3bef5c8cb473c8fe11e2",
-  "title": "learnwithmrcedric: the Teacher Hub at night",
+  "build": "2026-10-26-class-page",
+  "seq": 37,
+  "ref": "74ffac6bd756d4b25d22a934c71076a5fce19dc4",
+  "title": "learnwithmrcedric: Chapters and Students as the class page",
   "notes": [
     "Teacher Hub only. No server code to paste: the pages update themselves within about ten minutes",
-    "Night is the Hub's own look now. Light is still one tap away: the moon button, or Settings in the menu",
-    "Today opens under the night sky with a greeting and tonight's moon, sunset and time. Everything on it works as before",
-    "The greeting arrives word by word only on the first visit of the day. Cards rise in once, and nothing moves after that",
-    "Buttons answer a press at once, hover effects only show with a mouse, and reduced motion is respected",
+    "Chapters is the class page: chapters as chips, the last, next and following lesson as three stars with Teach, and each worksheet as a card that says what it needs",
+    "Finished worksheets fold under Done. Every menu, Deploy, Upload new version and All chapters work as before",
+    "Students can show only who owes work, most overdue first. The student record is unchanged",
+    "Settings, Points, the whole grid, the worksheet drawer, menus and dialogs have the night look too",
     "Fallback: add ?classic to the Hub link for the release 33 pages. That page set is pinned and kept in this list"
   ],
   "files": [
@@ -58,7 +58,7 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "9ff5c33197f15b48161fd602945205b16c908c06d529fac39907eb5f9be43aef"
+      "sha256": "dec24cc178f7a983ae1a502888d1eb3ee615326c8923a54a36782d8b0932406f"
     },
     {
       "name": "Ink",
@@ -104,6 +104,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 37,
+      "build": "2026-10-26-class-page",
+      "ref": "74ffac6bd756d4b25d22a934c71076a5fce19dc4",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "dec24cc178f7a983ae1a502888d1eb3ee615326c8923a54a36782d8b0932406f"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 36,
       "build": "2026-10-26-night-design",
