@@ -1795,6 +1795,215 @@
     :root[data-theme="dark"] .nx-top, :root[data-theme="dark"] .nx-hero, :root[data-theme="dark"] .nx-card, :root[data-theme="dark"] .nx-ncard, :root[data-theme="dark"] .nx-ro { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; }
   }
 </style>
+<style>
+  /* ================= Release 37: Chapters and Students as the class page; the night look on every other page ================= */
+  /* the class page (Chapters) */
+  .cx { display: flex; flex-direction: column; gap: 18px; }
+  .cx-head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+  .cx-ht { flex: 1 1 300px; min-width: 0; }
+  .cx-title { margin: 0; font: 800 44px/1 var(--display); letter-spacing: -.02em; color: var(--nx-ink); }
+  .cx-sub { margin: 6px 0 0; font-size: 16px; color: var(--nx-muted); font-weight: 600; }
+  .cx-hacts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cx-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cx-chip { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px; border-radius: 22px; border: 1px solid var(--nx-line); background: var(--nx-surface); color: var(--nx-ink); font: 600 15px var(--text); cursor: pointer; white-space: nowrap; }
+  .cx-chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--chc, var(--nx-blue)); flex: none; }
+  .cx-chip b { font-weight: 700; }
+  .cx-chip[aria-pressed="true"] { border-color: transparent; background: var(--nx-ink); color: var(--nx-surface); }
+  .cx-chip[aria-pressed="true"] i { box-shadow: 0 0 0 2px var(--nx-surface); }
+  .cx-chip.add { border-style: dashed; color: var(--nx-link); padding-left: 16px; }
+  .cx-here { font-size: 13px; font-weight: 600; opacity: .75; }
+  .cx-dot { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 12px; font-weight: 800; box-sizing: border-box; }
+  .cx-dot.you { background: #FFE6A8; color: #5A3B00; }
+  .cx-dot.late { background: var(--nx-red-soft); color: var(--nx-red-ink); }
+  .cx-sec { background: var(--nx-surface); border-radius: 24px; padding: 22px 24px; box-sizing: border-box; min-width: 0; }
+  .cx-sech { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 16px; }
+  .cx-sech h2 { margin: 0; font: 700 22px var(--display); color: var(--nx-ink); }
+  .cx-ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--nx-soft); color: var(--nx-ink2); }
+  .cx-ic svg { width: 20px; height: 20px; }
+  .cx-meta { font-size: 14px; color: var(--nx-muted); font-weight: 600; }
+  /* the three stars */
+  .cx-sky { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 4px 0 6px; }
+  .cx-sky.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cx-sky.n1 { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+  .cx-cline { position: absolute; left: 16%; right: 16%; top: 62px; border-top: 1.5px dashed var(--nx-line2); }
+  .cx-node { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 14px 14px 18px; border-radius: 20px; min-width: 0; }
+  .cx-node.mid { background: var(--nx-blue-soft); }
+  .cx-lbl { font-size: 13px; font-weight: 700; color: var(--nx-muted); }
+  .cx-node.mid .cx-lbl { color: var(--nx-link); }
+  .cx-orb { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--nx-surface); color: var(--nx-ink2); box-shadow: 0 0 0 1px var(--nx-line); position: relative; z-index: 1; }
+  .cx-node.mid .cx-orb { width: 88px; height: 88px; color: var(--nx-blue); box-shadow: 0 0 0 2px var(--nx-blue); }
+  .cx-node.was .cx-orb { color: var(--nx-green); }
+  .cx-nt { font: 700 18px/1.25 var(--display); color: var(--nx-ink); overflow-wrap: anywhere; }
+  .cx-node.mid .cx-nt { font-size: 21px; }
+  .cx-ns { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--nx-muted); }
+  .cx-ok { display: inline-grid; width: 16px; height: 16px; color: var(--nx-green); flex: none; }
+  .cx-ok svg { width: 16px; height: 16px; }
+  .cx-node .nx-btn { margin-top: 6px; }
+  .cx-node.mid .nx-btn.dark { height: 48px; padding: 0 26px; font-size: 16px; border-radius: 24px; }
+  .cx-alll { margin-top: 14px; border-top: 1px solid var(--nx-line); padding-top: 4px; }
+  .cx-alll > summary, .cx-done > summary { cursor: pointer; padding: 12px 0 8px; font-weight: 700; font-size: 15px; color: var(--nx-link); display: flex; align-items: center; gap: 8px; }
+  .cx-lrows { display: flex; flex-direction: column; gap: 8px; }
+  .cx-lrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 8px 12px; border-radius: 16px; background: var(--nx-soft); }
+  .cx-lrow.cur { box-shadow: inset 0 0 0 2px var(--nx-blue); }
+  .cx-li { color: var(--nx-ink2); display: grid; }
+  .cx-addl { align-self: flex-start; margin-top: 4px; }
+  /* the worksheet cards */
+  .cx-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .cx-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 16px 16px 14px 18px; border-radius: 20px; background: var(--nx-soft); min-width: 0; overflow: hidden; }
+  .cx-card::before { content: ''; position: absolute; left: 0; top: 16px; bottom: 16px; width: 3px; border-radius: 3px; background: transparent; }
+  .cx-card.lit::before { background: #F2A33A; }
+  .cx-card.ember::before { background: var(--nx-red); }
+  .cx-card.wait { background: transparent; border: 1.5px dashed var(--nx-line2); }
+  .cx-ch { display: flex; align-items: flex-start; gap: 6px; }
+  .cx-ct { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; font: 700 17px/1.3 var(--display); color: var(--nx-ink); cursor: pointer; overflow-wrap: anywhere; }
+  span.cx-ct { cursor: default; }
+  button.cx-ct:hover { color: var(--nx-link); text-decoration: underline; }
+  .cx-ch .nx-more { margin: -6px -6px 0 0; }
+  .cx-when { font-size: 13px; font-weight: 600; color: var(--nx-muted); }
+  .cx-quiet { font-size: 14px; color: var(--nx-muted); }
+  .cx-lines { display: flex; flex-direction: column; gap: 4px; }
+  .cx-l { display: flex; align-items: baseline; gap: 8px; font-size: 15px; color: var(--nx-ink2); }
+  .cx-l b { font: 800 22px/1.1 var(--display); font-variant-numeric: tabular-nums; min-width: 28px; }
+  .cx-l.you b { color: #B26A00; }
+  .cx-l.late b, .cx-l.late { color: var(--nx-red-ink); }
+  .cx-l.calm b { color: var(--nx-ink); }
+  .cx-dots { list-style: none; margin: 2px 0 0; padding: 0; display: flex; gap: 4px; }
+  .cx-dots li { flex: 1; height: 4px; border-radius: 2px; background: var(--nx-chip); }
+  .cx-dots li.done { background: var(--nx-green); }
+  .cx-dots li.now { background: var(--nx-blue); }
+  .cx-cacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; }
+  .cx-cacts .nx-btn { flex: 1 1 auto; }
+  .cx-none { margin: 0; }
+  .cx-done { margin-top: 14px; border-top: 1px solid var(--nx-line); }
+  .cx-done > summary { color: var(--nx-ink2); }
+  .cx-drows { display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
+  .cx-drow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 8px 12px; border-radius: 14px; background: var(--nx-soft); }
+  .cx-drow .nx-rtb b { font-size: 15px; }
+  .cx-drow > .nx-muted { flex: 1 1 200px; font-size: 14px; }
+  .cx .nx-empty { margin-top: 14px; }
+  .cx-allsec { padding: 0 0 18px; overflow: hidden; }
+  .cx-allsec .nx-chhead { border-radius: 0; }
+  .cx .nx-week { margin-bottom: 0; }
+  /* the roster (Students) */
+  .nx-roster { flex: 999 1 600px; padding: 20px 14px 10px; }
+  .nx-roster .cx-sech { padding: 0 10px; }
+  .nx-rosh h2 { font-size: 20px; }
+  .nx-rosn { font-variant-numeric: tabular-nums; }
+  .nx-roster .nx-findname { margin-left: 0; width: 200px; }
+  .nx-roster .nx-seg button span { color: var(--nx-muted); font-weight: 600; margin-left: 2px; }
+  .nx-roster .nx-stulist { background: transparent; padding: 0; border-radius: 0; }
+  .nx-sth, .nx-str { grid-template-columns: 44px minmax(0, 1.3fr) 108px minmax(0, 1.6fr) 64px; }
+  .nx-sth .r, .nx-pts { text-align: right; }
+  .nx-str .nx-av { width: 40px; height: 40px; border-radius: 20px; font-size: 14px; }
+  .nx-stn { display: flex; flex-direction: column; min-width: 0; }
+  .nx-stn small { font-size: 12px; color: var(--nx-muted); }
+  .nx-strc { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .nx-strc > b { font: 800 18px var(--display); color: var(--nx-red-ink); font-variant-numeric: tabular-nums; }
+  .nx-str + .nx-str { box-shadow: inset 0 1px 0 var(--nx-line); }
+  .nx-str.sel, .nx-str.sel + .nx-str { box-shadow: none; }
+  @media (max-width: 760px) {
+    .cx-title { font-size: 34px; }
+    .cx-sky { grid-template-columns: minmax(0, 1fr) !important; }
+    .cx-cline { display: none; }
+    .cx-node:not(.mid) { flex-direction: row; flex-wrap: wrap; text-align: left; justify-content: flex-start; padding: 10px 12px; }
+    .cx-node:not(.mid) .cx-orb { width: 48px; height: 48px; }
+    .cx-sec { padding: 18px 16px; }
+    .nx-sth { display: none; }
+    .nx-str { grid-template-columns: 40px minmax(0, 1fr) auto; }
+    .nx-str .nx-now { grid-column: 2 / -1; }
+    .nx-str .nx-pts { display: none; }
+    .nx-roster .nx-findname { width: 100%; }
+  }
+  /* the class page and the roster arrive once, 50 ms apart */
+  .cx-in > * { animation: nx-rise 460ms var(--ease-out) both; }
+  .cx-in > :nth-child(2) { animation-delay: 50ms; } .cx-in > :nth-child(3) { animation-delay: 100ms; } .cx-in > :nth-child(4) { animation-delay: 150ms; } .cx-in > :nth-child(5) { animation-delay: 200ms; } .cx-in > :nth-child(n+6) { animation-delay: 250ms; }
+  @media (prefers-reduced-motion: reduce) { .cx-in > * { animation: none !important; } }
+  @media (hover: hover) and (pointer: fine) {
+    .cx-chip:not([aria-pressed="true"]):hover { border-color: var(--nx-line2); }
+    .cx-card { transition: transform 200ms var(--ease-out), background-color 150ms var(--ease-out); }
+  }
+  .cx-chip { transition: transform 160ms var(--ease-out), background-color 150ms var(--ease-out), border-color 150ms var(--ease-out); }
+  .cx-chip:active { transform: scale(.97); }
+
+  /* ---------- night ---------- */
+  :root[data-theme="dark"] .cx-title { color: #fff; font-weight: 700; font-size: 56px; }
+  :root[data-theme="dark"] .cx-chip { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: var(--nx-ink); }
+  :root[data-theme="dark"] .cx-chip[aria-pressed="true"] { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+  :root[data-theme="dark"] .cx-chip[aria-pressed="true"] i { box-shadow: 0 0 10px var(--chc, #8B6CFF); }
+  :root[data-theme="dark"] .cx-dot.you { background: rgba(255,200,107,.18); color: #FFC86B; }
+  :root[data-theme="dark"] .cx-sec, :root[data-theme="dark"] .nx-rec, :root[data-theme="dark"] .nx-scard, :root[data-theme="dark"] #view-set > .nx-note,
+  :root[data-theme="dark"] .rwcard, :root[data-theme="dark"] .card, :root[data-theme="dark"] .panel, :root[data-theme="dark"] .skel-card {
+    background: var(--glass); border: 1px solid var(--glass-line); box-shadow: var(--glass-lift); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  :root[data-theme="dark"] .cx-lessons { background: linear-gradient(135deg, rgba(139,108,255,.16), rgba(255,255,255,.03)); border-color: rgba(170,150,255,.24); }
+  :root[data-theme="dark"] .cx-ic { background: rgba(255,255,255,.07); color: #CFC5EA; }
+  :root[data-theme="dark"] .cx-ic.l { color: #B9A6FF; } :root[data-theme="dark"] .cx-ic.w { color: #F3DDB0; }
+  :root[data-theme="dark"] .cx-sech h2 { color: #fff; }
+  :root[data-theme="dark"] .cx-cline { border-top-color: rgba(201,185,255,.28); }
+  :root[data-theme="dark"] .cx-node.mid { background: rgba(139,108,255,.14); box-shadow: inset 0 0 0 1px rgba(170,150,255,.3); }
+  :root[data-theme="dark"] .cx-orb { background: radial-gradient(circle at 50% 40%, rgba(139,108,255,.25), rgba(14,9,30,.95) 70%); color: #CFC5EA; box-shadow: 0 0 0 1px rgba(255,255,255,.14); }
+  :root[data-theme="dark"] .cx-node.mid .cx-orb { color: #fff; box-shadow: 0 0 0 1.5px rgba(201,185,255,.7), 0 0 40px rgba(139,108,255,.45); }
+  :root[data-theme="dark"] .cx-node.was .cx-orb { color: #8FE3B8; }
+  :root[data-theme="dark"] .cx-node.mid .cx-lbl { color: #C9B9FF; }
+  :root[data-theme="dark"] .cx-card .nx-btn.dark { background: linear-gradient(135deg, #8B6CFF, #5A3FD6); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(110,80,240,.35), inset 0 1px 0 rgba(255,255,255,.3); }
+  :root[data-theme="dark"] .cx-card .nx-btn.green { background: linear-gradient(135deg, #3FC48A, #1E8A5C); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(46,158,110,.32), inset 0 1px 0 rgba(255,255,255,.3); }
+  :root[data-theme="dark"] .cx-node .nx-btn.dark, :root[data-theme="dark"] .cx-lrow .nx-btn.dark { background: linear-gradient(135deg, #FFD58A, #F29A2E); color: #2A1500; border-color: transparent; box-shadow: 0 8px 24px rgba(242,154,46,.38), inset 0 1px 0 rgba(255,255,255,.55); }
+  :root[data-theme="dark"] .cx-lrow, :root[data-theme="dark"] .cx-drow, :root[data-theme="dark"] .nx-erow { background: rgba(255,255,255,.04); }
+  :root[data-theme="dark"] .cx-lrow.cur { box-shadow: inset 0 0 0 1px rgba(255,200,107,.55); }
+  :root[data-theme="dark"] .cx-alll, :root[data-theme="dark"] .cx-done { border-top-color: rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .cx-card { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .cx-card.lit { box-shadow: inset 0 0 0 1px rgba(255,196,100,.4), 0 0 40px rgba(255,170,60,.08); }
+  :root[data-theme="dark"] .cx-card.lit::before { background: linear-gradient(#FFD08A, #F29A2E); box-shadow: 0 0 12px #F2A33A; }
+  :root[data-theme="dark"] .cx-card.ember::before { background: linear-gradient(#FF9C80, #E2553A); box-shadow: 0 0 12px #E2553A; }
+  :root[data-theme="dark"] .cx-card.wait { background: transparent; box-shadow: none; border-color: rgba(255,255,255,.16); }
+  :root[data-theme="dark"] .cx-l.you b { color: #FFC86B; }
+  :root[data-theme="dark"] .cx-l.calm b { color: #fff; }
+  :root[data-theme="dark"] .cx-dots li { background: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .cx-dots li.now { background: #B9A6FF; box-shadow: 0 0 8px rgba(185,166,255,.6); }
+  :root[data-theme="dark"] .cx-dots li.done { background: #3FC48A; }
+  :root[data-theme="dark"] .nx-roster .nx-stulist { background: transparent; border: 0; box-shadow: none; }
+  :root[data-theme="dark"] .nx-str .nx-av, :root[data-theme="dark"] .nx-rech .nx-av { background: linear-gradient(135deg, rgba(139,108,255,.5), rgba(90,63,214,.35)); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+  :root[data-theme="dark"] .nx-str.owes .nx-av { background: linear-gradient(135deg, rgba(226,85,58,.45), rgba(120,30,40,.4)); }
+  :root[data-theme="dark"] .nx-str + .nx-str { box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+  :root[data-theme="dark"] .nx-str.sel { background: rgba(139,108,255,.18); box-shadow: inset 0 0 0 1px rgba(170,150,255,.35); }
+  :root[data-theme="dark"] .nx-str.sel + .nx-str { box-shadow: none; }
+  :root[data-theme="dark"] .nx-strc > b { color: #FF9C80; }
+  :root[data-theme="dark"] .nx-tiles > div, :root[data-theme="dark"] .nx-fl, :root[data-theme="dark"] .nx-pbox, :root[data-theme="dark"] .nx-stushared { background: rgba(255,255,255,.05); }
+  :root[data-theme="dark"] .nx-findname { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); }
+  :root[data-theme="dark"] .nx-stuh .nx-h1 { font-size: 44px; font-weight: 700; color: #fff; }
+  :root[data-theme="dark"] .nx-seg { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .nx-seg button[aria-pressed="true"] { background: rgba(255,255,255,.16); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+  :root[data-theme="dark"] .nx-week { padding: 12px 14px; }
+  :root[data-theme="dark"] .nx-day { background: rgba(255,255,255,.04); }
+  :root[data-theme="dark"] .nx-day.today { background: rgba(139,108,255,.16); border-color: rgba(185,166,255,.6); }
+  :root[data-theme="dark"] .nx-day.due { background: rgba(255,200,107,.1); }
+  :root[data-theme="dark"] .nx-give { background: rgba(255,200,107,.1); border: 1px solid rgba(255,200,107,.28); }
+  :root[data-theme="dark"] .nx-chhead { background: linear-gradient(135deg, rgba(139,108,255,.28), rgba(90,63,214,.12)) !important; }
+  :root[data-theme="dark"] .nx-row { background: rgba(255,255,255,.04); }
+  :root[data-theme="dark"] .nx-stages li { background: rgba(255,255,255,.07); }
+  :root[data-theme="dark"] .nx-stages li.now { background: rgba(185,166,255,.3); color: #fff; }
+  /* every other page at night: Settings, Points, the whole grid, Progress, Computing, the worksheet drawer, Check and mark */
+  :root[data-theme="dark"] .nx-scard h2, :root[data-theme="dark"] #view-set .nx-h1, :root[data-theme="dark"] #view-rw h2.h, :root[data-theme="dark"] #view-tr h2.h { font-family: var(--display); font-weight: 700; color: #fff; }
+  :root[data-theme="dark"] .nx-dshade { background: rgba(4,2,12,.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  :root[data-theme="dark"] .nx-dpanel { background: #0D0919; box-shadow: -30px 0 80px rgba(0,0,0,.6), inset 1px 0 0 rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] { background: linear-gradient(135deg, #8B6CFF, #5A3FD6); }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] b, :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] small { color: #fff; }
+  :root[data-theme="dark"] .nx-dpanel .stepbar button[aria-selected="true"] .sn { background: #fff; color: #3A2590; }
+  :root[data-theme="dark"] .veil { background: rgba(4,2,12,.62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  :root[data-theme="dark"] .modal { background: linear-gradient(160deg, #1A1233, #0E0A1F); border: 1px solid rgba(170,150,255,.22); box-shadow: 0 40px 100px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .modal h2 { font-family: var(--display); font-weight: 700; }
+  :root[data-theme="dark"] .pop { background: rgba(18,12,36,.92); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 24px 60px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  :root[data-theme="dark"] .toast { background: rgba(24,16,48,.94); border: 1px solid rgba(255,255,255,.12); color: #fff; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  :root[data-theme="dark"] .nx-fbox { background: rgba(18,12,36,.94); border: 1px solid rgba(170,150,255,.25); box-shadow: 0 40px 100px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  :root[data-theme="dark"] #review { background: #07050F; }
+  :root[data-theme="dark"] .btn:not(.ghost):not(.quiet):not(.small):not(.green):not(.yellow):not(.claude):not(.key):not(.chkbtn):not(.give):not(.danger) { background: linear-gradient(135deg, #8B6CFF, #5A3FD6); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(110,80,240,.3), inset 0 1px 0 rgba(255,255,255,.28); }
+  :root[data-theme="dark"] .pop, :root[data-theme="dark"] .modal { animation: nx-pop 180ms var(--ease-out) both; }
+  @keyframes nx-pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+  .pop { transform-origin: top right; }
+  @media (prefers-reduced-motion: reduce) { :root[data-theme="dark"] .pop, :root[data-theme="dark"] .modal { animation: none; } }
+  @media (prefers-reduced-transparency: reduce) {
+    :root[data-theme="dark"] .cx-sec, :root[data-theme="dark"] .nx-rec, :root[data-theme="dark"] .pop, :root[data-theme="dark"] .modal, :root[data-theme="dark"] .toast { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; }
+  }
+</style>
 </head>
 <body>
 
@@ -1892,7 +2101,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'today', cls: '' };
-  var NEWS_VERSION = '2026-10-r36';
+  var NEWS_VERSION = '2026-10-r37';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -2470,10 +2679,10 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>The Hub has a night look now</b><ul>' +
-      '<li><b>Today</b> opens under the night sky, with a greeting and tonight\'s moon and sunset. Everything on it works as before.</li>' +
-      '<li><b>Light</b> is still there: the moon button, or Settings in the menu at the top right.</li>' +
-      '<li>The greeting arrives word by word only the first time you open the Hub each day.</li></ul></div>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters and Students have a new look</b><ul>' +
+      '<li><b>Chapters</b> is now the class page: the chapters as chips, the last, next and following lesson as three stars with Teach, every lesson under them, and each worksheet as a card that says what it needs.</li>' +
+      '<li>Finished worksheets fold under <b>Done</b>. The ⋯ menus, Deploy, Upload new version and All chapters work as before.</li>' +
+      '<li><b>Students</b> can show only who owes work, most overdue first. Tap a name for their whole record, as before.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
@@ -8079,12 +8288,80 @@
     });
     return h + '</section>';
   }
+  /* ---------- Release 37: Chapters as the class page (the approved board): the class, its chapters as chips, the
+     lessons as a three-star strip (last taught, now or next, then after) with every lesson below it, and the worksheets
+     as cards that say what each one needs. Every action of the release 34 rows is still here, by the same names. ---------- */
+  var CX_STARS = [
+    '<path d="M7 29C9 9 27 5 33 25" stroke-dasharray="1.5 4" opacity=".6"/><path d="M7 29L33 25M33 25l-6-3M33 25l-5 4"/><circle cx="7" cy="29" r="2.4" fill="currentColor" stroke="none"/><circle cx="33" cy="25" r="2.4" fill="currentColor" stroke="none"/><circle cx="20" cy="11" r="1.3" fill="currentColor" stroke="none"/>',
+    '<path d="M6 28a14 14 0 0 1 28 0M20 28l7-9.5"/><circle cx="6" cy="28" r="1.9" fill="currentColor" stroke="none"/><circle cx="34" cy="28" r="1.9" fill="currentColor" stroke="none"/><circle cx="20" cy="14" r="1.9" fill="currentColor" stroke="none"/><circle cx="20" cy="28" r="2.6" fill="currentColor" stroke="none"/><circle cx="27" cy="18.5" r="1.5" fill="currentColor" stroke="none"/>',
+    '<path d="M11 20H34M34 20l-5-4M34 20l-5 4"/><path d="M3 14h3M2 20h3M3 26h3" opacity=".5"/><circle cx="11" cy="20" r="3.4" fill="currentColor" stroke="none"/><circle cx="34" cy="20" r="1.6" fill="currentColor" stroke="none"/>',
+    '<path d="M8 31L29 11M29 11l-7 .8M29 11l-.8 7M8 31H33" opacity=".9"/><circle cx="8" cy="31" r="2.4" fill="currentColor" stroke="none"/><circle cx="29" cy="11" r="1.9" fill="currentColor" stroke="none"/><circle cx="33" cy="31" r="1.9" fill="currentColor" stroke="none"/>',
+    '<path d="M5 24H35M8 24v-6M14 24v-4M20 24v-6M26 24v-4M32 24v-6"/><circle cx="5" cy="24" r="1.9" fill="currentColor" stroke="none"/><circle cx="35" cy="24" r="1.9" fill="currentColor" stroke="none"/>',
+    '<path d="M8 12l9 6 6 12 9-4M17 18l12-8"/><circle cx="8" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="17" cy="18" r="2.4" fill="currentColor" stroke="none"/><circle cx="23" cy="30" r="1.8" fill="currentColor" stroke="none"/><circle cx="32" cy="26" r="1.8" fill="currentColor" stroke="none"/><circle cx="29" cy="10" r="1.5" fill="currentColor" stroke="none"/>'
+  ];
+  function cxStar(i, big) { var s = big ? 56 : 40; return '<svg class="cx-star" viewBox="0 0 40 40" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + CX_STARS[i % CX_STARS.length] + '</svg>'; }
+  var CX_ICON = {
+    lessons: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/></svg>',
+    sheets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+    people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5"/></svg>',
+    tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg>'
+  };
+  // A lesson's Teach (or Back to the slides) and the words for when it was, or will be, taught.
+  function cxLesson(it, ii, cls) {
+    var x = tnFor(cls), runDeck = x && x.running ? x.running.deck.id : '', nx = x && !x.running && x.next ? x.next : null;
+    var parts = deckParts(it.topicId), url = sxUrl(it), title = (it.num ? it.num + ' ' : '') + (it.title || '');
+    var running = runDeck === it.topicId, next = !!(nx && nx.deck.id === it.topicId), taught = null;
+    if (parts.length) parts.forEach(function (p, i) { var t = sxTaught(cls, it.topicId, i, p.from, p.to); if (t && (!taught || t.at > taught.at)) taught = t; });
+    else taught = sxTaught(cls, it.topicId, -1, null, null);
+    var when = running ? 'Teaching now' : next ? (x.slot ? 'Now' : x.nextAt ? nxWhen(x.nextAt).replace(/^./, function (c) { return c.toUpperCase(); }) : 'Next') + (nx.part >= 0 && parts.length > 1 ? ' · ' + nx.t : '')
+      : taught ? 'Taught' + (taught.at ? ' ' + nxDay(taught.at) : '') : 'Not taught yet';
+    var teach;
+    if (running) teach = '<a class="nx-btn sm green" data-go href="' + esc(slideLink(url, cls, null)) + '" target="' + NX_TAB + '">Back to the slides</a>';
+    else if (next) teach = '<a class="nx-btn sm dark cx-teach" data-go href="' + esc(slideLink(url, cls, nx.part, nx.carry)) + '" target="' + NX_TAB + '" aria-label="Teach ' + esc(title + ' to ' + cls) + '">' + NX_ICON.play + 'Teach</a>';
+    else if (parts.length > 1) teach = '<button type="button" class="nx-btn sm" data-nxparts="' + ii + '" aria-haspopup="true" aria-expanded="false" aria-controls="pop-part">' + NX_ICON.play + 'Teach</button>';
+    else teach = '<a class="nx-btn sm" data-go href="' + esc(slideLink(url, cls, parts.length ? 0 : -1)) + '" target="' + NX_TAB + '" aria-label="Teach ' + esc(title + ' to ' + cls) + '">' + NX_ICON.play + 'Teach</a>';
+    return { title: title, when: when, teach: teach, running: running, next: next, taught: !!taught, at: taught && taught.at };
+  }
+  // What a worksheet card says: one line per thing that needs doing, with its number.
+  function cxLines(w, cls) {
+    var st = stageOf(w).k, pc = sxPc(w, cls), out = [], cn = chNorm(cls);
+    if (w.practice) return [{ n: pc.handed, t: 'tried it so far', k: 'calm' }];
+    if (st === 'ready' || st === 'sample' || st === 'solution') out.push({ n: pc.handed, t: st === 'ready' ? 'to mark' : st === 'sample' ? 'to mark, sample first' : 'to mark, solution first', k: 'you' });
+    if (st === 'marking') out.push({ n: pc.handed, t: 'being marked by Claude', k: 'calm' });
+    if (st === 'marked') out.push({ n: Math.max(w.markedFiles || 0, w.scored || 0) || pc.handed, t: 'marked, ready to return', k: 'you' });
+    var left = (pc.notHanded || []).length;
+    if (left) { if (!nxPastDue(w)) out.push({ n: left, t: 'yet to hand in', k: 'calm' }); else if (nxRecent(w)) out.push({ n: left, t: w.open ? 'overdue hand-ins' : 'missed it', k: 'late' }); }
+    if (w.showMarked) {
+      var c = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
+      if (c) { if (w.correctionsOpen) out.push({ n: c, t: 'corrections to come', k: 'calm' }); else if (nxRecent(w)) out.push({ n: c, t: 'overdue corrections', k: 'late' }); }
+    }
+    if (st === 'answers' && !w.answersAfter) out.push({ n: '', t: 'The answer key is not out yet', k: 'you' });
+    return out;
+  }
+  function cxWhen(w) {
+    if (w.practice) return 'Practice · never due';
+    var s = nxStage(w).n;
+    if (s === 3) return w.dueTs ? 'Was due ' + nxDay(w.dueTs) : 'No due date';
+    return w.dueTs ? (w.dueTs > Date.now() ? 'Due ' : 'Was due ') + (dueWords(w) || w.due) : 'No due date';
+  }
+  function cxDone(w, cls) { if (w.practice) return false; var o = nxOwedSplit(w, cls); return nxStage(w).n === 3 && stageOf(w).k !== 'answers' && !o.red && !o.grey; }
+  function cxCardHtml(w, cls, acts) {
+    var v = nxVerb(w, cls), ai = acts.length, lines = cxLines(w, cls), st = nxStage(w);
+    acts.push({ w: w, verb: v });
+    var hot = lines.some(function (l) { return l.k === 'you'; }), late = lines.some(function (l) { return l.k === 'late'; });
+    return '<article class="cx-card' + (hot ? ' lit' : late ? ' ember' : '') + '"><div class="cx-ch"><button type="button" class="cx-ct" data-nxopen="' + esc(w.id) + '" aria-label="Open ' + esc(w.title) + '">' + esc(w.title) + '</button>' +
+      moreMenu(w, { act: '' }).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-cw-') + '</div>' +
+      '<span class="cx-when">' + esc(cxWhen(w)) + (w.practice ? '' : ' · ' + esc(nxStageWord(w))) + '</span>' +
+      (lines.length ? '<div class="cx-lines">' + lines.map(function (l) { return '<span class="cx-l ' + l.k + '">' + (l.n !== '' ? '<b>' + esc(l.n) + '</b>' : '') + '<span>' + esc(l.t) + '</span></span>'; }).join('') + '</div>' : '<span class="cx-quiet">' + esc(nxWsSub(w, cls)) + '</span>') +
+      (w.practice ? '' : '<ol class="cx-dots" aria-label="Stage: ' + esc(nxStageWord(w)) + '">' + NX_STAGE_WORDS.slice(0, 4).map(function (l, i) { return '<li class="' + (st.n > i ? 'done' : st.n === i ? 'now' : '') + '" title="' + l + '"></li>'; }).join('') + '</ol>') +
+      '<div class="cx-cacts"><button type="button" class="nx-btn sm ' + (v.kind || '') + '" data-nxverb="' + ai + '">' + esc(v.label) + '</button></div></article>';
+  }
   function nxChapters() {
     var box = $('view-chx'); if (!box || box.classList.contains('hidden') && H.view !== 'chx') return;
     var cls = nxCls();
     if (!H.dash || !sxReady()) {
       box._h = '';
-      box.innerHTML = (H.teErr ? '<p class="nx-note">' + esc(H.teErr) + '</p>' : '') + '<div class="nx-chlayout"><aside class="nx-chaside">' + [0, 1, 2, 3].map(function () { return '<div class="skel" style="height:58px;border-radius:14px"></div>'; }).join('') + '</aside><div class="nx-chmain"><div class="skel" style="height:300px;border-radius:24px"></div></div></div>';
+      box.innerHTML = (H.teErr ? '<p class="nx-note">' + esc(H.teErr) + '</p>' : '') + '<div class="cx"><div class="skel" style="height:64px;width:220px;border-radius:14px"></div><div class="skel" style="height:44px;border-radius:22px"></div><div class="skel" style="height:240px;border-radius:24px"></div><div class="skel" style="height:240px;border-radius:24px"></div></div>';
       return;
     }
     var all = sxAllChapters(cls), given = all.filter(function (c) { return c.given; });
@@ -8093,95 +8370,102 @@
     var cur = allv ? null : list.filter(function (c) { return c.key === NX.chap; })[0];
     if (allv || (!cur && NX.chap === '-' && loose.length)) cur = null;
     else if (!cur) cur = list.filter(function (c) { return sxChapterStats(c, cls).here; })[0] || list[list.length - 1] || null;
-    var h = nxWeekStrip(cls) + '<div class="nx-chlayout"><aside class="nx-chaside" aria-label="Chapters">';
+    var trk = (H.tracker || []).filter(function (t) { return t.cls === cls; })[0];
+    var subj = cur ? (cur.sub.name || '') : given.length ? (given[0].sub.name || '') : '';
+    var h = '<div class="cx"><header class="cx-head"><div class="cx-ht"><h1 class="cx-title">' + esc(cls) + '</h1><p class="cx-sub">' + esc([subj, trk ? plural(trk.rows.length, 'student', 'students') : ''].filter(Boolean).join(' · ')) + '</p></div>' +
+      '<div class="cx-hacts"><button type="button" class="nx-btn soft" data-nxc2="lib">Lesson library</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button></div></header>';
+    // the chapters, as chips (the rail of release 34)
+    h += '<nav class="cx-chips" aria-label="Chapters">';
     list.forEach(function (c) {
-      var sheets = nxChWorksheets(c.key, cls), cnt = nxChCounts(sheets, cls), st = sxChapterStats(c, cls), prog = nxChProgress(c, cls);
-      h += '<button type="button" class="nx-chbtn" data-nxch="' + esc(c.key) + '" aria-pressed="' + (cur === c) + '"><span class="nx-chbar" style="background:' + esc(c.sub.color || '#2F5BFF') + '"></span>' +
-        '<span class="nx-cht"><b>' + esc(c.c.num ? 'Chapter ' + c.c.num : chShort(c.c)) + '</b><span>' + esc([st.here ? 'This week' : '', prog, plural(sheets.length, 'sheet', 'sheets')].filter(Boolean).join(' · ')) + '</span>' +
-        nxChBadges(cnt) + '</span></button>';
+      var cnt = nxChCounts(nxChWorksheets(c.key, cls), cls), st = sxChapterStats(c, cls);
+      h += '<button type="button" class="cx-chip" data-nxch="' + esc(c.key) + '" aria-pressed="' + (cur === c) + '" style="--chc:' + esc(c.sub.color || '#8B6CFF') + '"><i aria-hidden="true"></i><b>' + esc(c.c.num ? 'Chapter ' + c.c.num : chShort(c.c)) + '</b>' +
+        (st.here ? '<span class="cx-here">This week</span>' : '') + (cnt.mark || cnt.ret ? '<span class="cx-dot you" title="' + esc([cnt.mark ? cnt.mark + ' to mark' : '', cnt.ret ? cnt.ret + ' to return' : ''].filter(Boolean).join(', ')) + '">' + (cnt.mark + cnt.ret) + '</span>' : '') +
+        (cnt.red ? '<span class="cx-dot late" title="' + esc(cnt.red + ' owe work') + '">' + cnt.red + '</span>' : '') + '</button>';
     });
-    if (loose.length) {
-      h += '<button type="button" class="nx-chbtn" data-nxch="-" aria-pressed="' + (!cur && !allv) + '"><span class="nx-chbar" style="background:#8A90AA"></span><span class="nx-cht"><b>Not in a chapter</b><span>' + plural(loose.length, 'sheet', 'sheets') + '</span>' + nxChBadges(nxChCounts(loose, cls)) + '</span></button>';
-    }
-    if (!list.length && !loose.length) h += '<p class="nx-muted">' + esc(cls) + ' has no chapters yet. Give one with New chapter.</p>';
-    // All chapters: every worksheet for the class in one list (what All worksheets showed), with To mark, To return and Open.
-    var mine = nxAllSheets(cls), mc = nxChCounts(mine, cls);
-    h += '<button type="button" class="nx-chbtn nx-chall" data-nxch="*" aria-pressed="' + allv + '"><span class="nx-chbar" style="background:var(--nx-ink)"></span><span class="nx-cht"><b>All chapters</b><span>' + plural(mine.length, 'sheet', 'sheets') + '</span>' + nxChBadges({ mark: mc.mark, ret: mc.ret }) + '</span></button>';
-    h += '<button type="button" class="nx-chadd" data-nxc2="lib">+ New chapter</button></aside>';
-    h += '<div class="nx-chmain">';
-    var rows = [], acts = [], empty = [], folded = '';
-    var addRow = function (html) { rows.push(html); };
+    if (loose.length) h += '<button type="button" class="cx-chip" data-nxch="-" aria-pressed="' + (!cur && !allv) + '" style="--chc:#8A90AA"><i aria-hidden="true"></i><b>Not in a chapter</b><span class="cx-here">' + loose.length + '</span></button>';
+    var mine = nxAllSheets(cls);
+    h += '<button type="button" class="cx-chip" data-nxch="*" aria-pressed="' + allv + '" style="--chc:var(--nx-ink)"><i aria-hidden="true"></i><b>All chapters</b><span class="cx-here">' + plural(mine.length, 'sheet', 'sheets') + '</span></button>' +
+      '<button type="button" class="cx-chip add" data-nxc2="lib">+ New chapter</button></nav>';
+    if (!list.length && !loose.length) h += '<p class="nx-note">' + esc(cls) + ' has no chapters yet. Give one with + New chapter.</p>';
+    h += nxWeekStrip(cls);
+    var acts = [], empty = [], folded = '';
     if (allv) {
       var av = nxAllHtml(cls, mine, all, acts);
-      h += av.head; rows = av.rows;
+      h += '<section class="cx-sec cx-allsec">' + av.head + '<div class="nx-rows">' + av.rows.join('') + '</div></section>';
     } else if (cur) {
-      h += '<div class="nx-chhead" style="background:' + esc(cur.sub.color || '#2F5BFF') + '"><h1>' + esc(cur.c.num ? 'Chapter ' + cur.c.num : chShort(cur.c)) + '</h1><span>' + esc(sxChTitle(cur.c)) + '</span><span class="nx-grow"></span><span class="nx-chnote">This is also the students\' file layout</span>' +
-        '<button type="button" class="nx-more nx-chmore" data-nxchm="' + esc(cur.key) + '" aria-label="More for ' + esc(chShort(cur.c)) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div>';
-      var seen = {}, x = tnFor(cls), runDeck = x && x.running ? x.running.deck.id : '', nx = x && !x.running && x.next ? x.next : null;
-      cur.items.forEach(function (it, ii) {
-        var parts = deckParts(it.topicId), url = sxUrl(it), title = (it.num ? it.num + ' ' : '') + (it.title || '');
-        var running = runDeck === it.topicId, next = nx && nx.deck.id === it.topicId, taught = null;
-        if (parts.length) parts.forEach(function (p, i) { var t = sxTaught(cls, it.topicId, i, p.from, p.to); if (t && (!taught || t.at > taught.at)) taught = t; });
-        else taught = sxTaught(cls, it.topicId, -1, null, null);
-        var when = running ? 'Teaching now' : next ? (x.slot ? 'Now' : x.nextAt ? nxWhen(x.nextAt).replace(/^./, function (c) { return c.toUpperCase(); }) : 'Next') + ' · teach from Today' + (nx.part >= 0 && parts.length > 1 ? ', ' + nx.t : '')
-          : taught ? 'Taught' + (taught.at ? ' ' + nxDay(taught.at) : '') : 'Not taught yet';
-        var teach;
-        if (running) teach = '<a class="nx-btn sm green" data-go href="' + esc(slideLink(url, cls, null)) + '" target="' + NX_TAB + '">Back to the slides</a>';
-        else if (next) teach = '<a class="nx-btn sm dark" data-go href="' + esc(slideLink(url, cls, nx.part, nx.carry)) + '" target="' + NX_TAB + '" aria-label="Teach ' + esc(title + ' to ' + cls) + '">' + NX_ICON.play + 'Teach</a>';
-        else if (parts.length > 1) teach = '<button type="button" class="nx-btn sm" data-nxparts="' + ii + '" aria-haspopup="true" aria-expanded="false" aria-controls="pop-part">' + NX_ICON.play + 'Teach</button>';
-        else teach = '<a class="nx-btn sm" data-go href="' + esc(slideLink(url, cls, parts.length ? 0 : -1)) + '" target="' + NX_TAB + '" aria-label="Teach ' + esc(title + ' to ' + cls) + '">' + NX_ICON.play + 'Teach</a>';
-        addRow('<div class="nx-row note' + (running || next ? ' cur' : '') + '"><span class="nx-tab" style="background:#FFE45C" aria-hidden="true"></span><span class="nx-rt"><b>Lesson ' + esc(title) + '</b><span>Slides and notes</span></span>' +
-          '<span class="nx-rwhen">' + esc(when) + '</span><span class="nx-racts">' + teach +
+      var L = cur.items.map(function (it, ii) { return cxLesson(it, ii, cls); });
+      // the star in the middle: the lesson on now, else the next one, else the first not taught, else the last
+      var at = -1;
+      L.forEach(function (l, i) { if (at < 0 && l.running) at = i; });
+      L.forEach(function (l, i) { if (at < 0 && l.next) at = i; });
+      L.forEach(function (l, i) { if (at < 0 && !l.taught) at = i; });
+      if (at < 0) at = L.length - 1;
+      var trio = [at - 1, at, at + 1].filter(function (i) { return i >= 0 && i < L.length; });
+      var lk = function (l) { return l.running ? 'Teaching now' : l.next ? 'Next' : l.taught ? 'Last taught' : 'Up next'; };
+      h += '<section class="cx-sec cx-lessons" aria-labelledby="cx-lh"><div class="cx-sech"><span class="cx-ic l">' + CX_ICON.lessons + '</span><h2 id="cx-lh">Lessons</h2><span class="cx-meta">' + esc(chShort(cur.c)) + ' · ' + esc(nxChProgress(cur, cls)) + '</span>' +
+        '<span class="nx-grow"></span><button type="button" class="nx-more nx-chmore" data-nxchm="' + esc(cur.key) + '" aria-label="More for ' + esc(chShort(cur.c)) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div>';
+      h += '<div class="cx-sky' + (trio.length < 3 ? ' n' + trio.length : '') + '"><div class="cx-cline" aria-hidden="true"></div>' + trio.map(function (i) {
+        var l = L[i], mid = i === at;
+        return '<div class="cx-node' + (mid ? ' mid' : '') + (l.taught && !mid ? ' was' : '') + '"><span class="cx-lbl">' + esc(i < at ? 'Last taught' : i > at ? 'After that' : lk(l)) + '</span><span class="cx-orb">' + cxStar(i, mid) + '</span>' +
+          '<b class="cx-nt">' + esc(l.title) + '</b><span class="cx-ns">' + (l.taught && !l.running ? '<i class="cx-ok">' + CX_ICON.tick + '</i>' : '') + esc(l.when) + '</span>' + (mid || l.running || l.next ? l.teach : l.teach.replace('nx-btn sm dark', 'nx-btn sm')) + '</div>';
+      }).join('') + '</div>';
+      var openL = !!NX.cxAllL;
+      h += '<details class="cx-alll"' + (openL ? ' open' : '') + '><summary>Every lesson in ' + esc(chShort(cur.c)) + ' (' + L.length + ')</summary><div class="cx-lrows">' + cur.items.map(function (it, ii) {
+        var l = L[ii];
+        return '<div class="cx-lrow' + (l.running || l.next ? ' cur' : '') + '"><span class="cx-li">' + cxStar(ii, false) + '</span><span class="nx-rt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span><span class="nx-racts">' + l.teach +
           '<label class="nx-btn sm ghost nx-up" title="Upload a new version of these slides">Upload new version<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label>' +
-          '<button type="button" class="nx-more" data-nxlm="' + ii + '" aria-label="More for ' + esc(title) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>');
+          '<button type="button" class="nx-more" data-nxlm="' + ii + '" aria-label="More for ' + esc(l.title) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>';
+      }).join('') + '<label class="nx-btn sm ghost cx-addl">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label></div></details></section>';
+      if (!cur.given) h += '<div class="nx-give"><span>' + esc(cls) + ' does not have this chapter yet. Giving it opens all its slides to ' + esc(cls) + ' for revision.</span><button type="button" class="nx-btn dark" data-nxc2="give">Give it to ' + esc(cls) + '</button></div>';
+      // the worksheets: homework waiting to go out, then each sheet as a card, then the finished ones folded
+      var seen = {}, cards = [], waiting = [];
+      cur.items.forEach(function (it, ii) {
+        var title = L[ii].title;
         sxHw(it, cls).forEach(function (r) {
-          if (r.w) { seen[r.w.id] = 1; addRow(nxWsRowHtml(r.w, cls, acts)); return; }
-          if (r.pending) { addRow('<div class="nx-row"><span class="nx-tab" style="background:#2F5BFF"></span><span class="nx-rt"><b>' + esc(r.name) + '</b><span>Deployed to ' + esc(cls) + '. It shows here in a moment.</span></span></div>'); return; }
-          if (!r.linked) { empty.push({ r: r, title: title }); return; }   // listed folded, under the rows
-          var ai = acts.length;
-          acts.push({ hw: r, ch: cur });
-          addRow('<div class="nx-row"><span class="nx-tab" style="background:#2F5BFF" aria-hidden="true"></span><span class="nx-rt"><b>' + esc(r.name) + '</b><span>' + esc(r.ready ? 'Taught. Ready to deploy, due ' + sxDueText(sxDue(r)) : 'Goes out after ' + (r.multi ? r.t : 'Lesson ' + title)) + '</span></span>' +
-            nxStages(0) + '<span class="nx-racts">' + (r.ready ? '<button type="button" class="nx-btn sm dark" data-nxdep="' + ai + '">Deploy</button>' : '') +
-            '<button type="button" class="nx-more" data-nxhm="' + ai + '" aria-label="More for ' + esc(r.name) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>');
+          if (r.w) { seen[r.w.id] = 1; cards.push(r.w); return; }
+          if (r.pending) { waiting.push('<article class="cx-card wait"><div class="cx-ch"><span class="cx-ct">' + esc(r.name) + '</span></div><span class="cx-when">Deployed to ' + esc(cls) + '. It shows here in a moment.</span></article>'); return; }
+          if (!r.linked) { empty.push({ r: r, title: title }); return; }
+          var ai = acts.length; acts.push({ hw: r, ch: cur });
+          waiting.push('<article class="cx-card wait' + (r.ready ? ' lit' : '') + '"><div class="cx-ch"><span class="cx-ct">' + esc(r.name) + '</span><button type="button" class="nx-more" data-nxhm="' + ai + '" aria-label="More for ' + esc(r.name) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div>' +
+            '<span class="cx-when">' + esc(r.ready ? 'Taught. Ready to deploy, due ' + sxDueText(sxDue(r)) : 'Goes out after ' + (r.multi ? r.t : 'Lesson ' + title)) + '</span><span class="cx-quiet">Not out to ' + esc(cls) + ' yet</span>' +
+            (r.ready ? '<div class="cx-cacts"><button type="button" class="nx-btn sm dark" data-nxdep="' + ai + '">Deploy</button></div>' : '') + '</article>');
         });
       });
       chTopical(cur.key).forEach(function (t, ti) {
         var dk = SX.depT[cur.key + '|' + t.file + '|' + chNorm(cls)], w = topicalSet(t, cur.key, cls) || (dk ? wsById(dk) : null);
-        if (w) { if (!seen[w.id]) { seen[w.id] = 1; addRow(nxWsRowHtml(w, cls, acts)); } return; }
+        if (w) { if (!seen[w.id]) { seen[w.id] = 1; cards.push(w); } return; }
         var ai = acts.length; acts.push({ tp: t, ti: ti, ch: cur });
-        addRow('<div class="nx-row"><span class="nx-tab" style="background:' + (t.mode === 'practice' ? '#8A90AA' : '#2F5BFF') + '" aria-hidden="true"></span><span class="nx-rt"><b>' + esc(t.name) + '</b><span>' + (t.mode === 'practice' ? 'Practice' : 'Topical homework') + ' · not out to ' + esc(cls) + ' yet</span></span>' +
-          nxStages(0) + '<span class="nx-racts"><button type="button" class="nx-btn sm" data-nxdep="' + ai + '">Deploy</button><button type="button" class="nx-more" data-nxhm="' + ai + '" aria-label="More for ' + esc(t.name) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>');
+        waiting.push('<article class="cx-card wait"><div class="cx-ch"><span class="cx-ct">' + esc(t.name) + '</span><button type="button" class="nx-more" data-nxhm="' + ai + '" aria-label="More for ' + esc(t.name) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div>' +
+          '<span class="cx-when">' + (t.mode === 'practice' ? 'Practice' : 'Topical homework') + '</span><span class="cx-quiet">Not out to ' + esc(cls) + ' yet</span><div class="cx-cacts"><button type="button" class="nx-btn sm" data-nxdep="' + ai + '">Deploy</button></div></article>');
       });
-      nxChWorksheets(cur.key, cls).filter(function (w) { return !seen[w.id]; }).sort(function (a, b) { return (a.practice ? 1 : 0) - (b.practice ? 1 : 0); }).forEach(function (w) { addRow(nxWsRowHtml(w, cls, acts)); });
-      if (!cur.given) h += '<div class="nx-give"><span>' + esc(cls) + ' does not have this chapter yet. Giving it opens all its slides to ' + esc(cls) + ' for revision.</span><button type="button" class="nx-btn dark" data-nxc2="give">Give it to ' + esc(cls) + '</button></div>';
-      // The parts with no homework linked yet (the old chapter page's "None yet · Add" slots), folded under the rows.
+      nxChWorksheets(cur.key, cls).forEach(function (w) { if (!seen[w.id]) { seen[w.id] = 1; cards.push(w); } });
+      h += cxSheetsHtml(cls, cards, waiting, acts, chShort(cur.c));
       if (empty.length) {
-        var openE = !!NX.emptyOpen;
-        folded = '<details class="nx-empty"' + (openE ? ' open' : '') + '><summary>' + (empty.every(function (e) { return /^Module\s/i.test(e.r.t); }) ? 'Modules' : 'Parts') + ' with no homework yet (' + empty.length + ')</summary><div class="nx-erows">' +
+        folded = '<details class="nx-empty"' + (NX.emptyOpen ? ' open' : '') + '><summary>' + (empty.every(function (e) { return /^Module\s/i.test(e.r.t); }) ? 'Modules' : 'Parts') + ' with no homework yet (' + empty.length + ')</summary><div class="nx-erows">' +
           empty.map(function (e, i) {
             var lab = e.r.multi ? e.r.t : 'Lesson ' + e.title;
             return '<div class="nx-erow"><span class="nx-rt"><b>' + esc(lab) + '</b><span>' + (e.r.none ? 'No homework, chosen in its ⋯ menu' : 'None yet') + '</span></span><button type="button" class="nx-btn sm ghost" data-nxadd="' + i + '" aria-label="Add homework for ' + esc(lab) + '">Add</button></div>';
           }).join('') + '</div></details>';
+        h = h.replace('<!--cx-empty-->', folded);
       }
     } else {
-      h += '<div class="nx-chhead" style="background:#5A607D"><h1>Not in a chapter</h1><span>Worksheets for ' + esc(cls) + ' that are not filed in a chapter</span></div>';
-      loose.forEach(function (w) { addRow(nxWsRowHtml(w, cls, acts)); });
+      h += cxSheetsHtml(cls, loose, [], acts, 'Not in a chapter');
     }
-    h += '<div class="nx-rows">' + (rows.length ? rows.join('') : '<p class="nx-muted">' + (allv ? 'No worksheets here for ' + esc(cls) + '.' : 'Nothing in this chapter for ' + esc(cls) + ' yet.') + '</p>') + folded + '</div>';
-    h += '<div class="nx-chfoot"><label class="nx-btn ghost">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label><button type="button" class="nx-btn ghost" data-nxc2="addw">+ Worksheet</button>' +
-      '<span class="nx-grow"></span><button type="button" class="nx-btn soft" data-nxc2="lib">Lesson library</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button></div></div></div>';
-    // nothing changed, or a menu is open on this page: leave it as it is (a redraw would close the menu)
+    h += '</div>';
     if (box._h === h) return;
     if (document.querySelector('.pop:not(.hidden)') || !$('veil').classList.contains('hidden')) { clearTimeout(NX.chT); NX.chT = setTimeout(nxChapters, 1500); return; }
+    var fresh = !box.querySelector('.cx');
     box._h = h;
     box.innerHTML = h;
+    if (fresh) { var cxr = box.querySelector('.cx'); cxr.classList.add('cx-in'); setTimeout(function () { cxr.classList.remove('cx-in'); }, 900); }
     NX.chActs = acts;
-    // wiring
     bindGo(box);
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxch]'), function (b) { b.onclick = function () { NX.chap = b.getAttribute('data-nxch'); lsSet('nx_chap', NX.chap); if (NX.chap !== '-' && NX.chap !== '*') { SX.chap = NX.chap; lsSet('wsh_chap', NX.chap); } nxChapters(); }; });
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxchm]'), function (b) { b.onclick = function (e) { e.stopPropagation(); sxMenu(b, nxChapterMenu(b.getAttribute('data-nxchm'), cls)); }; });
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxadd]'), function (b) { b.onclick = function () { var x = empty[Number(b.getAttribute('data-nxadd'))]; if (x) sxAdd(cls, cur, { kind: 'part', r: x.r }); }; });
     Array.prototype.forEach.call(box.querySelectorAll('details.nx-empty'), function (d) { d.addEventListener('toggle', function () { NX.emptyOpen = d.open; }); });
+    Array.prototype.forEach.call(box.querySelectorAll('details.cx-alll'), function (d) { d.addEventListener('toggle', function () { NX.cxAllL = d.open; }); });
+    Array.prototype.forEach.call(box.querySelectorAll('details.cx-done'), function (d) { d.addEventListener('toggle', function () { NX.cxDone = d.open; }); });
     if (allv) nxBindAll(box);
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxparts]'), function (b) { b.onclick = function (e) { e.stopPropagation(); var it = cur.items[Number(b.getAttribute('data-nxparts'))]; partMenu(b, it, sxUrl(it), cls); }; });
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxupl]'), function (inp) { inp.onchange = function () { var f = this.files && this.files[0]; this.value = ''; if (f) addLesson(f); }; });
@@ -8204,6 +8488,26 @@
         else if (a === 'addw') { if (cur) sxAdd(cls, cur, { kind: 'hw' }); else newWorksheet(); }
       };
     });
+  }
+  // The worksheets section: homework waiting to go out, the sheets as cards (what needs doing first), and the
+  // sheets with nothing left to do folded under them.
+  function cxSheetsHtml(cls, sheets, waiting, acts, where) {
+    var live = [], done = [];
+    sheets.forEach(function (w) { (cxDone(w, cls) ? done : live).push(w); });
+    var rank = function (w) { var l = cxLines(w, cls); return l.some(function (x) { return x.k === 'you'; }) ? 0 : l.some(function (x) { return x.k === 'late'; }) ? 1 : w.practice ? 3 : 2; };
+    live.sort(function (a, b) { return rank(a) - rank(b) || (a.dueTs || 9e15) - (b.dueTs || 9e15); });
+    done.sort(function (a, b) { return (b.dueTs || 0) - (a.dueTs || 0); });
+    var open = live.filter(function (w) { return !w.practice && w.open; }).length;
+    var h = '<section class="cx-sec cx-sheets" aria-labelledby="cx-wh"><div class="cx-sech"><span class="cx-ic w">' + CX_ICON.sheets + '</span><h2 id="cx-wh">Worksheets</h2><span class="cx-meta">' + esc(where) + (open ? ' · ' + open + ' open' : '') + '</span><span class="nx-grow"></span>' +
+      '<button type="button" class="nx-btn sm" data-nxc2="addw">+ Worksheet</button></div>';
+    var cards = waiting.concat(live.map(function (w) { return cxCardHtml(w, cls, acts); }));
+    h += cards.length ? '<div class="cx-cards">' + cards.join('') + '</div>' : '<p class="nx-muted cx-none">' + (done.length ? 'Nothing needs you here. Every sheet is back and done.' : 'No worksheets here for ' + esc(cls) + ' yet. Press + Worksheet to set one.') + '</p>';
+    if (done.length) h += '<details class="cx-done"' + (NX.cxDone ? ' open' : '') + '><summary><i class="cx-ok">' + CX_ICON.tick + '</i>Done · ' + plural(done.length, 'worksheet', 'worksheets') + '</summary><div class="cx-drows">' + done.map(function (w) {
+      var v = nxVerb(w, cls), ai = acts.length; acts.push({ w: w, verb: v });
+      return '<div class="cx-drow"><button type="button" class="nx-rtb" data-nxopen="' + esc(w.id) + '"><b>' + esc(w.title) + '</b></button><span class="nx-muted">' + esc(nxWsSub(w, cls)) + '</span>' +
+        '<span class="nx-racts"><button type="button" class="nx-btn sm ghost" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' + moreMenu(w, { act: '' }).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-dw-') + '</span></div>';
+    }).join('') + '</div></details>';
+    return h + '<!--cx-empty--></section>';
   }
   function nxWsRowHtml(w, cls, acts, pre) {
     var st = nxStage(w), v = nxVerb(w, cls), ai = acts.length, main = { act: '' };
@@ -8353,10 +8657,9 @@
     var view = under === 'tr' || under === 'pg' ? 'grid' : under === 'rw' ? 'pts' : 'list';
     var seg = function (k, label, on) { return '<button type="button" data-nxsv="' + k + '" aria-pressed="' + on + '">' + label + '</button>'; };
     bar.innerHTML = '<div class="nx-stuh"><h1 class="nx-h1">' + esc(cls) + (c ? ' · ' + plural(c.rows.length, 'student', 'students') : '') + '</h1>' +
-      (view === 'list' ? '<div class="nx-seg" role="group" aria-label="Show">' + seg('all', 'Everyone', NX.stuFilter !== 'nudge') + seg('nudge', 'Needs a nudge', NX.stuFilter === 'nudge') + '</div>' : '') +
       '<div class="nx-seg" role="group" aria-label="View">' + seg('list', 'List', view === 'list') + seg('grid', 'Whole grid', view === 'grid') + seg('pts', 'Points', view === 'pts') + '</div>' +
       (view === 'grid' ? '<div class="nx-seg" role="group" aria-label="Show in the grid"><button type="button" data-nxgk="tr" aria-pressed="' + (under !== 'pg') + '">Worksheets</button><button type="button" data-nxgk="pg" aria-pressed="' + (under === 'pg') + '">Slides in lessons</button></div>' : '') +
-      (view === 'list' ? '<label class="nx-findname"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nx-stuq" placeholder="Find a name" aria-label="Find a student" value="' + esc(NX.stuQ) + '"></label>' : '') + '</div>';
+      '</div>';
     Array.prototype.forEach.call(bar.querySelectorAll('[data-nxsv]'), function (b) {
       b.onclick = function () {
         var k = b.getAttribute('data-nxsv');
@@ -8369,7 +8672,6 @@
     Array.prototype.forEach.call(bar.querySelectorAll('[data-nxgk]'), function (b) {
       b.onclick = function () { var k = b.getAttribute('data-nxgk'); lsSet('nx_grid', k); if (k === 'pg') openProgress(cls, '', false); else showTab('tr'); };
     });
-    if ($('nx-stuq')) $('nx-stuq').oninput = function () { NX.stuQ = this.value; nxStudents(true); };
   }
   function nxStuLoad(fresh) {
     var cls = nxCls(), jobs = [];
@@ -8428,28 +8730,45 @@
     var rows = c.rows.slice().sort(function (a, b) { return (Number(a.reg) || 999) - (Number(b.reg) || 999) || a.name.localeCompare(b.name); });
     var room = NX.room[cls], live = !!(room && room.who), shared = live ? [] : nxSharedOwed(cls, rows.length), skip = {};
     shared.forEach(function (w) { skip[w.id] = 1; });
-    var data = rows.map(function (r) { var red = nxRedOf(cls, r.name), grey = nxGreyOf(cls, r.name), now = nxNowOf(cls, r, skip);
+    var data = rows.map(function (r) { var items = nxOweItems(cls, r.name), red = items.filter(function (o) { return o.red; }), grey = items.length - red.length, now = nxNowOf(cls, r, skip);
       // Needs a nudge, as before: 2 or more red, a follow-up, a live problem, an open sheet past due, 2 or more missed
-      var late = !live && nxOweItems(cls, r.name).some(function (o) { return o.red && !o.corr && o.w.open; });
-      return { r: r, red: red, grey: grey, now: now, pts: nxPointsOf(cls, r.name), nudge: red >= 2 || !!r.follow.level || (live && now.bad) || late || r.missing >= 2 }; });
+      var late = !live && red.some(function (o) { return !o.corr && o.w.open; });
+      var old = red.slice().sort(function (a, b) { return (a.w.dueTs || 9e15) - (b.w.dueTs || 9e15); })[0] || null;
+      return { r: r, red: red.length, grey: grey, now: now, old: old, pts: nxPointsOf(cls, r.name), nudge: red.length >= 2 || !!r.follow.level || (live && now.bad) || late || r.missing >= 2 }; });
+    // Release 37: the quiet roster of the class page. Owe work lists the most overdue first, then the oldest item.
+    var F = [['all', 'Everyone'], ['owe', 'Owe work'], ['nudge', 'Needs a nudge']], f = F.some(function (x) { return x[0] === NX.stuFilter; }) ? NX.stuFilter : 'all';
+    var cnt = { all: data.length, owe: data.filter(function (x) { return x.red; }).length, nudge: data.filter(function (x) { return x.nudge; }).length };
+    var q = norm(NX.stuQ), shown = data.filter(function (x) { return (f === 'all' || (f === 'owe' ? x.red > 0 : x.nudge)) && (!q || norm(x.r.name).indexOf(q) >= 0 || String(x.r.reg) === q); });
+    if (f === 'owe') shown.sort(function (a, b) { return b.red - a.red || ((a.old && a.old.w.dueTs) || 9e15) - ((b.old && b.old.w.dueTs) || 9e15); });
+    if (!NX.stuSel || !rows.some(function (r) { return r.name === NX.stuSel; }) || (!onlyList && shown.length && !shown.some(function (x) { return x.r.name === NX.stuSel; }))) NX.stuSel = (shown[0] || data[0] || { r: {} }).r.name || '';
     var banner = shared.length ? '<div class="nx-stushared" role="note">' + shared.map(function (w) { var left = (sxPc(w, cls).notHanded || []).length; return '<span><i></i><span><b>' + esc(w.title) + '</b> is due ' + esc(w.dueTs ? dueWords(w) || w.due : 'with no date') + ' · ' + left + ' of ' + rows.length + ' still to hand in</span></span>'; }).join('') + '</div>' : '';
     var tabs = function (x) {
-      if (!x.red && !x.grey) return '<span class="nx-muted">none</span>';
+      if (!x.red && !x.grey) return '';
       return (x.red ? new Array(Math.min(x.red, 3) + 1).join('<i></i>') + (x.red > 3 ? '<em>+' + (x.red - 3) + '</em>' : '') : '') +
         (x.grey ? '<span class="nx-greys" title="' + esc(plural(x.grey, 'sheet', 'sheets') + ' not due yet') + '">' + new Array(Math.min(x.grey, 2) + 1).join('<i class="g"></i>') + (x.grey > 2 ? '<em>+' + (x.grey - 2) + '</em>' : '') + '</span>' : '');
     };
-    var q = norm(NX.stuQ), shown = data.filter(function (x) { return (NX.stuFilter !== 'nudge' || x.nudge) && (!q || norm(x.r.name).indexOf(q) >= 0 || String(x.r.reg) === q); });
-    if (!NX.stuSel || !rows.some(function (r) { return r.name === NX.stuSel; })) NX.stuSel = (shown[0] || data[0] || { r: {} }).r.name || '';
-    var list = '<div class="nx-stulist" role="list">' + banner + '<div class="nx-sth" aria-hidden="true"><span>#</span><span>NAME</span><span>RIGHT NOW</span><span>RED TABS</span><span>POINTS</span></div>' +
+    var age = function (o) { if (!o || !o.w.dueTs) return ''; var d = Math.max(0, Math.round((Date.now() - o.w.dueTs) / 864e5)); return d < 1 ? 'today' : d === 1 ? '1 day' : d + ' days'; };
+    var list = '<div class="nx-stulist" role="list">' + banner + '<div class="nx-sth" aria-hidden="true"><span></span><span>Student</span><span class="r">Overdue</span><span>Right now</span><span class="r">Points</span></div>' +
       shown.map(function (x) {
-        return '<button type="button" class="nx-str' + (x.r.name === NX.stuSel ? ' sel' : '') + '" role="listitem" data-nxst="' + esc(x.r.name) + '" aria-pressed="' + (x.r.name === NX.stuSel) + '"><span class="nx-reg">' + esc(x.r.reg || '') + '</span><b>' + esc(pvName(x.r.name)) + '</b>' +
-          '<span class="nx-now' + (x.now.bad ? ' bad' : '') + '">' + esc(x.now.t) + '</span><span class="nx-reds" aria-label="' + esc(plural(x.red, 'red tab', 'red tabs') + (x.grey ? ', ' + x.grey + ' not due yet' : '')) + '">' + tabs(x) + '</span>' +
+        var nowT = x.now.t || (x.old ? (x.old.corr ? 'Corrections for ' : '') + x.old.w.title + ' · ' + age(x.old) : '');
+        return '<button type="button" class="nx-str' + (x.r.name === NX.stuSel ? ' sel' : '') + (x.red ? ' owes' : '') + '" role="listitem" data-nxst="' + esc(x.r.name) + '" aria-pressed="' + (x.r.name === NX.stuSel) + '"><span class="nx-av" aria-hidden="true">' + esc(pvInit(x.r.name)) + '</span>' +
+          '<span class="nx-stn"><b>' + esc(pvName(x.r.name)) + '</b><small>' + (x.r.reg ? 'Register ' + esc(x.r.reg) : '') + '</small></span>' +
+          '<span class="nx-strc" aria-label="' + esc(plural(x.red, 'red tab', 'red tabs') + (x.grey ? ', ' + x.grey + ' not due yet' : '')) + '">' + (x.red ? '<b>' + x.red + '</b>' : '<span class="nx-muted">0</span>') + '<span class="nx-reds">' + tabs(x) + '</span></span>' +
+          '<span class="nx-now' + (x.now.bad || (!x.now.t && x.old) ? ' bad' : '') + '">' + esc(nowT) + '</span>' +
           '<span class="nx-pts">' + (x.pts == null ? '<span class="nx-muted">...</span>' : esc(Number(x.pts).toLocaleString('en-GB'))) + '</span></button>';
-      }).join('') + (shown.length ? '' : '<p class="nx-muted" style="padding:12px">' + (q ? 'No one matches.' : 'No one needs a nudge right now.') + '</p>') + '</div>';
+      }).join('') + (shown.length ? '' : '<p class="nx-muted" style="padding:12px 16px">' + (q ? 'No one matches.' : f === 'owe' ? 'No one owes work. Everyone is up to date.' : 'No one needs a nudge right now.') + '</p>') + '</div>';
     if (onlyList && box.querySelector('.nx-stulist')) { box.querySelector('.nx-stulist').outerHTML = list; nxBindStu(box, cls); return; }
-    if (box._h === list + NX.stuSel && box.querySelector('#nx-rec')) return;
-    box._h = list + NX.stuSel;
-    box.innerHTML = '<div class="nx-stu">' + list + '<aside class="nx-rec" id="nx-rec" aria-label="Student record"></aside></div>';
+    var head = '<div class="cx-sech nx-rosh"><span class="cx-ic p">' + CX_ICON.people + '</span><h2>' + (cnt.owe ? '<b class="nx-rosn">' + cnt.owe + '</b> ' + (cnt.owe === 1 ? 'student owes' : 'students owe') + ' work' : 'Everyone is up to date') + '</h2>' +
+      '<span class="cx-meta">' + (f === 'owe' ? 'Most overdue first, then the oldest item' : 'In register order') + '</span><span class="nx-grow"></span>' +
+      '<div class="nx-seg" role="group" aria-label="Show">' + F.map(function (x) { return '<button type="button" data-nxsf="' + x[0] + '" aria-pressed="' + (f === x[0]) + '">' + x[1] + ' <span>' + cnt[x[0]] + '</span></button>'; }).join('') + '</div>' +
+      '<label class="nx-findname"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="nx-stuq" placeholder="Find a name" aria-label="Find a student" value="' + esc(NX.stuQ) + '"></label></div>';
+    if (box._h === head + list + NX.stuSel && box.querySelector('#nx-rec')) return;
+    var fresh = !box.querySelector('.nx-roster');
+    box._h = head + list + NX.stuSel;
+    box.innerHTML = '<div class="nx-stu"><section class="cx-sec nx-roster" aria-label="Students in ' + esc(cls) + '">' + head + list + '</section><aside class="nx-rec" id="nx-rec" aria-label="Student record"></aside></div>';
+    if (fresh) { var st = box.querySelector('.nx-stu'); st.classList.add('cx-in'); setTimeout(function () { st.classList.remove('cx-in'); }, 900); }
+    Array.prototype.forEach.call(box.querySelectorAll('[data-nxsf]'), function (b) { b.onclick = function () { NX.stuFilter = b.getAttribute('data-nxsf'); nxStudents(); }; });
+    if ($('nx-stuq')) $('nx-stuq').oninput = function () { NX.stuQ = this.value; nxStudents(true); };
     nxBindStu(box, cls);
     nxRecord(cls, NX.stuSel);
   }
