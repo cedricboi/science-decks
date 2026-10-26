@@ -154,6 +154,25 @@
     "MUSEUM.xlsx",
     "CANTEEN_SALES.xlsx"
    ]
+  },
+  {
+   "id": "8.T",
+   "title": "Practical Test Rehearsal",
+   "chapter": "Chapter 8 Spreadsheets",
+   "file": "Practical Test Rehearsal 8.html",
+   "parts": [
+    [
+     "test",
+     "Test"
+    ],
+    [
+     "testfix",
+     "Test fix"
+    ]
+   ],
+   "files": [
+    "WORKSHOPS.xlsx"
+   ]
   }
  ]
 }
