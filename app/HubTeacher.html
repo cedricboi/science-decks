@@ -12,7 +12,8 @@
   (function () {
     var K = 'ms_theme', root = document.documentElement, mem = '';
     function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked: this page only */ } return v === 'dark' || v === 'light' ? v : ''; }
-    function device() { return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    // Release 36: night is the Teacher Hub's own look; Light is still one tap away (the moon button or Settings).
+    function device() { return 'dark'; }
     function now() { return chosen() || device(); }
     function store(v) { mem = v || ''; try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) { /* kept in mem */ } }
     // Night chosen earlier on the Teacher Hub or the homework page carries over, once.
@@ -1666,6 +1667,134 @@
     body[data-print="mk"] #app { display: none !important; }
   }
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* ================= Release 36: the night design (the approved landing, with Emil Kowalski's motion rules) =================
+     Night is the Hub's own look (the moon button or Settings still choose Light). Everything here is look only. */
+  :root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); }
+  :root[data-theme="dark"] {
+    --display: "Outfit", "Bricolage Grotesque", "Segoe UI", sans-serif;
+    --text: "Manrope", "Atkinson Hyperlegible", -apple-system, "Segoe UI", sans-serif;
+    --nx-canvas: #06040F; --nx-surface: #130E24; --nx-soft: #1B1531; --nx-chip: #261E40; --nx-seg: #1E1835;
+    --nx-ink: #EDE6FF; --nx-ink2: #CFC5EA; --nx-muted: #A99BD1; --nx-line: #2A2245; --nx-line2: #3D3361;
+    --nx-blue: #8B6CFF; --nx-link: #C9B9FF; --nx-blue-soft: #241B4A;
+    --nx-green: #2E9E6E; --nx-green-ink: #8FE3B8; --nx-green-soft: #12291F;
+    --nx-red: #E2553A; --nx-red-ink: #FFB09B; --nx-red-soft: #36161A;
+    --nx-yellow: #FFC86B; --nx-amber-soft: #2E2110; --nx-amber: #FFC86B; --nx-privb: #FFC86B;
+    --nx-hero: #120C26; --nx-hero-ink: #FFFFFF; --nx-hero-muted: #BFB3DD; --nx-hero-chip: #2A1F4D; --nx-hero-line: #4A3F70;
+    --nx-shadow: 0 1px 3px rgba(0,0,0,.6);
+    --surface-2: #170F2C;
+    --glass: linear-gradient(135deg, rgba(255,255,255,.085), rgba(255,255,255,.03));
+    --glass-line: rgba(255,255,255,.1);
+    --glass-lift: inset 0 1px 0 rgba(255,255,255,.12), 0 24px 50px rgba(0,0,0,.42);
+  }
+  :root[data-theme="dark"] body, :root[data-theme="dark"] #app { background: #06040F; }
+
+  /* the sky over Today: the night photograph, the stars and the hills, fading into the ground */
+  .nx-sky { display: none; }
+  :root[data-theme="dark"] #app.nx-on-today .nx-sky { display: block; position: absolute; left: 0; right: 0; top: 0; height: 700px; overflow: hidden; pointer-events: none; z-index: 0; }
+  .nx-sky img, .nx-sky canvas { position: absolute; pointer-events: none; }
+  .nx-sky .nx-skyimg { inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; opacity: 0; transition: opacity 900ms var(--ease-out); }
+  .nx-sky .nx-skyimg.ok { opacity: 1; }
+  .nx-sky canvas { inset: 0; width: 100%; height: 100%; }
+  .nx-sky .nx-hills { left: 50%; bottom: 40px; width: max(1680px, 118%); transform: translateX(-50%); opacity: 0; transition: opacity 900ms var(--ease-out); }
+  .nx-sky .nx-hills.ok { opacity: 1; }
+  .nx-sky .nx-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 420px; background: linear-gradient(to bottom, rgba(6,4,15,0), rgba(6,4,15,.6) 35%, rgba(6,4,15,.92) 65%, #06040F 88%); }
+  :root[data-theme="dark"] #app { position: relative; }
+  :root[data-theme="dark"] #app > header, :root[data-theme="dark"] #app > main { position: relative; z-index: 1; }
+  :root[data-theme="dark"] #app > header.nx-top { position: sticky; z-index: 20; }
+
+  /* the top bar: glass over the sky */
+  :root[data-theme="dark"] .nx-top { background: rgba(9,6,20,.62); border-bottom: 1px solid rgba(255,255,255,.07); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+  :root[data-theme="dark"] .nx-brand { font-family: var(--display); font-weight: 700; color: #fff; }
+  :root[data-theme="dark"] .nx-logo { background: linear-gradient(135deg, #8B6CFF, #5A3FD6); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 18px rgba(110,80,240,.35); }
+  :root[data-theme="dark"] .nx-nav button[aria-current="page"] { background: rgba(255,255,255,.14); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+  :root[data-theme="dark"] .nx-ib { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); }
+  :root[data-theme="dark"] .nx-cls { box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); background: rgba(255,255,255,.03); }
+
+  /* the greeting and the sky readout */
+  .nx-greet { display: flex; flex-direction: column; gap: 14px; }
+  .nx-greet .nx-h1 { font-size: 32px; }
+  .nx-ro { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 15px; color: var(--nx-muted); }
+  .nx-ro b { color: var(--nx-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .nx-ro .nx-roi { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .nx-ro svg { width: 20px; height: 20px; flex: none; }
+  .nx-ro .nx-sep { width: 1px; height: 16px; background: var(--nx-line2); }
+  :root[data-theme="dark"] .nx-greet { padding: 84px 0 18px; }
+  :root[data-theme="dark"] .news { background: var(--glass); border: 1px solid rgba(255,196,100,.3); box-shadow: var(--glass-lift); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--nx-ink); }
+  :root[data-theme="dark"] .nx-greet .nx-h1 { font: 700 clamp(44px, 5.6vw, 80px)/1 var(--display); letter-spacing: -.02em; color: #fff; text-shadow: 0 2px 30px rgba(6,4,15,.5); }
+  :root[data-theme="dark"] .nx-greet .wd { background: linear-gradient(90deg, #FFFFFF 0%, #EDE4FF 60%, #C9B9FF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; padding-bottom: .08em; }
+  :root[data-theme="dark"] .nx-ro { align-self: flex-start; padding: 9px 20px; border-radius: 999px; background: var(--glass); border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 10px 30px rgba(0,0,0,.35); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-size: 14px; color: #CFC5EA; }
+  :root[data-theme="dark"] .nx-ro b { color: #fff; }
+  :root[data-theme="dark"] .nx-ro .nx-due b { color: #FFC86B; }
+  :root[data-theme="dark"] .nx-ro .nx-sep { background: rgba(255,255,255,.16); }
+  /* the greeting arrives word by word on the first visit of the day only, then never again that day */
+  .nx-intro .nx-greet .wd { display: inline-block; animation: nx-word 900ms var(--ease-out) both; animation-delay: calc(80ms + var(--d) * 90ms); }
+  .nx-intro .nx-greet .nx-ro { animation: nx-rise 700ms var(--ease-out) 480ms both; }
+  @keyframes nx-word { from { opacity: 0; transform: translateY(18px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+  @keyframes nx-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  /* the cards rise in once when Today opens, 50 ms apart; later updates never animate */
+  .nx-enter > [data-k]:not([data-k="date"]) { animation: nx-rise 500ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms + 120ms); }
+  .nx-enter .nx-ncard { animation: nx-rise 500ms var(--ease-out) both; animation-delay: calc(var(--j, 0) * 50ms + 260ms); }
+
+  /* glass on Today's cards */
+  :root[data-theme="dark"] .nx-hero, :root[data-theme="dark"] .nx-card, :root[data-theme="dark"] .nx-ncard, :root[data-theme="dark"] .nx-calm, :root[data-theme="dark"] .nx-note, :root[data-theme="dark"] .nx-week, :root[data-theme="dark"] .nx-chmain {
+    background: var(--glass); border: 1px solid var(--glass-line); box-shadow: var(--glass-lift); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  :root[data-theme="dark"] .nx-hero { background: linear-gradient(135deg, rgba(139,108,255,.24), rgba(90,63,214,.10)); border-color: rgba(170,150,255,.3); }
+  :root[data-theme="dark"] .nx-hero.run { background: linear-gradient(135deg, rgba(46,158,110,.28), rgba(90,63,214,.12)); border-color: rgba(120,230,180,.3); }
+  :root[data-theme="dark"] .nx-hero .nx-kick, :root[data-theme="dark"] .nx-cap, :root[data-theme="dark"] .nx-roomk { letter-spacing: .1em; color: #B9A6FF; }
+  :root[data-theme="dark"] .nx-hero h2 { font-family: var(--display); font-weight: 700; letter-spacing: -.01em; }
+  :root[data-theme="dark"] .nx-teachbtn { background: linear-gradient(135deg, #FFD58A, #F29A2E); color: #2A1500; box-shadow: 0 10px 30px rgba(242,154,46,.42), inset 0 1px 0 rgba(255,255,255,.6); }
+  :root[data-theme="dark"] .nx-pairbtn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); }
+  :root[data-theme="dark"] .nx-h2 { font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: -.01em; color: #fff; }
+  :root[data-theme="dark"] .nx-ncard { position: relative; overflow: hidden; }
+  :root[data-theme="dark"] .nx-ncard::after { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 3px; background: transparent; }
+  :root[data-theme="dark"] .nx-ncard.lit { border-color: rgba(255,196,100,.42); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 0 0 1px rgba(255,190,90,.14), 0 0 50px rgba(255,170,60,.12), 0 24px 50px rgba(0,0,0,.42); }
+  :root[data-theme="dark"] .nx-ncard.lit::after { background: linear-gradient(#FFD08A, #F29A2E); box-shadow: 0 0 14px #F2A33A; }
+  :root[data-theme="dark"] .nx-ncard.lit .nx-nnum { color: #FFC86B; }
+  :root[data-theme="dark"] .nx-nnum { font-family: var(--display); font-weight: 700; color: #fff; }
+  :root[data-theme="dark"] .nx-nline { border-top-color: rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .nx-ncard .nx-btn.dark { background: linear-gradient(135deg, #8B6CFF, #5A3FD6); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(110,80,240,.35), inset 0 1px 0 rgba(255,255,255,.3); }
+  :root[data-theme="dark"] .nx-ncard .nx-btn.green { background: linear-gradient(135deg, #3FC48A, #1E8A5C); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(46,158,110,.32), inset 0 1px 0 rgba(255,255,255,.3); }
+  :root[data-theme="dark"] .nx-btn:not(.dark):not(.green):not(.soft) { background-color: rgba(255,255,255,.05); border-color: rgba(255,255,255,.16); }
+  :root[data-theme="dark"] .nx-btn.dark { background: #EDE6FF; color: #140D28; border-color: #EDE6FF; }
+  :root[data-theme="dark"] .nx-upline, :root[data-theme="dark"] #news > * { border: 1px solid rgba(255,196,100,.3); }
+  :root[data-theme="dark"] .nx-calm { color: #8FE3B8; }
+
+  /* the sign-in portal: the same glass, in the landing's violet and amber */
+  .si-card h1 { font-family: "Outfit", var(--display); font-weight: 700; letter-spacing: -.01em; }
+  .si-card { background: linear-gradient(165deg, rgba(60,40,110,.45), rgba(10,8,24,.74)); border-color: rgba(170,150,255,.26); }
+  .si-kicker { color: #FFC86B; }
+  #signin #si-go { background: linear-gradient(135deg, #FFD58A, #F29A2E); box-shadow: 0 10px 28px rgba(242,154,46,.4), inset 0 1px 0 rgba(255,255,255,.55); color: #2A1500;
+    transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out); }
+  .si-f input { transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out); }
+  .si-f input:focus { border-color: #FFC86B; box-shadow: 0 0 0 3px rgba(255,200,107,.25); }
+
+  /* Emil's motion rules: presses answer in 160 ms, nothing scales from zero, hover only where there is a mouse */
+  .nx-btn, .nx-teachbtn, .nx-pairbtn, .nx-nav button, .nx-cls button, .nx-ib, .nx-more, .nx-priv, .nx-seg button, .btn, #signin #si-go, .guide-link {
+    transition: transform 160ms var(--ease-out), background-color 150ms var(--ease-out), border-color 150ms var(--ease-out), color 150ms var(--ease-out), box-shadow 200ms var(--ease-out), filter 150ms var(--ease-out); }
+  .nx-btn:active, .nx-teachbtn:active, .nx-pairbtn:active, .nx-nav button:active, .nx-cls button:active, .nx-ib:active, .nx-more:active, .nx-priv:active, .nx-seg button:active, .btn:active, #signin #si-go:active, .guide-link:active { transform: scale(.97); }
+  .nx-btn:disabled:active, .btn:disabled:active { transform: none; }
+  @media (hover: none) { .nx-nav button:hover, .nx-cls.dim button:hover, .nx-btn:hover { background-color: inherit; } }
+  @media (hover: hover) and (pointer: fine) {
+    :root[data-theme="dark"] .nx-teachbtn:hover { filter: brightness(1.06); box-shadow: 0 12px 36px rgba(242,154,46,.55), inset 0 1px 0 rgba(255,255,255,.6); }
+    :root[data-theme="dark"] .nx-nav button:not([aria-current="page"]):hover { background: rgba(255,255,255,.07); }
+    :root[data-theme="dark"] .nx-btn:not(.dark):not(.green):hover { border-color: rgba(255,255,255,.3); }
+    :root[data-theme="dark"] .nx-ncard .nx-btn.dark:hover, :root[data-theme="dark"] .nx-ncard .nx-btn.green:hover { filter: brightness(1.1); }
+  }
+  @media (max-width: 760px) {
+    :root[data-theme="dark"] .nx-greet { padding-top: 56px; }
+    :root[data-theme="dark"] #app.nx-on-today .nx-sky { height: 520px; }
+    .nx-ro .nx-sep { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nx-intro .nx-greet .wd, .nx-intro .nx-greet .nx-ro, .nx-enter > [data-k], .nx-enter .nx-ncard { animation: none !important; }
+    .nx-sky .nx-skyimg, .nx-sky .nx-hills { transition: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    :root[data-theme="dark"] .nx-top, :root[data-theme="dark"] .nx-hero, :root[data-theme="dark"] .nx-card, :root[data-theme="dark"] .nx-ncard, :root[data-theme="dark"] .nx-ro { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; }
+  }
+</style>
 </head>
 <body>
 
@@ -1705,6 +1834,7 @@
 
 <!-- App -->
 <div id="app" class="hidden">
+  <div class="nx-sky" aria-hidden="true"><img class="nx-skyimg" alt=""><canvas id="nx-stars"></canvas><img class="nx-hills" alt=""><div class="nx-fade"></div></div>
   <!-- Release 34: Today, Chapters, Students (keys 1 2 3), one class at a time ([ and ]), / to find, T to teach -->
   <header class="nx-top" id="nx-top">
     <div class="nx-top-in">
@@ -1762,7 +1892,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'today', cls: '' };
-  var NEWS_VERSION = '2026-10-r34';
+  var NEWS_VERSION = '2026-10-r36';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -2105,6 +2235,7 @@
     $('nx-drawer').classList.toggle('hidden', v !== 'detail');
     document.body.classList.toggle('nx-drawer-open', v === 'detail');
     nxFrame(under);
+    $('app').classList.toggle('nx-on-today', under === 'today'); nxSky(under === 'today');
     ['cmp', 'pg', 'tr', 'rw'].forEach(function (x) { $('view-' + x).classList.toggle('hidden', under !== x); });
     $('view-detail').classList.toggle('hidden', v !== 'detail');
     closePops();
@@ -2254,7 +2385,7 @@
   /* ---------- Light or night ---------- */
   // One switch for every learnwithmrcedric page on this device (msTheme, at the top of the page): the device's own setting,
   // or the look chosen with the moon button or here.
-  var THEMES = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Same as this device']];
+  var THEMES = [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Night, the Hub\'s own look']];
   function themePick() { return window.msTheme ? (msTheme.chosen() || 'auto') : 'auto'; }
   function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
   function applyTheme() { if (window.msTheme) msTheme.apply(); }
@@ -2339,13 +2470,10 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>The Hub has three pages now</b><ul>' +
-      '<li><b>Today</b> has the next lesson with one Teach button, the rest of today, and Needs you, the one list of things to do. Teach opens the slides in one tab, and the same tab is used each time.</li>' +
-      '<li><b>Chapters</b> is laid out the way your students see their file. Each worksheet shows where it is (Set, Collecting, Marking, Back) and the one thing to do next. Check and return, then Return, gives back the marks and sets corrections for 7 days.</li>' +
-      '<li><b>Students</b> lists your class with what each student is doing now, their red tabs and their points. Tap a name for their whole record.</li>' +
-      '<li><b>Names stay off the projector.</b> While you teach, the Hub shows initials. Show names brings them back for 2 minutes.</li>' +
-      '<li><b>Keys</b> 1, 2 and 3 change page, [ and ] change class, / finds anything, and T teaches the next lesson.</li></ul>' +
-      '<p class="muted" style="margin:8px 0 0">Settings, in the menu at the top right, has everything else in one place.</p></div>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>The Hub has a night look now</b><ul>' +
+      '<li><b>Today</b> opens under the night sky, with a greeting and tonight\'s moon and sunset. Everything on it works as before.</li>' +
+      '<li><b>Light</b> is still there: the moon button, or Settings in the menu at the top right.</li>' +
+      '<li>The greeting arrives word by word only the first time you open the Hub each day.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
@@ -7332,16 +7460,95 @@
     if (!d) { box.innerHTML = skeleton('cards'); return; }
     if (!box.querySelector('.nx-today')) box.innerHTML = '<div class="nx-today"></div>';
     var root = box.querySelector('.nx-today'), parts = [], now = new Date();
-    parts.push(['date', '<h1 class="nx-h1">' + NX_DAYS[now.getDay()].replace('Sun', 'Sunday').replace('Mon', 'Monday').replace('Tue', 'Tuesday').replace('Wed', 'Wednesday').replace('Thu', 'Thursday').replace('Fri', 'Friday').replace('Sat', 'Saturday') + ' ' + now.getDate() + ' ' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()] + '</h1>']);
+    parts.push(['date', nxGreetHtml(now)]);
     if (H.update && H.update.newer && lsGet('wsh_up_x') !== String(H.update.pasteSeq)) parts.push(['up', '<div class="nx-upline"><span>Release ' + esc(H.update.pasteSeq) + ' needs new server code. Paste ' + esc((H.update.paste || []).join(', ')) + ', then deploy a new version.</span>' +
       (H.update.codePage ? '<a class="nx-btn sm" href="' + esc(H.update.codePage) + '" target="_blank" rel="noopener">Open the code page</a>' : '<button type="button" class="nx-btn sm" data-nxa="setup">See it</button>') + '<button type="button" class="nx-link" data-nxa="upx">Not now</button></div>']);
     parts.push(['top', nxHeroHtml()]);
     var deb = nxDebriefHtml(); if (deb) parts.push(['deb', deb]);
     parts.push(['needs', nxNeedsHtml()]);
     parts.push(['run', nxRunningHtml()]);
+    var fresh = !root.children.length;
     var changed = nxPatch(root, parts);
     changed.forEach(function (el) { nxBindToday(el); });
     nxDebriefs();
+    nxNight(root, fresh);
+  }
+
+  /* ---------- Release 36: the night design on Today (the approved landing) ----------
+     The greeting, a readout of tonight's sky over Singapore, the sky photograph with its stars, and the motion rules:
+     the words arrive only on the first visit of the day, the cards rise in once, and nothing moves again after that. */
+  var HUB_NAME = 'Mr Cedric';
+  function nxSkyRead(now) {
+    var syn = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14), t = now.getTime();
+    var age = (((t - ref) / 864e5) % syn + syn) % syn, k = (1 - Math.cos(2 * Math.PI * age / syn)) / 2, waxing = age < syn / 2;
+    var names = ['New moon', 'Waxing crescent', 'First quarter', 'Waxing gibbous', 'Full moon', 'Waning gibbous', 'Last quarter', 'Waning crescent'];
+    var r = 9, rx = Math.abs(1 - 2 * k) * r, path = '';
+    if (k >= 0.02) path = 'M12 3 A9 9 0 0 ' + (waxing ? 1 : 0) + ' 12 21 A' + rx.toFixed(2) + ' 9 0 0 ' + (waxing ? (k < 0.5 ? 0 : 1) : (k < 0.5 ? 1 : 0)) + ' 12 3 Z';
+    var sg = new Date(t + 8 * 36e5), y0 = Date.UTC(sg.getUTCFullYear(), 0, 1);
+    var N = Math.floor((Date.UTC(sg.getUTCFullYear(), sg.getUTCMonth(), sg.getUTCDate()) - y0) / 864e5) + 1, g = 2 * Math.PI / 365 * (N - 1);
+    var eqt = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var lat = 1.3521 * Math.PI / 180, ha = Math.acos(Math.cos(90.833 * Math.PI / 180) / (Math.cos(lat) * Math.cos(decl)) - Math.tan(lat) * Math.tan(decl)) * 180 / Math.PI;
+    var set = ((720 - 4 * (103.8198 - ha) - eqt + 480) % 1440 + 1440) % 1440, pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return { moon: names[Math.floor((age / syn) * 8 + 0.5) % 8], lit: Math.round(k * 100), path: path, sunset: pad(Math.floor(set / 60)) + ':' + pad(Math.round(set % 60) % 60) };
+  }
+  function nxGreetHtml(now) {
+    var h = now.getHours(), part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+    var words = ['Good', part + ',', HUB_NAME.split(' ')[0], (HUB_NAME.split(' ').slice(1).join(' ') || '') + '.'];
+    var sky = nxSkyRead(now), day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()] + ' ' + now.getDate() + ' ' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()];
+    return '<div class="nx-greet"><h1 class="nx-h1">' + words.map(function (w, i) { return '<span class="wd" style="--d:' + i + '">' + esc(w) + '</span>'; }).join(' ') + '</h1>' +
+      '<div class="nx-ro" aria-label="Tonight">' +
+      '<span class="nx-roi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#2A2342"/><path d="' + sky.path + '" fill="#F3EBD6"/></svg><span><b>' + esc(sky.moon) + '</b> · ' + sky.lit + '% lit</span></span><i class="nx-sep"></i>' +
+      '<span class="nx-roi"><svg viewBox="0 0 24 24" fill="none" stroke="#FFC86B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 18h16M7 14a5 5 0 0 1 10 0M12 4v3M5.6 7.6l2 2M18.4 7.6l-2 2"/></svg><span>Sunset <b>' + sky.sunset + '</b></span></span><i class="nx-sep"></i>' +
+      '<span class="nx-roi"><span>' + esc(day) + ' · <b class="nx-clock">' + nxHm(now.getTime()) + '</b></span></span></div></div>';
+  }
+  function nxNight(root, fresh) {
+    if (fresh) {
+      var today = isoDate(Date.now()), first = lsGet('hub_intro_day') !== today;
+      if (first) { lsSet('hub_intro_day', today); root.classList.add('nx-intro'); }
+      root.classList.add('nx-enter');
+      setTimeout(function () { root.classList.remove('nx-intro', 'nx-enter'); }, first ? 1900 : 1200);
+    }
+    Array.prototype.forEach.call(root.children, function (el, i) { el.style.setProperty('--i', i); });
+    Array.prototype.forEach.call(root.querySelectorAll('.nx-ncard'), function (el, j) { el.style.setProperty('--j', j); });
+  }
+  // The clock in the readout moves on by itself (one text change a minute, nothing drawn again).
+  setInterval(function () { var c = document.querySelector('#view-today .nx-clock'); if (c) c.textContent = nxHm(Date.now()); }, 20000);
+  // The sky: the photograph and hills load the first time Today shows at night; the stars twinkle only while they can be seen.
+  var SKY = { raf: 0, on: false, stars: [], W: 0, H: 0 };
+  function nxSky(on) {
+    SKY.on = !!on && isDark();
+    var app = $('app'), img = app.querySelector('.nx-skyimg'), hills = app.querySelector('.nx-hills');
+    if (SKY.on && img && !img.getAttribute('src')) {
+      var site = ((H.links && H.links.lessons) || 'https://cedricboi.github.io/science-decks/').replace(/\/?$/, '/');
+      img.onload = function () { img.classList.add('ok'); }; hills.onload = function () { hills.classList.add('ok'); };
+      img.src = site + 'media/hub-sky.webp'; hills.src = site + 'media/hub-hills.webp';
+    }
+    if (SKY.on && !SKY.raf) SKY.raf = requestAnimationFrame(nxStars);
+  }
+  window.addEventListener('ms-theme', function () { nxSky(H.view === 'today' || (H.view === 'detail' && H.backTo === 'today')); });
+  function nxStarsMake(cv) {
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    SKY.W = cv.clientWidth; SKY.H = cv.clientHeight; cv.width = SKY.W * dpr; cv.height = SKY.H * dpr;
+    cv.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    SKY.stars = [];
+    for (var i = 0, n = Math.round(SKY.W * SKY.H / 3200); i < n; i++) {
+      var c = Math.random();
+      SKY.stars.push({ x: Math.random() * SKY.W, y: Math.random() * SKY.H * 0.8, z: Math.random(), r: Math.random() * 1.1 + 0.3, p: Math.random() * 6.283, s: 0.5 + Math.random() * 1.5, c: c < 0.1 ? '255,214,150' : c < 0.28 ? '210,196,255' : '255,255,255' });
+    }
+  }
+  function nxStars(t) {
+    SKY.raf = 0;
+    var cv = $('nx-stars');
+    if (!SKY.on || !cv || document.hidden || window.scrollY > 760) { if (SKY.on) setTimeout(function () { if (!SKY.raf) SKY.raf = requestAnimationFrame(nxStars); }, 500); return; }
+    if (cv.clientWidth !== SKY.W || cv.clientHeight !== SKY.H) nxStarsMake(cv);
+    var ctx = cv.getContext('2d'), still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ctx.clearRect(0, 0, SKY.W, SKY.H);
+    SKY.stars.forEach(function (st) {
+      var tw = still ? 0.8 : 0.55 + 0.45 * Math.sin(t / 1000 * st.s + st.p), a = Math.min(1, 0.15 + 0.85 * tw * (0.35 + st.z * 0.65));
+      ctx.fillStyle = 'rgba(' + st.c + ',' + a.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r * (0.6 + st.z * 0.8), 0, 6.283); ctx.fill();
+    });
+    if (!still) setTimeout(function () { if (!SKY.raf) SKY.raf = requestAnimationFrame(nxStars); }, 66);   // about 15 frames a second is plenty for a twinkle
   }
   function nxHeroHtml() {
     var x = nxHeroOf(), L = nxLessonOf(x), h = '<div class="nx-toprow">', slim = false;
@@ -7577,7 +7784,8 @@
       var one = false, open = NX.open[gr.k];
       // "And N more" never hides a line that is ready to return.
       var shown = open ? items : items.filter(function (it, i) { return i < 3 || it.green; });
-      h += '<div class="nx-ncard" data-g="' + gr.k + '"><span class="nx-nnum">' + (items.every(function (x) { return x.ph; }) ? '&middot;' : items.filter(function (x) { return !x.snoozed && !x.ph; }).length) + '</span><span class="nx-nlab">' + esc(gr.label) + '</span>';
+      var lit = gr.k === 'check' && items.some(function (x) { return !x.snoozed && !x.ph; });
+      h += '<div class="nx-ncard' + (lit ? ' lit' : '') + '" data-g="' + gr.k + '"><span class="nx-nnum">' + (items.every(function (x) { return x.ph; }) ? '&middot;' : items.filter(function (x) { return !x.snoozed && !x.ph; }).length) + '</span><span class="nx-nlab">' + esc(gr.label) + '</span>';
       if (gr.k === 'check') {
         var sol = items.filter(function (it) { return it.sol && !it.snoozed && it.w; });
         if (sol.length) h += '<p class="nx-solflag"><b>Marked solution needed</b> for ' + esc(listJoin(sol.map(function (it) { return nxShort(it.w); }))) + '. Claude marks against it.</p>';
