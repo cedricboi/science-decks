@@ -461,7 +461,7 @@
   var DEV = load('lb_dev');
   if (!DEV) { DEV = 'm' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store('lb_dev', DEV); }
   var last = load('lb_last') || {}, cmpInfo = null, subj = load('lb_subj') === 'cmp' ? 'cmp' : 'sci';
-  function base() { return location.href.split('?')[0].split('#')[0]; }
+  function base() { var ok = /^https:\/\/script\.google\.com\/(a\/[^\/]+\/)?macros\/s\/[\w-]+\/exec$/, h = location.href.split('?')[0].split('#')[0]; if (ok.test(h)) return h; var r = String(document.referrer || '').split('?')[0].split('#')[0]; return ok.test(r) ? r : 'https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec'; }   // the app's own address, not Google's sandbox frame
   function poShow(id) { ['po-doors', 'po-cmpgo', 'po-form'].forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); document.querySelector('.po-subj').classList.toggle('hidden', id === 'po-cmpgo'); poMsg(''); window.scrollTo(0, 0); }
   function poMsg(t, info) { var m = $('po-msg'); m.textContent = t || ''; m.className = 'msg' + (info ? ' info' : '') + (t ? '' : ' hidden'); }
   function siInfoLoad() {
