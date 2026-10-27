@@ -2785,6 +2785,130 @@
   @media (prefers-reduced-motion: reduce) { .w43pk-crumb, .w43pk-act, .w43pk-give { transition: none; } }
 
 </style>
+<style>
+  /* ================= r43 points ================= */
+  #view-rw .pt43 { max-width: 1240px; margin: 0 auto; padding: 18px 0 48px; display: flex; flex-direction: column; gap: 18px; }
+  #view-rw .pt43-ph { padding-bottom: 0; }
+  #view-rw .pt43-hrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; width: 100%; }
+  #view-rw .pt43-hrow .w43-lede { margin: 6px 0 0; }
+  #view-rw .pt43-sec { border: 1px solid var(--nx-line); }
+  #view-rw .pt43-note { margin: 0 0 14px; font-size: 15px; color: var(--nx-ink2); }
+  #view-rw .pt43 .cx-ic { color: var(--ac, var(--nx-ink2)); }
+  /* the class picker */
+  #view-rw .pt43-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  #view-rw .pt43-cc { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; min-height: 172px; padding: 18px 20px; border-radius: 20px; cursor: pointer; font: inherit; color: var(--nx-ink);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--cc) 14%, var(--nx-soft)), var(--nx-soft) 70%); border: 1px solid var(--nx-line); transition: transform 160ms var(--ease-out), border-color 200ms var(--ease-out); }
+  #view-rw .pt43-cc:active { transform: scale(.97); }
+  #view-rw .pt43-ccn { font: 700 32px/1 var(--display); letter-spacing: -.02em; }
+  #view-rw .pt43-ccs { font-size: 13px; color: var(--nx-muted); margin-bottom: 8px; }
+  #view-rw .pt43-ccw { font-size: 15px; color: var(--nx-ink2); }
+  #view-rw .pt43-ccw b { font: 700 22px var(--display); color: var(--nx-ink); margin-right: 4px; font-variant-numeric: tabular-nums; }
+  #view-rw .pt43-ccg { font-size: 13px; color: var(--nx-ink2); margin-top: 6px; }
+  #view-rw .pt43-bar { display: block; width: 100%; height: 6px; border-radius: 3px; background: var(--nx-chip); overflow: hidden; }
+  #view-rw .pt43-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #FFC86B, #B57BFF); }
+  #view-rw .pt43-chip { margin-top: auto; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--nx-green-soft); color: var(--nx-green-ink); }
+  @media (hover: hover) and (pointer: fine) { #view-rw .pt43-cc:hover { border-color: color-mix(in srgb, var(--cc) 55%, var(--nx-line)); } }
+  /* the class being tracked */
+  #view-rw .pt43-track { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 16px 20px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--cc) 45%, var(--nx-line));
+    background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 16%, var(--nx-surface)), var(--nx-surface) 65%); }
+  #view-rw .pt43-tk { display: flex; flex-direction: column; line-height: 1; }
+  #view-rw .pt43-tk small { font: 800 10px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--nx-muted); margin-bottom: 4px; }
+  #view-rw .pt43-tk b { font: 700 30px var(--display); color: var(--nx-ink); }
+  #view-rw .pt43-tline { font-size: 15px; color: var(--nx-ink2); }
+  #view-rw .pt43-tline b { color: var(--nx-ink); font-variant-numeric: tabular-nums; }
+  #view-rw .pt43-lbg { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  #view-rw .pt43-side { display: flex; flex-direction: column; gap: 14px; }
+  #view-rw .pt43-card { background: var(--nx-soft); border-radius: 18px; padding: 16px 18px; }
+  #view-rw .pt43-card h3 { margin: 0 0 10px; font: 600 16px var(--display); color: var(--nx-ink); }
+  #view-rw .pt43 ol.lb { margin: 0; }
+  #view-rw .pt43-gnote { margin: 12px 0 0; }
+  /* the divider before what every class shares */
+  #view-rw .pt43-div { display: flex; align-items: center; gap: 14px; margin: 14px 0 0; }
+  #view-rw .pt43-div span { font: 800 12px var(--text); letter-spacing: .14em; text-transform: uppercase; color: #FFC86B; white-space: nowrap; }
+  #view-rw .pt43-div i { flex: 1 1 auto; height: 1px; background: var(--nx-line); }
+  #view-rw .pt43-div small { font-size: 13px; color: var(--nx-muted); white-space: nowrap; }
+  /* the market */
+  #view-rw .pt43-mk { display: flex; flex-direction: column; gap: 16px; }
+  #view-rw .pt43-mkrow { display: flex; align-items: center; gap: 14px; }
+  #view-rw .pt43-lan { display: inline-flex; gap: 10px; }
+  #view-rw .pt43-lan i { width: 14px; height: 20px; border-radius: 7px 7px 8px 8px; background: color-mix(in srgb, #FFB45C 30%, var(--nx-chip)); transition: background-color 300ms var(--ease-out), box-shadow 300ms var(--ease-out); }
+  #view-rw .pt43-mk.open .pt43-lan i { background: #FFB45C; box-shadow: 0 0 14px rgba(255,180,92,.6); }
+  #view-rw .pt43-mkf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  #view-rw .pt43-mkf.hidden { display: none; }
+  #view-rw .pt43-mkf .field { margin: 0; }
+  #view-rw .pt43-mkf .row { gap: 8px; flex-wrap: nowrap; }
+  #view-rw .pt43-mkf input { flex: 1 1 auto; min-width: 0; }
+  #view-rw .pt43-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  #view-rw .pt43-chips span { font-size: 13px; padding: 6px 12px; border-radius: 999px; background: var(--nx-chip); color: var(--nx-ink2); }
+  #view-rw .pt43-chips .gold { background: var(--nx-amber-soft); color: var(--nx-ink); }
+  /* tickets: one short row each */
+  #view-rw .pt43-wait { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: var(--nx-green-soft); color: var(--nx-green-ink); }
+  #view-rw .pt43-tix { display: flex; flex-direction: column; gap: 10px; }
+  #view-rw .pt43-tg h4 { margin: 0 0 4px; font: 800 11px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--nx-muted); }
+  #view-rw .pt43-tr { display: grid; grid-template-columns: 76px minmax(0, 1.4fr) minmax(0, 1fr) auto auto; align-items: center; gap: 12px; min-height: 52px; padding: 4px 4px 4px 12px; border-top: 1px solid var(--nx-line); }
+  #view-rw .pt43-tr .code { font: 800 15px var(--mono, ui-monospace, monospace); letter-spacing: .12em; color: var(--nx-ink); }
+  #view-rw .pt43-tp { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  #view-rw .pt43-tp .ppic { width: 28px; height: 28px; flex: none; }
+  #view-rw .pt43-tp b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #view-rw .pt43-tn { color: var(--nx-ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #view-rw .pt43-tw { font-size: 13px; color: var(--nx-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  #view-rw .pt43-tr .btn.small { min-height: 40px; min-width: 76px; }
+  #view-rw .pt43-tr .btn.pt43-first { background: #5ED39C; border-color: #5ED39C; color: #0B2A1B; }
+  #view-rw .pt43-more { margin-top: 8px; }
+  #view-rw .pt43-done { margin-top: 12px; }
+  /* prizes, changed on the card */
+  #view-rw .pt43-pzs { display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 12px; }
+  #view-rw .pt43-pz { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 18px; background: var(--nx-soft); border: 1px solid transparent; min-width: 0; }
+  #view-rw .pt43-pz.off .pt43-pzh { opacity: .55; }
+  #view-rw .pt43-pz.grand { border-color: color-mix(in srgb, #FFC86B 55%, transparent); background: linear-gradient(170deg, color-mix(in srgb, #FFC86B 12%, var(--nx-soft)), var(--nx-soft) 60%); }
+  #view-rw .pt43-gp { position: absolute; top: -9px; left: 12px; font: 800 10px var(--text); letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: #FFC86B; color: #2A1A00; }
+  #view-rw .pt43-pzh { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  #view-rw .pt43-pzh .ppic { width: 36px; height: 36px; flex: none; }
+  #view-rw .pt43-pzh b { font-weight: 700; line-height: 1.2; }
+  #view-rw .pt43-st { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--nx-muted); }
+  #view-rw .pt43-st .sp { display: inline-flex; align-items: center; gap: 2px; }
+  #view-rw .pt43-st output { min-width: 74px; text-align: center; font-weight: 700; font-size: 13px; color: var(--nx-ink); font-variant-numeric: tabular-nums; }
+  #view-rw .pt43-st .spb { width: 34px; height: 34px; }
+  #view-rw .pt43-pzf { display: flex; align-items: center; gap: 8px; }
+  #view-rw .pt43-sold { font-size: 12px; color: var(--nx-muted); }
+  #view-rw .pt43-pz.add { align-items: center; justify-content: center; min-height: 180px; border: 1px dashed var(--nx-line2); background: transparent; color: var(--nx-ink2); cursor: pointer; font: inherit; transition: transform 160ms var(--ease-out); }
+  #view-rw .pt43-pz.add:active { transform: scale(.97); }
+  #view-rw .pt43-pz.add svg { width: 22px; height: 22px; }
+  /* the rules */
+  #view-rw .pt43-rules { background: none; padding: 0; border: 0; box-shadow: none; }
+  #view-rw .pt43-rnote { font-size: 13px; color: var(--nx-muted); max-width: 360px; text-align: right; }
+  #view-rw .pt43-rfoot { flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  #view-rw .bchip.neg { background: var(--nx-red-soft); color: var(--nx-red-ink); }
+  #view-rw .pt43-rules .rgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  #view-rw .pt43-rules .rgroup { padding: 14px 16px; gap: 6px; }
+  #view-rw .pt43-rules .rgroup h4 { font: 800 11px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--nx-muted); margin-bottom: 4px; }
+  #view-rw .pt43-rules .stepper { grid-template-columns: minmax(0, 1fr) auto 96px; grid-template-areas: 'l s u'; gap: 8px; min-height: 40px; }
+  #view-rw .pt43-rules .stepper label { font-size: 14px; font-weight: 600; color: var(--nx-ink); }
+  #view-rw .pt43-rules .stepper .u { font-size: 12px; color: var(--nx-muted); }
+  #view-rw .pt43-rules .stepper > input, #view-rw .pt43-rules .stepper > select { grid-column: auto; grid-area: s / s / u / u; justify-self: end; max-width: 240px; }
+  #view-rw .pt43-st > span:first-child { white-space: nowrap; }
+  #view-rw .pt43-st output { min-width: 64px; }
+  @media (max-width: 900px) {
+    #view-rw .pt43-lbg, #view-rw .pt43-mkf { grid-template-columns: minmax(0, 1fr); }
+    #view-rw .pt43-rules .rgrid { grid-template-columns: minmax(0, 1fr); }
+    #view-rw .pt43-tr { grid-template-columns: 70px minmax(0, 1fr) auto; }
+    #view-rw .pt43-tn, #view-rw .pt43-tw { grid-column: 2; }
+    #view-rw .pt43-tr .btn.small { grid-column: 3; grid-row: 1 / span 2; }
+    #view-rw .pt43-rnote { display: none; }
+  }
+  @media (max-width: 600px) {
+    #view-rw .pt43 { padding-top: 6px; }
+    #view-rw .pt43-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    #view-rw .pt43-cc { min-height: 150px; padding: 14px; }
+    #view-rw .pt43-ccn { font-size: 26px; }
+    #view-rw .pt43-div { flex-wrap: wrap; }
+    #view-rw .pt43-div i { display: none; }
+    #view-rw .pt43-mkf .row { flex-wrap: wrap; }
+    #view-rw .pt43-lan { display: none; }
+    #view-rw .pt43-pzs { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { #view-rw .pt43-cc, #view-rw .pt43-pz.add, #view-rw .pt43-lan i { transition: none; } }
+</style>
 </head>
 <body>
 
@@ -3246,7 +3370,7 @@
     setView(v);
     if (NX_VIEWS.indexOf(v) >= 0) { nxShow(v); return; }
     if (v === 'cmp') { loadCmp(); return; }
-    if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'pg') loadLbView(v); else if (v === 'adm') w43Admin();
+    if (v === 'tr') loadTracker(); else if (v === 'rw') { H.rwPick = null; H.rwAllT = false; loadRewards(); } else if (v === 'pg') loadLbView(v); else if (v === 'adm') w43Admin();
   }
 
 
@@ -7703,88 +7827,143 @@
     return 'On time with 9/10 ' + say(good) + '. Late with 4/10 ' + say(bad) + '. A token costs ' + plural(v.perToken, 'point', 'points') + '.';
   }
 
+  /* ================= Release 43: Points, as the approved board =================
+     One class at a time first (a card per class: points this week, the class goal, prizes waiting), then that class's
+     leaderboard, goal, weeks and stickers. Under it, what every class shares: the night market, the tickets to hand out
+     (a short list, grouped by class), the prizes (changed right on their cards) and how points are earned. Every number
+     comes from api_t_rewards, and every change goes back through the same calls as before. */
+  var PT43_IC = {
+    cls: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.4.3 4 2 4.5 5.4"/></svg>',
+    board: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4a3 3 0 003 4M17 6h3a3 3 0 01-3 4"/></svg>',
+    goal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 2.5 4.5 6 4 10l-2 3h-4l-2-3c-.5-4 1-7.5 4-10z"/><circle cx="12" cy="10" r="1.6"/><path d="M9.5 18l-1.5 3M14.5 18l1.5 3"/></svg>',
+    market: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 01-6 0 3 3 0 01-6 0 3 3 0 01-6 0z"/><path d="M5 13v7h14v-7M10 20v-4h4v4"/></svg>',
+    ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 002-2h14a2 2 0 002 2v2a2 2 0 000 4v2a2 2 0 00-2 2H5a2 2 0 00-2-2v-2a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>',
+    gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13"/><path d="M12 8c-1.5-3.5-5-4-5-1.5S10 8 12 8zM12 8c1.5-3.5 5-4 5-1.5S14 8 12 8z"/></svg>',
+    rules: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>'
+  };
+  function pt43Sec(key, ac, off, icon, title, meta, right, body, extra) {
+    return '<section class="cx-sec cx38-sec pt43-sec' + (extra ? ' ' + extra : '') + '"><div class="cx38-banner' + cx38Lit('pt|' + key) + '" style="--ac:' + ac + '">' + cx38Sky(off, 560) +
+      '<span class="cx-ic">' + icon + '</span><span class="cx38-bt"><h2 class="cx38-h">' + title + '</h2>' + (meta ? '<span class="cx-meta">' + meta + '</span>' : '') + '</span><span class="nx-grow"></span>' + (right || '') + '</div>' +
+      '<div class="cx38-sbody">' + body + '</div></section>';
+  }
+  // This week's Monday, as the server writes weeks (yyyy-MM-dd).
+  function pt43WeekKey() { var d = new Date(), back = (d.getDay() + 6) % 7; d.setDate(d.getDate() - back); var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+  function pt43Week(r, c) { var k = pt43WeekKey(), w = ((r.weeks || {})[c] || []).filter(function (x) { return x.week === k; })[0]; return w ? w.earned : 0; }
+  function pt43Classes(r) { return (r.classes || []).filter(function (c) { return c !== 'TEST'; }); }
+  function pt43Left(pz) { return pz.stock == null || pz.stock === '' ? null : Math.max(0, Number(pz.stock) - (pz.sold || 0)); }
+  function pt43Grand(r) { var g = null; r.prizes.forEach(function (p, i) { if (p.onSale !== false && (!g || p.tokens > g.p.tokens)) g = { p: p, i: i }; }); return g; }
+
   function renderRewards() {
     var r = H.rw, m = r.market, ru = r.rules;
     var waiting = r.orders.filter(function (o) { return !o.done; }), done = r.orders.filter(function (o) { return o.done; });
     var artOf = {}; r.prizes.forEach(function (p) { artOf[p.name] = p.art; });
-    var h = '<div class="row"><h2 class="h">Points and night market</h2><span class="spacer"></span>' +
-      '<button class="btn ghost small" id="rw-preview">' + ICON.student + 'See it as a student</button>' +
-      '<a class="btn quiet" href="' + esc(r.sheet) + '" target="_blank" rel="noopener">' + ICON.sheet + 'Rewards log</a></div>';
-    h += '<div class="rwx"><div class="rwcol">';
-    // the market
-    h += '<div class="sheet mkhero' + (m.open ? ' open' : '') + '">' + marketArt(m.open) +
-      '<label class="bigswitch"><input type="checkbox" id="rw-open"' + (m.open ? ' checked' : '') + '><span class="track"></span><span class="lab"><b>' + (m.open ? 'The night market is open' : 'The night market is closed') + '</b>' +
-        '<span>' + (m.open ? 'Students can get prizes now.' : 'Students can walk around and look, but cannot get prizes.') + '</span></span></label>' +
-      '<div class="field notefield' + (m.open ? ' hidden' : '') + '"><label for="rw-note">Sign on the gate while it is closed</label><div class="row"><input type="text" id="rw-note" maxlength="60" value="' + esc(m.note) + '" placeholder="Opens at the end of term"><button class="btn ghost small" id="rw-savenote">Save</button></div></div>' +
-      '<div class="field countfield' + (m.open ? ' hidden' : '') + '"><label for="rw-at">Opens by itself at</label><div class="row"><input type="datetime-local" id="rw-at" value="' + (m.opensAt ? isoLocal(m.opensAt) : '') + '"><button class="btn ghost small" id="rw-saveat">' + (m.opensAt ? 'Change' : 'Start the countdown') + '</button>' + (m.opensAt ? '<button class="btn quiet small" id="rw-clearat">Stop</button>' : '') + '</div>' +
-        '<p class="muted small" style="margin:4px 0 0">' + (m.opensAt ? 'Students see a countdown on their homework page. It opens on ' + esc(new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })) + '.' : 'Students see a countdown on their homework page, and the market opens by itself.') + '</p></div></div>';
-    // tickets
-    h += '<div class="sheet rwsec" id="rw-hand"><h3>Prizes to hand out' + (waiting.length ? ' <span class="n">' + waiting.length + '</span>' : '') + '</h3>' +
-      (waiting.length ? '<p class="muted small">Check the code on the student\'s ticket, then tap Given.</p><div class="tickets">' +
-        waiting.map(function (o) {
-          return '<div class="ticket"><div class="tl">' + prizePic(artOf[o.prize] || 'mystery') + '</div><div class="tm"><span class="code" aria-label="Code ' + esc(o.code.split('').join(' ')) + '">' + esc(o.code) + '</span>' +
-            '<b>' + esc(o.prize) + '</b><small>' + esc(o.cls + ' ' + o.name) + ' · ' + esc(o.when) + '</small></div>' +
-            '<div class="tr"><button class="btn small' + (o === waiting[0] ? '' : ' ghost') + '" data-hand="' + o.row + '">Given</button></div></div>';
-        }).join('') + '</div>'
-        : emptyState('No tickets waiting', 'Prizes students get at the night market show here.')) +
-      (done.length ? '<details class="handed"><summary>Given (' + done.length + ')</summary><ul>' +
-        done.map(function (o) { return '<li><span class="code sm">' + esc(o.code) + '</span><span>' + esc(o.cls + ' ' + o.name) + '</span><span class="muted">' + esc(o.prize) + ', ' + esc(o.done) + '</span><button class="btn quiet small" data-undo="' + o.row + '">Undo</button></li>'; }).join('') +
-        '</ul></details>' : '') + '</div>';
-    // prizes
-    h += '<div class="sheet rwsec"><h3>Prizes</h3><p class="muted small">The prize with the most tokens stands on the podium as the grand prize. Tap a prize to change it.</p><div class="prizes" id="rw-prizes">' +
-      r.prizes.map(function (pz, i) {
-        return '<button class="prize' + (pz.onSale ? '' : ' off') + '" data-p="' + i + '">' + prizePic(pz.art) + '<b>' + esc(pz.name) + '</b>' +
-          '<span class="tk">' + plural(pz.tokens, 'token', 'tokens') + '</span><span class="meta">' + (pz.onSale ? (pz.left == null ? 'No limit' : pz.left + ' left') : 'Not on sale') + (pz.sold ? ' · ' + pz.sold + ' got' : '') + '</span></button>';
-      }).join('') + '<button class="prize add" id="rw-addp">' + ICON.plus + '<b>Add a prize</b></button></div></div>';
-    h += '</div><div class="rwcol">';
-    // class goals
-    var goals = r.goals || [];
-    h += '<div class="sheet rwsec"><div class="row"><h3>Class goals</h3><span class="spacer"></span>' + tip('Every point a class earns after you set the goal counts towards it. Students see the bar and a rocket on their homework page. A daily question and weekly quests help everyone chip in.') + '</div><div class="goals">' +
-      r.classes.filter(function (c) { return c !== 'TEST'; }).map(function (c) {
-        var g = goals.filter(function (x) { return x.cls === c; })[0];
-        return g ? '<div class="goal"><span class="gc" style="--cc:' + ccOf(c) + '">' + esc(c) + '</span><span class="gt">' + esc(g.text) + '</span><button class="btn quiet small" data-goal="' + esc(c) + '">Change</button>' +
-          '<div><div class="gbar"><i style="width:' + Math.min(100, Math.round(100 * g.have / g.target)) + '%"></i></div><small>' + g.have.toLocaleString('en-GB') + ' of ' + g.target.toLocaleString('en-GB') + ' points since ' + esc(g.since) + '</small></div></div>'
-          : '<div class="goal"><span class="gc" style="--cc:' + ccOf(c) + '">' + esc(c) + '</span><span class="muted">No goal</span><button class="btn ghost small" data-goal="' + esc(c) + '">' + ICON.plus + 'Set a goal</button></div>';
-      }).join('') + '</div><p class="muted small" style="margin-top:12px">Daily puzzles come from the Daily science tab in your <a href="' + esc(r.sheet) + '" target="_blank" rel="noopener">Sheet</a>. Add your own questions there, or untick On to skip one.</p></div>';
-    // students
-    if (H.cls) H.rwCls = H.cls;
-    var list = r.students.filter(function (s) { return s.cls === H.rwCls; });
-    var board = list.map(function (s) { return { s: s, b: s.board != null ? s.board : Math.max(0, s.earned - s.lost) }; }).sort(function (a, b) { return b.b - a.b || a.s.name.localeCompare(b.s.name); });
-    var topB = Math.max.apply(null, board.map(function (x) { return x.b; }).concat([1]));
-    var rank = 0, last = null;
-    h += '<div class="sheet rwsec"><div class="row"><h3>Students in ' + esc(H.rwCls) + '</h3></div>' +
-      '<p class="muted small">Ranked like the leaderboard: points earned less points taken away. Tap + to give or take points.</p><ol class="lb">' +
-      board.map(function (x, i) {
+    var classes = pt43Classes(r), pick = H.rwPick && classes.indexOf(H.rwPick) >= 0 ? H.rwPick : null;
+    H.rwCls = pick || H.rwCls;
+    var studentsIn = function (c) { return r.students.filter(function (s) { return s.cls === c; }); };
+    var waitIn = function (c) { return waiting.filter(function (o) { return o.cls === c; }).length; };
+    var goalOf = function (c) { return (r.goals || []).filter(function (x) { return x.cls === c; })[0]; };
+    var pct = function (g) { return Math.min(100, Math.round(100 * g.have / g.target)); };
+    var h = '<div class="cx38 pt43"><header class="w43-ph pt43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button>' +
+      '<div class="pt43-hrow"><div><h1 class="w43-h1">Points</h1><p class="w43-lede">Track one class at a time, then look after the night market every class shares.</p></div><span class="nx-grow"></span>' +
+      '<button type="button" class="nx-btn ghost sm" id="rw-preview">See it as a student</button><a class="nx-btn ghost sm" href="' + esc(r.sheet) + '" target="_blank" rel="noopener">Rewards log</a></div></header>';
+
+    if (!pick) {
+      // the class picker
+      h += pt43Sec('pick', '#8FB7FF', 2, PT43_IC.cls, 'Choose a class', '', '',
+        '<p class="pt43-note">Choose a class to see its points, leaderboard and goal.</p><div class="pt43-cards">' + classes.map(function (c) {
+          var g = goalOf(c), n = studentsIn(c).length, wt = waitIn(c);
+          return '<button type="button" class="pt43-cc" data-pick="' + esc(c) + '" style="--cc:' + ccOf(c) + '"><span class="pt43-ccn">' + esc(c) + '</span><span class="pt43-ccs">' + plural(n, 'student', 'students') + '</span>' +
+            '<span class="pt43-ccw"><b>' + pt43Week(r, c).toLocaleString('en-GB') + '</b> points this week</span>' +
+            (g ? '<span class="pt43-ccg">' + esc(g.text) + ' · ' + pct(g) + '%</span><span class="pt43-bar"><i style="width:' + pct(g) + '%"></i></span>' : '<span class="pt43-ccg muted">No class goal yet</span>') +
+            (wt ? '<span class="pt43-chip">' + plural(wt, 'prize', 'prizes') + ' to hand out</span>' : '') + '</button>';
+        }).join('') + '</div>', 'pt43-pick');
+    } else {
+      // one class: what it has this week, its leaderboard, goal, weeks and stickers
+      var list = studentsIn(pick), wt = waitIn(pick);
+      h += '<div class="pt43-track" style="--cc:' + ccOf(pick) + '"><span class="pt43-tk"><small>Tracking</small><b>' + esc(pick) + '</b></span>' +
+        '<span class="pt43-tline"><b>' + pt43Week(r, pick).toLocaleString('en-GB') + '</b> points this week · ' + plural(list.length, 'student', 'students') + (wt ? ' · <b>' + plural(wt, 'prize', 'prizes') + '</b> to hand out' : '') + '</span>' +
+        '<span class="nx-grow"></span><button type="button" class="nx-btn ghost sm" id="pt-change">Change class</button></div>';
+      var board = list.map(function (s) { return { s: s, b: s.board != null ? s.board : Math.max(0, s.earned - s.lost) }; }).sort(function (a, b) { return b.b - a.b || a.s.name.localeCompare(b.s.name); });
+      var topB = Math.max.apply(null, board.map(function (x) { return x.b; }).concat([1]));
+      var rank = 0, last = null;
+      var lb = '<ol class="lb">' + board.map(function (x, i) {
         if (x.b !== last) { rank = i + 1; last = x.b; }
         var s = x.s;
         return '<li><span class="rk">' + rank + '</span><span class="av" style="--cc:' + ccOf(s.cls) + '" aria-hidden="true">' + esc(initials(s.name)) + '</span>' +
-          '<span class="lbn"><b>' + esc(s.name) + '</b><span class="lbar"><i style="width:' + Math.round(100 * x.b / topB) + '%;background:' + ccOf(s.cls) + '"></i></span></span>' +
+          '<span class="lbn"><b>' + esc(s.name) + '</b><span class="lbar"><i style="width:' + Math.round(100 * x.b / topB) + '%"></i></span></span>' +
           '<span class="lbp" title="' + s.points + ' points to spend, ' + plural(s.tokens, 'token', 'tokens') + ', ' + plural(s.items, 'avatar item', 'avatar items') + '"><b>' + x.b + '</b><small>' + s.points + ' to spend · ' + s.tokens + ' tk</small></span>' +
           '<button class="btn ghost small give" data-give="' + esc(s.cls) + '|' + esc(s.name) + '" aria-label="Give or take points for ' + esc(s.name) + '">' + ICON.plus + '</button></li>';
-      }).join('') + '</ol></div>';
-    // class chart
-    var ch = pointsChart((r.weeks || {})[H.rwCls]);
-    h += '<div class="sheet rwsec"><h3>Points in ' + esc(H.rwCls) + ' each week</h3>' + (ch || '<p class="muted small">The chart appears after two weeks of points.</p>') + '</div>';
-    // stickers
-    var st = (r.stickers || []).filter(function (x) { return x.sold; }), topS = Math.max.apply(null, st.map(function (x) { return x.sold; }).concat([1]));
-    h += '<div class="sheet rwsec"><h3>Stickers students like</h3>' + (st.length ? '<ul class="stk">' + st.slice(0, 8).map(function (x) {
-        return '<li><img alt="" src="' + (STICKER_PICS[x.id] || ART_NONE) + '"><span class="sn"><b>' + esc(x.name) + '</b><span class="lbar"><i style="width:' + Math.round(100 * x.sold / topS) + '%"></i></span></span><span class="sc">' + plural(x.sold, 'sold', 'sold') + '</span></li>';
-      }).join('') + '</ul><p class="muted small">' + plural(st.reduce(function (t, x) { return t + x.sold; }, 0), 'sticker', 'stickers') + ' sold, ' + st.reduce(function (t, x) { return t + x.sold * x.tokens; }, 0) + ' tokens spent on stickers.</p>'
-      : '<p class="muted small">No stickers sold yet. Students buy them with tokens at the sticker stall.</p>') + '</div>';
-    h += '</div></div>';
-    // rules
+      }).join('') + '</ol>';
+      if (!board.length) lb = emptyState('No students yet', 'Add students to ' + pick + ' in the Students tab.');
+      var ch = pointsChart((r.weeks || {})[pick]);
+      var st = (r.stickers || []).filter(function (x) { return x.sold; }), topS = Math.max.apply(null, st.map(function (x) { return x.sold; }).concat([1]));
+      var side = '<div class="pt43-card"><h3>Points in ' + esc(pick) + ' each week</h3>' + (ch || '<p class="muted small">The chart appears after two weeks of points.</p>') + '</div>' +
+        '<div class="pt43-card"><h3>Stickers students like</h3>' + (st.length ? '<ul class="stk">' + st.slice(0, 8).map(function (x) {
+          return '<li><img alt="" src="' + (STICKER_PICS[x.id] || ART_NONE) + '"><span class="sn"><b>' + esc(x.name) + '</b><span class="lbar"><i style="width:' + Math.round(100 * x.sold / topS) + '%"></i></span></span><span class="sc">' + plural(x.sold, 'sold', 'sold') + '</span></li>';
+        }).join('') + '</ul><p class="muted small">' + plural(st.reduce(function (t, x) { return t + x.sold; }, 0), 'sticker', 'stickers') + ' sold. Students buy them with tokens at the sticker stall.</p>'
+          : '<p class="muted small">No stickers sold yet. Students buy them with tokens at the sticker stall.</p>') + '</div>';
+      h += pt43Sec('lb|' + pick, '#8FB7FF', 5, PT43_IC.board, 'Leaderboard', '', '',
+        '<p class="pt43-note">Ranked like the leaderboard: points earned less points taken away. Tap + to give or take points.</p><div class="pt43-lbg"><div class="pt43-lbl">' + lb + '</div><div class="pt43-side">' + side + '</div></div>');
+      var g = goalOf(pick);
+      h += pt43Sec('goal|' + pick, '#B57BFF', 7, PT43_IC.goal, 'Class goal', '', '',
+        (g ? '<div class="goal"><span class="gc" style="--cc:' + ccOf(pick) + '">' + esc(pick) + '</span><span class="gt">' + esc(g.text) + '</span><button class="btn quiet small" data-goal="' + esc(pick) + '">Change</button>' +
+          '<div><div class="gbar"><i style="width:' + pct(g) + '%"></i></div><small>' + g.have.toLocaleString('en-GB') + ' of ' + g.target.toLocaleString('en-GB') + ' points since ' + esc(g.since) + '</small></div></div>'
+          : '<div class="goal"><span class="gc" style="--cc:' + ccOf(pick) + '">' + esc(pick) + '</span><span class="muted">No goal yet</span><button class="btn ghost small" data-goal="' + esc(pick) + '">' + ICON.plus + 'Set a goal</button></div>') +
+        '<p class="muted small pt43-gnote">Every point ' + esc(pick) + ' earns after you set the goal counts. Students see the bar and a rocket on their home page. Daily puzzles come from the Daily science tab in your <a href="' + esc(r.sheet) + '" target="_blank" rel="noopener">Sheet</a>.</p>');
+    }
+
+    // what every class shares
+    var onSale = r.prizes.filter(function (p) { return p.onSale !== false; }).length, gp = pt43Grand(r);
+    h += '<div class="pt43-div"><span>The night market, for every class</span><i></i><small>' + plural(onSale, 'prize', 'prizes') + ' on sale · ' + plural(waiting.length, 'ticket', 'tickets') + ' waiting</small></div>';
+    // the market
+    var lan = ''; for (var li = 0; li < 5; li++) lan += '<i></i>';
+    h += pt43Sec('market', '#FFB45C', 3, PT43_IC.market, 'Night market', '', '',
+      '<div class="pt43-mk' + (m.open ? ' open' : '') + '"><div class="pt43-mkrow"><label class="bigswitch"><input type="checkbox" id="rw-open"' + (m.open ? ' checked' : '') + '><span class="track"></span><span class="lab"><b>' + (m.open ? 'The night market is open' : 'The night market is closed') + '</b>' +
+        '<span>' + (m.open ? 'Students can get prizes now.' : 'Students can walk around and look, but cannot get prizes.') + '</span></span></label><span class="nx-grow"></span><span class="pt43-lan" aria-hidden="true">' + lan + '</span></div>' +
+      '<div class="pt43-mkf' + (m.open ? ' hidden' : '') + '"><div class="field notefield"><label for="rw-note">Sign on the gate while it is closed</label><div class="row"><input type="text" id="rw-note" maxlength="60" value="' + esc(m.note) + '" placeholder="Opens at the end of term"><button class="btn ghost small" id="rw-savenote">Save</button></div></div>' +
+        '<div class="field countfield"><label for="rw-at">Opens by itself at</label><div class="row"><input type="datetime-local" id="rw-at" value="' + (m.opensAt ? isoLocal(m.opensAt) : '') + '"><button class="btn small' + (m.opensAt ? '' : ' ghost') + '" id="rw-saveat">' + (m.opensAt ? 'Change' : 'Start the countdown') + '</button>' + (m.opensAt ? '<button class="btn quiet small" id="rw-clearat">Stop</button>' : '') + '</div>' +
+        '<p class="muted small" style="margin:6px 0 0">' + (m.opensAt ? 'Students see a countdown on their home page. It opens on ' + esc(new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })) + '.' : 'Students see a countdown on their home page, and it opens by itself.') + '</p></div></div>' +
+      '<div class="pt43-chips"><span>' + plural(onSale, 'prize', 'prizes') + ' on sale</span><span>' + waiting.length + ' to hand out</span>' + (gp ? '<span class="gold"><b>' + esc(gp.p.name) + '</b> is the grand prize</span>' : '') + '</div></div>');
+    // tickets: a short list, grouped by class
+    var showAll = !!H.rwAllT, shown = showAll ? waiting : waiting.slice(0, 5), groups = [], seen = {};
+    shown.forEach(function (o) { if (!seen[o.cls]) { seen[o.cls] = { cls: o.cls, list: [] }; groups.push(seen[o.cls]); } seen[o.cls].list.push(o); });
+    var tick = waiting.length ? '<p class="pt43-note">Check the code on the student\'s ticket, then tap <b>Given</b>.</p><div class="pt43-tix">' + groups.map(function (gr) {
+        return '<div class="pt43-tg"><h4>' + esc(gr.cls) + ' · ' + plural(waiting.filter(function (o) { return o.cls === gr.cls; }).length, 'ticket', 'tickets') + '</h4>' + gr.list.map(function (o) {
+          return '<div class="pt43-tr"><span class="code" aria-label="Code ' + esc(o.code.split('').join(' ')) + '">' + esc(o.code) + '</span><span class="pt43-tp">' + prizePic(artOf[o.prize] || 'mystery') + '<b>' + esc(o.prize) + '</b></span>' +
+            '<span class="pt43-tn">' + esc(o.name) + '</span><span class="pt43-tw">' + esc(o.when) + '</span><button class="btn small' + (o === waiting[0] ? ' pt43-first' : ' ghost') + '" data-hand="' + o.row + '">Given</button></div>';
+        }).join('') + '</div>';
+      }).join('') + '</div>' + (waiting.length > 5 ? '<button type="button" class="btn quiet small pt43-more" id="pt-showall">' + (showAll ? 'Show fewer' : 'Show all ' + waiting.length) + '</button>' : '')
+      : emptyState('No tickets waiting', 'Prizes students get at the night market show here.');
+    if (done.length) tick += '<details class="handed pt43-done"><summary>Given <span class="n">' + done.length + '</span></summary><ul>' +
+      done.map(function (o) { return '<li><span class="code sm">' + esc(o.code) + '</span><span>' + esc(o.cls + ' ' + o.name) + '</span><span class="muted">' + esc(o.prize) + ', ' + esc(o.done) + '</span><button class="btn quiet small" data-undo="' + o.row + '">Undo</button></li>'; }).join('') + '</ul></details>';
+    h += pt43Sec('hand', '#5ED39C', 9, PT43_IC.ticket, 'Prizes to hand out', '', waiting.length ? '<span class="pt43-wait">' + waiting.length + ' waiting</span>' : '', tick, 'pt43-hand');
+    // prizes, changed on their cards
+    var cards = r.prizes.map(function (pz, i) {
+      var left = pt43Left(pz), grand = gp && gp.i === i;
+      return '<div class="pt43-pz' + (pz.onSale === false ? ' off' : '') + (grand ? ' grand' : '') + '">' + (grand ? '<span class="pt43-gp">Grand prize</span>' : '') +
+        '<div class="pt43-pzh">' + prizePic(pz.art) + '<b>' + esc(pz.name) + '</b></div>' +
+        '<div class="pt43-st"><span>Tokens</span><span class="sp"><button type="button" class="spb" data-pzs="' + i + '|tokens|-1" aria-label="One token less">−</button><output>' + plural(pz.tokens, 'token', 'tokens') + '</output><button type="button" class="spb" data-pzs="' + i + '|tokens|1" aria-label="One token more">+</button></span></div>' +
+        '<div class="pt43-st"><span>How many</span><span class="sp"><button type="button" class="spb" data-pzs="' + i + '|stock|-1" aria-label="One fewer">−</button><output>' + (left == null ? 'No limit' : left + ' left') + '</output><button type="button" class="spb" data-pzs="' + i + '|stock|1" aria-label="One more">+</button></span></div>' +
+        '<div class="pt43-pzf"><label class="switch"><input type="checkbox" data-pzsale="' + i + '"' + (pz.onSale !== false ? ' checked' : '') + '><span class="track"></span><span>On sale</span></label><span class="nx-grow"></span><button type="button" class="btn ghost small" data-pzedit="' + i + '">Edit</button></div>' +
+        '<small class="pt43-sold">' + (pz.onSale === false ? 'Not on sale · ' : '') + (pz.sold ? plural(pz.sold, 'got so far', 'got so far') : 'No one has got it yet') + '</small></div>';
+    }).join('') + '<button type="button" class="pt43-pz add" id="rw-addp">' + ICON.plus + '<b>Add a prize</b></button>';
+    h += pt43Sec('prizes', '#FFC86B', 11, PT43_IC.gift, 'Prizes', '', '',
+      '<p class="pt43-note">Change tokens and how many right on a prize, or tap <b>Edit</b> for its name and picture. The prize with the most tokens is the grand prize.</p><div class="pt43-pzs" id="rw-prizes">' + cards + '</div>');
+    // how points are earned (the rules, as before)
     var step = function (k, label, unit, inc) {
       return '<div class="stepper"><label for="ru-' + k + '">' + label + '</label><div class="sp"><button type="button" class="spb" data-step="' + k + '" data-d="-' + inc + '" aria-label="Less">−</button>' +
         '<input type="number" id="ru-' + k + '" data-rule="' + k + '" min="0" step="' + (inc < 1 ? '0.25' : '1') + '" value="' + esc(ru[k]) + '"><button type="button" class="spb" data-step="' + k + '" data-d="' + inc + '" aria-label="More">+</button></div><span class="u">' + unit + '</span></div>';
     };
-    h += '<div class="sheet rules"><div class="row"><h3>How points are earned</h3><span class="spacer"></span>' + tip('Changes apply to every worksheet, including ones already marked. Points never go below zero. Spending never lowers a place on the leaderboard, which shows the top ten by name.') + '</div>' +
-      '<div class="rgrid">' + RULES.map(function (g) { return '<div class="rgroup"><h4>' + g[1] + '</h4>' + g[2].map(function (x) { return step(x[0], x[1], x[2], x[3]); }).join('') +
+    var rules = '<div class="rules pt43-rules"><div class="rgrid">' + RULES.map(function (g) { return '<div class="rgroup"><h4>' + g[1] + '</h4>' + g[2].map(function (x) { return step(x[0], x[1], x[2], x[3]); }).join('') +
         (g[0] === 'hand' ? '<div class="stepper"><label for="ru-from">Count work from</label><input type="date" id="ru-from" value="' + esc(ru.from) + '"></div>' : '') +
         (g[0] === 'shop' ? '<div class="stepper"><label for="ru-board">Leaderboard</label><select id="ru-board">' + [['class', 'Each class sees its own'], ['all', 'All classes together'], ['off', 'Hidden']].map(function (o) { return '<option value="' + o[0] + '"' + (ru.board === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' : '') +
         '</div>'; }).join('') + '</div>' +
       '<p class="example" id="ru-ex">' + esc(ruleExample(ru)) + '</p>' +
-      '<div class="row"><div class="bonusedit"><b>Quick bonuses</b>' + (r.bonus || []).map(function (bn, i) { return '<span class="bchip">' + (bn.points > 0 ? '+' : '') + bn.points + ' ' + esc(bn.label) + '</span>'; }).join('') + '<button class="btn quiet small" id="rw-bonus">Change</button></div><span class="spacer"></span><button class="btn ghost" id="rw-saver">Save the rules</button></div></div>';
-    $('view-rw').innerHTML = h;
+      '<div class="row pt43-rfoot"><div class="bonusedit"><b>Quick bonuses</b>' + (r.bonus || []).map(function (bn) { return '<span class="bchip' + (bn.points < 0 ? ' neg' : '') + '">' + (bn.points > 0 ? '+' : '') + bn.points + ' ' + esc(bn.label) + '</span>'; }).join('') + '<button class="btn quiet small" id="rw-bonus">Change</button></div><span class="spacer"></span><button class="btn" id="rw-saver">Save the rules</button></div></div>';
+    h += pt43Sec('rules', '#7CC4EE', 1, PT43_IC.rules, 'How points are earned', '', '<span class="pt43-rnote">Changes apply to every worksheet, including ones already marked.</span>', rules);
+    h += '</div>';
+    var v = $('view-rw'); v.innerHTML = h;
+    cx38Watch(v);
     bindRewards();
   }
   var PENDING = [];
@@ -8012,24 +8191,56 @@
   }
   function isoLocal(ms) { var d = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()); }
 
+  // A prize changed right on its card: drawn at once, saved a moment later (one save for quick taps).
+  var PT43_SAVE = null;
+  function pt43PrizeSave() {
+    clearTimeout(PT43_SAVE);
+    PT43_SAVE = setTimeout(function () {
+      var list = H.rw.prizes.map(function (p) { return { id: p.id || '', name: p.name, art: p.art, tokens: p.tokens, stock: p.stock == null ? '' : p.stock, onSale: p.onSale !== false }; });
+      tcall('api_t_rwPrizes', list).then(function (got) { if (Array.isArray(got)) H.rw.prizes = got; toast('Saved'); if (H.view === 'rw') renderRewards(); }).catch(function (e) { rwErr(e); loadRewards(); });
+    }, 600);
+  }
   function bindRewards() {
+    var v = $('view-rw');
+    Array.prototype.forEach.call(v.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-pick]'), function (b) { b.onclick = function () { H.rwPick = b.getAttribute('data-pick'); H.rwCls = H.rwPick; renderRewards(); window.scrollTo(0, 0); }; });
+    if ($('pt-change')) $('pt-change').onclick = function () { H.rwPick = null; renderRewards(); window.scrollTo(0, 0); };
+    if ($('pt-showall')) $('pt-showall').onclick = function () { H.rwAllT = !H.rwAllT; renderRewards(); };
     $('rw-open').onchange = function () {
-      var v = this.checked;
-      tcall('api_t_rwMarket', { open: v, note: $('rw-note').value }).then(function () { toast(v ? 'Night market open' : 'Night market closed'); return loadRewards(); })
+      var on = this.checked;
+      tcall('api_t_rwMarket', { open: on, note: $('rw-note').value }).then(function () { toast(on ? 'Night market open' : 'Night market closed'); return loadRewards(); })
         .catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
     };
     $('rw-savenote').onclick = function () { tcall('api_t_rwMarket', { note: $('rw-note').value }).then(function () { toast('Sign saved'); H.rw.market.note = $('rw-note').value; }).catch(rwErr); };
     $('rw-saveat').onclick = function () {
-      var v = $('rw-at').value;
-      if (!v) { alertBox('Choose a time', 'Choose the day and time the night market opens.'); return; }
-      tcall('api_t_rwMarket', { opensAt: v.replace('T', ' ') }).then(function () { toast('Countdown started'); return loadRewards(); }).catch(rwErr);
+      var at = $('rw-at').value;
+      if (!at) { alertBox('Choose a time', 'Choose the day and time the night market opens.'); return; }
+      tcall('api_t_rwMarket', { opensAt: at.replace('T', ' ') }).then(function () { toast('Countdown started'); return loadRewards(); }).catch(rwErr);
     };
     if ($('rw-clearat')) $('rw-clearat').onclick = function () { tcall('api_t_rwMarket', { opensAt: '' }).then(function () { toast('Countdown stopped'); return loadRewards(); }).catch(rwErr); };
-    Array.prototype.forEach.call(document.querySelectorAll('[data-goal]'), function (b) { b.onclick = function () { goalBox(b.getAttribute('data-goal')); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-goal]'), function (b) { b.onclick = function () { goalBox(b.getAttribute('data-goal')); }; });
     $('rw-preview').onclick = studentPreview;
     $('rw-addp').onclick = function () { prizeBox(null); };
-    Array.prototype.forEach.call(document.querySelectorAll('#rw-prizes [data-p]'), function (b) { b.onclick = function () { prizeBox(Number(b.getAttribute('data-p'))); }; });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-hand],[data-undo]'), function (b) {
+    Array.prototype.forEach.call(v.querySelectorAll('[data-pzedit]'), function (b) { b.onclick = function () { prizeBox(Number(b.getAttribute('data-pzedit'))); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-pzs]'), function (b) {
+      b.onclick = function () {
+        var bits = b.getAttribute('data-pzs').split('|'), pz = H.rw.prizes[Number(bits[0])], d = Number(bits[2]);
+        if (!pz) return;
+        if (bits[1] === 'tokens') pz.tokens = Math.max(1, (Number(pz.tokens) || 1) + d);
+        else {
+          var sold = pz.sold || 0, has = pz.stock != null && pz.stock !== '';
+          // From No limit, − makes none left and + makes one left. The edit box sets it back to No limit.
+          pz.stock = !has ? sold + (d > 0 ? 1 : 0) : Math.max(sold, Number(pz.stock) + d);
+          pz.left = pt43Left(pz);
+        }
+        renderRewards(); pt43PrizeSave();
+        var again = $('view-rw').querySelector('[data-pzs="' + b.getAttribute('data-pzs') + '"]'); if (again) again.focus();
+      };
+    });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-pzsale]'), function (c) {
+      c.onchange = function () { var pz = H.rw.prizes[Number(c.getAttribute('data-pzsale'))]; if (!pz) return; pz.onSale = c.checked; renderRewards(); pt43PrizeSave(); };
+    });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-hand],[data-undo]'), function (b) {
       b.onclick = function () {
         var hand = b.hasAttribute('data-hand');
         b.disabled = true;
@@ -8043,14 +8254,13 @@
           .catch(function (e) { b.disabled = false; if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
       };
     });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-rwcls]'), function (b) { b.onclick = function () { H.rwCls = b.getAttribute('data-rwcls'); if (H.cls) setClass(H.rwCls); else renderRewards(); }; });
-    Array.prototype.forEach.call(document.querySelectorAll('[data-give]'), function (b) { b.onclick = function (e) { e.stopPropagation(); givePop(b); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-give]'), function (b) { b.onclick = function (e) { e.stopPropagation(); givePop(b); }; });
     // steppers and the worked example
     var ex = function () { $('ru-ex').textContent = ruleExample(ruleVals()); };
-    Array.prototype.forEach.call(document.querySelectorAll('#view-rw [data-step]'), function (b) {
+    Array.prototype.forEach.call(v.querySelectorAll('[data-step]'), function (b) {
       b.onclick = function () { var i = $('ru-' + b.getAttribute('data-step')), d = Number(b.getAttribute('data-d')); i.value = Math.max(0, Math.round(((Number(i.value) || 0) + d) * 100) / 100); ex(); };
     });
-    Array.prototype.forEach.call(document.querySelectorAll('#view-rw [data-rule]'), function (i) { i.addEventListener('input', ex); });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-rule]'), function (i) { i.addEventListener('input', ex); });
     $('rw-bonus').onclick = bonusBox;
     $('rw-saver').onclick = function () {
       var patch = {};
