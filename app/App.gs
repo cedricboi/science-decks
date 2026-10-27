@@ -17,7 +17,7 @@
 //   /exec?phone           the teacher's phone during a lesson (release 34; paired with a code from the Hub)
 //   ?classic              any page as it was in release 33 (the fallback while the new pages settle in)
 
-var APP_BUILD = '2026-10-25-teacher-hub-glance';
+var APP_BUILD = '2026-10-28-admin';
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -1092,7 +1092,7 @@ function showLinks() {
 // that changed server code, which of Code.gs, Hub.gs, App.gs and appsscript.json changed. Those are the only files
 // ever pasted by hand (Google lets a script change its own code only through a Cloud project). Setup check and the
 // Home card say which files to paste, with the code page's link; nothing else is ever pasted.
-var APP_SEQ = 35;   // the release number of this server code (newer releases have bigger numbers)
+var APP_SEQ = 43;   // the release number of this server code (newer releases have bigger numbers)
 /* The server files changed by releases newer than this one, and what those releases bring. */
 function updServerNeeded_(rel) {
   var files = {}, notes = [], latest = 0;
