@@ -2423,6 +2423,237 @@
   :root[data-theme="dark"] .cx38-rem.nx-btn.sm:not(.ghost) { background: linear-gradient(135deg, #FFD58A, #F29A2E) !important; color: #2A1500 !important; border-color: transparent !important; box-shadow: 0 6px 18px rgba(242,154,46,.3); }
   @media (hover: hover) and (pointer: fine) { :root[data-theme="dark"] .cx38-nm:hover { background: rgba(255,255,255,.06); } }
   @media (prefers-reduced-transparency: reduce) { :root[data-theme="dark"] .cx38-nxp { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; } }
+
+  /* r43 frame: the top bar, the Settings menu, the record drawer, the Overview, More on the class page, the Tracker header */
+  .w43-top .nx-top-in { gap: 10px 14px; }
+  .w43-brand { border: 0; background: none; padding: 6px 4px; min-height: 44px; font: 700 20px/1 var(--display, "Outfit", sans-serif); letter-spacing: -.01em; color: var(--nx-ink); cursor: pointer; }
+  .w43-nav button { min-height: 40px; }
+  #w43-lib { border: 0; background: none; }
+  .w43-priv { min-height: 40px; }
+  .w43-smwrap { position: relative; display: inline-flex; }
+  .w43-setbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--nx-line2); background: var(--nx-surface); color: var(--nx-ink); font: 700 15px var(--text, sans-serif); cursor: pointer; transition: background-color 150ms ease-out, transform 160ms var(--ease-out); }
+  .w43-setbtn svg { width: 16px; height: 16px; transition: transform 200ms var(--ease-out); }
+  .w43-setbtn[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .w43-setbtn:active { transform: scale(.97); }
+  .pop.w43-menu { width: 320px; max-width: calc(100vw - 32px); padding: 6px; border-radius: 18px; transform-origin: top right; }
+  .pop.w43-menu:not(.hidden) { animation: w43pop 180ms var(--ease-out) both; }
+  @keyframes w43pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+  .w43-mi { display: flex !important; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 9px 12px !important; border: 0; border-radius: 12px; background: none; color: var(--nx-ink); text-align: left; cursor: pointer; font: 600 15px/1.25 var(--display, sans-serif); transition: background-color 150ms ease-out, transform 160ms var(--ease-out); }
+  .w43-mic { flex: none; width: 34px; height: 34px; padding: 7px; border-radius: 10px; background: color-mix(in srgb, var(--mc) 14%, transparent); color: var(--mc); box-sizing: border-box; }
+  .w43-mic svg { width: 20px; height: 20px; display: block; }
+  .w43-mit { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .w43-mit small { font: 500 13px/1.3 var(--text, sans-serif); color: var(--nx-muted); }
+  .w43-mit em { font-style: normal; color: var(--nx-link); }
+  .w43-mi[aria-current="page"] { background: color-mix(in srgb, var(--mc) 14%, transparent); }
+  .w43-mi:active { transform: scale(.97); }
+  .w43-mi:focus-visible { outline: 2px solid var(--nx-link); outline-offset: -2px; }
+  @media (hover: hover) and (pointer: fine) { .w43-mi:hover { background: color-mix(in srgb, var(--nx-ink) 7%, transparent); } }
+
+  /* the record drawer */
+  .w43-rd { position: fixed; inset: 0; z-index: 30; }
+  .w43-rdshade { position: absolute; inset: 0; background: rgba(6,4,15,.45); animation: w43fade 200ms ease-out both; }
+  .w43-rdpanel { position: absolute; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); box-sizing: border-box; background: var(--nx-surface); border-left: 1px solid var(--nx-line); box-shadow: -24px 0 60px rgba(0,0,0,.35); display: flex; flex-direction: column; animation: w43slide 260ms var(--ease-out) both; }
+  .w43-rd.out .w43-rdpanel { animation: w43slideout 160ms ease-in both; }
+  .w43-rd.out .w43-rdshade { animation: w43fade 160ms ease-in reverse both; }
+  @keyframes w43slide { from { transform: translateX(100%); } to { transform: none; } }
+  @keyframes w43slideout { from { transform: none; } to { transform: translateX(100%); } }
+  @keyframes w43fade { from { opacity: 0; } to { opacity: 1; } }
+  .w43-rdtop { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px 10px 22px; border-bottom: 1px solid var(--nx-line); }
+  .w43-rdk { font: 800 11px var(--text, sans-serif); letter-spacing: .14em; color: var(--nx-muted); }
+  .nx-rec.w43-rec { position: static; max-width: none; max-height: none; flex: 1 1 auto; overflow-y: auto; border-radius: 0; background: transparent; padding: 18px 22px 28px; }
+
+  /* the Overview */
+  #app.nx-on-today main { max-width: 1320px; }
+  .w43-land { position: relative; display: flex; flex-direction: column; gap: 18px; max-width: 1240px; margin: 0 auto; padding: 18px 0 40px; }
+  .w43-ro { align-self: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 16px; padding: 9px 20px; border-radius: 999px; background: var(--nx-surface); border: 1px solid var(--nx-line); font: 600 13px var(--text, sans-serif); color: var(--nx-ink2); letter-spacing: .02em; max-width: 100%; box-sizing: border-box; }
+  .w43-roi { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .w43-roi svg { width: 18px; height: 18px; flex: none; }
+  .w43-ro b { color: var(--nx-ink); font-weight: 800; }
+  .w43-mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .w43-sep { width: 1px; height: 14px; background: var(--nx-line2); }
+  .w43-due b { color: var(--nx-amber, #B86A00); }
+  .w43-pulse { width: 8px; height: 8px; border-radius: 50%; background: #F2A33A; box-shadow: 0 0 0 3px rgba(242,163,58,.25); }
+  .w43-hero { text-align: center; padding: 26px 0 8px; }
+  .w43-hero h1 { margin: 0; font: 700 clamp(40px, 6vw, 80px)/1 var(--display, sans-serif); letter-spacing: -.03em; color: var(--nx-ink); }
+  .w43-hero .wd { display: inline-block; }
+  .w43-list { display: flex; flex-direction: column; gap: 14px; }
+  .w43-upline { border-radius: 16px; }
+  .w43-li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 18px; border-radius: 18px; background: color-mix(in srgb, #8B6CFF 10%, var(--nx-surface)); border: 1px solid color-mix(in srgb, #8B6CFF 34%, transparent); }
+  .w43-lidot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #B57BFF; box-shadow: 0 0 0 4px rgba(181,123,255,.2); }
+  .w43-lit { flex: 1 1 320px; min-width: 0; font: 600 16px var(--text, sans-serif); color: var(--nx-ink2); }
+  .w43-lit b { font: 700 17px var(--display, sans-serif); color: var(--nx-ink); }
+  .nx-btn.w43-ligo { background: linear-gradient(180deg, #C9A8FF, #9B6BF2); border-color: transparent; color: #160B2E; }
+  .w43-card { position: relative; box-sizing: border-box; min-height: 156px; border-radius: 22px; padding: 18px 22px 18px 10px; display: grid; grid-template-columns: 44px 150px 330px minmax(0, 1fr); gap: 22px; align-items: center; background: var(--nx-surface); border: 1px solid var(--nx-line); box-shadow: var(--nx-shadow); overflow: hidden; transition: transform 200ms var(--ease-out); }
+  .w43-card::after { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; }
+  .w43-card.lit { border-color: rgba(242,154,46,.5); }
+  .w43-card.lit::after { background: linear-gradient(#FFD08A, #F29A2E); box-shadow: 0 0 16px #F2A33A; }
+  .w43-card.ember { border-color: rgba(226,85,58,.42); }
+  .w43-card.ember::after { background: linear-gradient(#FF9C80, #E2553A); box-shadow: 0 0 14px #E2553A; }
+  @media (hover: hover) and (pointer: fine) { .w43-card:hover { transform: translateY(-2px); } }
+  .w43-grip { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .w43-mv { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 10px; background: none; color: var(--nx-muted); cursor: pointer; transition: background-color 150ms ease-out, transform 160ms var(--ease-out); }
+  .w43-mv svg { width: 18px; height: 18px; }
+  .w43-mv:disabled { opacity: .3; cursor: default; }
+  .w43-mv:active:not(:disabled) { transform: scale(.92); }
+  @media (hover: hover) and (pointer: fine) { .w43-mv:hover:not(:disabled) { background: color-mix(in srgb, var(--nx-ink) 8%, transparent); color: var(--nx-ink); } }
+  .w43-ch { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+  .w43-nm { border: 0; background: none; padding: 0; font: 700 38px/1.05 var(--display, sans-serif); letter-spacing: -.01em; color: var(--nx-ink); cursor: pointer; text-align: left; }
+  @media (hover: hover) and (pointer: fine) { .w43-nm:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; } }
+  .w43-sub { font-size: 15px; font-weight: 700; color: var(--nx-muted); }
+  .w43-lesson { border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: color-mix(in srgb, #8B6CFF 10%, var(--nx-surface)); border: 1px solid color-mix(in srgb, #8B6CFF 26%, transparent); min-width: 0; }
+  .w43-lrow { display: flex; align-items: center; gap: 10px; }
+  .w43-lsp { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 auto; }
+  .w43-lk { font: 800 11px var(--text, sans-serif); letter-spacing: .14em; color: #6C4BF0; }
+  .w43-lt { font: 600 19px/1.2 var(--display, sans-serif); color: var(--nx-ink); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .w43-teach { flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid transparent; background: linear-gradient(135deg, #8B6CFF, #5A3FD6); color: #fff; font: 700 15px var(--text, sans-serif); text-decoration: none; cursor: pointer; box-shadow: 0 6px 20px rgba(110,80,240,.35), inset 0 1px 0 rgba(255,255,255,.35); transition: transform 160ms var(--ease-out); }
+  .w43-teach.ghost { background: none; color: var(--nx-link); border-color: var(--nx-line2); box-shadow: none; }
+  .w43-teach:active { transform: scale(.97); }
+  .w43-exc { align-self: flex-start; border: 0; background: none; padding: 2px 0; font-size: 14px; font-weight: 800; color: #C2402A; cursor: pointer; }
+  .w43-exc.calm { color: var(--nx-link); }
+  @media (hover: hover) and (pointer: fine) { .w43-exc:hover { text-decoration: underline; } }
+  .w43-wc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: center; min-width: 0; }
+  .w43-wc.w43-wcm { grid-template-columns: repeat(2, minmax(0, 1fr)) 120px; }
+  .w43-work { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .w43-work + .w43-work { border-left: 1px solid var(--nx-line); padding-left: 18px; }
+  .w43-wt { font-size: 15px; font-weight: 700; color: var(--nx-ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .w43-st { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; box-sizing: border-box; border: 1px solid transparent; border-radius: 12px; padding: 8px 12px; font: 700 15px var(--text, sans-serif); text-align: left; cursor: pointer; transition: transform 160ms var(--ease-out), background-color 200ms ease; }
+  .w43-st b { flex: none; font: 700 26px/1 var(--display, sans-serif); font-variant-numeric: tabular-nums; }
+  .w43-st .w { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .w43-st .go { margin-left: auto; font-weight: 800; transition: transform 200ms var(--ease-out); }
+  .w43-st:active { transform: scale(.97); }
+  @media (hover: hover) and (pointer: fine) { .w43-st:hover .go { transform: translateX(3px); } }
+  .w43-st.you { background: #FFF1D6; color: #7A4300; border-color: #F3CD86; }
+  .w43-st.ret { background: #DDF5E8; color: #0B5E3B; border-color: #9FDDBE; }
+  .w43-st.late { background: #FFE4DC; color: #9A2A16; border-color: #F5B3A2; }
+  .w43-st.calm { background: color-mix(in srgb, #8B6CFF 10%, var(--nx-surface)); color: var(--nx-ink2); border-color: var(--nx-line); }
+  .w43-mo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 14px; border: 1px dashed var(--nx-line2); background: none; color: var(--nx-ink); font-weight: 800; font-size: 14px; cursor: pointer; min-width: 0; overflow: hidden; text-align: left; }
+  .w43-mo b { font: 700 24px/1 var(--display, sans-serif); }
+  .w43-mo .sm { font-size: 12px; font-weight: 700; color: var(--nx-muted); }
+  .w43-mo.hot { border-color: rgba(226,85,58,.6); color: #B23A22; }
+  .w43-clear { grid-column: 1 / -1; font-size: 16px; font-weight: 600; color: var(--nx-muted); }
+  .w43-also { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 4px 6px; font-size: 15px; color: var(--nx-ink2); }
+  .w43-all { border-radius: 18px; border: 1px solid var(--nx-line); background: var(--nx-surface); padding: 0 18px; }
+  .w43-all > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 16px 0; font: 700 17px var(--display, sans-serif); color: var(--nx-ink); list-style: none; }
+  .w43-all > summary::-webkit-details-marker { display: none; }
+  .w43-all > summary small { font: 500 14px var(--text, sans-serif); color: var(--nx-muted); }
+  .w43-n { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 7px; box-sizing: border-box; border-radius: 999px; background: #F29A2E; color: #2A1500; font: 800 13px var(--text, sans-serif); }
+  .w43-all[open] > summary { border-bottom: 1px solid var(--nx-line); margin-bottom: 8px; }
+  .w43-all .nx-needs { padding-bottom: 14px; }
+  .w43-foot { display: flex; justify-content: center; }
+  .w43-land.w43-in .w43-card { animation: w43up 360ms var(--ease-out) both; animation-delay: calc(var(--i) * 50ms + 120ms); }
+  .w43-land.w43-in .w43-hero, .w43-land.w43-in .w43-ro, .w43-land.w43-in .w43-li { animation: w43up 360ms var(--ease-out) both; }
+  .w43-land.w43-intro .w43-hero .wd { animation: w43word 700ms var(--ease-out) both; animation-delay: calc(var(--d) * 110ms + 100ms); }
+  .w43-land.w43-intro .w43-card { animation-delay: calc(var(--i) * 60ms + 600ms); }
+  @keyframes w43up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes w43word { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+
+  /* pages behind the Settings menu: one header style */
+  .w43-page { max-width: 1240px; margin: 0 auto; padding: 18px 0 40px; display: flex; flex-direction: column; gap: 18px; }
+  .w43-ph { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 8px 0 6px; }
+  .w43-crumb { border: 0; background: none; padding: 6px 0; min-height: 40px; font: 700 15px var(--text, sans-serif); color: var(--nx-link); cursor: pointer; }
+  .w43-h1 { margin: 0; font: 700 clamp(36px, 4.4vw, 56px)/1.02 var(--display, sans-serif); letter-spacing: -.02em; color: var(--nx-ink); }
+  .w43-lede { margin: 0; font-size: 17px; color: var(--nx-muted); }
+  .w43-card2 { border-radius: 22px; border: 1px solid var(--nx-line); background: var(--nx-surface); padding: 22px; font-size: 16px; line-height: 1.5; color: var(--nx-ink2); max-width: 760px; }
+  .w43-card2 p { margin: 0 0 14px; }
+  .w43-trh { margin-bottom: 10px; }
+  .w43-trc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .w43-trc button { min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--nx-line2); background: var(--nx-surface); color: var(--nx-ink2); font: 700 15px var(--text, sans-serif); cursor: pointer; transition: background-color 150ms ease-out, transform 160ms var(--ease-out); }
+  .w43-trc button[aria-pressed="true"] { background: var(--nx-ink); border-color: var(--nx-ink); color: var(--nx-surface); }
+  .w43-trc button:active { transform: scale(.97); }
+
+  /* the class page: centred, More, and the tucked section */
+  #app.nx-on-chx .cx38 { max-width: 1240px; margin-left: auto; margin-right: auto; }
+  .w43-more { display: inline-flex; align-items: center; gap: 6px; }
+  .w43-more svg { width: 16px; height: 16px; }
+  .cx43-tuck { border-radius: 22px; border: 1px solid var(--nx-line); background: var(--nx-surface); padding: 16px 20px 20px; animation: w43up 260ms var(--ease-out) both; }
+  .cx43-thd { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .cx43-thd h2:focus { outline: none; }
+  .cx43-tuck .nx-erow { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+
+  /* night */
+  :root[data-theme="dark"] .w43-brand { color: #fff; }
+  :root[data-theme="dark"] .w43-setbtn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); color: #fff; }
+  :root[data-theme="dark"] .pop.w43-menu { background: rgba(19,14,38,.97); }
+  :root[data-theme="dark"] .w43-mi { color: #fff; }
+  :root[data-theme="dark"] .w43-mit small { color: #B7ADD6; }
+  :root[data-theme="dark"] .w43-mit em { color: #D9C8FF; }
+  :root[data-theme="dark"] .w43-rdpanel { background: rgba(16,11,32,.98); border-left-color: rgba(255,255,255,.1); box-shadow: -30px 0 80px rgba(0,0,0,.6); }
+  :root[data-theme="dark"] .w43-rdtop { border-bottom-color: rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .w43-ro { background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border-color: rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 10px 30px rgba(0,0,0,.35); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); color: #CFC5EA; }
+  :root[data-theme="dark"] .w43-ro b { color: #fff; }
+  :root[data-theme="dark"] .w43-due b { color: #FFC86B; }
+  :root[data-theme="dark"] .w43-sep { background: rgba(255,255,255,.16); }
+  :root[data-theme="dark"] .w43-hero { padding-top: 56px; }
+  :root[data-theme="dark"] .w43-hero h1 { color: #fff; text-shadow: 0 2px 30px rgba(6,4,15,.5); }
+  :root[data-theme="dark"] .w43-hero .wd { background: linear-gradient(90deg, #FFFFFF 0%, #EDE4FF 60%, #C9B9FF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; padding-bottom: .08em; }
+  :root[data-theme="dark"] .w43-li { background: linear-gradient(110deg, rgba(185,166,255,.14), rgba(20,13,40,.72) 70%); border-color: rgba(185,166,255,.34); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .w43-lit { color: #E7E0FA; } :root[data-theme="dark"] .w43-lit b { color: #fff; }
+  :root[data-theme="dark"] .w43-card { background: #15102B; border-color: rgba(255,255,255,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 24px 50px rgba(0,0,0,.45); }
+  :root[data-theme="dark"] .w43-card.lit { border-color: rgba(255,196,100,.45); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 1px rgba(255,190,90,.2), 0 0 60px rgba(255,170,60,.18), 0 24px 50px rgba(0,0,0,.45); }
+  :root[data-theme="dark"] .w43-card.ember { border-color: rgba(255,130,100,.4); }
+  :root[data-theme="dark"] .w43-mv { color: rgba(237,230,255,.45); }
+  :root[data-theme="dark"] .w43-nm { color: #fff; }
+  :root[data-theme="dark"] .w43-sub { color: #A99BD1; }
+  :root[data-theme="dark"] .w43-lesson { background: linear-gradient(135deg, rgba(139,108,255,.22), rgba(90,63,214,.10)); border-color: rgba(170,150,255,.28); }
+  :root[data-theme="dark"] .w43-lk { color: #B9A6FF; }
+  :root[data-theme="dark"] .w43-lt { color: #fff; }
+  :root[data-theme="dark"] .w43-teach { box-shadow: 0 6px 20px rgba(110,80,240,.45), inset 0 1px 0 rgba(255,255,255,.35); border-color: rgba(255,255,255,.25); }
+  :root[data-theme="dark"] .w43-teach.ghost { border-color: rgba(255,255,255,.2); color: #C9B9FF; box-shadow: none; }
+  :root[data-theme="dark"] .w43-exc { color: #FF9C80; } :root[data-theme="dark"] .w43-exc.calm { color: #C9B9FF; }
+  :root[data-theme="dark"] .w43-work + .w43-work { border-left-color: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .w43-wt { color: #E7E0FA; }
+  :root[data-theme="dark"] .w43-st.you { background: rgba(255,200,107,.14); color: #FFD89A; border-color: rgba(255,200,107,.32); }
+  :root[data-theme="dark"] .w43-st.you b { color: #FFC86B; }
+  :root[data-theme="dark"] .w43-st.ret { background: rgba(94,211,156,.13); color: #A9F0CD; border-color: rgba(94,211,156,.3); }
+  :root[data-theme="dark"] .w43-st.late { background: rgba(255,130,100,.13); color: #FFB09B; border-color: rgba(255,130,100,.3); }
+  :root[data-theme="dark"] .w43-st.late b { color: #FF8A70; }
+  :root[data-theme="dark"] .w43-st.calm { background: rgba(255,255,255,.05); color: #CFC5EA; border-color: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .w43-mo { border-color: rgba(255,255,255,.22); color: #EDE6FF; } :root[data-theme="dark"] .w43-mo .sm { color: #A99BD1; }
+  :root[data-theme="dark"] .w43-mo.hot { border-color: rgba(255,130,100,.6); color: #FFB09B; }
+  :root[data-theme="dark"] .w43-clear { color: #8E81B5; }
+  :root[data-theme="dark"] .w43-all, :root[data-theme="dark"] .w43-card2, :root[data-theme="dark"] .cx43-tuck { background: rgba(21,16,43,.9); border-color: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .w43-all > summary { color: #fff; }
+  :root[data-theme="dark"] .w43-all[open] > summary { border-bottom-color: rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .w43-h1 { color: #fff; }
+  :root[data-theme="dark"] .w43-trc button { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); color: #CFC5EA; }
+  :root[data-theme="dark"] .w43-trc button[aria-pressed="true"] { background: linear-gradient(135deg, #A48BFF, #6C4BF0); border-color: transparent; color: #fff; }
+  /* the sky over the class page: taller, softer and brighter (the board) */
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky { height: 1480px; }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-skyimg.ok { opacity: .8; filter: saturate(1.12) brightness(1.08); }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-hills.ok { opacity: .62; }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-fade { height: 980px; background: linear-gradient(to bottom, rgba(6,4,15,0), rgba(6,4,15,.35) 30%, rgba(6,4,15,.75) 62%, #06040F 92%); }
+
+  /* smaller screens */
+  @media (max-width: 1180px) {
+    .w43-card { grid-template-columns: 40px 110px 250px minmax(0, 1fr); gap: 14px; padding-right: 16px; }
+    .w43-nm { font-size: 30px; } .w43-lt { font-size: 17px; }
+    .w43-wc { gap: 12px; } .w43-wc.w43-wcm { grid-template-columns: repeat(2, minmax(0, 1fr)) 92px; }
+    .w43-work + .w43-work { padding-left: 12px; }
+    .w43-st { font-size: 14px; } .w43-st b { font-size: 22px; }
+  }
+  @media (max-width: 1000px) {
+    .w43-card { grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "g c" "g l" "g w"; gap: 12px; padding: 16px 16px 16px 8px; }
+    .w43-grip { grid-area: g; align-self: start; } .w43-ch { grid-area: c; flex-direction: row; align-items: baseline; gap: 12px; flex-wrap: wrap; } .w43-lesson { grid-area: l; } .w43-wc { grid-area: w; }
+  }
+  @media (max-width: 640px) {
+    .w43-top .nx-top-in { padding-top: 8px; padding-bottom: 8px; }
+    .w43-brand { font-size: 17px; }
+    .w43-nav { order: 5; width: 100%; }
+    .w43-wc, .w43-wc.w43-wcm { grid-template-columns: minmax(0, 1fr); }
+    .w43-work + .w43-work { border-left: 0; padding-left: 0; }
+    .w43-mo { flex-direction: row; align-items: baseline; gap: 8px; }
+    .w43-card { grid-template-columns: minmax(0, 1fr); grid-template-areas: "c" "l" "w"; padding: 16px; }
+    .w43-grip { display: none; }
+    .w43-ro { border-radius: 18px; font-size: 12px; gap: 6px 12px; }
+    .w43-ro .w43-sep { display: none; }
+    .w43-lrow { flex-wrap: wrap; }
+    .w43-hero { padding-top: 14px; }
+    .w43-hero h1 { font-size: 40px; }
+    :root[data-theme="dark"] .w43-hero { padding-top: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .w43-land *, .w43-rd *, .pop.w43-menu, .cx43-tuck { animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -2464,21 +2695,20 @@
 <!-- App -->
 <div id="app" class="hidden">
   <div class="nx-sky" aria-hidden="true"><img class="nx-skyimg" alt=""><canvas id="nx-stars"></canvas><img class="nx-hills" alt=""><div class="nx-fade"></div></div>
-  <!-- Release 34: Today, Chapters, Students (keys 1 2 3), one class at a time ([ and ]), / to find, T to teach -->
-  <header class="nx-top" id="nx-top">
+  <!-- Release 43: the boards' top bar. Overview, Library, Names shown, and Settings as a menu (Points, Computing, Admin,
+       Settings, Tracker). [ and ] change class, T teaches the next lesson. -->
+  <header class="nx-top w43-top" id="nx-top">
     <div class="nx-top-in">
-      <div class="nx-brand"><span class="nx-logo" aria-hidden="true">lw</span><span>Teacher Hub</span></div>
-      <nav class="nx-nav" aria-label="Main">
-        <button type="button" id="nx-t-today" data-nxtab="today">Today <i class="nx-badge" id="nx-bd-today"></i></button>
-        <button type="button" id="nx-t-chx" data-nxtab="chx">Chapters</button>
-        <button type="button" id="nx-t-stu" data-nxtab="stu">Students</button>
+      <button type="button" class="w43-brand" id="w43-brand" aria-label="learnwithmrcedric, your overview">learnwithmrcedric</button>
+      <nav class="nx-nav w43-nav" aria-label="Main">
+        <button type="button" id="nx-t-today" data-nxtab="today">Overview <i class="nx-badge" id="nx-bd-today"></i></button>
+        <button type="button" id="w43-lib">Library</button>
       </nav>
       <span class="nx-grow"></span>
-      <button type="button" class="nx-priv hidden" id="nx-priv" aria-live="polite"></button>
-      <div class="nx-cls" id="nx-cls" role="group" aria-label="Class"></div>
-      <button type="button" class="nx-ib" id="nx-find-btn" aria-label="Find a lesson, sheet or student (/)" title="Find (/)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
-      <button type="button" class="nx-ib" id="nx-menu-btn" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="pop-nx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-      <div class="pop hidden" id="pop-nx" role="menu"></div>
+      <button type="button" class="nx-priv w43-priv" id="nx-priv" aria-live="polite"></button>
+      <div class="nx-cls hidden" id="nx-cls" role="group" aria-label="Class"></div>
+      <span class="w43-smwrap"><button type="button" class="w43-setbtn" id="nx-menu-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="pop-nx">Settings<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="pop hidden w43-menu" id="pop-nx" role="menu" aria-label="Settings menu"></div></span>
     </div>
   </header>
   <main>
@@ -2493,6 +2723,7 @@
     <section id="view-rw" class="hidden"></section>
     <section id="view-pg" class="hidden"></section>
     <section id="view-cmp" class="hidden"></section>
+    <section id="view-adm" class="hidden" aria-label="Admin"></section>
   </main>
 </div>
 
@@ -2505,6 +2736,12 @@
 <!-- / finds a lesson, a sheet or a student -->
 <div id="nx-find" class="nx-find hidden" role="dialog" aria-modal="true" aria-label="Find">
   <div class="nx-fbox"><input id="nx-q" type="search" autocomplete="off" placeholder="Find a lesson, sheet or student" aria-label="Find a lesson, sheet or student" aria-controls="nx-fres"><div id="nx-fres" class="nx-fres" role="listbox"></div></div>
+</div>
+
+<!-- Release 43: a student's record opens in this drawer, from a name anywhere (the class page, the Tracker) -->
+<div id="w43-rd" class="w43-rd hidden" role="dialog" aria-modal="true" aria-label="Student record">
+  <div class="w43-rdshade" id="w43-rdshade"></div>
+  <aside class="w43-rdpanel"><div class="w43-rdtop"><span class="w43-rdk">STUDENT RECORD</span><button type="button" class="nx-btn sm ghost" id="w43-rdx">Close</button></div><div id="nx-rec" class="nx-rec w43-rec" aria-live="polite"></div></aside>
 </div>
 
 <div id="review" class="hidden" role="region" aria-label="Check and mark"></div>
@@ -2865,17 +3102,19 @@
     document.body.classList.toggle('nx-drawer-open', v === 'detail');
     nxFrame(under);
     $('app').classList.toggle('nx-on-today', under === 'today'); $('app').classList.toggle('nx-on-chx', under === 'chx'); nxSky(under === 'today' || under === 'chx');
-    ['cmp', 'pg', 'tr', 'rw'].forEach(function (x) { $('view-' + x).classList.toggle('hidden', under !== x); });
+    ['cmp', 'pg', 'tr', 'rw', 'adm'].forEach(function (x) { $('view-' + x).classList.toggle('hidden', under !== x); });
+    $('app').classList.toggle('nx-on-w43p', ['tr', 'rw', 'cmp', 'set', 'adm'].indexOf(under) >= 0);
     $('view-detail').classList.toggle('hidden', v !== 'detail');
     closePops();
     if (v === 'detail') $('nx-dpanel').scrollTop = 0; else window.scrollTo(0, 0);
   }
   function showTab(v) {
+    if (v === 'stu') v = 'tr';   // Release 43: Students is gone. Its follow-ups and the whole grid are in the Tracker, and a name opens the record drawer.
     if (H.view === 'detail' && v !== 'detail') closeDrawer();
     setView(v);
     if (NX_VIEWS.indexOf(v) >= 0) { nxShow(v); return; }
     if (v === 'cmp') { loadCmp(); return; }
-    if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'pg') loadLbView(v);
+    if (v === 'tr') loadTracker(); else if (v === 'rw') loadRewards(); else if (v === 'pg') loadLbView(v); else if (v === 'adm') w43Admin();
   }
 
 
@@ -3111,7 +3350,7 @@
   /* ---------- keyboard ---------- */
   function shortcutsBox() {
     modal('<h2>Keyboard shortcuts</h2><div class="kbd-list">' +
-      [['1 2 3', 'Today, Chapters, Students'], ['[  ]', 'The class before or after'], ['/', 'Find a lesson, sheet or student'], ['T', 'Teach the next lesson'], ['N', 'New worksheet'], ['S', 'Save marks'], ['J  K', 'Next or previous student in the marks table'], ['?', 'This list'], ['Esc', 'Close a box']]
+      [['1 2', 'Overview, the class page'], ['[  ]', 'The class before or after'], ['T', 'Teach the next lesson'], ['N', 'New worksheet'], ['S', 'Save marks'], ['J  K', 'Next or previous student in the marks table'], ['?', 'This list'], ['Esc', 'Close a box']]
         .map(function (r) { return '<kbd>' + r[0] + '</kbd><span>' + r[1] + '</span>'; }).join('') +
       '</div><div class="foot"><button class="btn" id="kb-ok">OK</button></div>');
     $('kb-ok').onclick = closeModal;
@@ -3126,10 +3365,9 @@
       return;
     }
     var k = e.key;
-    if (!$('nx-find').classList.contains('hidden')) return;
-    if (k === '/') { e.preventDefault(); nxFind(); }
-    else if (k === '?') { e.preventDefault(); shortcutsBox(); }
-    else if (k === '1' || k === '2' || k === '3') { e.preventDefault(); if (H.view === 'detail') closeDrawer(); showTab(['today', 'chx', 'stu'][Number(k) - 1]); }
+    if (!$('nx-find').classList.contains('hidden') || !$('w43-rd').classList.contains('hidden')) return;
+    if (k === '?') { e.preventDefault(); shortcutsBox(); }
+    else if (k === '1' || k === '2') { e.preventDefault(); if (H.view === 'detail') closeDrawer(); showTab(['today', 'chx'][Number(k) - 1]); }
     else if (k === '[' || k === ']') { e.preventDefault(); nxCycleClass(k === ']' ? 1 : -1); }
     else if ((k === 't' || k === 'T') && H.view !== 'detail') { e.preventDefault(); nxTeachKey(); }
     else if ((k === 'n' || k === 'N') && H.view === 'chx') { e.preventDefault(); var aw = document.querySelector('#view-chx [data-nxc2="addw"]'); if (aw) aw.click(); else newWorksheet(); }
@@ -3653,7 +3891,7 @@
     var first = !H.dash;
     H.dash = d; H.dashAt = Date.now();
     H.links = d.links || {};   // Settings' Links, Teach next and Today's "Live Board is not linked yet" read it
-    showNews(false);
+    // Release 43: no release note on the page. What's new is in Settings.
     if (!H.tn || Date.now() - (H.tnAt || 0) > 40000) loadTeachNext(false);
     askUpdate();               // once each time the Hub opens: Today's "Release N needs new server code" line
     nxAfterDash(first);
@@ -6642,7 +6880,10 @@
     if (H.cls) H.trackerCls = H.cls;
     var c = all.filter(function (x) { return x.cls === H.trackerCls; })[0] || all[0];
     var sheetAt = H.sheetAt || (c && c.sheetAt) || '';
-    var h = '<div class="row trhead"><h2 class="h">Homework tracker<span class="printonly">' + (c ? ' · ' + esc(c.cls) : '') + '</span></h2><span class="spacer"></span>' +
+    // Release 43: the Tracker of the board. Its own title and class switch; the old tools sit under it.
+    var h = '<header class="w43-ph w43-trh"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Tracker</h1><p class="w43-lede">Who hands in on time, who to follow up, and every worksheet by student.</p>' +
+      (all.length > 1 ? '<div class="w43-trc" role="group" aria-label="Class">' + all.map(function (x) { return '<button type="button" data-w43trc="' + esc(x.cls) + '" aria-pressed="' + (c && x.cls === c.cls) + '">' + esc(x.cls) + '</button>'; }).join('') + '</div>' : '') + '</header>' +
+      '<div class="row trhead"><h2 class="h">Homework tracker<span class="printonly">' + (c ? ' · ' + esc(c.cls) : '') + '</span></h2><span class="spacer"></span>' +
       '<span class="muted small" id="tr-sheet-at">' + (sheetAt ? 'Sheet updated ' + esc(sheetAt) : '') + '</span>' +
       '<button class="btn quiet" id="tr-sheet" title="The Sheet also updates by itself after you save marks">' + ICON.sheet + 'Update Sheet now</button>' +
       '<button class="btn ghost small" id="tr-print">' + ICON.print + 'Print</button></div>';
@@ -6719,6 +6960,8 @@
   }
   window.addEventListener('afterprint', function () { document.body.removeAttribute('data-print'); });
   function bindTr(c) {
+    Array.prototype.forEach.call(document.querySelectorAll('#view-tr [data-w43trc]'), function (b) { b.onclick = function () { setClass(b.getAttribute('data-w43trc')); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('#view-tr [data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
     Array.prototype.forEach.call(document.querySelectorAll('#view-tr [data-cls]'), function (b) { b.onclick = function () { H.trackerCls = b.getAttribute('data-cls'); if (H.cls) setClass(H.trackerCls); else renderTracker(); }; });
     var s = $('tr-sheet'); if (s) s.onclick = function () {
       busy('Updating the Tracker tabs in the Sheet...');
@@ -7929,7 +8172,7 @@
      ===================================================================================================== */
   var NX_VIEWS = ['today', 'chx', 'stu', 'set'];
   var NX_TAB = 'lwmc-present';            // every Teach opens the slides in this one tab (Ruling A15)
-  var NX_TABOF = { today: 'today', chx: 'chx', cmp: '', stu: 'stu', tr: 'stu', pg: 'stu', rw: 'stu', set: '' };
+  var NX_TABOF = { today: 'today', chx: 'chx', cmp: '', stu: '', tr: '', pg: '', rw: '', set: '', adm: '' };
   var NX = { tab: 'today', ping: '', devices: null, devAt: 0, deb: {}, debAsked: {}, stuSel: lsGet('nx_stusel') || '', stuFilter: 'all', stuQ: '', chap: lsGet('nx_chap') || '',
     room: {}, roomAt: {}, rec: {}, open: {}, snz: null, flags: null, one: null };
   var NX_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], NX_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -8070,7 +8313,7 @@
     return true;
   }
   function pvLive() { return !!(H.tn && (H.tn.classes || []).some(function (x) { return x.running || x.slot; })); }
-  function pvWhy() { return pvTaught() ? 'taught' : pvLive() ? 'live' : (window.screen && screen.isExtended === true) ? 'screen' : ''; }
+  function pvWhy() { return PV.manual ? 'manual' : pvTaught() ? 'taught' : pvLive() ? 'live' : (window.screen && screen.isExtended === true) ? 'screen' : ''; }
   function pvOn() { return !!pvWhy() && Date.now() >= PV.until; }
   function pvName(n) { return pvOn() ? pvInit(n) : String(n == null ? '' : n); }
   function pvList(list) { return listJoin((list || []).map(pvName)); }
@@ -8119,8 +8362,10 @@
   function pvApply(force) {
     var on = pvOn(), why = pvWhy(), b = $('nx-priv');
     if (b) {
-      b.classList.toggle('hidden', !why);
-      if (why) {
+      b.classList.remove('hidden');
+      if (!why) { b.classList.remove('on'); b.innerHTML = NX_ICON.eye + '<span>Names shown</span>'; b.setAttribute('aria-label', 'Names are shown. Hide them.'); b.title = 'Hide names, for example before you share your screen.'; }
+      else if (why === 'manual') { b.classList.add('on'); b.innerHTML = NX_ICON.shut + '<span>Names hidden</span><b>Show</b>'; b.setAttribute('aria-label', 'Names are hidden. Show them.'); b.title = 'Names are hidden until you show them.'; }
+      else {
         var left = Math.max(0, PV.until - Date.now());
         b.classList.toggle('on', on);
         b.innerHTML = on ? NX_ICON.shut + '<span>Names hidden</span><b>Show for 2 min</b>'
@@ -8170,13 +8415,13 @@
     NX.tab = tab;
     ['today', 'chx', 'stu'].forEach(function (t) { var b = $('nx-t-' + t); if (b) b.setAttribute('aria-current', t === tab ? 'page' : 'false'); });
     document.body.setAttribute('data-nx', under || '');
-    $('nx-stubar').classList.toggle('hidden', tab !== 'stu');
-    if (tab === 'stu') nxStuBar(under);
+    $('nx-stubar').classList.add('hidden');
     nxClassChips(under);
     document.title = 'Teacher Hub';
   }
   function nxClassChips(under) {
     var el = $('nx-cls'); if (!el) return;
+    el.classList.add('hidden'); return;   // Release 43: classes are chosen on the Overview; [ and ] change class
     var list = teClasses(), cur = nxCls(), cmp = under === 'cmp', show = NX.tab !== 'today' && NX.tab !== '';
     el.classList.toggle('dim', !show && !cmp);
     el.innerHTML = list.map(function (c) { return '<button type="button" data-nxc="' + esc(c) + '" aria-pressed="' + (show && !cmp && c === cur) + '" title="' + esc(show ? 'Show ' + c : 'Open ' + c + ' in Chapters') + '">' + esc(c) + '</button>'; }).join('') +
@@ -8201,26 +8446,38 @@
     if (H.view === 'cmp') showTab('chx');
     toast('Class ' + H.cls, { ms: 1200 });
   }
-  ['today', 'chx', 'stu'].forEach(function (t) { $('nx-t-' + t).onclick = function () { if (H.view === 'detail') closeDrawer(); showTab(t); }; });
-  $('nx-priv').onclick = function () { PV.until = pvOn() ? Date.now() + 120000 : 0; pvApply(true); };
-  $('nx-find-btn').onclick = function () { nxFind(); };
+  $('nx-t-today').onclick = function () { if (H.view === 'detail') closeDrawer(); showTab('today'); };
+  $('w43-brand').onclick = function () { if (H.view === 'detail') closeDrawer(); showTab('today'); };
+  $('w43-lib').onclick = function () { if (H.view === 'detail') closeDrawer(); var c = nxCls(); sxCatalog().then(function () { openLibrary(c, NX.chap && NX.chap !== '*' && NX.chap !== '-' ? NX.chap : ''); }); };
+  // Release 43: Names shown is always in the top bar. With no projector risk it hides names until pressed again.
+  $('nx-priv').onclick = function () {
+    var why = pvWhy();
+    if (why === 'manual') { PV.manual = false; PV.until = 0; pvApply(true); return; }
+    if (!why) { PV.manual = true; PV.until = 0; pvApply(true); return; }
+    PV.until = pvOn() ? Date.now() + 120000 : 0; pvApply(true);
+  };
   $('nx-menu-btn').onclick = function (e) { e.stopPropagation(); nxMenu(); togglePop(this, $('pop-nx')); };
+  // Release 43: the Settings menu of the boards. Five places, each with one line, and the page you are on marked.
+  var W43_MENU = [
+    ['rw', 'Points and night market', 'Prizes, class goals and the market', '#FFC86B', '<path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.3l6-.8z"/>'],
+    ['cmp', 'Computing', 'Spreadsheet Coaches for the computing classes', '#5ED39C', '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M9 4v16"/>'],
+    ['adm', 'Admin', 'Class lists, passwords and your PIN', '#7CC4EE', '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 11h5M18.5 8.5v5"/>'],
+    ['set', 'Settings', 'Homework, Claude, phone and setup', '#B98CFF', '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'],
+    ['tr', 'Tracker', 'Every student against every worksheet', '#FF8A70', '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M3 15h18M9 4v16M15 4v16"/>']
+  ];
   function nxMenu() {
-    // Release 35: five items. Claude marking, Setup check, the guide, What's new, shortcuts, Look and Links are in Settings.
-    $('pop-nx').innerHTML = '<div class="cap">' + esc((H.dash && H.dash.school) || 'Teacher Hub') + '</div>' +
-      '<button role="menuitem" data-nxm="set">' + ICON.keys + 'Settings</button>' +
-      '<button role="menuitem" data-nxm="rw">' + ICON.tabRw + 'Points and prizes</button>' +
-      '<button role="menuitem" data-nxm="week">' + ICON.sheet + 'This week</button>' +
-      '<button role="menuitem" data-nxm="find">' + ICON.link + 'Find (/)</button><hr>' +
-      '<button role="menuitem" data-nxm="out">' + ICON.out + 'Sign out</button>';
-    var act = { set: function () { showTab('set'); }, rw: function () { showTab('rw'); }, week: openWeek, find: function () { nxFind(); }, out: nxSignOut };
-    Array.prototype.forEach.call($('pop-nx').querySelectorAll('[data-nxm]'), function (b) { b.onclick = function () { closePops(); if (H.view === 'detail' && b.getAttribute('data-nxm') !== 'find') closeDrawer(); act[b.getAttribute('data-nxm')](); }; });
+    var here = H.view === 'detail' ? H.backTo : H.view;
+    $('pop-nx').innerHTML = W43_MENU.map(function (m) {
+      return '<button role="menuitem" class="w43-mi" data-nxm="' + m[0] + '" style="--mc:' + m[3] + '"' + (here === m[0] ? ' aria-current="page"' : '') + '><span class="w43-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + m[4] + '</svg></span>' +
+        '<span class="w43-mit"><b>' + esc(m[1]) + '</b><small>' + esc(m[2]) + '</small></span>' + (here === m[0] ? '<em>You are here</em>' : '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('pop-nx').querySelectorAll('[data-nxm]'), function (b) { b.onclick = function () { closePops(); if (H.view === 'detail') closeDrawer(); showTab(b.getAttribute('data-nxm')); }; });
   }
   function nxSignOut() { call('api_t_logout', H.token).catch(function () {}); lsDel('wsh_tt'); lsDel('wsh_dv'); H.token = null; showSignin(false); }
   function nxCloseDetail() {
     if (H.view !== 'detail') return false;
     var b = H.backTo || 'chx';
-    showTab(NX_VIEWS.indexOf(b) >= 0 || b === 'cmp' || b === 'tr' || b === 'rw' || b === 'pg' ? b : 'chx');
+    showTab(NX_VIEWS.indexOf(b) >= 0 || b === 'cmp' || b === 'tr' || b === 'rw' || b === 'pg' || b === 'adm' ? b : 'chx');
     if (NX_VIEWS.indexOf(b) >= 0) loadDash();
     return true;
   }
@@ -8262,7 +8519,8 @@
     nxBadge();
     if (first) {
       var cur = H.view === 'detail' ? H.backTo : H.view;
-      if (NX_VIEWS.indexOf(cur) < 0 && ['tr', 'rw', 'cmp', 'pg'].indexOf(cur) < 0) cur = 'today';
+      if (NX_VIEWS.indexOf(cur) < 0 && ['tr', 'rw', 'cmp', 'pg', 'adm'].indexOf(cur) < 0) cur = 'today';
+      if (cur === 'stu') cur = 'tr';
       if (H.view !== 'detail' && H.view !== 'review') showTab(cur === 'today' ? 'today' : cur);
       nxPing();
       return;
@@ -8343,24 +8601,165 @@
       tcall('t_debrief', x.cls).then(function (d) { NX.deb[x.cls] = d || null; pvCollect(); if (H.view === 'today') nxToday(); }).catch(function () { NX.deb[x.cls] = null; });
     });
   }
+  // Release 43: Today is the Overview of the approved landing board. Every job of the old Today is still here: each
+  // class's row holds its lesson (Teach) and its jobs (the same lines and verbs as Needs you), Let in is a bar at the
+  // top, and everything else (Tomorrow, the lines that are not for one class) is in the fold under the classes.
   function nxToday() {
     var box = $('view-today'); if (!box || box.classList.contains('hidden') && H.view !== 'today') return;
-    var d = H.dash;
-    if (!d) { box.innerHTML = skeleton('cards'); return; }
-    if (!box.querySelector('.nx-today')) box.innerHTML = '<div class="nx-today"></div>';
-    var root = box.querySelector('.nx-today'), parts = [], now = new Date();
-    parts.push(['date', nxGreetHtml(now)]);
-    if (H.update && H.update.newer && lsGet('wsh_up_x') !== String(H.update.pasteSeq)) parts.push(['up', '<div class="nx-upline"><span>Release ' + esc(H.update.pasteSeq) + ' needs new server code. Paste ' + esc((H.update.paste || []).join(', ')) + ', then deploy a new version.</span>' +
-      (H.update.codePage ? '<a class="nx-btn sm" href="' + esc(H.update.codePage) + '" target="_blank" rel="noopener">Open the code page</a>' : '<button type="button" class="nx-btn sm" data-nxa="setup">See it</button>') + '<button type="button" class="nx-link" data-nxa="upx">Not now</button></div>']);
-    parts.push(['top', nxHeroHtml()]);
-    var deb = nxDebriefHtml(); if (deb) parts.push(['deb', deb]);
-    parts.push(['needs', nxNeedsHtml()]);
-    parts.push(['run', nxRunningHtml()]);
-    var fresh = !root.children.length;
-    var changed = nxPatch(root, parts);
-    changed.forEach(function (el) { nxBindToday(el); });
+    if (!H.dash) { box.innerHTML = skeleton('cards'); return; }
+    if (document.querySelector('.pop:not(.hidden)') || !$('veil').classList.contains('hidden')) { clearTimeout(NX.w43T); NX.w43T = setTimeout(nxToday, 1500); return; }
+    var h = w43Landing();
+    if (box._h === h) return;
+    var fresh = !box.querySelector('.w43-land');
+    box._h = h; box.innerHTML = h;
+    var root = box.querySelector('.w43-land');
+    nxBindToday(root); w43BindLand(root);
     nxDebriefs();
-    nxNight(root, fresh);
+    if (fresh) {
+      var today = isoDate(Date.now()), first = lsGet('hub_intro_day') !== today;
+      if (first) { lsSet('hub_intro_day', today); root.classList.add('w43-intro'); }
+      root.classList.add('w43-in');
+      setTimeout(function () { root.classList.remove('w43-intro', 'w43-in'); }, first ? 2000 : 1300);
+    }
+  }
+  function w43Order() {
+    var list = teClasses(), o = [];
+    try { o = JSON.parse(lsGet('w43_order') || '[]') || []; } catch (e) { o = []; }
+    var out = o.filter(function (c) { return list.indexOf(c) >= 0; });
+    list.forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); });
+    return out;
+  }
+  function w43Mine(w, cls) { return !!w && (w.classes || []).some(function (c) { return chNorm(c) === chNorm(cls); }); }
+  // One class's jobs: the Needs you lines that belong to it (same verbs), and what its students still owe.
+  function w43Jobs(cls, groups) {
+    var out = [], cn = chNorm(cls);
+    groups.forEach(function (gr, gi) {
+      gr.items.forEach(function (it, ii) {
+        if (it.ph || it.snoozed) return;
+        var w = it.w || (it.n && it.n.id ? byId(it.n.id) : null), ref = gi + '|' + ii;
+        if (gr.k === 'check' && w && w43Mine(w, cls)) {
+          var pc = sxPc(w, cls), k = it.n ? it.n.kind : '';
+          var num = k === 'release' ? (Math.max(w.markedFiles || 0, w.scored || 0) || pc.handed) : k === 'overdue' ? (pc.notHanded || []).length : k === 'mark' && it.n.action !== 'sample' ? pc.handed : '';
+          out.push({ k: it.green ? 'ret' : 'you', rank: it.rank || 3, num: num, text: it.verb, title: w.title, ref: ref });
+        } else if (gr.k === 'sethw' && it.key === 'sethw|' + cls) {
+          out.push({ k: 'you', rank: 5, num: nxSetRows(cls).length, text: 'to set · ' + it.verb, title: 'Homework taught, not set', ref: ref });
+        } else if (gr.k === 'hand' && it.classes) {
+          it.classes.forEach(function (c, ci) { if (chNorm(c.label) === cn) { var n = (it.ns || [])[ci]; out.push({ k: 'you', rank: 6, num: n && n.count ? n.count : '', text: 'prizes to hand out', title: 'Night market', ref: ref + '|' + ci }); } });
+        } else if (gr.k === 'follow' && w && w43Mine(w, cls) && /^corrlate\|/.test(it.key || '')) {
+          var n2 = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
+          if (n2) out.push({ k: 'late', rank: 8, num: n2, text: 'owe corrections', title: w.title, ref: ref });
+        } else if (gr.k === 'follow' && it.n && it.n.kind === 'stuck' && w && w43Mine(w, cls)) {
+          out.push({ k: 'late', rank: 7, num: it.n.count || '', text: 'stuck on ' + (it.n.q || 'a question'), title: w.title, ref: ref });
+        }
+      });
+    });
+    // What students still owe on open sheets due soon or past due (the room counts of the old Today).
+    nxRoomParts(cls).forEach(function (p) {
+      if (!p.s || / corrections$/.test(p.s)) return;
+      var m = /^(\d+) owe (.+)$/.exec(p.s); if (!m) return;
+      var w = ((H.dash && H.dash.worksheets) || []).filter(function (x) { return nxShort(x) === m[2] && w43Mine(x, cls); })[0];
+      var past = w && nxPastDue(w);
+      out.push({ k: past ? 'late' : 'calm', rank: past ? 9 : 11, num: Number(m[1]), text: past ? 'not handed in' : p.t.replace(/^\d+ owe \S+, /, 'to hand in, '), title: w ? w.title : m[2], run: p.run });
+    });
+    out.sort(function (a, b) { var o = { ret: 0, you: 1, late: 2, calm: 3 }; return o[a.k] - o[b.k] || a.rank - b.rank; });
+    return out;
+  }
+  function w43Countdown(ts) {
+    var m = Math.max(0, Math.round((ts - Date.now()) / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+    return d ? d + 'd ' + h + 'h' : h ? h + 'h ' + ('0' + mm).slice(-2) + 'm' : mm + 'm';
+  }
+  function w43Landing() {
+    var now = new Date(), sky = nxSkyRead(now), hr = now.getHours(), part = hr < 12 ? 'morning' : hr < 18 ? 'afternoon' : 'evening';
+    var day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()] + ' ' + now.getDate() + ' ' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()];
+    var soon = ((H.dash && H.dash.worksheets) || []).filter(function (w) { return !w.practice && w.open && w.dueTs && w.dueTs > Date.now(); }).sort(function (a, b) { return a.dueTs - b.dueTs; })[0];
+    var words = ['Good', part + ',', HUB_NAME.split(' ')[0], (HUB_NAME.split(' ').slice(1).join(' ') || '') + '.'];
+    var h = '<div class="w43-land">';
+    h += '<div class="w43-ro" role="status" aria-label="Tonight"><span class="w43-roi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#2A2342"/><path d="' + sky.path + '" fill="#F3EBD6"/></svg><span><b>' + esc(sky.moon) + '</b> · ' + sky.lit + '% lit</span></span><i class="w43-sep"></i>' +
+      '<span class="w43-roi"><svg viewBox="0 0 24 24" fill="none" stroke="#FFC86B" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 18h16M7 14a5 5 0 0 1 10 0M12 4v3M5.6 7.6l2 2M18.4 7.6l-2 2"/></svg><span>Sunset <b class="w43-mono">' + sky.sunset + '</b></span></span><i class="w43-sep"></i>' +
+      '<span class="w43-roi"><span>' + esc(day) + ' · <b class="w43-mono nx-clock">' + nxHm(now.getTime()) + '</b></span></span>' +
+      (soon ? '<i class="w43-sep"></i><span class="w43-roi w43-due"><i class="w43-pulse" aria-hidden="true"></i><span>' + esc(nxShort(soon) + ' · ' + (soon.classes || []).join(', ')) + ' due in <b class="w43-mono w43-cd" data-ts="' + soon.dueTs + '">' + w43Countdown(soon.dueTs) + '</b></span></span>' : '') + '</div>';
+    h += '<section class="w43-hero"><h1>' + words.map(function (w, i) { return '<span class="wd" style="--d:' + i + '">' + esc(w) + '</span>'; }).join(' ') + '</h1></section>';
+    h += '<div class="w43-list">';
+    if (H.update && H.update.newer && lsGet('wsh_up_x') !== String(H.update.pasteSeq)) h += '<div class="nx-upline w43-upline"><span>Release ' + esc(H.update.pasteSeq) + ' needs new server code. Paste ' + esc((H.update.paste || []).join(', ')) + ', then deploy a new version.</span>' +
+      (H.update.codePage ? '<a class="nx-btn sm" href="' + esc(H.update.codePage) + '" target="_blank" rel="noopener">Open the code page</a>' : '<button type="button" class="nx-btn sm" data-nxa="setup">See it</button>') + '<button type="button" class="nx-link" data-nxa="upx">Not now</button></div>';
+    var groups = nxNeeds();
+    NX.needs = groups;
+    // Let in: one calm bar for each student waiting at sign-in.
+    groups.forEach(function (gr, gi) {
+      if (gr.k !== 'letin') return;
+      gr.items.forEach(function (it, ii) {
+        if (it.snoozed) return;
+        h += '<div class="w43-li" role="status"><span class="w43-lidot" aria-hidden="true"></span><span class="w43-lit"><b>' + esc(it.title.split(' · ')[0]) + '</b> · ' + esc(it.title.split(' · ')[1] || '') + ' is waiting to be let in, to set up a password' + (it.n && it.n.twice ? '. Two iPads are asking' : '') + '.</span>' +
+          '<button type="button" class="nx-btn sm w43-ligo" data-nverb="' + gi + '|' + ii + '">Let in</button><button type="button" class="nx-btn sm ghost" data-nsnz="' + gi + '|' + ii + '">Not now</button></div>';
+      });
+    });
+    // the classes, one row each, in the order he keeps
+    var order = w43Order(), hero = nxHeroOf(), paired = nxPhonePaired();
+    NX.w43jobs = [];
+    order.forEach(function (cls, ci) {
+      var x = tnFor(cls), L = nxLessonOf(x && (x.running || x.next) ? x : null), jobs = w43Jobs(cls, groups);
+      NX.w43jobs.push(jobs);
+      var trk = (H.tracker || []).filter(function (t) { return t.cls === cls; })[0], subj = '';
+      try { if (sxReady()) { var g = sxAllChapters(cls).filter(function (c) { return c.given; })[0]; subj = g ? g.sub.name || '' : ''; } } catch (e) { subj = ''; }
+      var sub = [subj, trk ? plural(trk.rows.length, 'student', 'students') : ''].filter(Boolean).join(' · ');
+      var hot = jobs.some(function (j) { return j.k === 'you' || j.k === 'ret'; }), late = jobs.some(function (j) { return j.k === 'late'; });
+      var kick = !L ? 'NO LESSON YET' : L.run ? 'TEACHING NOW' : x && x.slot ? 'NOW · UNTIL ' + nxHm(x.slot.end) : L.at ? 'NEXT · ' + String(nxWhen(L.at)).toUpperCase() : 'NEXT';
+      var deb = NX.deb[cls], hard = deb && deb.endedAt && Date.now() - deb.endedAt < 3600000 && deb.questions ? deb.questions.filter(function (q) { return q.hard; }).length : 0;
+      h += '<article class="w43-card' + (hot ? ' lit' : late ? ' ember' : '') + '" style="--i:' + ci + '" data-w43c="' + esc(cls) + '">' +
+        '<div class="w43-grip"><button type="button" class="w43-mv" data-w43mv="' + ci + '|-1" aria-label="Move ' + esc(cls) + ' up"' + (ci === 0 ? ' disabled' : '') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>' +
+        '<button type="button" class="w43-mv" data-w43mv="' + ci + '|1" aria-label="Move ' + esc(cls) + ' down"' + (ci === order.length - 1 ? ' disabled' : '') + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>' +
+        '<div class="w43-ch"><button type="button" class="w43-nm" data-w43open="' + esc(cls) + '" aria-label="Open the class page for ' + esc(cls) + '">' + esc(cls) + '</button><span class="w43-sub">' + esc(sub) + '</span></div>' +
+        '<div class="w43-lesson' + (L && L.run ? ' run' : '') + '"><div class="w43-lrow"><span class="w43-lsp"><span class="w43-lk">' + esc(kick) + '</span><span class="w43-lt">' + esc(L ? L.title : 'Choose the first lesson') + '</span></span>' +
+        (L ? '<a class="w43-teach" data-go href="' + esc(L.href) + '" target="' + NX_TAB + '"' + (x === hero ? ' id="nx-teach"' : '') + ' aria-label="' + esc((L.run ? 'Back to the slides of ' : 'Teach ') + L.title + ' to ' + cls) + '">' + esc(L.run ? 'Back to the slides' : 'Teach') + '</a>'
+          : '<button type="button" class="w43-teach ghost" data-w43open="' + esc(cls) + '">Choose</button>') + '</div>' +
+        (hard ? '<button type="button" class="w43-exc" data-w43deb="1">' + plural(hard, 'hard question', 'hard questions') + ' from last lesson</button>' : '') +
+        (x === hero && L && !paired ? '<button type="button" class="w43-exc calm" data-nxa="pair">Pair my phone</button>' : '') + '</div>';
+      var shown = jobs.slice(0, 2), more = jobs.length - shown.length;
+      h += '<div class="w43-wc' + (more > 0 ? ' w43-wcm' : '') + '">' + shown.map(function (j, ji) {
+        return '<div class="w43-work"><div class="w43-wt">' + esc(j.title) + '</div><button type="button" class="w43-st ' + j.k + '" data-w43job="' + ci + '|' + ji + '">' + (j.num !== '' && j.num != null ? '<b>' + esc(j.num) + '</b>' : '') + '<span class="w">' + esc(j.text) + '</span><span class="go" aria-hidden="true">→</span></button></div>';
+      }).join('') +
+        (more > 0 ? '<button type="button" class="w43-mo' + (jobs.slice(2).some(function (j) { return j.k === 'late'; }) ? ' hot' : '') + '" data-w43open="' + esc(cls) + '"><b>+' + more + '</b><span>more</span><span class="sm">on the class page</span></button>' : '') +
+        (!jobs.length ? '<div class="w43-clear">No outstanding work</div>' : '') + '</div></article>';
+    });
+    if (!order.length) h += '<p class="nx-muted">No classes yet. Add your students in the Students tab of the Hub sheet.</p>';
+    h += '</div>';
+    var deb = nxDebriefHtml(); if (deb) h += '<div id="w43-deb">' + deb + '</div>';
+    // the lines that are not for one class, and everything with Tomorrow
+    var follow = (groups.filter(function (g) { return g.k === 'follow'; })[0] || { items: [] }).items.filter(function (it) { return !it.snoozed && it.n && (it.n.kind === 'follow' || it.n.kind === 'parent'); });
+    if (follow.length) h += '<div class="w43-also">' + follow.map(function (it) { var gi = groups.map(function (g) { return g.k; }).indexOf('follow'), ii = groups[gi].items.indexOf(it); return '<span><b>' + esc(it.title) + '</b> · ' + esc(it.sub.replace(/ · .*$/, '')) + '</span><button type="button" class="nx-link" data-nverb="' + gi + '|' + ii + '">See them in the Tracker</button>'; }).join('') + '</div>';
+    var live = groups.reduce(function (t, g) { return t + g.items.filter(function (x) { return !x.snoozed && !x.ph; }).length; }, 0);
+    h += '<details class="w43-all"' + (NX.w43all ? ' open' : '') + '><summary>Everything that needs you' + (live ? ' <span class="w43-n">' + live + '</span>' : '') + '<small>Every line, with Tomorrow to put it away</small></summary>' + nxNeedsHtml().replace('<h2 class="nx-h2">Needs you</h2>', '') + '</details>';
+    h += nxRunningHtml().replace('class="nx-running"', 'class="nx-running w43-run"') + '<div class="w43-foot"><button type="button" class="nx-link" data-nxa="week">See the week</button></div>';
+    return h + '</div>';
+  }
+  function w43BindLand(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-w43open]'), function (b) { b.onclick = function () { nxLessonSeen(); setClass(b.getAttribute('data-w43open')); showTab('chx'); }; });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-w43job]'), function (b) {
+      b.onclick = function () {
+        var p = b.getAttribute('data-w43job').split('|'), j = (NX.w43jobs[Number(p[0])] || [])[Number(p[1])]; if (!j) return;
+        if (j.ref) { var it = nxNeedItem(j.ref); if (it) it.run(b); } else if (j.run) j.run(b);
+      };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-w43mv]'), function (b) {
+      b.onclick = function () {
+        var p = b.getAttribute('data-w43mv').split('|'), i = Number(p[0]), d = Number(p[1]), o = w43Order(), j = i + d;
+        if (j < 0 || j >= o.length) return;
+        var t = o[i]; o[i] = o[j]; o[j] = t; lsSet('w43_order', JSON.stringify(o)); nxToday();
+        var nb = document.querySelector('[data-w43mv="' + j + '|' + d + '"]') || document.querySelector('[data-w43mv="' + j + '|' + (-d) + '"]'); if (nb) nb.focus();
+      };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-w43deb]'), function (b) { b.onclick = function () { var d = $('w43-deb'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'center' }); }; });
+    var all = root.querySelector('details.w43-all'); if (all) all.addEventListener('toggle', function () { NX.w43all = all.open; });
+  }
+  setInterval(function () { Array.prototype.forEach.call(document.querySelectorAll('#view-today .w43-cd'), function (el) { el.textContent = w43Countdown(Number(el.getAttribute('data-ts'))); }); }, 30000);
+  // Release 43: Admin has its own page from wave 2 of this release. Until then, its place in the menu says so.
+  function w43Admin() {
+    var v = $('view-adm'); if (!v) return;
+    v.innerHTML = '<div class="w43-page"><header class="w43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Admin</h1><p class="w43-lede">Class lists, student passwords and your PIN.</p></header>' +
+      '<section class="w43-card2"><p>Admin is coming in this release. Until then, class lists are in the Students tab of the Hub sheet, a student\'s password resets from their record (tap their name), and your PIN is in Settings.</p>' +
+      '<div class="nx-acts"><button type="button" class="nx-btn" data-w43go="set">Open Settings</button><button type="button" class="nx-btn ghost" data-w43go="tr">Open the Tracker</button></div></section></div>';
+    Array.prototype.forEach.call(v.querySelectorAll('[data-w43go]'), function (b) { b.onclick = function () { showTab(b.getAttribute('data-w43go')); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
   }
 
   /* ---------- Release 36: the night design on Today (the approved landing) ----------
@@ -8826,7 +9225,7 @@
   }
   // Release 35: one set of stage words everywhere (Chapters rows, the worksheet drawer, toasts and dialogs).
   // Corrections follows Back where a sheet's corrections are shown (the drawer).
-  var NX_STAGE_WORDS = ['Set', 'Collecting', 'Marking', 'Back', 'Corrections'];
+  var NX_STAGE_WORDS = ['Set', 'Collecting', 'Marking', 'Returned', 'Corrections'];
   // The word for where a sheet is now: Set, Collecting, Marking, Back, or Corrections while they are open.
   function nxStageWord(w) {
     if (w.practice) return 'Practice';
@@ -9049,7 +9448,7 @@
      section, moving on every day. A worksheet's stages are five balls (Set, Collecting, Marking, Back, Corrections): the
      ones done are solid, the one it is at glows, and its note comes out of the label. Nothing here changes what a button
      does; every action is the release 37 one, by the same name. */
-  var CX38_ST = [['Set', '#4FC3F7'], ['Collecting', '#B57BFF'], ['Marking', '#FFC86B'], ['Back', '#5ED39C'], ['Corrections', '#FF8A70']];
+  var CX38_ST = [['Set', '#4FC3F7'], ['Collecting', '#B57BFF'], ['Marking', '#FFC86B'], ['Returned', '#5ED39C'], ['Corrections', '#FF8A70']];
   var CX38_ZOD = [
     ['ARIES', [[20, 52], [110, 30], [200, 26], [280, 50]], [[0, 1], [1, 2], [2, 3]]],
     ['TAURUS', [[10, 10], [118, 40], [150, 54], [176, 46], [152, 30], [290, 12], [206, 66]], [[0, 1], [1, 4], [4, 5], [1, 2], [2, 3], [3, 4], [2, 6]]],
@@ -9152,14 +9551,18 @@
       '<button type="button" class="nx-btn sm" data-nxc2="addw">+ Worksheet</button></div><div class="cx38-sbody">';
     // homework ready to deploy needs you, so it comes first; the rest waiting to go out comes after the live sheets
     var wNow = waiting.filter(function (x) { return / lit"/.test(x); }), wLater = waiting.filter(function (x) { return !/ lit"/.test(x); });
-    var rows = wNow.concat(live.map(function (w) { return cx38Row(w, cls, acts); }), wLater);
-    h += rows.length ? '<div class="cx38-list">' + rows.join('') + '</div>' : '<p class="nx-muted cx-none">' + (done.length ? 'Nothing needs you here. Every sheet is back and done.' : 'No worksheets here for ' + esc(cls) + ' yet. Press + Worksheet to set one.') + '</p>';
-    if (done.length) h += '<details class="cx-done"' + (NX.cxDone ? ' open' : '') + '><summary><i class="cx-ok">' + CX_ICON.tick + '</i>Done · ' + plural(done.length, 'worksheet', 'worksheets') + '</summary><div class="cx-drows">' + done.map(function (w) {
+    // Release 43: the ones not out yet and the finished ones are tucked under More at the top of the page.
+    var rows = wNow.concat(live.map(function (w) { return cx38Row(w, cls, acts); }));
+    var t43 = NX.w43t || (NX.w43t = {});
+    t43.later = wLater.length ? '<div class="cx38-list">' + wLater.join('') + '</div>' : ''; t43.nLater = wLater.length;
+    h += rows.length ? '<div class="cx38-list">' + rows.join('') + '</div>' : '<p class="nx-muted cx-none">' + (wLater.length ? 'Nothing out right now. ' + plural(wLater.length, 'worksheet', 'worksheets') + ' not out yet ' + (wLater.length === 1 ? 'is' : 'are') + ' under More.' : done.length ? 'Nothing needs you here. Every sheet is returned and done.' : 'No worksheets here for ' + esc(cls) + ' yet. Press + Worksheet to set one.') + '</p>';
+    t43.nDone = done.length;
+    t43.done = done.length ? '<div class="cx-drows">' + done.map(function (w) {
       var v = nxVerb(w, cls), ai = acts.length; acts.push({ w: w, verb: v });
       return '<div class="cx-drow"><button type="button" class="nx-rtb" data-nxopen="' + esc(w.id) + '"><b>' + esc(w.title) + '</b></button><span class="nx-muted">' + esc(nxWsSub(w, cls)) + '</span>' +
         '<span class="nx-racts"><button type="button" class="nx-btn sm ghost" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' + moreMenu(w, { act: '' }).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-dw-') + '</span></div>';
-    }).join('') + '</div></details>';
-    return h + '<!--cx-empty--></div></section>';
+    }).join('') + '</div>' : '';
+    return h + '</div></section>';
   }
   // Lessons: the one on now or next, then the ones after it. The lessons already taught are not listed here; they are all
   // in Every lesson below, with Teach, Upload new version and their menus, as before.
@@ -9174,13 +9577,14 @@
       return '<div class="cx38-lp' + (first ? ' cur' : '') + '"><span class="cx38-lorb">' + cxStar(i, false) + '</span><span class="cx38-lt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span>' +
         (first ? l.teach : l.teach.replace('nx-btn sm dark', 'nx-btn sm')) + '</div>';
     }).join('') + '</div>' : '<p class="nx-muted cx-none">Every lesson in ' + esc(chShort(cur.c)) + ' is taught.</p>';
-    h += '<details class="cx-alll"' + (NX.cxAllL ? ' open' : '') + '><summary>Every lesson in ' + esc(chShort(cur.c)) + ' (' + L.length + ')</summary><div class="cx-lrows">' + cur.items.map(function (it, ii) {
+    var t43 = NX.w43t || (NX.w43t = {}); t43.nAll = L.length; t43.allName = chShort(cur.c);
+    t43.all = '<div class="cx-lrows">' + cur.items.map(function (it, ii) {
       var l = L[ii];
       return '<div class="cx-lrow' + (l.running || l.next ? ' cur' : '') + '"><span class="cx-li">' + cxStar(ii, false) + '</span><span class="nx-rt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span><span class="nx-racts">' + l.teach +
         '<label class="nx-btn sm ghost nx-up" title="Upload a new version of these slides">Upload new version<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label>' +
         '<button type="button" class="nx-more" data-nxlm="' + ii + '" aria-label="More for ' + esc(l.title) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>';
-    }).join('') + '<label class="nx-btn sm ghost cx-addl">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label></div></details></div></section>';
-    return h;
+    }).join('') + '<label class="nx-btn sm ghost cx-addl">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label></div>';
+    return h + '</div></section>';
   }
   // What's next: up to three things for this class, each with the same button as its row (mark, teach, remind).
   function cx38Next(cls, cards, L, at, acts) {
@@ -9279,21 +9683,12 @@
     var prog = cur ? nxChProgress(cur, cls) : '';
     var h = '<div class="cx cx38"><header class="cx-head"><div class="cx-ht"><h1 class="cx-title">' + esc(cls) + '</h1><p class="cx-sub">' + esc([subj, trk ? plural(trk.rows.length, 'student', 'students') : ''].filter(Boolean).join(' · ')) +
       (cur ? ' · <b>' + esc(chShort(cur.c)) + '</b>' + (prog ? ', ' + esc(prog.charAt(0).toLowerCase() + prog.slice(1)) : '') : '') + '</p></div>' +
-      '<div class="cx-hacts"><button type="button" class="nx-btn soft" data-nxc2="lib">Lesson library</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button></div></header>';
-    // the chapters, as chips (the rail of release 34)
-    h += '<nav class="cx-chips" aria-label="Chapters">';
-    list.forEach(function (c) {
-      var cnt = nxChCounts(nxChWorksheets(c.key, cls), cls), st = sxChapterStats(c, cls);
-      h += '<button type="button" class="cx-chip" data-nxch="' + esc(c.key) + '" aria-pressed="' + (cur === c) + '" style="--chc:' + esc(c.sub.color || '#8B6CFF') + '"><i aria-hidden="true"></i><b>' + esc(c.c.num ? 'Chapter ' + c.c.num : chShort(c.c)) + '</b>' +
-        (st.here ? '<span class="cx-here">This week</span>' : '') + (cnt.mark || cnt.ret ? '<span class="cx-dot you" title="' + esc([cnt.mark ? cnt.mark + ' to mark' : '', cnt.ret ? cnt.ret + ' to return' : ''].filter(Boolean).join(', ')) + '">' + (cnt.mark + cnt.ret) + '</span>' : '') +
-        (cnt.red ? '<span class="cx-dot late" title="' + esc(cnt.red + ' owe work') + '">' + cnt.red + '</span>' : '') + '</button>';
-    });
-    if (loose.length) h += '<button type="button" class="cx-chip" data-nxch="-" aria-pressed="' + (!cur && !allv) + '" style="--chc:#8A90AA"><i aria-hidden="true"></i><b>Not in a chapter</b><span class="cx-here">' + loose.length + '</span></button>';
+      '<div class="cx-hacts"><button type="button" class="nx-btn soft" data-nxc2="lib">Lesson library</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button>' +
+      '<button type="button" class="nx-btn soft w43-more" data-w43more aria-haspopup="menu" aria-expanded="false">More<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div></header>';
+    // Release 43: the chapter chips and the week strip are gone. Other chapters are in More.
     var mine = nxAllSheets(cls);
-    h += '<button type="button" class="cx-chip" data-nxch="*" aria-pressed="' + allv + '" style="--chc:var(--nx-ink)"><i aria-hidden="true"></i><b>All chapters</b><span class="cx-here">' + plural(mine.length, 'sheet', 'sheets') + '</span></button>' +
-      '<button type="button" class="cx-chip add" data-nxc2="lib">+ New chapter</button></nav>';
-    if (!list.length && !loose.length) h += '<p class="nx-note">' + esc(cls) + ' has no chapters yet. Give one with + New chapter.</p>';
-    h += nxWeekStrip(cls);
+    NX.w43t = {}; NX.w43ch = { list: list, cur: cur, allv: allv, loose: loose.length, mine: mine.length };
+    if (!list.length && !loose.length) h += '<p class="nx-note">' + esc(cls) + ' has no chapters yet. Give one from the Lesson library.</p>';
     var acts = [], empty = [], folded = '';
     if (allv) {
       var av = nxAllHtml(cls, mine, all, acts);
@@ -9340,15 +9735,16 @@
           empty.map(function (e, i) {
             var lab = e.r.multi ? e.r.t : 'Lesson ' + e.title;
             return '<div class="nx-erow"><span class="nx-rt"><b>' + esc(lab) + '</b><span>' + (e.r.none ? 'No homework, chosen in its ⋯ menu' : 'None yet') + '</span></span><button type="button" class="nx-btn sm ghost" data-nxadd="' + i + '" aria-label="Add homework for ' + esc(lab) + '">Add</button></div>';
-          }).join('') + '</div></details>';
-        h = h.replace('<!--cx-empty-->', folded);
+          }).join('') + '</div>';
+        NX.w43t.empty = folded.replace(/^<details[^>]*><summary>[\s\S]*?<\/summary>/, '').replace(/<\/details>$/, ''); NX.w43t.nEmpty = empty.length;
+        NX.w43t.emptyName = empty.every(function (e) { return /^Module\s/i.test(e.r.t); }) ? 'Modules' : 'Parts';
       }
     } else {
       h += cx38SheetsHtml(cls, loose, [], acts, 'Not in a chapter');
       NX.cx38owe = cx38Owe(cls, loose);
       h += cx38OweHtml(cls, NX.cx38owe, 'Not in a chapter');
     }
-    h += '</div>';
+    h += w43TuckHtml() + '</div>';
     if (box._h === h) return;
     if (document.querySelector('.pop:not(.hidden)') || !$('veil').classList.contains('hidden')) { clearTimeout(NX.chT); NX.chT = setTimeout(nxChapters, 1500); return; }
     var fresh = !box.querySelector('.cx');
@@ -9394,6 +9790,7 @@
       };
     });
     cx38Watch(box);
+    w43BindTuck(box, cls);
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxc2]'), function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-nxc2');
@@ -9403,6 +9800,36 @@
         else if (a === 'addw') { if (cur) sxAdd(cls, cur, { kind: 'hw' }); else newWorksheet(); }
       };
     });
+  }
+  // Release 43: More on the class page. It holds what the board tucks away (worksheets not out yet, Done, the parts
+  // with no homework, every lesson in the chapter) and the other chapters. A chosen one opens at the foot of the page.
+  var W43_TUCK = { later: 'Worksheets not out yet', done: 'Done', empty: '', all: '' };
+  function w43TuckTitle(k) { var t = NX.w43t || {}; return k === 'empty' ? (t.emptyName || 'Parts') + ' with no homework yet' : k === 'all' ? 'Every lesson in ' + (t.allName || 'this chapter') : W43_TUCK[k]; }
+  function w43TuckHtml() {
+    var k = NX.w43tuck, t = NX.w43t || {};
+    if (!k || !t[k]) return '';
+    return '<section class="cx-sec cx43-tuck" id="cx43-tuck" aria-labelledby="cx43-th"><div class="cx43-thd"><h2 id="cx43-th" class="cx38-h">' + esc(w43TuckTitle(k)) + '</h2><span class="nx-grow"></span><button type="button" class="nx-btn sm ghost" data-w43tx>Close</button></div>' + t[k] + '</section>';
+  }
+  function w43BindTuck(box, cls) {
+    var b = box.querySelector('[data-w43more]'), t = NX.w43t || {}, ch = NX.w43ch || { list: [] };
+    if (b) b.onclick = function (e) {
+      e.stopPropagation();
+      var open = function (k) { return function () { NX.w43tuck = k; nxChapters(); var s = $('cx43-tuck'); if (s) { s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); var f = s.querySelector('h2'); if (f) { f.setAttribute('tabindex', '-1'); f.focus({ preventScroll: true }); } } }; };
+      var items = [];
+      if (t.nLater) items.push({ label: 'Worksheets not out yet (' + t.nLater + ')', run: open('later') });
+      if (t.nDone) items.push({ label: 'Done (' + t.nDone + ')', run: open('done') });
+      if (t.nEmpty) items.push({ label: w43TuckTitle('empty') + ' (' + t.nEmpty + ')', run: open('empty') });
+      if (t.nAll) items.push({ label: w43TuckTitle('all') + ' (' + t.nAll + ')', run: open('all') });
+      if (!items.length) items.push({ note: 'Nothing tucked away in this chapter' });
+      var go = function (k) { return function () { NX.chap = k; NX.w43tuck = ''; lsSet('nx_chap', k); if (k !== '-' && k !== '*') { SX.chap = k; lsSet('wsh_chap', k); } nxChapters(); }; };
+      var others = ch.list.filter(function (c) { return c !== ch.cur; });
+      if (others.length || ch.loose || !ch.allv) items.push({ note: 'Other chapters' });
+      others.forEach(function (c) { items.push({ label: chShort(c.c), run: go(c.key) }); });
+      if (ch.loose && (ch.cur || ch.allv)) items.push({ label: 'Not in a chapter (' + ch.loose + ')', run: go('-') });
+      if (!ch.allv) items.push({ label: 'All chapters (' + plural(ch.mine, 'sheet', 'sheets') + ')', run: go('*') });
+      sxMenu(b, items);
+    };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-w43tx]'), function (x) { x.onclick = function () { NX.w43tuck = ''; nxChapters(); var m = box.querySelector('[data-w43more]'); if (m) m.focus(); }; });
   }
   // The worksheets section: homework waiting to go out, the sheets as cards (what needs doing first), and the
   // sheets with nothing left to do folded under them.
@@ -9763,12 +10190,26 @@
     }
   }
   // A student's record from anywhere else (a name in the whole grid): Students, their class, them.
+  // Release 43: a name opens the record in a drawer over the page you are on (the class page, the Tracker).
   function nxOpenRecord(cls, name) {
-    nxLessonSeen();
-    if (teClasses().indexOf(cls) >= 0) { H.cls = cls; lsSet('wsh_cls', cls); }
-    NX.stuSel = name; lsSet('nx_stusel', name); NX.stuQ = ''; NX.stuFilter = 'all';
-    showTab('stu');
+    if (teClasses().indexOf(cls) >= 0 && H.cls !== cls) { H.cls = cls; lsSet('wsh_cls', cls); }
+    NX.stuSel = name; NX.recAll = null;
+    var d = $('w43-rd'); NX.rdBack = document.activeElement;
+    d.classList.remove('hidden', 'out'); document.body.classList.add('w43-rd-open');
+    nxRecord(cls, name);
+    setTimeout(function () { var x = $('w43-rdx'); if (x) x.focus(); }, 40);
   }
+  function w43RdClose() {
+    var d = $('w43-rd'); if (d.classList.contains('hidden')) return;
+    d.classList.add('out'); document.body.classList.remove('w43-rd-open'); NX.stuSel = null;
+    setTimeout(function () { d.classList.add('hidden'); d.classList.remove('out'); }, 160);
+    if (NX.rdBack && NX.rdBack.focus) try { NX.rdBack.focus(); } catch (e) { /* gone */ }
+  }
+  $('w43-rdx').onclick = w43RdClose; $('w43-rdshade').onclick = w43RdClose;
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || $('w43-rd').classList.contains('hidden') || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
+    e.stopPropagation(); w43RdClose();
+  }, true);
   // Reset password and Sign out this iPad: both are confirmed (Ruling A8).
   function nxStuAcct(cls, name, what) {
     var reset = what === 'reset', who = pvName(name);
