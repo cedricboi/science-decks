@@ -1119,6 +1119,72 @@
 #review .btn, #review .tb { transition: transform 160ms var(--ease-out); }
 #review .btn:active, #review .tb:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .mk38-dot, .mk38-dot i, .mk38-ring .arc, .mk38-band, #review .btn { transition: none; } }
+
+/* r43 marking: the Scripts list from the approved Marking board, beside the paper and the marks.
+   Every script in the pile, with All, To check and Checked, its state in words, and the open one lit. */
+.mk43-list { width: 268px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--surface); border-right: 1px solid var(--rule); }
+:root[data-theme="dark"] #review .mk43-list { background: rgba(14,10,34,.92); border-color: rgba(255,255,255,.08); }
+.mk43-lh { padding: 14px 14px 4px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.mk43-lh b { font-family: var(--display); font-size: 19px; }
+:root[data-theme="dark"] .mk43-lh b { background: linear-gradient(100deg, #FFFFFF 40%, #D8C2FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mk43-lh span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.mk43-filt { display: flex; gap: 5px; padding: 8px 10px; flex-wrap: wrap; }
+.mk43-f { min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--ink, inherit); font: 700 12.5px var(--text, sans-serif); cursor: pointer; font-variant-numeric: tabular-nums; transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out); }
+:root[data-theme="dark"] .mk43-f { color: #E8E0FF; border-color: rgba(255,255,255,.14); }
+.mk43-f[aria-pressed="true"] { background: var(--mk-claude); border-color: var(--mk-claude); color: #fff; }
+.mk43-f:active { transform: scale(.97); }
+.mk43-slist { flex: 1; min-height: 0; overflow-y: auto; padding: 2px 8px 90px; scrollbar-width: thin; }
+.mk43-s { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 7px 8px; border: 0; border-radius: 12px; background: transparent; color: var(--ink, inherit); font: inherit; text-align: left; cursor: pointer; transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out); }
+:root[data-theme="dark"] .mk43-s { color: #EDE6FF; }
+.mk43-s:active { transform: scale(.97); }
+.mk43-s:focus-visible { outline: 2px solid var(--mk-glow); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .mk43-s:not(.on):hover { background: color-mix(in srgb, var(--mk-ink) 10%, transparent); } }
+.mk43-s.on { background: color-mix(in srgb, var(--mk-glow) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mk-glow) 50%, transparent); }
+.mk43-av { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 800 12px var(--display); background: color-mix(in srgb, var(--mk-claude) 22%, transparent); color: var(--mk-claude); }
+:root[data-theme="dark"] .mk43-av { color: #E2D2FF; }
+.mk43-s.on .mk43-av { background: linear-gradient(135deg, #FFD58A, #F2A93B); color: #2A1700; }
+.mk43-sx { min-width: 0; flex: 1; display: flex; flex-direction: column; line-height: 1.25; }
+.mk43-sx b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root[data-theme="dark"] .mk43-sx b { color: #fff; }
+.mk43-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.mk43-st i { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--mk-ink) 55%, transparent); flex: none; }
+.mk43-s.mk .mk43-st i { background: var(--mk-claude); }
+.mk43-s.flag .mk43-st { color: color-mix(in srgb, var(--mk-amber) 80%, var(--ink, #222)); }
+:root[data-theme="dark"] .mk43-s.flag .mk43-st { color: #FFC86B; }
+.mk43-s.flag .mk43-st i { background: var(--mk-amber); }
+.mk43-s.ok .mk43-st { color: var(--mk-ok); }
+.mk43-s.ok .mk43-st i { background: var(--mk-ok); }
+.mk43-s.on .mk43-st i { box-shadow: 0 0 8px currentColor; }
+.mk43-chk { flex: none; width: 16px; height: 16px; color: var(--mk-ok); display: none; }
+.mk43-s.ok .mk43-chk { display: block; }
+.mk43-empty { padding: 16px 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.rv-listbtn { display: none; }
+.mk43-list .mk43-x { display: none; }
+/* secondary tools: pen colours, sizes, Finger draws and Claude's marks fold into More tools when space is short */
+.mk43-xt { display: contents; }
+.mk43-morebtn { display: none; }
+@media (max-width: 1320px) {
+  #review .rv-tools.mk43-tools { overflow: visible; position: relative; flex-wrap: nowrap; }
+  .mk43-morebtn { display: inline-flex; }
+  .mk43-xt { display: none; position: absolute; right: 10px; top: calc(100% + 6px); z-index: 46; flex-wrap: wrap; gap: 6px; max-width: min(420px, calc(100vw - 32px)); padding: 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--rule); box-shadow: 0 18px 40px rgba(0,0,0,.28); transform-origin: top right; }
+  :root[data-theme="dark"] .mk43-xt { background: #140F2C; border-color: rgba(255,255,255,.12); }
+  .rv-tools.mk43-open .mk43-xt { display: flex; animation: mk43pop 160ms var(--ease-out) both; }
+  .mk43-xt .sep { display: none; }
+}
+@keyframes mk43pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@media (max-width: 1180px) {
+  .mk43-list { position: fixed; left: 0; top: 0; bottom: 0; width: min(300px, 86vw); z-index: 45; box-shadow: 10px 0 30px rgba(0,0,0,.3); transform: translateX(-105%); transition: transform 220ms var(--ease-out); }
+  #review.list-open .mk43-list { transform: none; }
+  :root[data-theme="dark"] #review .mk43-list { background: #120D29; }
+  .rv-listbtn { display: inline-flex; }
+  .mk43-list .mk43-x { display: inline-flex; }
+  #review .rv-listbtn .lbl { display: none; }
+  #review .rv-listbtn { min-width: 44px; justify-content: center; }
+  #review .rv-who { flex-basis: 140px; }
+  #review .rv-who b { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .mk43-list, .mk43-s, .mk43-f { transition: none; } .rv-tools.mk43-open .mk43-xt { animation: none; } }
+
 @media (prefers-reduced-transparency: reduce) { :root[data-theme="dark"] #review .rv-top, :root[data-theme="dark"] #review .rv-tools { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0E0A22; } }
 </style>
 <style>
@@ -5346,27 +5412,31 @@
       '<span class="n">Script ' + (at + 1) + ' of ' + q.length + '</span>' +
       '<button class="btn ghost small" id="rv-next" aria-label="Next student"' + (at >= q.length - 1 ? ' disabled' : '') + '><span class="lbl">Next </span>&rsaquo;</button></div>' +
       (R.solution ? '' : '<button class="btn ghost small" id="rv-bypage" aria-pressed="' + !!R.pm + '" title="Mark one page at a time across the whole class">' + (R.pm ? 'All pages' : 'By page') + '</button>') +
+      (mk43_on() ? '<button class="btn ghost small rv-listbtn" id="rv-list" aria-expanded="false" aria-label="Scripts">' + RICON.list + '<span class="lbl">Scripts</span></button>' : '') +
       '<button class="btn ghost small rv-panelbtn" id="rv-panel">' + RICON.list + (R.solution ? 'Notes' : 'Marks') + '</button>' +
       '<button class="btn" id="rv-save">' + (R.solution ? 'Save as marked solution' : 'Save') + '</button>' +
       (!R.pm && !R.solution && mk38_nextNeed() ? '<button class="btn" id="rv-savenext">Save and next</button>' : '') +
       (!R.pm && !R.solution ? '<button class="btn hidden" id="mk38-need">Next to check &rsaquo;</button>' : '') +
       '</div>' + (R.solution || R.pm ? '' : mk38_pileHtml());
-    h += '<div class="rv-tools" role="toolbar" aria-label="Marking tools">' +
+    h += '<div class="rv-tools mk43-tools" role="toolbar" aria-label="Marking tools">' +
       tb('tick', RICON.tick, 'Tick (T)') + tb('cross', RICON.cross, 'Cross (X)') + tb('pen', RICON.pen, 'Pen (P)') + tb('text', RICON.text, 'Text') + tb('erase', RICON.erase, 'Eraser (E)') + tb('move', RICON.move, 'Move marks (M)') +
-      '<span class="sep"></span>' +
+      '<span class="sep"></span><span class="mk43-xt" id="mk43-xt">' +
       RV_PENS.map(function (p) { return '<button class="tb" data-col="' + p[0] + '" aria-pressed="' + (R.color === p[0]) + '" title="' + p[1] + '" aria-label="' + p[1] + ' pen"><span class="sw" style="background:' + p[0] + '"></span></button>'; }).join('') +
       RV_SIZES.map(function (s, i) { return '<button class="tb" data-size="' + i + '" aria-pressed="' + (R.size === i) + '" title="' + s.label + '">' + s.label + '</button>'; }).join('') +
       '<span class="sep"></span>' +
+      '<button class="tb" id="rv-finger" aria-pressed="' + R.finger + '" title="Draw with your finger. Off: a finger scrolls and only the Apple Pencil draws.">' + RICON.hand + 'Finger draws</button>' +
+      '<button class="tb" id="rv-claude" aria-pressed="' + R.showClaude + '" title="Show or hide Claude\'s ticks and crosses">' + RICON.eye + 'Claude\'s marks</button>' +
+      '</span><span class="sep"></span>' +
       '<button class="tb" id="rv-undo" title="Undo (Ctrl+Z)" aria-label="Undo">' + RICON.undo + '</button><button class="tb" id="rv-redo" title="Redo" aria-label="Redo">' + RICON.redo + '</button>' +
       '<span class="sep"></span>' +
       '<button class="tb" id="rv-zo" aria-label="Zoom out">' + RICON.minus + '</button><button class="tb zl" id="rv-zl" title="Fit to width">100%</button><button class="tb" id="rv-zi" aria-label="Zoom in">' + ICON.plus + '</button>' +
-      '<span class="sep"></span>' +
-      '<button class="tb" id="rv-finger" aria-pressed="' + R.finger + '" title="Draw with your finger. Off: a finger scrolls and only the Apple Pencil draws.">' + RICON.hand + 'Finger draws</button>' +
-      '<button class="tb" id="rv-claude" aria-pressed="' + R.showClaude + '" title="Show or hide Claude\'s ticks and crosses">' + RICON.eye + 'Claude\'s marks</button>' +
+      '<button class="tb mk43-morebtn" id="mk43-more" aria-expanded="false" aria-controls="mk43-xt" title="Pen colours, sizes, Finger draws and Claude\'s marks">' + RICON.pen + 'More tools</button>' +
       '</div>';
-    h += '<div class="rv-body"><div class="rv-pages" id="rv-pages" data-palm-guard></div><aside class="rv-side" id="rv-side"></aside></div>';
+    h += '<div class="rv-body">' + (mk43_on() ? mk43_listHtml() : '') + '<div class="rv-pages" id="rv-pages" data-palm-guard></div><aside class="rv-side" id="rv-side"></aside></div>';
     if (R.pm) h += '<div class="rv-strip" id="rv-strip"></div>';
+    var mk43keep = $('mk43-slist') ? $('mk43-slist').scrollTop : null, mk43open = $('review').classList.contains('list-open');
     $('review').innerHTML = h;
+    if (mk43_on()) mk43_bind(mk43keep, mk43open);
     if (R.solution) $('review').querySelector('.rv-nav').classList.add('hidden');
     R.pages.forEach(function (pg, i) {
       var el = document.createElement('div'); el.className = 'pg'; el.setAttribute('data-i', i);
@@ -5842,6 +5912,7 @@
     var at = R.queue.indexOf(r);
     Array.prototype.forEach.call($('review').querySelectorAll('.mk38-dot'), function (d) { var on = Number(d.getAttribute('data-mk38')) === at; d.classList.toggle('d-now', on); });
     var n = $('review').querySelector('.rv-nav .n'); if (n) n.textContent = 'Script ' + (at + 1) + ' of ' + R.queue.length;
+    mk43_mark(at);
   }
   // Claude's flags on this script, each matched to a question when its note names one.
   function mk38_setup() {
@@ -5971,6 +6042,102 @@
       e.preventDefault(); var b = g.matches('button') ? g : g.querySelector('button'); if (b) b.click(); return true;
     }
     return false;
+  }
+
+
+  /* ----- r43 marking: the Scripts list (approved Marking board). Real rows only: the pile, its marks and Claude's notes. ----- */
+  function mk43_on() { return !!(R && !R.solution && !R.pm && R.queue && R.queue.length); }
+  function mk43_job() { var w = byId(R.id) || (H.marks && H.marks.worksheet) || {}; return { w: w, j: w.job || {} }; }
+  function mk43_ini(n) {
+    var p = String(n || '').replace(/\[|\]/g, '').trim().split(/\s+/).filter(Boolean), last = p.length > 1 ? p[p.length - 1] : '';
+    if (/^[0-9]+$/.test(last)) return ((p[0] || '?').charAt(0) + last).toUpperCase();
+    return ((p[0] || '?').charAt(0) + (last ? last.charAt(0) : (p[0] || '').charAt(1) || '')).toUpperCase();
+  }
+  // One script's state, in words, as the board shows it.
+  function mk43_word(r, checks) {
+    var J = mk43_job(), j = J.j, st = mk38_state(r, checks);
+    if (!r.checked && j.status === 'sample_ready' && j.sampleFile && namesScript(r, j.sampleFile)) return { k: 'flag', t: 'Sample · check me' };
+    if (st === 'ok') return { k: 'ok', t: 'Checked' + (String(r.score || '').trim() ? ' · ' + String(r.score).trim() : '') };
+    if (st === 'flag') { var n = checks.filter(function (c) { return namesScript(r, c); }).length; return { k: 'flag', t: n > 1 ? n + ' things to check' : '1 thing to check' }; }
+    if (st === 'mk') return { k: 'mk', t: 'Marked by Claude' };
+    return { k: 'wait', t: jobBusy(J.w) ? 'Waiting for Claude' : 'Not marked yet' };
+  }
+  function mk43_listHtml() {
+    var q = R.queue, at = q.indexOf(R.row), checks = mk38_checks(), f = R.mk43f || 'all';
+    var done = q.filter(function (r) { return r.checked; }).length, rows = (H.marks && H.marks.rows) || [];
+    var miss = rows.filter(function (r) { return !r.handedAt; }).length;
+    var F = [['all', 'All ' + q.length], ['check', 'To check ' + (q.length - done)], ['done', 'Checked ' + done]];
+    var items = q.map(function (r, j) {
+      if (f === 'check' && r.checked) return '';
+      if (f === 'done' && !r.checked) return '';
+      var w = mk43_word(r, checks);
+      return '<button type="button" class="mk43-s ' + w.k + (j === at ? ' on' : '') + '" data-mk43="' + j + '"' + (j === at ? ' aria-current="true"' : '') + '>' +
+        '<span class="mk43-av" aria-hidden="true">' + esc(mk43_ini(r.name)) + '</span>' +
+        '<span class="mk43-sx"><b>' + esc(r.name) + '</b><span class="mk43-st"><i></i>' + esc(w.t) + '</span></span>' +
+        '<svg class="mk43-chk" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"/></svg></button>';
+    }).join('');
+    if (!items) items = '<div class="mk43-empty">' + (f === 'done' ? 'Nothing checked yet.' : 'Nothing left to check.') + '</div>';
+    return '<aside class="mk43-list" id="mk43-list" aria-label="Scripts">' +
+      '<div class="mk43-lh"><b>Scripts</b><span>' + q.length + ' handed in' + (miss ? ' · ' + miss + ' missing' : '') + '</span><button type="button" class="btn quiet small mk43-x" id="mk43-x">Close &times;</button></div>' +
+      '<div class="mk43-filt" role="group" aria-label="Show">' + F.map(function (x) { return '<button type="button" class="mk43-f" data-mk43f="' + x[0] + '" aria-pressed="' + (f === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="mk43-slist" id="mk43-slist">' + items + '</div></aside>';
+  }
+  // The open script stays in view in the list.
+  function mk43_follow() {
+    var box = $('mk43-slist'), b = box && box.querySelector('.mk43-s.on'); if (!b) return;
+    var top = b.offsetTop - box.offsetTop;
+    if (top < box.scrollTop || top + b.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = Math.max(0, top - 8);
+  }
+  function mk43_mark(at) {
+    Array.prototype.forEach.call(document.querySelectorAll('#mk43-slist .mk43-s'), function (b) {
+      var on = Number(b.getAttribute('data-mk43')) === at; b.classList.toggle('on', on);
+      if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    });
+    mk43_follow();
+  }
+  function mk43_bind(keep, open) {
+    var box = $('mk43-slist');
+    if (box && keep != null) box.scrollTop = keep;
+    if (open) $('review').classList.add('list-open');
+    mk43_follow();
+    Array.prototype.forEach.call($('review').querySelectorAll('[data-mk43]'), function (b) {
+      b.onclick = function () {
+        var r = R.queue[Number(b.getAttribute('data-mk43'))];
+        $('review').classList.remove('list-open');
+        if (!r || r === R.row) return;
+        leaveReview(function () { loadReview(r); });
+      };
+    });
+    Array.prototype.forEach.call($('review').querySelectorAll('[data-mk43f]'), function (b) {
+      b.onclick = function () {
+        R.mk43f = b.getAttribute('data-mk43f');
+        var top = $('mk43-slist') ? 0 : null, wasOpen = $('review').classList.contains('list-open');
+        var el = $('mk43-list'); el.outerHTML = mk43_listHtml();
+        mk43_bind(top, wasOpen);
+      };
+    });
+    if (!$('review').mk43out) {   // a tap outside the Scripts drawer closes it
+      $('review').mk43out = true;
+      $('review').addEventListener('pointerdown', function (e) {
+        if (!$('review').classList.contains('list-open')) return;
+        if (e.target.closest && (e.target.closest('#mk43-list') || e.target.closest('#rv-list'))) return;
+        $('review').classList.remove('list-open'); if ($('rv-list')) $('rv-list').setAttribute('aria-expanded', 'false');
+      }, true);
+    }
+    if ($('rv-list')) $('rv-list').onclick = function () { var o = $('review').classList.toggle('list-open'); this.setAttribute('aria-expanded', String(o)); if (o) mk43_follow(); };
+    if ($('mk43-x')) $('mk43-x').onclick = function () { $('review').classList.remove('list-open'); if ($('rv-list')) $('rv-list').setAttribute('aria-expanded', 'false'); };
+  }
+  // More tools: the pen colours and sizes fold into a small panel when the toolbar is short of room.
+  function mk43_tools() {
+    var bt = $('mk43-more'), bar = $('review').querySelector('.rv-tools'); if (!bt || !bar) return;
+    var close = function () { bar.classList.remove('mk43-open'); bt.setAttribute('aria-expanded', 'false'); document.removeEventListener('pointerdown', out, true); };
+    var out = function (e) { if (!bar.contains(e.target)) close(); };
+    bt.onclick = function () {
+      var o = !bar.classList.contains('mk43-open'); if (!o) { close(); return; }
+      bar.classList.add('mk43-open'); bt.setAttribute('aria-expanded', 'true'); document.addEventListener('pointerdown', out, true);
+      var f = $('mk43-xt') && $('mk43-xt').querySelector('button'); if (f) f.focus();
+    };
+    R.mk43close = close;
   }
 
   /* ----- marks panel ----- */
@@ -6125,6 +6292,7 @@
     $('rv-claude').onclick = function () {
       R.showClaude = !R.showClaude; this.setAttribute('aria-pressed', String(R.showClaude)); redrawAll();
     };
+    mk43_tools();
   }
 
   function zoomStep(d) {
@@ -6165,6 +6333,11 @@
     if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); if (e.shiftKey) rvRedo(); else rvUndo(); return; }
     if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); rvRedo(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'Escape') {   // r43: Escape folds More tools, then the Scripts drawer
+      var bar = $('review').querySelector('.rv-tools.mk43-open');
+      if (bar && R.mk43close) { R.mk43close(); if ($('mk43-more')) $('mk43-more').focus(); return; }
+      if ($('review').classList.contains('list-open')) { $('review').classList.remove('list-open'); if ($('rv-list')) { $('rv-list').setAttribute('aria-expanded', 'false'); $('rv-list').focus(); } return; }
+    }
     if (R.pm && !pmReady()) return;
     if (R.pm && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); if (e.key === 'ArrowRight') pmNext(); else go(-1); return; }
     if (R.pm && k === 'a') { pmAccept(); return; }
