@@ -1,13 +1,12 @@
 {
-  "build": "2026-10-27-computing-students",
-  "seq": 42,
-  "ref": "96216ae0a2b22668e0c73bf09557bc8f41ed7216",
-  "title": "learnwithmrcedric: computing students in the student hub outline",
+  "build": "2026-10-28-portal-forms",
+  "seq": 43,
+  "ref": "4a9ff95ff2261f8619073432ea679dd436eaedda",
+  "title": "learnwithmrcedric: the sign-in forms work again",
   "notes": [
     "No server code to paste: the pages update themselves within about ten minutes",
-    "Computing students: the same outline as the science student hub, with three doors (Coaches, Task files, My files), Next up, Help, Looks and Sign out. Every Coach download and checked file works as before",
-    "The Teacher Hub is unchanged",
-    "The old release 33 pages stay retired: ?classic and the New version switch open the new pages"
+    "Sign-in fix: First time here?, Forgot password? and Ask Mr Cedric show their class and name boxes again, so students can set up and reset their passwords",
+    "The Teacher Hub is unchanged"
   ],
   "files": [
     {
@@ -80,7 +79,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "7512e7226463d519e35b837eff8de159fe21ad8616964147c81ac2e3cd902b2c"
+      "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
     },
     {
       "name": "Styles",
@@ -102,6 +101,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 43,
+      "build": "2026-10-28-portal-forms",
+      "ref": "4a9ff95ff2261f8619073432ea679dd436eaedda",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 42,
       "build": "2026-10-27-computing-students",
@@ -393,67 +450,9 @@
       ]
     },
     {
-      "seq": 37,
-      "build": "2026-10-26-class-page",
-      "ref": "74ffac6bd756d4b25d22a934c71076a5fce19dc4",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "dec24cc178f7a983ae1a502888d1eb3ee615326c8923a54a36782d8b0932406f"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
       "seq": 33,
       "build": "2026-10-27-old-pages-retired",
-      "ref": "96216ae0a2b22668e0c73bf09557bc8f41ed7216",
+      "ref": "4a9ff95ff2261f8619073432ea679dd436eaedda",
       "needsServer": 33,
       "files": [
         {
@@ -494,7 +493,7 @@
         {
           "name": "Student",
           "path": "Student.html",
-          "sha256": "7512e7226463d519e35b837eff8de159fe21ad8616964147c81ac2e3cd902b2c"
+          "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
         },
         {
           "name": "Styles",
@@ -597,5 +596,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/CiL47ZmvkhvUeHKTCjumog",
-  "classicRef": "96216ae0a2b22668e0c73bf09557bc8f41ed7216"
+  "classicRef": "4a9ff95ff2261f8619073432ea679dd436eaedda"
 }
