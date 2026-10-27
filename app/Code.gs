@@ -4391,6 +4391,9 @@ function apiStSignIn2(typed, pass, cls) {
   if (!nameWords_(typed).length) throw new Error('Type your name.');
   if (!String(pass == null ? '' : pass).trim()) throw new Error('Type your password.');
   var all = cls ? [typedStudent_(cls, typed)].filter(Boolean) : typedAll_(typed);
+  // Release 43: a temporary password from Mr Cedric (Admin) lets the student in once, to choose their own.
+  var tmp = stTempSignIn_(all, pass);
+  if (tmp) return tmp;
   var m = stMatchPass_(all, typed, pass, ST_NOMATCH_PASS, '*');
   if (m.needClass) return { needClass: m.needClass };
   var who = m.hit, a = acctGet_(acctId_(who.cls, who.name));
@@ -4616,14 +4619,19 @@ function apiStStatus(pin, cls) {
   var out = {};
   roster.forEach(function (s) {
     var a = null; try { a = JSON.parse(props.getProperty('acct_' + acctId_(cls, s.name)) || 'null'); } catch (err) { a = null; }
-    out[s.name] = { set: !!(a && a.ph), at: a && a.at || 0 };
+    out[s.name] = admAcctState_(a);
   });
   return out;
 }
 /* The student pages' calls through doPost (the slides): { api: 'st', op, ... }. */
 function stRequest_(d) {
   try {
-    if (d.op === 'signin' || d.op === 'login') return apiStSignIn2(d.name, d.pin, d.cls);
+    if (d.op === 'signin' || d.op === 'login') {
+      var si = apiStSignIn2(d.name, d.pin, d.cls);
+      // A temporary password is only for learnwithmrcedric, where the student then chooses their own.
+      if (si && si.mustChoose) return { ok: false, error: 'Open learnwithmrcedric and sign in there first, to choose your own password.' };
+      return si;
+    }
     if (d.op === 'start') return { ok: false, error: 'Reload this page to sign in.' };
     if (d.op === 'setup') return apiStSetup(d.cls, d.name, { reg: d.reg, key: d.key }, d.pin, d.q, d.answer);
     if (d.op === 'forgot') return apiStForgot(d.cls, d.name, d.q, d.answer, d.pin);
@@ -5464,4 +5472,398 @@ function apiRunningLessonsNoPin_() {
   var classes = Object.keys(readRoster_()), run = runningFor_(classes);
   return Object.keys(run).map(function (c) { var r = run[c]; return { cls: c, deckId: r.id, title: r.title, lesson: r.lesson, at: r.at }; })
     .sort(function (a, b) { return b.at - a.at; });
+}
+
+/* ------------------------------------------------------------------ */
+/* Release 43: Admin. The class list and student sign-in, from the Hub */
+/* ------------------------------------------------------------------ */
+/* The class list stays where it has always been: the Students tab (Class, Reg No (optional), Name, and the Code
+   column the Hub fills in). Admin reads and writes that tab and nothing else holds a copy, so a change made in the
+   sheet shows in the Hub and a change made in the Hub shows in the sheet.
+
+   Every call below is the teacher's only: the first argument is the Hub's sign-in token (or the teacher PIN),
+   checked by checkPin_ exactly as apiStReset and apiStStatus are. The Hub calls them through nxLb, like those two.
+
+   apiAdmRoster(pin)
+     -> { classes: [{ cls, students: [{ reg, name, acct }] }], sheet: url or '' }
+        acct = { set, at, temp, te, expired }: set (has their own password), at (when it was set, ms),
+        temp (has a temporary password that has not run out), te (when the temporary password runs out, ms),
+        expired (had a temporary password, and it ran out).
+   apiAdmPreview(pin, text, opts)
+     text: rows pasted from Excel or Google Sheets (tabs) or a .csv (commas). Each row is Class, Reg No, Name, or
+     Reg No, Name, or Class, Name, or just Name. A header row is skipped. opts.cls: the class for rows without one.
+     -> { classes: [the classes the list is for], rows: n,
+          added:   [{ cls, reg, name }],
+          moved:   [{ name, reg, from, to }],            same name, now in a different class
+          renamed: [{ cls, reg, from, to }],             same class and register number, a different name
+          missing: [{ cls, reg, name }],                 on the Students tab for these classes, not in the list
+          same:    [{ cls, reg, name }],
+          changedReg: [{ cls, name, from, to }],         same student, a new register number
+          problems: [text] }                             rows that could not be read
+   apiAdmApply(pin, text, opts)
+     The same list again (it is checked again here, so nothing saved is ever stale), and opts.removeMissing: true
+     removes the students in missing from the Students tab; false (the default) keeps them.
+     -> { ok, done: { added, moved, renamed, removed, changedReg }, warnings: [text], roster: apiAdmRoster's }
+   apiAdmAdd(pin, cls, name, reg)                   -> { ok, roster }
+   apiAdmRename(pin, cls, name, newName)            -> { ok, warnings, roster }
+   apiAdmMove(pin, cls, name, newCls)               -> { ok, warnings, roster }
+   apiAdmRemove(pin, cls, name)                     -> { ok, roster }
+     Removing takes the row off the Students tab only. Their handed-in work, marks, points, prizes, notes and files
+     are never deleted: they come back if the student is added again with the same class and name.
+   apiAdmTemp(pin, cls, name)                       -> { ok, cls, name, pass, expires }
+   apiAdmTempClass(pin, cls)                        -> { ok, cls, list: [{ name, reg, pass }], expires }
+     A temporary password, for one student or for everyone in the class who has not set up a password. It is shown
+     this once: only a salted hash is kept. It lasts 14 days. Giving one ends the student's own password and signs
+     them out everywhere (as Reset does). With it the student signs in once, and is asked straight away to choose
+     their own password and security question.
+   apiStStatus(pin, cls)  now also says temp, te and expired for each student (see acct above).
+
+   Renaming or moving a student: their sign-in account moves with them, and so do the rows with their class and
+   name in Submissions (handed-in work and marks), Rewards log (points, prizes and stickers) and Avatars, their
+   "parent messaged" and "follow up seen" marks, and their notes and folders. The Students row keeps its register
+   number and its Code, which names their files. What cannot move is listed in warnings. */
+
+var ADM_TEMP_DAYS = 14;
+var ADM_WORDS = ['maple', 'river', 'comet', 'tiger', 'mango', 'cloud', 'pearl', 'otter', 'lemon', 'panda', 'cedar',
+  'orbit', 'coral', 'robin', 'falcon', 'meadow', 'pepper', 'garden', 'rocket', 'island', 'sunny', 'breeze', 'planet',
+  'forest', 'canyon', 'harbor', 'violet', 'copper', 'silver', 'marble', 'pebble', 'summit', 'lantern', 'meteor',
+  'galaxy', 'nectar', 'walnut', 'cherry', 'kiwi', 'bamboo', 'dolphin', 'koala', 'zebra', 'magnet', 'prism', 'quartz',
+  'tulip', 'willow', 'beacon', 'harvest', 'jigsaw', 'kettle', 'lagoon', 'mosaic', 'noodle', 'oasis', 'puffin',
+  'ripple', 'saturn', 'teapot', 'velvet', 'yogurt', 'apricot', 'biscuit', 'crystal', 'dragon', 'ember', 'glacier'];
+
+/* What Admin shows about one student's sign-in. */
+function admAcctState_(a) {
+  var now = Date.now(), te = a && a.tp ? Number(a.te) || 0 : 0;
+  return { set: !!(a && a.ph), at: a && a.at || 0, temp: !!(a && a.tp && te > now), te: te, expired: !!(a && a.tp && te <= now) };
+}
+
+/* Signing in with a temporary password (from apiStSignIn2). null: not a temporary password, so the normal check
+   runs (and counts the try if it is wrong). A right one is let in once, to the set-up form, with a key that lasts
+   15 minutes; the set-up then saves their own password and the temporary one is gone. */
+function stTempSignIn_(all, pass) {
+  pass = String(pass == null ? '' : pass).trim().toLowerCase();
+  if (!pass || pass.length > 40) return null;
+  var hit = null, expired = false, now = Date.now();
+  all.forEach(function (w) {
+    var id = acctId_(w.cls, w.name), a = acctGet_(id);
+    if (!a || !a.tp || !a.s || stBlocked_('stf_', id)) return;
+    if (stHash_(a.s, 'tp|' + pass) !== a.tp) return;
+    if (!(Number(a.te) > now)) { expired = true; return; }
+    hit = hit ? 'two' : { w: w, id: id };
+  });
+  if (!hit && expired) throw new Error('That temporary password has run out. Ask Mr Cedric for a new one.');
+  if (!hit || hit === 'two') return null;
+  stClear_('stf_', hit.id);
+  var key = 'tp' + Utilities.getUuid().replace(/-/g, '').slice(0, 24);
+  cachePut_('ghs_' + key, 'ok', 900);
+  cachePut_('ghn_' + key, hit.w.cls + '|' + hit.w.name, 900);
+  return { mustChoose: true, key: key, cls: hit.w.cls, name: hit.w.name };
+}
+
+function admTempWord_() {
+  var w = ADM_WORDS[Math.floor(Math.random() * ADM_WORDS.length)];
+  return w + '-' + (10 + Math.floor(Math.random() * 90));
+}
+/* Gives one student a temporary password, under the lock. */
+function admTempOne_(who) {
+  var id = acctId_(who.cls, who.name), pass = admTempWord_(), te = Date.now() + ADM_TEMP_DAYS * 86400000;
+  var a = acctGet_(id) || { c: who.cls, n: who.name, v: 0 };
+  a.c = who.cls; a.n = who.name;
+  a.s = Utilities.getUuid().replace(/-/g, '');
+  delete a.ph; delete a.ah; delete a.q; delete a.at;
+  a.tp = stHash_(a.s, 'tp|' + pass); a.te = te;
+  a.v = (Number(a.v) || 0) + 1;
+  acctPut_(id, a);
+  ['stf_', 'saf_', 'srf_'].forEach(function (k) { stClear_(k, id); });
+  return { pass: pass, expires: te };
+}
+function apiAdmTemp(pin, cls, name) {
+  checkPin_(pin);
+  var who = rosterStudent_(cls, name);
+  return withLock_(function () {
+    var t = admTempOne_(who);
+    return { ok: true, cls: who.cls, name: who.name, pass: t.pass, expires: t.expires };
+  }, 20000);
+}
+function apiAdmTempClass(pin, cls) {
+  checkPin_(pin);
+  var key = rosterClass_(cls);
+  if (!key) throw new Error('There is no class called ' + clean_(cls, 20) + ' on the class list.');
+  var list = readRoster_()[key] || [];
+  return withLock_(function () {
+    var out = [], te = 0;
+    list.forEach(function (s) {
+      var a = acctGet_(acctId_(key, s.name));
+      if (a && a.ph) return;   // set up already: left alone
+      var t = admTempOne_({ cls: key, name: s.name });
+      te = t.expires;
+      out.push({ name: s.name, reg: s.reg, pass: t.pass });
+    });
+    return { ok: true, cls: key, list: out, expires: te };
+  }, 30000);
+}
+
+/* ---------- the Students tab ---------- */
+function admForget_() {
+  try { CacheService.getScriptCache().remove('roster'); } catch (err) { /* read again in two minutes */ }
+  try { if (typeof forgetStudents_ === 'function') forgetStudents_(); } catch (err) { /* fine */ }
+}
+/* The tab, its columns and its rows (sheet row numbers start at 1). */
+function admTab_() {
+  var sh = rosterSheet_(), rows = sh.getDataRange().getValues(), col = rosterCols_(rows);
+  var list = [];
+  for (var i = col.start; i < rows.length; i++) {
+    var cls = String(rows[i][col.ci]).trim().toUpperCase(), name = String(rows[i][col.ni]).replace(/\s+/g, ' ').trim();
+    if (!cls || !name) continue;
+    list.push({ cls: cls, name: name, reg: col.ri >= 0 ? String(rows[i][col.ri]).trim() : '', row: i + 1 });
+  }
+  return { sh: sh, col: col, list: list, width: rows.length ? rows[0].length : 3 };
+}
+function admReg_(r) { return String(r == null ? '' : r).trim().replace(/^0+(?=\d)/, ''); }
+// A name or class as it goes into a cell: never read by Sheets as a formula.
+function admCell_(v, max) { return clean_(String(v == null ? '' : v).replace(/\s+/g, ' '), max || 80).replace(/^[=+\-@]+/, ''); }
+function admClassOk_(c) { c = admCell_(c, 20).toUpperCase(); if (!/^[A-Z0-9][A-Z0-9 \-]{0,19}$/.test(c)) throw new Error('A class is letters and numbers, such as 1E3.'); return c; }
+
+function apiAdmRoster(pin) {
+  checkPin_(pin);
+  return admRoster_();
+}
+function admRoster_() {
+  admForget_();
+  var roster = readRoster_(), props = PropertiesService.getScriptProperties(), url = '';
+  try { url = rosterSheet_().getParent().getUrl() + '#gid=' + rosterSheet_().getSheetId(); } catch (err) { url = ''; }
+  return {
+    classes: Object.keys(roster).sort().map(function (c) {
+      return { cls: c, students: roster[c].map(function (s) {
+        var a = null; try { a = JSON.parse(props.getProperty('acct_' + acctId_(c, s.name)) || 'null'); } catch (err) { a = null; }
+        return { reg: s.reg, name: s.name, acct: admAcctState_(a) };
+      }) };
+    }),
+    sheet: url
+  };
+}
+
+/* Reads a pasted list. Each row: Class, Reg No, Name / Reg No, Name / Class, Name / Name. */
+function admParse_(text, cls) {
+  var lines = String(text == null ? '' : text).replace(/\r\n?/g, '\n').split('\n'), out = [], problems = [];
+  if (lines.length > 2000) throw new Error('That list is too long. Paste one or a few classes at a time.');
+  var defCls = cls ? admClassOk_(cls) : '';
+  lines.forEach(function (line, i) {
+    if (!line.trim()) return;
+    var cells = line.indexOf('\t') >= 0 ? line.split('\t') : admCsv_(line);
+    cells = cells.map(function (c) { return String(c).replace(/\s+/g, ' ').trim(); });
+    while (cells.length && !cells[cells.length - 1]) cells.pop();
+    var low = cells.join(' ').toLowerCase();
+    if (out.length === 0 && /\bname\b/.test(low) && /(class|reg|index|no\b|no\.)/.test(low) || (out.length === 0 && /^name$/.test(low))) return;   // the header
+    var c = '', r = '', n = '';
+    var isReg = function (x) { return /^\d{1,3}$/.test(x); };
+    var isCls = function (x) { return /^[0-9][A-Za-z][A-Za-z0-9]{0,6}$/.test(x.replace(/\s+/g, '')); };
+    if (cells.length >= 3) { c = cells[0]; r = cells[1]; n = cells.slice(2).join(' '); }
+    else if (cells.length === 2) { if (isReg(cells[0])) { r = cells[0]; n = cells[1]; } else if (isCls(cells[0])) { c = cells[0]; n = cells[1]; } else n = cells.join(' '); }
+    else if (cells.length === 1) n = cells[0];
+    c = c ? c.toUpperCase().replace(/\s+/g, '') : defCls;
+    n = admCell_(n, 80);
+    if (!c) { problems.push('Row ' + (i + 1) + ': no class. Choose the class for this list, or put the class in the first column.'); return; }
+    if (!n || /^\d+$/.test(n)) { problems.push('Row ' + (i + 1) + ': no name.'); return; }
+    if (r && !isReg(r)) { problems.push('Row ' + (i + 1) + ': "' + r + '" is not a register number.'); r = ''; }
+    out.push({ cls: c, reg: admReg_(r), name: n });
+  });
+  return { rows: out, problems: problems };
+}
+function admCsv_(line) {
+  var out = [], cur = '', q = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line.charAt(i);
+    if (q) { if (ch === '"' && line.charAt(i + 1) === '"') { cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+    else if (ch === '"') q = true; else if (ch === ',' || ch === ';') { out.push(cur); cur = ''; } else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+/* The changes a list makes to the Students tab, for the classes it is for. */
+function admDiff_(tab, rows) {
+  var key = function (c, n) { return normClass_(c) + '|' + normName_(n); };
+  var classes = {}, byKey = {}, used = {};
+  rows.forEach(function (r) { classes[normClass_(r.cls)] = r.cls; });
+  tab.list.forEach(function (s) { byKey[key(s.cls, s.name)] = s; });
+  var d = { added: [], moved: [], renamed: [], missing: [], same: [], changedReg: [] }, seen = {};
+  rows.forEach(function (r) {
+    var k = key(r.cls, r.name);
+    if (seen[k]) return;   // the same student twice in the list
+    seen[k] = 1;
+    var s = byKey[k];
+    if (s && !used[s.row]) { used[s.row] = 1; if (r.reg && r.reg !== admReg_(s.reg)) d.changedReg.push({ cls: s.cls, name: s.name, from: s.reg, to: r.reg, row: s.row }); else d.same.push({ cls: s.cls, reg: s.reg, name: s.name }); return; }
+    // the same name in another class: moved
+    var mv = tab.list.filter(function (x) { return !used[x.row] && normName_(x.name) === normName_(r.name) && normClass_(x.cls) !== normClass_(r.cls); });
+    if (mv.length === 1) { used[mv[0].row] = 1; d.moved.push({ name: mv[0].name, reg: r.reg || mv[0].reg, from: mv[0].cls, to: r.cls, row: mv[0].row }); return; }
+    // the same class and register number, a different name: renamed
+    if (r.reg) {
+      var rn = tab.list.filter(function (x) { return !used[x.row] && normClass_(x.cls) === normClass_(r.cls) && admReg_(x.reg) === r.reg && !rows.some(function (y) { return key(y.cls, y.name) === key(x.cls, x.name); }); });
+      if (rn.length === 1) { used[rn[0].row] = 1; d.renamed.push({ cls: rn[0].cls, reg: r.reg, from: rn[0].name, to: r.name, row: rn[0].row }); return; }
+    }
+    d.added.push({ cls: r.cls, reg: r.reg, name: r.name });
+  });
+  tab.list.forEach(function (s) { if (classes[normClass_(s.cls)] && !used[s.row]) d.missing.push({ cls: s.cls, reg: s.reg, name: s.name, row: s.row }); });
+  d.classes = Object.keys(classes).map(function (k) { return classes[k]; }).sort();
+  return d;
+}
+function admStrip_(list) { return list.map(function (x) { var o = {}; Object.keys(x).forEach(function (k) { if (k !== 'row') o[k] = x[k]; }); return o; }); }
+function apiAdmPreview(pin, text, opts) {
+  checkPin_(pin);
+  opts = opts || {};
+  var p = admParse_(text, opts.cls);
+  if (!p.rows.length) return { classes: [], rows: 0, added: [], moved: [], renamed: [], missing: [], same: [], changedReg: [], problems: p.problems.length ? p.problems : ['No students found in what was pasted.'] };
+  var d = admDiff_(admTab_(), p.rows);
+  return { classes: d.classes, rows: p.rows.length, added: d.added, moved: admStrip_(d.moved), renamed: admStrip_(d.renamed), missing: admStrip_(d.missing), same: d.same, changedReg: admStrip_(d.changedReg), problems: p.problems };
+}
+function apiAdmApply(pin, text, opts) {
+  checkPin_(pin);
+  opts = opts || {};
+  var p = admParse_(text, opts.cls);
+  if (!p.rows.length) throw new Error('No students found in what was pasted.');
+  var warnings = [], done;
+  withLock_(function () {
+    var tab = admTab_(), d = admDiff_(tab, p.rows), sh = tab.sh, col = tab.col;
+    d.changedReg.forEach(function (x) { if (col.ri >= 0) sh.getRange(x.row, col.ri + 1).setValue(x.to); });
+    d.renamed.forEach(function (x) { sh.getRange(x.row, col.ni + 1).setValue(admCell_(x.to)); warnings = warnings.concat(admCarry_(x.cls, x.from, x.cls, x.to)); });
+    d.moved.forEach(function (x) {
+      sh.getRange(x.row, col.ci + 1).setValue(admClassOk_(x.to));
+      if (x.reg && col.ri >= 0) sh.getRange(x.row, col.ri + 1).setValue(x.reg);
+      warnings = warnings.concat(admCarry_(x.from, x.name, x.to, x.name));
+    });
+    d.added.forEach(function (x) { admAppend_(sh, col, tab.width, x.cls, x.reg, x.name); });
+    var removed = 0;
+    if (opts.removeMissing) {
+      d.missing.map(function (x) { return x.row; }).sort(function (a, b) { return b - a; }).forEach(function (r) { sh.deleteRow(r); removed++; });
+    }
+    done = { added: d.added.length, moved: d.moved.length, renamed: d.renamed.length, removed: removed, changedReg: d.changedReg.length, kept: opts.removeMissing ? 0 : d.missing.length };
+  }, 30000);
+  return { ok: true, done: done, warnings: admUniq_(warnings), roster: admRoster_() };
+}
+function admAppend_(sh, col, width, cls, reg, name) {
+  var row = [];
+  for (var i = 0; i < Math.max(3, width, col.ci + 1, col.ni + 1, col.ri + 1); i++) row.push('');
+  row[col.ci] = admClassOk_(cls); row[col.ni] = admCell_(name);
+  if (col.ri >= 0) row[col.ri] = admReg_(reg);
+  sh.appendRow(row);
+}
+function admUniq_(a) { var s = {}; return a.filter(function (x) { if (s[x]) return false; s[x] = 1; return true; }); }
+
+function admFind_(tab, cls, name) {
+  var c = normClass_(cls), n = normName_(name);
+  return tab.list.filter(function (s) { return normClass_(s.cls) === c && normName_(s.name) === n; })[0] || null;
+}
+function apiAdmAdd(pin, cls, name, reg) {
+  checkPin_(pin);
+  cls = admClassOk_(cls); name = admCell_(name);
+  if (!name) throw new Error('Type the student\'s name.');
+  reg = admReg_(reg);
+  if (reg && !/^\d{1,3}$/.test(reg)) throw new Error('A register number is a number, such as 12.');
+  withLock_(function () {
+    var tab = admTab_();
+    if (admFind_(tab, cls, name)) throw new Error(name + ' is already in ' + cls + '.');
+    if (reg && tab.list.some(function (s) { return normClass_(s.cls) === normClass_(cls) && admReg_(s.reg) === reg; })) throw new Error('Register number ' + reg + ' is already used in ' + cls + '.');
+    admAppend_(tab.sh, tab.col, tab.width, cls, reg, name);
+  }, 20000);
+  return { ok: true, roster: admRoster_() };
+}
+function apiAdmRename(pin, cls, name, newName) {
+  checkPin_(pin);
+  newName = admCell_(newName);
+  if (!newName) throw new Error('Type the new name.');
+  var warnings = [];
+  withLock_(function () {
+    var tab = admTab_(), s = admFind_(tab, cls, name);
+    if (!s) throw new Error('That student is not on the class list any more.');
+    if (normName_(s.name) !== normName_(newName) && admFind_(tab, s.cls, newName)) throw new Error(newName + ' is already in ' + s.cls + '.');
+    tab.sh.getRange(s.row, tab.col.ni + 1).setValue(newName);
+    warnings = admCarry_(s.cls, s.name, s.cls, newName);
+  }, 30000);
+  return { ok: true, warnings: warnings, roster: admRoster_() };
+}
+function apiAdmMove(pin, cls, name, newCls) {
+  checkPin_(pin);
+  newCls = admClassOk_(newCls);
+  var warnings = [];
+  withLock_(function () {
+    var tab = admTab_(), s = admFind_(tab, cls, name);
+    if (!s) throw new Error('That student is not on the class list any more.');
+    if (normClass_(s.cls) === normClass_(newCls)) return;
+    if (admFind_(tab, newCls, s.name)) throw new Error(s.name + ' is already in ' + newCls + '.');
+    tab.sh.getRange(s.row, tab.col.ci + 1).setValue(newCls);
+    warnings = admCarry_(s.cls, s.name, newCls, s.name);
+  }, 30000);
+  return { ok: true, warnings: warnings, roster: admRoster_() };
+}
+/* Takes the row off the Students tab. Nothing else is deleted: their work, marks, points, prizes, notes and files
+   all stay, and come back if they are added again with the same class and name. Their sign-in account stays too. */
+function apiAdmRemove(pin, cls, name) {
+  checkPin_(pin);
+  withLock_(function () {
+    var tab = admTab_(), s = admFind_(tab, cls, name);
+    if (!s) throw new Error('That student is not on the class list any more.');
+    tab.sh.deleteRow(s.row);
+  }, 20000);
+  return { ok: true, roster: admRoster_() };
+}
+
+/* A student renamed or moved: their account and everything kept under their class and name goes with them.
+   Returns warnings for anything that could not be moved. */
+function admCarry_(oldCls, oldName, newCls, newName) {
+  var warn = [];
+  // the sign-in account (its id comes from the class and the name)
+  try {
+    var oldId = acctId_(oldCls, oldName), newId = acctId_(newCls, newName);
+    if (oldId !== newId) {
+      var a = acctGet_(oldId);
+      if (a) {
+        a.c = String(newCls).toUpperCase(); a.n = newName; a.v = (Number(a.v) || 0) + 1;
+        acctPut_(newId, a);
+        PropertiesService.getScriptProperties().deleteProperty('acct_' + oldId);
+        ['stf_', 'saf_', 'srf_'].forEach(function (k) { stClear_(k, oldId); });
+      }
+    }
+  } catch (err) { warn.push('Their password could not be moved. Give them a temporary password.'); }
+  if (typeof hubSheet_ !== 'function') return warn;
+  var oc = hubNormClass_(oldCls), on = hubNormName_(oldName), nc = hubNormClass_(newCls);
+  // rows in the Hub sheet with their class and name: handed-in work and marks, points and prizes, avatars
+  [['Submissions', 'Class', 'Name', 'handed-in work and marks'], ['Rewards log', 'Class', 'Name', 'points and prizes'], ['Avatars', 'Class', 'Name', 'avatar']].forEach(function (t) {
+    try {
+      var sh = hubSheet_(TABS.students.name).getParent().getSheetByName(t[0]);
+      if (!sh || sh.getLastRow() < 2) return;
+      var vals = sh.getDataRange().getValues(), head = vals[0].map(function (h) { return String(h).trim(); });
+      var ci = head.indexOf(t[1]), ni = head.indexOf(t[2]);
+      if (ci < 0 || ni < 0) return;
+      for (var r = 1; r < vals.length; r++) {
+        if (hubNormClass_(vals[r][ci]) === oc && hubNormName_(vals[r][ni]) === on) {
+          if (nc !== oc) sh.getRange(r + 1, ci + 1).setValue(String(newCls).toUpperCase());
+          if (hubNormName_(newName) !== on) sh.getRange(r + 1, ni + 1).setValue(newName);
+        }
+      }
+    } catch (err) { warn.push('Their ' + t[3] + ' could not be moved in the ' + t[0] + ' tab. They are still under the old ' + (nc !== oc ? 'class' : 'name') + '.'); }
+  });
+  // "parent messaged" and "follow up seen" marks
+  try {
+    var props = PropertiesService.getScriptProperties(), ok = oc + '|' + on, nk = nc + '|' + hubNormName_(newName);
+    ['PARENT_MSG', 'FOLLOW_SEEN'].forEach(function (p) {
+      var all = parseJson_(props.getProperty(p)) || {};
+      if (all[ok] !== undefined && ok !== nk) { all[nk] = all[ok]; delete all[ok]; props.setProperty(p, JSON.stringify(all)); }
+    });
+  } catch (err) { warn.push('Their parent and follow-up marks could not be moved.'); }
+  // their notes and folders (files in the Hub's Notes folder, named after the class and name)
+  try {
+    if (typeof orgName_ === 'function' && typeof folder_ === 'function') {
+      var from = hubClean_(oc + '_' + on), to = hubClean_(nc + '_' + hubNormName_(newName));
+      if (from !== to) {
+        var it = folder_('NOTES').getFiles();
+        while (it.hasNext()) {
+          var f = it.next(), n = f.getName();
+          if (n === 'org_' + from + '.json' || n.indexOf('note_' + from + '_') === 0) f.setName(n.replace(from, to));
+        }
+      }
+    }
+  } catch (err) { warn.push('Their notes and folders could not be moved.'); }
+  warn.push('Answers they gave in earlier lessons stay under the old ' + (nc !== oc ? 'class' : 'name') + '.');
+  admForget_();
+  return warn;
 }
