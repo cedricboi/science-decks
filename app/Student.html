@@ -1479,6 +1479,21 @@
     var src = avatarSrc(), pic = $('r38-me-pic');
     if (src) { if (pic.getAttribute('src') !== src) pic.src = src; pic.classList.remove('hidden'); $('r38-me-ini').classList.add('hidden'); }
     else { pic.classList.add('hidden'); $('r38-me-ini').classList.remove('hidden'); }
+    avaSend();
+  }
+  /* The Arcade's points box shows the avatar too (it is drawn in the Homework frame, where Rewards never loads): the
+     picture goes over as an image data URL only, or else the initials. Sent again only when it changes. */
+  var avaLast = null;
+  function avaMsg() {
+    var src = avatarSrc();
+    if (!/^data:image\/(png|jpeg|webp|svg\+xml);base64,[A-Za-z0-9+\/=]+$/.test(src) || src.length > 600000) src = '';
+    return { t: 'avatar', src: src, ini: me ? initials(me.name).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) : '' };
+  }
+  function avaSend() {
+    if (!me || !hw.win) return;
+    var m = avaMsg(), k = m.src.length + '|' + m.src.slice(-40) + '|' + m.ini;
+    if (k === avaLast) return;
+    avaLast = k; hwSend(m);
   }
   // A few quiet stars behind the page, drawn once (and again after a resize). Nothing in the sky moves.
   var starList = null, starT = 0;
@@ -1986,6 +2001,7 @@
         var ch = msTheme.chosen();
         try { hw.win.postMessage({ to: 'wsh', t: 'hello', st: me.st, dark: msTheme.isDark(), look: msTheme.lookNow() }, hw.origin); } catch (x) {}
         var q = hw.q; hw.q = []; q.forEach(hwSend);
+        avaLast = null; avaSend();
       }
     } else if (m.t === 'opened') {
       var L = layers[layers.length - 1];
