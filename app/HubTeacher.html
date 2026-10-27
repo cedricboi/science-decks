@@ -2004,6 +2004,326 @@
     :root[data-theme="dark"] .cx-sec, :root[data-theme="dark"] .nx-rec, :root[data-theme="dark"] .pop, :root[data-theme="dark"] .modal, :root[data-theme="dark"] .toast { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; }
   }
 </style>
+<style>
+  /* ================= r38 class/package/library ================= */
+  /* the sky over the class page: taller and softer than Today's, with the same photograph, stars and hills */
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky { display: block; position: absolute; left: 0; right: 0; top: 0; height: 1240px; overflow: hidden; pointer-events: none; z-index: 0; }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-skyimg.ok { opacity: .62; }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-hills.ok { opacity: .55; }
+  :root[data-theme="dark"] #app.nx-on-chx .nx-sky .nx-fade { height: 760px; background: linear-gradient(to bottom, rgba(6,4,15,0), rgba(6,4,15,.55) 30%, rgba(6,4,15,.88) 62%, #06040F 90%); }
+  #app.nx-on-chx #view-chx { position: relative; z-index: 1; }
+
+  /* sections: a banner on top (a strip of night with the day's constellation), then the body */
+  .cx38 .cx38-sec { padding: 0; overflow: hidden; }
+  .cx38-sbody { padding: 16px 22px 20px; }
+  .cx38-banner { position: relative; overflow: hidden; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; min-height: 88px; padding: 18px 22px; box-sizing: border-box;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--ac) 12%, var(--nx-surface)) 0%, var(--nx-surface) 60%, color-mix(in srgb, var(--ac) 8%, var(--nx-surface)) 100%); box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ac) 24%, transparent); }
+  .cx38-banner > :not(.cx38-bsky) { position: relative; z-index: 1; }
+  .cx38-bsky { position: absolute; right: 0; top: 50%; width: 900px; height: 96px; transform: translateY(-50%); pointer-events: none; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%); }
+  .cx38-bf { fill: var(--nx-ink); opacity: .18; }
+  .cx38-bl { fill: none; stroke: color-mix(in srgb, var(--ac) 60%, transparent); stroke-width: 1; stroke-dasharray: 100 100; stroke-dashoffset: 0; }
+  .cx38-bs { fill: color-mix(in srgb, var(--ac) 80%, var(--nx-ink)); transform-box: fill-box; transform-origin: center; }
+  .cx38-bn { font: 800 9px var(--text); letter-spacing: .24em; fill: color-mix(in srgb, var(--ac) 60%, var(--nx-ink)); opacity: .6; }
+  .cx38-h { margin: 0; font: 700 26px/1.1 var(--display); letter-spacing: -.015em; color: var(--nx-ink); }
+  .cx38-banner .cx-ic { width: 40px; height: 40px; }
+  .cx38-bt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 0 1 auto; }
+  .cx38-bt .cx-meta { text-shadow: 0 1px 8px var(--nx-surface); }
+  .cx-ic.o { color: #C2410C; }
+  /* lit once, the first time a third of the section is on screen; drawn again later it comes back lit, with no motion */
+  .cx38-b:not(.lit) .cx38-bl { stroke-dashoffset: 100; }
+  .cx38-b:not(.lit) .cx38-bs, .cx38-b:not(.lit) .cx38-bf, .cx38-b:not(.lit) .cx38-bn { opacity: 0; }
+  .cx38-b:not(.lit) .cx38-h { clip-path: inset(0 100% 0 0); }
+  .cx38-b.lit:not(.cx38-seen) .cx38-h { animation: cx38-hin 520ms var(--ease-out) both; }
+  .cx38-b.lit:not(.cx38-seen) .cx38-bl { animation: cx38-draw 1100ms 260ms var(--ease-out) both; }
+  .cx38-b.lit:not(.cx38-seen) .cx38-bs { animation: cx38-star 380ms var(--ease-out) both; animation-delay: calc(260ms + var(--k) * 120ms); }
+  .cx38-b.lit:not(.cx38-seen) .cx38-bf { animation: cx38-fin 900ms var(--ease-out) both; animation-delay: var(--t); }
+  .cx38-b.lit:not(.cx38-seen) .cx38-bn { animation: cx38-fin 500ms 1300ms var(--ease-out) both; }
+  @keyframes cx38-hin { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes cx38-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+  @keyframes cx38-star { 0% { opacity: 0; transform: scale(.6); } 60% { opacity: 1; transform: scale(1.4); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes cx38-fin { from { opacity: 0; } }
+
+  /* titles: the number in its stage's colour, then the name */
+  .cx38-tt { display: inline-flex; align-items: baseline; gap: 9px; min-width: 0; }
+  .cx38-num { flex: none; font: 700 22px/1.15 var(--display); font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--c) 62%, #1B1D21); }
+  .cx38-name { position: relative; font: 700 22px/1.2 var(--display); letter-spacing: -.015em; color: var(--nx-ink); text-wrap: balance; overflow-wrap: anywhere; }
+
+  /* the class page */
+  .cx38 .cx-sub b { color: var(--nx-ink); }
+  .cx38-grid2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .cx38-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .cx38-list { display: flex; flex-direction: column; }
+  .cx38-list > .cx-card.wait { display: grid; grid-template-columns: minmax(0, 1fr) 176px; column-gap: 18px; align-items: center; margin: 8px 0; padding: 12px 14px 12px 16px; border-radius: 16px; gap: 2px 18px; }
+  .cx38-list > .cx-card.wait > .cx-ch, .cx38-list > .cx-card.wait > .cx-when, .cx38-list > .cx-card.wait > .cx-quiet { grid-column: 1; }
+  .cx38-list > .cx-card.wait > .cx-ch .cx-ct { font-size: 15px; }
+  .cx38-list > .cx-card.wait > .cx-cacts { grid-column: 2; grid-row: 1 / span 3; padding: 0; margin: 0; }
+  .cx38-list > .cx-card.wait > .cx-cacts .nx-btn { width: 100%; }
+  .cx38-list > .cx-card.wait.lit { border-style: solid; border-color: color-mix(in srgb, #F2A33A 55%, transparent); }
+  @media (max-width: 760px) { .cx38-list > .cx-card.wait { grid-template-columns: minmax(0, 1fr); } .cx38-list > .cx-card.wait > .cx-cacts { grid-column: 1; grid-row: auto; margin-top: 8px; } }
+  .cx38-wr { display: grid; grid-template-columns: minmax(0, 1fr) 176px; column-gap: 18px; align-items: center; padding: 16px 4px 4px; }
+  .cx38-wr + .cx38-wr, .cx-card + .cx38-wr { border-top: 1px solid var(--nx-line); }
+  .cx38-wh { grid-column: 1; display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
+  .cx38-wtb { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+  .cx38-wtb:focus-visible { outline: 2px solid var(--nx-blue); outline-offset: 3px; border-radius: 6px; }
+  .cx38-wh .nx-more { margin: -4px -4px 0 0; }
+  .cx38-when { grid-column: 1; font-size: 13px; font-weight: 600; color: var(--nx-muted); margin-top: 2px; }
+  .cx38-wact { grid-column: 2; grid-row: 1 / span 3; display: flex; flex-direction: column; align-items: stretch; }
+  .cx38-wact .nx-btn { height: 46px; border-radius: 23px; font-size: 15px; }
+  /* the five stages as balls; the note for the stage it is at shows by itself, and pointing at or tabbing to another ball shows its note */
+  .cx38-balls { grid-column: 1; list-style: none; margin: 12px 0 46px; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 520px; }
+  .cx38-balls li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; outline: none; }
+  .cx38-balls li::before { content: ''; position: absolute; top: 7px; right: 50%; width: 100%; height: 2px; border-radius: 1px; background: var(--nx-line); }
+  .cx38-balls li:first-child::before { display: none; }
+  .cx38-balls li.done::before, .cx38-balls li.now::before { background: linear-gradient(90deg, var(--nx-line2), var(--c)); }
+  .cx38-balls i { position: relative; z-index: 1; width: 12px; height: 12px; margin: 2px 0; border-radius: 50%; background: var(--nx-surface); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 75%, transparent); }
+  .cx38-balls li.done i { background: var(--c); }
+  .cx38-balls li.now i { width: 16px; height: 16px; margin: 0; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 28%, transparent), 0 0 16px color-mix(in srgb, var(--c) 70%, transparent); }
+  .cx38-balls li.now i::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 0 2px var(--c); opacity: 0; animation: cx38-halo 1.1s var(--ease-out) 420ms 2 both; }
+  @keyframes cx38-halo { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.8); } }
+  .cx38-balls em { font: 700 12px var(--text); font-style: normal; white-space: nowrap; color: var(--nx-muted); }
+  .cx38-balls li.done em { color: var(--nx-ink2); }
+  .cx38-balls li.now em { color: color-mix(in srgb, var(--c) 60%, #1B1D21); font-size: 13px; }
+  .cx38-balls li:focus-visible em { color: var(--nx-ink); text-decoration: underline; }
+  .cx38-nw { position: absolute; top: 40px; left: 50%; width: max-content; max-width: 300px; transform: translateX(-50%); pointer-events: none; z-index: 2; }
+  .cx38-nw.l { left: calc(50% - 9px); transform: none; } .cx38-nw.r { left: auto; right: calc(50% - 9px); transform: none; }
+  .cx38-note { display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(-6px); transition: opacity 200ms var(--ease-out), transform 220ms var(--ease-out); }
+  .cx38-nw.l .cx38-note { align-items: flex-start; } .cx38-nw.r .cx38-note { align-items: flex-end; }
+  .cx38-stem { width: 1.5px; height: 9px; margin: 0 8px; background: linear-gradient(var(--c), transparent); }
+  .cx38-nb { position: relative; overflow: hidden; display: flex; gap: 12px; align-items: baseline; white-space: nowrap; padding: 5px 11px; border-radius: 10px; font: 700 13px var(--text); color: var(--nx-ink2);
+    background: color-mix(in srgb, var(--c) 12%, var(--nx-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 20px rgba(20,16,40,.12); }
+  .cx38-nb b { font: 700 16px var(--display); margin-right: 4px; font-variant-numeric: tabular-nums; color: var(--nx-ink); }
+  .cx38-nb .a b { color: #9A5B00; } .cx38-nb .r, .cx38-nb .r b { color: var(--nx-red-ink); } .cx38-nb .g b { color: var(--nx-green); } .cx38-nb .v b { color: #6B42C9; }
+  .cx38-balls li.now .cx38-note, .cx38-balls li:focus-visible .cx38-note { opacity: 1; transform: none; }
+  .cx38-balls:focus-within li.now:not(:focus-visible) .cx38-note { opacity: 0; transform: translateY(-6px); }
+  @media (hover: hover) and (pointer: fine) {
+    .cx38-balls li:hover .cx38-note { opacity: 1; transform: none; }
+    .cx38-balls:has(li:not(.now):hover) li.now .cx38-note { opacity: 0; transform: translateY(-6px); }
+    .cx38-balls li:hover em { color: var(--nx-ink); }
+    .cx38-wtb:hover .cx38-name { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+  }
+
+  /* lessons: the next one, then the ones after it */
+  .cx38-lpath { display: flex; flex-direction: column; gap: 4px; }
+  .cx38-lp { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 18px; min-width: 0; }
+  .cx38-lp.cur { background: var(--nx-blue-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nx-blue) 30%, transparent); padding: 14px 14px; }
+  .cx38-lorb { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--nx-ink2); box-shadow: 0 0 0 1px var(--nx-line); }
+  .cx38-lorb svg { width: 28px; height: 28px; }
+  .cx38-lp.cur .cx38-lorb { width: 54px; height: 54px; color: var(--nx-blue); box-shadow: 0 0 0 2px var(--nx-blue); }
+  .cx38-lt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .cx38-lt b { font: 700 16px/1.25 var(--display); color: var(--nx-ink); overflow-wrap: anywhere; }
+  .cx38-lp.cur .cx38-lt b { font-size: 19px; }
+  .cx38-lt span { font-size: 13px; color: var(--nx-muted); }
+  .cx38-lp .nx-btn { flex: none; }
+  .cx38-lp.cur .nx-btn.dark { height: 44px; padding: 0 22px; border-radius: 22px; }
+
+  /* What's next: a small constellation in the middle; pressed, three banners grow out of it */
+  .cx38-next { position: relative; display: flex; flex-direction: column; align-items: center; z-index: 5; margin: 4px 0 2px; }
+  .cx38-nxbtn { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: transparent; padding: 6px 18px; border-radius: 18px; cursor: pointer; color: var(--nx-ink); font: inherit; transition: transform 160ms var(--ease-out); }
+  .cx38-nxbtn:active { transform: scale(.97); }
+  .cx38-nxbtn:focus-visible { outline: 2px solid var(--nx-blue); outline-offset: 2px; }
+  .cx38-nxbtn b { font: 700 17px var(--display); }
+  .cx38-nxbtn small { font-size: 12px; font-weight: 700; color: var(--nx-muted); }
+  .cx38-nxc { width: 104px; height: 42px; transition: transform 200ms var(--ease-out); }
+  .cx38-nxc path { fill: none; stroke: color-mix(in srgb, #8B6CFF 55%, transparent); stroke-width: 1.4; }
+  .cx38-nxc circle { fill: #8B6CFF; }
+  .cx38-nxc circle:nth-of-type(1) { fill: #F2A33A; } .cx38-nxc circle:nth-of-type(3) { fill: #E2553A; }
+  .cx38-nxbtn[aria-expanded="true"] .cx38-nxc { transform: scale(1.1); }
+  .cx38-nxp { position: absolute; top: 100%; left: 50%; width: min(880px, calc(100vw - 32px)); margin-top: 10px; padding: 12px; box-sizing: border-box; border-radius: 24px; background: var(--nx-surface); box-shadow: 0 0 0 1px var(--nx-line), 0 30px 70px rgba(20,16,40,.22);
+    transform-origin: 50% 0; transform: translateX(-50%) scale(.92); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 150ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s 160ms; }
+  .cx38-nxp.open { transform: translateX(-50%) scale(1); opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 200ms var(--ease-out), transform 260ms var(--ease-out), visibility 0s; }
+  .cx38-nrows { display: flex; flex-direction: column; gap: 10px; }
+  .cx38-nrow { position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; min-height: 76px; padding: 12px 16px 12px 20px; border-radius: 18px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--ac) 14%, var(--nx-surface)) 0%, var(--nx-surface) 55%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ac) 30%, transparent);
+    opacity: 0; transform: translateY(-6px); transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out); }
+  .cx38-nxp.open .cx38-nrow { opacity: 1; transform: none; transition: opacity 220ms var(--ease-out), transform 240ms var(--ease-out); transition-delay: calc(50ms + var(--r) * 45ms); }
+  .cx38-nrow > :not(.cx38-bsky) { position: relative; z-index: 1; }
+  .cx38-nrow .cx38-bsky { height: 76px; -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 65%); mask-image: linear-gradient(90deg, transparent 35%, #000 65%); }
+  .cx38-nrow .cx38-bl { stroke-dashoffset: 0; } .cx38-nrow .cx38-bf { opacity: .16; }
+  .cx38-nt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .cx38-nt .cx38-num, .cx38-nt .cx38-name { font-size: 19px; }
+  .cx38-nt small { font-size: 14px; font-weight: 600; color: var(--nx-muted); }
+  .cx38-nrow .nx-btn { flex: none; min-width: 140px; justify-content: center; }
+  .cx38-nnone { margin: 8px 10px; }
+
+  /* Who owes work: a list per worksheet, most overdue first */
+  .cx38-owe { margin-top: 6px; }
+  .cx38-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 14px; }
+  .cx38-grp { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px 20px; border-radius: 18px; background: var(--nx-soft); }
+  .cx38-grp::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: #E2553A; }
+  .cx38-gh { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .cx38-gh .cx38-num, .cx38-gh .cx38-name { font-size: 19px; }
+  .cx38-gk { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--nx-red-soft); color: var(--nx-red-ink); }
+  .cx38-gn { font: 800 24px/1 var(--display); color: var(--nx-red-ink); font-variant-numeric: tabular-nums; }
+  .cx38-names { display: flex; flex-direction: column; }
+  .cx38-nm { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 6px 8px 6px 4px; border: 0; border-radius: 12px; background: transparent; color: var(--nx-ink); font: inherit; text-align: left; cursor: pointer; transition: background-color 150ms var(--ease-out), transform 160ms var(--ease-out); }
+  .cx38-nm + .cx38-nm { box-shadow: inset 0 1px 0 var(--nx-line); }
+  .cx38-nm:active { transform: scale(.98); }
+  .cx38-nm:focus-visible { outline: 2px solid var(--nx-blue); outline-offset: 1px; }
+  .cx38-av { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 11px var(--display); background: var(--nx-chip); color: var(--nx-ink2); }
+  .cx38-pn { flex: 1; min-width: 0; font: 700 16px var(--text); overflow-wrap: anywhere; }
+  .cx38-two { flex: none; font: 800 11px var(--text); padding: 3px 8px; border-radius: 999px; color: #8A4B00; background: #FFE6A8; white-space: nowrap; }
+  .cx38-pd { flex: none; min-width: 84px; text-align: right; font: 700 13px var(--text); color: var(--nx-red-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .cx38-rem { align-self: flex-start; margin-top: 6px; }
+  .cx38-ofoot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--nx-line); }
+  @media (hover: hover) and (pointer: fine) { .cx38-nm:hover { background: var(--nx-chip); } }
+
+  /* the worksheet package: a banner head, the steps as stage balls, then Next for you */
+  .cx38-pkh { border-radius: 24px; margin: 4px 0 12px; padding: 18px 20px; min-height: 0; }
+  .cx38-pkh .dhead { margin: 0; flex: 1; min-width: 0; }
+  .cx38-pkh h2 .cx38-num, .cx38-pkh h2 .cx38-name { font-size: 28px; }
+  .cx38-pkh h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+  .cx38-pkh .cx38-bsky { opacity: .9; }
+  .cx38-steps button { position: relative; }
+  .cx38-steps .sn { display: none; }
+  .cx38-steps .cx38-sb { flex: none; width: 14px; height: 14px; border-radius: 50%; margin: 0 4px; background: var(--nx-surface); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c) 75%, transparent); }
+  .cx38-steps .done .cx38-sb { background: var(--c); box-shadow: none; }
+  .cx38-steps .now .cx38-sb { width: 18px; height: 18px; margin: 0 2px; background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 26%, transparent), 0 0 16px color-mix(in srgb, var(--c) 70%, transparent); }
+  .cx38-steps .now b { color: color-mix(in srgb, var(--c) 60%, #1B1D21); }
+  .cx38-nfy { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: 0 0 14px; padding: 16px 18px 16px 22px; border-radius: 20px; position: relative; overflow: hidden;
+    background: linear-gradient(100deg, color-mix(in srgb, var(--ac) 14%, var(--nx-surface)), var(--nx-surface) 65%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ac) 34%, transparent); }
+  .cx38-nfy::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px; background: var(--ac); }
+  .cx38-nfyt { flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .cx38-nfyk { font: 800 11px var(--text); letter-spacing: .14em; color: color-mix(in srgb, var(--ac) 55%, #1B1D21); }
+  .cx38-nfyl { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .cx38-nfy > .nx-btn { flex: none; height: 48px; padding: 0 24px; border-radius: 24px; font-size: 16px; }
+  .cx38-lanes { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cx38-lane { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--nx-ink2); background: var(--nx-chip); }
+  .cx38-lane b { font-weight: 800; color: var(--nx-ink); } .cx38-lane em { font-style: normal; color: var(--nx-red-ink); }
+  .cx38-lane.on { box-shadow: inset 0 0 0 1.5px var(--nx-ink); }
+  @media (max-width: 480px) { .cx38-balls em { font-size: 10px; letter-spacing: -.01em; } .cx38-pkh h2 .cx38-num, .cx38-pkh h2 .cx38-name { font-size: 22px; } .cx38-nfy > .nx-btn { width: 100%; } }
+  :root[data-theme="dark"] .cx38-steps .cx38-sb { background: color-mix(in srgb, var(--c) 18%, #120D28); }
+  :root[data-theme="dark"] .cx38-steps .done .cx38-sb { background: var(--c); box-shadow: 0 0 8px color-mix(in srgb, var(--c) 55%, transparent); }
+  :root[data-theme="dark"] .cx38-steps .now .cx38-sb { background: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 28%, transparent), 0 0 18px var(--c); }
+  :root[data-theme="dark"] .cx38-steps .now:not([aria-selected="true"]) b { color: var(--c); }
+  :root[data-theme="dark"] .cx38-nfy { background: linear-gradient(100deg, color-mix(in srgb, var(--ac) 16%, rgba(14,10,30,.9)), rgba(14,10,30,.7) 65%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ac) 30%, transparent); }
+  :root[data-theme="dark"] .cx38-nfyk { color: var(--ac); }
+  :root[data-theme="dark"] .cx38-nfy > .nx-btn:not(.green) { background: linear-gradient(135deg, #FFD58A, #F29A2E); color: #2A1500; border-color: transparent; box-shadow: 0 8px 24px rgba(242,154,46,.36), inset 0 1px 0 rgba(255,255,255,.55); }
+  :root[data-theme="dark"] .cx38-nfy > .nx-btn.green { background: linear-gradient(135deg, #3FC48A, #1E8A5C); color: #fff; border-color: transparent; }
+  :root[data-theme="dark"] .cx38-lane { background: rgba(255,255,255,.06); color: #CFC5EA; } :root[data-theme="dark"] .cx38-lane b { color: #fff; } :root[data-theme="dark"] .cx38-lane em { color: #FF9C80; }
+  :root[data-theme="dark"] .cx38-lane.on { box-shadow: inset 0 0 0 1px rgba(255,255,255,.4); }
+  :root[data-theme="dark"] .cx38-pkh { background: linear-gradient(90deg, color-mix(in srgb, var(--ac) 14%, rgba(10,7,24,.7)) 0%, rgba(10,7,24,.45) 60%, color-mix(in srgb, var(--ac) 9%, rgba(10,7,24,.45)) 100%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ac) 22%, transparent); }
+  /* the Lesson library: each chapter a banner with its constellation; each class a chip that says whether it has it */
+  .libm-ch.cx38-libch { padding: 0; overflow: hidden; border-left: 1px solid var(--line); border-radius: 20px; }
+  .libm-ch.cx38-libch.has { box-shadow: none; }
+  .cx38-libch .libm-chh { margin: 0; padding: 16px 18px; min-height: 84px; align-items: center; }
+  .cx38-libch .cx38-bsky { right: auto; left: 0; width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 40%, #000 60%, #000 75%, transparent 92%); mask-image: linear-gradient(90deg, transparent 0%, transparent 40%, #000 60%, #000 75%, transparent 92%); }
+  .cx38-libch .libm-chh::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: var(--ac); z-index: 1; }
+  .cx38-libch .libm-cht h3 { font: 700 20px var(--display); }
+  .cx38-libch .libm-cht h3 .cx38-num, .cx38-libch .libm-cht h3 .cx38-name { font-size: 20px; }
+  .cx38-libch .libm-cht > span { display: block; margin-top: 3px; }
+  .cx38-libch > .libm-sec { padding: 0 18px; }
+  .cx38-libch > .libm-sec:last-child { padding-bottom: 16px; }
+  .cx38-need { font-style: normal; font-weight: 700; color: #9A5B00; }
+  .cx38-ready { font-style: normal; font-weight: 700; color: var(--nx-green); }
+  .tpi .nm .cx38-need { display: block; font-size: 12px; margin-top: 2px; }
+  .cx38-still { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 4px 0 12px; font-size: 14px; color: var(--nx-ink2); }
+  .cx38-still i { width: 8px; height: 8px; border-radius: 50%; background: #F2A33A; align-self: center; }
+  .cx38-still b { color: #9A5B00; }
+  .cx38-give { gap: 8px; }
+  .cx38-give .chg { flex-direction: column; align-items: flex-start; gap: 1px; min-height: 48px; padding: 6px 14px; border-radius: 14px; border-style: dashed; transition: transform 160ms var(--ease-out), background-color 150ms var(--ease-out); }
+  .cx38-give .chg b { font: 800 14px var(--display); color: var(--ink); }
+  .cx38-give .chg span { display: inline-flex; align-items: center; gap: 4px; font: 700 12px var(--text); }
+  .cx38-give .chg.on { border-style: solid; }
+  .cx38-give .chg.on span { color: var(--green-ink); }
+  .cx38-give .chg:active { transform: scale(.97); }
+  :root[data-theme="dark"] .libm-ch.cx38-libch { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .cx38-libch .libm-chh::before { box-shadow: 0 0 12px var(--ac); }
+  :root[data-theme="dark"] .cx38-need, :root[data-theme="dark"] .cx38-still b { color: #FFC86B; }
+  :root[data-theme="dark"] .cx38-ready { color: #8FE3B8; }
+  :root[data-theme="dark"] .cx38-still { color: #CFC5EA; }
+  :root[data-theme="dark"] .cx38-give .chg { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.22); color: #B7ADD6; }
+  :root[data-theme="dark"] .cx38-give .chg b { color: #fff; }
+  :root[data-theme="dark"] .cx38-give .chg.on { border-style: solid; border-color: rgba(94,211,156,.55); background: rgba(94,211,156,.12); }
+  :root[data-theme="dark"] .cx38-give .chg.on span { color: #8FE3B8; }
+  :root[data-theme="dark"] .tpi { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.1); }
+  @media (max-width: 1100px) { .cx38-grid2 { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 760px) {
+    .cx38-wr { grid-template-columns: minmax(0, 1fr); }
+    .cx38-wact { grid-column: 1; grid-row: auto; margin-bottom: 12px; }
+    .cx38-balls { margin-bottom: 50px; }
+    .cx38-balls em { font-size: 11px; }
+    .cx38-nb { white-space: normal; flex-wrap: wrap; gap: 2px 10px; max-width: 220px; }
+    .cx38-banner { padding: 16px; min-height: 76px; }
+    .cx38-sbody { padding: 12px 14px 16px; }
+    .cx38-bsky { -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 65%); mask-image: linear-gradient(90deg, transparent 0%, #000 65%); opacity: .7; }
+    .cx38-nrow { flex-wrap: wrap; }
+    .cx38-nrow .nx-btn { width: 100%; }
+    .cx38-num, .cx38-name { font-size: 19px; }
+    .cx38-pd { min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cx38-b.lit .cx38-h, .cx38-b.lit .cx38-bl, .cx38-b.lit .cx38-bs, .cx38-b.lit .cx38-bf, .cx38-b.lit .cx38-bn, .cx38-balls li.now i::after { animation: none !important; }
+    .cx38-b:not(.lit) .cx38-h { clip-path: none; } .cx38-b:not(.lit) .cx38-bl { stroke-dashoffset: 0; } .cx38-b:not(.lit) .cx38-bs, .cx38-b:not(.lit) .cx38-bn { opacity: 1; } .cx38-b:not(.lit) .cx38-bf { opacity: .18; }
+    .cx38-note { transition: opacity 150ms linear; transform: none !important; }
+    .cx38-nxp, .cx38-nxp.open { transform: translateX(-50%); transition: opacity 150ms linear, visibility 0s; }
+    .cx38-nrow, .cx38-nxp.open .cx38-nrow { transform: none; transition: opacity 150ms linear; }
+  }
+
+  /* ---------- night ---------- */
+  :root[data-theme="dark"] .cx38-banner { background: linear-gradient(90deg, color-mix(in srgb, var(--ac) 10%, rgba(10,7,24,.6)) 0%, rgba(10,7,24,.3) 55%, color-mix(in srgb, var(--ac) 8%, rgba(10,7,24,.3)) 100%); }
+  :root[data-theme="dark"] .cx38-bf { fill: #fff; opacity: .32; }
+  :root[data-theme="dark"] .cx38-bl { stroke: color-mix(in srgb, var(--ac) 55%, transparent); }
+  :root[data-theme="dark"] .cx38-bs { fill: var(--ac); filter: drop-shadow(0 0 4px var(--ac)); }
+  :root[data-theme="dark"] .cx38-bn { fill: color-mix(in srgb, var(--ac) 70%, #fff); opacity: .55; }
+  :root[data-theme="dark"] .cx38-h { color: #fff; background: linear-gradient(100deg, #fff 0%, #fff 45%, color-mix(in srgb, var(--ac) 80%, #fff) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  :root[data-theme="dark"] .cx-ic.o { color: #FFB09B; }
+  :root[data-theme="dark"] .cx38-num { color: var(--c); text-shadow: 0 0 16px color-mix(in srgb, var(--c) 45%, transparent); }
+  :root[data-theme="dark"] .cx38-name { background: linear-gradient(100deg, #fff 0%, #fff 38%, color-mix(in srgb, var(--c) 85%, #fff) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+  :root[data-theme="dark"] .cx38-name::after { content: attr(data-t); position: absolute; inset: 0; color: #fff; -webkit-text-fill-color: #fff; -webkit-mask-image: linear-gradient(100deg, transparent 40%, #000 50%, transparent 60%); mask-image: linear-gradient(100deg, transparent 40%, #000 50%, transparent 60%); -webkit-mask-size: 300% 100%; mask-size: 300% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0; opacity: 0; pointer-events: none; }
+  :root[data-theme="dark"] .cx38-b.lit:not(.cx38-seen) ~ .cx38-sbody .cx38-name::after { animation: cx38-shine 900ms 500ms var(--ease-out) both; }
+  @keyframes cx38-shine { 0% { opacity: 1; -webkit-mask-position: 100% 0; mask-position: 100% 0; } 100% { opacity: 1; -webkit-mask-position: 0 0; mask-position: 0 0; } }
+  :root[data-theme="dark"] .cx38 .cx-sub b { color: #fff; }
+  :root[data-theme="dark"] .cx38-wr + .cx38-wr, :root[data-theme="dark"] .cx-card + .cx38-wr { border-top-color: rgba(255,255,255,.07); }
+  :root[data-theme="dark"] .cx38-balls li::before { background: rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .cx38-balls li.done::before, :root[data-theme="dark"] .cx38-balls li.now::before { background: linear-gradient(90deg, rgba(255,255,255,.18), var(--c)); }
+  :root[data-theme="dark"] .cx38-balls i { background: color-mix(in srgb, var(--c) 18%, #120D28); }
+  :root[data-theme="dark"] .cx38-balls li.now i { background: var(--c); }
+  :root[data-theme="dark"] .cx38-bt .cx-meta { text-shadow: 0 1px 10px #0A0718; }
+  :root[data-theme="dark"] .cx38-balls li.done i { background: var(--c); box-shadow: 0 0 8px color-mix(in srgb, var(--c) 55%, transparent); }
+  :root[data-theme="dark"] .cx38-balls li.now i { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 28%, transparent), 0 0 18px var(--c), 0 0 34px color-mix(in srgb, var(--c) 60%, transparent); }
+  :root[data-theme="dark"] .cx38-balls em { color: color-mix(in srgb, var(--c) 55%, #6F6494); }
+  :root[data-theme="dark"] .cx38-balls li.done em { color: color-mix(in srgb, var(--c) 75%, #fff); }
+  :root[data-theme="dark"] .cx38-balls li.now em { color: var(--c); }
+  :root[data-theme="dark"] .cx38-balls li:focus-visible em { color: #fff; }
+  :root[data-theme="dark"] .cx38-nb { color: #E7E0FA; background: linear-gradient(135deg, color-mix(in srgb, var(--c) 22%, rgba(20,13,40,.92)), rgba(20,13,40,.92)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent), 0 10px 24px rgba(0,0,0,.45), 0 0 22px color-mix(in srgb, var(--c) 22%, transparent); }
+  :root[data-theme="dark"] .cx38-nb b { color: #fff; }
+  :root[data-theme="dark"] .cx38-nb .a b { color: #FFC86B; } :root[data-theme="dark"] .cx38-nb .r { color: #FFB09B; } :root[data-theme="dark"] .cx38-nb .r b { color: #FF8A70; }
+  :root[data-theme="dark"] .cx38-nb .g b { color: #8FE3B8; } :root[data-theme="dark"] .cx38-nb .v b { color: #CFC1FF; }
+  :root[data-theme="dark"] .cx38-wact .nx-btn:not(.cx38-lamp):not(.green) { background: #16102A; border-color: rgba(255,255,255,.18); color: #fff; box-shadow: none; }
+  :root[data-theme="dark"] .nx-btn.cx38-lamp, :root[data-theme="dark"] .cx38-wact .nx-btn.dark.cx38-lamp { background: linear-gradient(135deg, #FFD58A, #F29A2E); color: #2A1500; border-color: transparent; box-shadow: 0 8px 24px rgba(242,154,46,.36), inset 0 1px 0 rgba(255,255,255,.55); }
+  :root[data-theme="dark"] .cx38-wact .nx-btn.green { background: linear-gradient(135deg, #3FC48A, #1E8A5C); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(46,158,110,.32), inset 0 1px 0 rgba(255,255,255,.3); }
+  :root[data-theme="dark"] .cx38-lp.cur { background: rgba(139,108,255,.16); box-shadow: inset 0 0 0 1px rgba(170,150,255,.32); }
+  :root[data-theme="dark"] .cx38-lorb { background: radial-gradient(circle at 50% 40%, rgba(139,108,255,.25), rgba(14,9,30,.95) 70%); color: #CFC5EA; box-shadow: 0 0 0 1px rgba(255,255,255,.14); }
+  :root[data-theme="dark"] .cx38-lp.cur .cx38-lorb { color: #fff; box-shadow: 0 0 0 1.5px rgba(201,185,255,.7), 0 0 30px rgba(139,108,255,.45); }
+  :root[data-theme="dark"] .cx38-lt b { color: #fff; }
+  :root[data-theme="dark"] .cx38-lp .nx-btn:not(.dark):not(.green) { background: #16102A; border-color: rgba(255,255,255,.16); color: #E7E0FA; }
+  :root[data-theme="dark"] .cx38-lp.cur .nx-btn.dark, :root[data-theme="dark"] .nx-btn.cx38-teach { background: linear-gradient(135deg, #A48BFF, #6C4BF0); color: #fff; border-color: transparent; box-shadow: 0 8px 24px rgba(110,80,240,.4), inset 0 1px 0 rgba(255,255,255,.35); }
+  :root[data-theme="dark"] .cx38-nxbtn { color: #fff; }
+  :root[data-theme="dark"] .cx38-nxbtn b { background: linear-gradient(100deg, #fff 0%, #fff 40%, #C9B9FF 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  :root[data-theme="dark"] .cx38-nxbtn small { color: #A99BD1; }
+  :root[data-theme="dark"] .cx38-nxc path { stroke: rgba(201,185,255,.5); }
+  :root[data-theme="dark"] .cx38-nxc circle { fill: #EDE6FF; filter: drop-shadow(0 0 4px #B9A6FF); }
+  :root[data-theme="dark"] .cx38-nxc circle:nth-of-type(1) { fill: #FFC86B; filter: drop-shadow(0 0 4px #FFC86B); } :root[data-theme="dark"] .cx38-nxc circle:nth-of-type(3) { fill: #FF8A70; filter: drop-shadow(0 0 4px #FF8A70); }
+  :root[data-theme="dark"] .cx38-nxp { background: rgba(10,7,22,.86); box-shadow: inset 0 0 0 1px rgba(201,185,255,.18), 0 40px 90px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  :root[data-theme="dark"] .cx38-nrow { background: linear-gradient(90deg, color-mix(in srgb, var(--ac) 16%, rgba(14,10,30,.9)) 0%, rgba(14,10,30,.75) 50%, color-mix(in srgb, var(--ac) 8%, rgba(14,10,30,.75)) 100%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ac) 26%, transparent), 0 14px 32px rgba(0,0,0,.3); }
+  :root[data-theme="dark"] .cx38-nrow .cx38-bf { opacity: .3; }
+  :root[data-theme="dark"] .cx38-nt small { color: #B7ADD6; }
+  :root[data-theme="dark"] .cx38-nrow .nx-btn:not(.cx38-lamp):not(.cx38-teach):not(.green) { background: #16102A; border-color: color-mix(in srgb, var(--ac) 45%, transparent); color: color-mix(in srgb, var(--ac) 80%, #fff); }
+  :root[data-theme="dark"] .cx38-grp { background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  :root[data-theme="dark"] .cx38-grp::before { background: linear-gradient(#FF9C80, #E2553A); box-shadow: 0 0 12px #E2553A; }
+  :root[data-theme="dark"] .cx38-gn { color: #FF8A70; }
+  :root[data-theme="dark"] .cx38-gk { background: rgba(255,130,100,.13); color: #FFB09B; }
+  :root[data-theme="dark"] .cx38-nm { color: #fff; }
+  :root[data-theme="dark"] .cx38-nm + .cx38-nm { box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+  :root[data-theme="dark"] .cx38-av { color: #E7E0FA; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+  :root[data-theme="dark"] .cx38-two { color: #FFC86B; background: rgba(255,200,107,.14); box-shadow: inset 0 0 0 1px rgba(255,200,107,.35); }
+  :root[data-theme="dark"] .cx38-pd { color: #FF9C80; }
+  :root[data-theme="dark"] .cx38-ofoot { border-top-color: rgba(255,255,255,.08); }
+  :root[data-theme="dark"] .cx38 .cx-sec .nx-btn.sm:not(.dark):not(.green):not(.ghost) { background: #16102A; border-color: rgba(255,255,255,.18); color: #fff; }
+  :root[data-theme="dark"] .cx38-rem.nx-btn.sm:not(.ghost) { background: linear-gradient(135deg, #FFD58A, #F29A2E) !important; color: #2A1500 !important; border-color: transparent !important; box-shadow: 0 6px 18px rgba(242,154,46,.3); }
+  @media (hover: hover) and (pointer: fine) { :root[data-theme="dark"] .cx38-nm:hover { background: rgba(255,255,255,.06); } }
+  @media (prefers-reduced-transparency: reduce) { :root[data-theme="dark"] .cx38-nxp { -webkit-backdrop-filter: none; backdrop-filter: none; background: #160F2B; } }
+</style>
 </head>
 <body>
 
@@ -2444,7 +2764,7 @@
     $('nx-drawer').classList.toggle('hidden', v !== 'detail');
     document.body.classList.toggle('nx-drawer-open', v === 'detail');
     nxFrame(under);
-    $('app').classList.toggle('nx-on-today', under === 'today'); nxSky(under === 'today');
+    $('app').classList.toggle('nx-on-today', under === 'today'); $('app').classList.toggle('nx-on-chx', under === 'chx'); nxSky(under === 'today' || under === 'chx');
     ['cmp', 'pg', 'tr', 'rw'].forEach(function (x) { $('view-' + x).classList.toggle('hidden', under !== x); });
     $('view-detail').classList.toggle('hidden', v !== 'detail');
     closePops();
@@ -2945,6 +3265,39 @@
   /* The Lesson library: every chapter on the lesson site, by subject, each one a package to build and give. A package
      is its slides, the homework linked to each part, and its topical worksheets (set as homework, or practice).
      Giving a class a chapter puts it in Lessons for that class and opens its slides to them for revision. */
+  // Release 38: the Lesson library in the class page's language. Each chapter opens with a banner and its own
+  // constellation; each class is a chip that says whether it has the chapter; a topical worksheet without its marked
+  // solution or answer key says so (from the worksheet library, once it has been read).
+  function cx38ChTitle(name, c) {
+    var m = /^\s*Chapter\s+(\d+[a-z]?)\s*[—:–-]\s*(.+)$/i.exec(String(name || ''));
+    return m ? '<span class="cx38-tt" style="--c:' + esc(c) + '"><span class="cx38-num">' + esc(m[1]) + '</span><span class="cx38-name" data-t="' + esc(m[2]) + '">' + esc(m[2]) + '</span></span>' : cx38Title(name, esc(c));
+  }
+  function cx38LibItem(t) { return H.lib ? (H.lib.items || []).filter(function (x) { return x.id === t.file; })[0] || null : null; }
+  function cx38TpGap(t) { var it = cx38LibItem(t); if (!it) return []; var g = []; if (t.mode !== 'practice' && !it.sol) g.push('marked solution'); if (!it.key) g.push('answer key'); return g; }
+  function cx38TpNeeds(t) { var g = cx38TpGap(t); return g.length ? '<em class="cx38-need">No ' + esc(listJoin(g)) + ' yet</em>' : ''; }
+  function cx38TpMissingLine(tp) {
+    if (!H.lib || !tp.length) return '';
+    var n = tp.filter(function (t) { return cx38TpGap(t).length; }).length;
+    return n ? ' · <em class="cx38-need">' + plural(n, 'worksheet needs', 'worksheets need') + ' a file</em>' : ' · <em class="cx38-ready">Every worksheet ready</em>';
+  }
+  function cx38LibMissing(sub, cls) {
+    if (!H.lib) return '';
+    var out = [];
+    (sub.groups || []).forEach(function (g) {
+      var k = chKey(sub.id, g.name); if (!chByKey(k)) return;
+      chTopical(k).forEach(function (t) { var gp = cx38TpGap(t); if (gp.length) out.push(t.name + ' ' + listJoin(gp)); });
+    });
+    return out.length ? '<p class="cx38-still"><i aria-hidden="true"></i><b>Still to add</b> ' + esc(out.slice(0, 4).join(', ') + (out.length > 4 ? ' and ' + (out.length - 4) + ' more' : '')) + '</p>' : '';
+  }
+  function cx38GiveChips(k) {
+    var cl = teClasses();
+    if (!cl.length || !chByKey(k)) return '';
+    return '<div class="chgive cx38-give" role="group" aria-label="Give this chapter to a class">' + cl.map(function (c) {
+      var on = chHas(c, k);
+      return '<button type="button" class="chg' + (on ? ' on' : '') + '" data-chg="' + esc(k) + '" data-cls="' + esc(c) + '" aria-pressed="' + on + '" style="--cc:' + ccOf(c) + '"' +
+        ' title="' + esc(on ? 'Take it back from ' + c : 'Give it to ' + c) + '"><b>' + esc(c) + '</b><span>' + (on ? ICON.tick + 'Has it' : '+ Give') + '</span></button>';
+    }).join('') + '</div>';
+  }
   function openLibrary(cls, focus) {
     var cat = H.te || {}, site = H.teSite || '';
     H.libBack = null;
@@ -2963,7 +3316,7 @@
         '<p class="libm-sub">Each chapter is a package: its slides, the homework for each part, and topical worksheets. Give a class a chapter and it appears in Chapters for that class, with all its slides open to them for revision.</p>' +
         '<div class="te-subs" role="tablist" aria-label="Subject">' + subs.map(function (s) {
           return '<button role="tab" class="te-subj" data-ls="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
-        }).join('') + '</div><div class="libm-list">' + (sub.groups || []).filter(function (g) { return (g.items || []).length; }).map(function (g) {
+        }).join('') + '</div>' + cx38LibMissing(sub, cls) + '<div class="libm-list">' + (sub.groups || []).filter(function (g) { return (g.items || []).length; }).map(function (g, gi) {
           var k = chKey(sub.id, g.name), c = chByKey(k), has = !!(c && chHas(cls, k)), tp = c ? chTopical(k) : [];
           var items = g.items.map(function (it, j) {
             var nl = it.topicId && H.tn && H.tn.parts && H.tn.parts[it.topicId] ? linkCount(it.topicId) : -1;
@@ -2971,17 +3324,18 @@
               (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>'
                 : nl >= 0 ? '<button class="btn quiet small" data-lhw="' + esc(k) + '|' + j + '" title="The homework for each part of this lesson">Homework' + (nl ? ' (' + nl + ')' : '') + '</button>' : '') + '</li>';
           }).join('');
-          return '<section class="libm-ch' + (has ? ' has' : '') + '" id="libch-' + esc(k.replace(/[^a-z0-9]+/gi, '-')) + '"' + (sub.color ? ' style="--chc:' + esc(sub.color) + '"' : '') + '><div class="libm-chh"><div class="libm-cht"><h3>' + esc(g.name) + '</h3><span>' +
-            (c ? plural(c.lessons, 'lesson', 'lessons') + (tp.length ? ' · ' + plural(tp.length, 'topical worksheet', 'topical worksheets') : '') + (has ? ' · in Chapters for ' + esc(cls) : '') : 'Open these from here') + '</span></div>' + (c ? chGiveChips(k) : '') + '</div>' +
+          return '<section class="libm-ch cx38-libch' + (has ? ' has' : '') + '" id="libch-' + esc(k.replace(/[^a-z0-9]+/gi, '-')) + '" style="--chc:' + esc(sub.color || '#8B6CFF') + ';--ac:' + esc(sub.color || '#8B6CFF') + '"><div class="libm-chh cx38-banner' + cx38Lit('lib|' + k) + '">' + cx38Sky(gi * 4 + 2, 250, { sc: 0.9, h: 96, ly: 92 }) + '<div class="libm-cht"><h3>' + cx38ChTitle(g.name, sub.color || '#8B6CFF') + '</h3><span>' +
+            (c ? plural(c.lessons, 'lesson', 'lessons') + (tp.length ? ' · ' + plural(tp.length, 'topical worksheet', 'topical worksheets') : '') + (has ? ' · in Chapters for ' + esc(cls) : '') + cx38TpMissingLine(tp) : 'Open these from here') + '</span></div>' + (c ? cx38GiveChips(k) : '') + '</div>' +
             '<div class="libm-sec"><div class="libm-lbl">' + (c ? 'Slides' : 'Study tools') + '</div><ol class="libm-ls">' + items + '</ol></div>' +
             (c ? '<div class="libm-sec"><div class="libm-lbl">Topical worksheets</div><div class="libm-tp">' + tp.map(function (t, i) {
-              return '<div class="tpi"><span class="nm">' + esc(t.name) + (t.path ? '<small>' + esc(t.path) + '</small>' : '') + '</span>' +
+              return '<div class="tpi"><span class="nm">' + esc(t.name) + (t.path ? '<small>' + esc(t.path) + '</small>' : '') + cx38TpNeeds(t) + '</span>' +
                 '<select data-tpm="' + esc(k) + '|' + i + '" aria-label="How ' + esc(t.name) + ' is used"><option value="hw"' + (t.mode !== 'practice' ? ' selected' : '') + '>Set as homework</option><option value="practice"' + (t.mode === 'practice' ? ' selected' : '') + '>Practice</option></select>' +
                 '<button class="x" data-tpx="' + esc(k) + '|' + i + '" aria-label="Take ' + esc(t.name) + ' out of the package">×</button></div>';
             }).join('') + '<div class="libm-acts"><button class="btn quiet small" data-tpadd="' + esc(k) + '">' + ICON.plus + 'Add from my library</button>' +
             '<button class="btn quiet small" data-tpup="' + esc(k) + '">' + ICON.up + 'Upload a worksheet</button></div></div></div>' : '') + '</section>';
         }).join('') + '</div>';
       $('modal').innerHTML = h;
+      cx38Watch($('modal'));
       $('libm-x').onclick = function () { closeModal(); if (H.view === 'chx') nxChapters(); };
       Array.prototype.forEach.call($('modal').querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
       var ref = function (attr) { var p = attr.split('|'), i = Number(p.pop()); return { key: p.join('|'), i: i }; };
@@ -3110,6 +3464,7 @@
       list();
     };
     modal('', 'wide libm'); draw();
+    if (!H.lib) needLib(function () { if (!pick && !up && $('libm-x')) draw(); });
   }
   /* ---------- Lessons: chapter packages ---------- */
   function chTopical(k) { return ((H.dash && H.dash.chapters && H.dash.chapters.topical) || {})[k] || []; }
@@ -3792,18 +4147,29 @@
   function renderDetail() {
     var w = H.marks.worksheet, rows = H.marks.rows;
     var step = H.step[w.id] || defaultStep(w);
+    // Release 38: the package opens with a banner in the colour of the stage it is at, the title number first.
+    var cx38i = w.practice ? 2 : cx38Idx(w), cx38c = CX38_ST[cx38i][1];
     var h = '<button class="btn quiet back" id="d-back">&larr; Close</button>' +
+      '<div class="cx38-pkh cx38-banner' + cx38Lit('pk|' + w.id) + '" style="--ac:' + cx38c + '">' + cx38Sky(cx38Hash(w.id) % 12, 470, { sc: 1.05 }) +
       '<div class="dhead detail-head"><button class="topic-btn" id="d-topic" aria-label="Change the picture" style="border:0;background:none;padding:0;cursor:pointer">' + topicHtml(w.title, w.icon).replace('class="topic"', 'class="topic"') + '</button>' +
-      '<div style="min-width:0"><h2>' + esc(w.title) + '<button class="btn quiet" id="d-edit" aria-label="Edit details" title="Edit details">' + ICON.pen + '</button><button class="btn quiet" id="d-copy" aria-label="Copy to classes" title="Copy to other classes or next year">' + ICON.copy + '</button></h2><p>' + dueChip(w) + esc(w.id + ' · ' + w.classText) + '</p></div></div>';
+      '<div style="min-width:0"><h2>' + cx38Title(w.title, cx38c) + '<button class="btn quiet" id="d-edit" aria-label="Edit details" title="Edit details">' + ICON.pen + '</button><button class="btn quiet" id="d-copy" aria-label="Copy to classes" title="Copy to other classes or next year">' + ICON.copy + '</button></h2><p>' + dueChip(w) + esc(w.id + ' · ' + w.classText) + '</p></div></div></div>';
 
     // Claude's progress stays at the top while it is working
     var j = w.job, live = j && JOB_TEXT[j.status] && j.status !== 'done' && j.phase !== 'solution';
     if (live) h += claudeBox(w, rows);
 
-    h += '<div class="stepbar" role="tablist" aria-label="Steps">' + STEPS.map(function (st, i) {
-      var inf = stepInfo(w, st[0]);
-      return '<button role="tab" data-step="' + st[0] + '" aria-selected="' + (st[0] === step) + '" class="' + (inf[0] ? 'done' : '') + '"><span class="sn">' + (inf[0] && st[0] !== step ? '&#10003;' : i + 1) + '</span><span style="min-width:0"><b>' + st[1] + '</b><small>' + esc(inf[1]) + '</small></span></button>';
+    // The steps are the five stage balls: solid when done, glowing at the stage the worksheet is at; the chosen one is raised.
+    h += '<div class="stepbar cx38-steps" role="tablist" aria-label="Steps">' + STEPS.map(function (st, i) {
+      var inf = stepInfo(w, st[0]), at = !w.practice && i === cx38i;
+      return '<button role="tab" data-step="' + st[0] + '" aria-selected="' + (st[0] === step) + '" class="' + (inf[0] ? 'done' : '') + (at ? ' now' : '') + '" style="--c:' + CX38_ST[i][1] + '"><i class="cx38-sb" aria-hidden="true"></i><span class="sn">' + (inf[0] && st[0] !== step ? '&#10003;' : i + 1) + '</span><span style="min-width:0"><b>' + st[1] + '</b><small>' + esc(at ? 'Here now · ' + inf[1] : inf[1]) + '</small></span></button>';
     }).join('') + '</div>';
+    // Next for you: the one thing this worksheet needs, with the same button as its row on the class page.
+    var cx38cls = H.cls || nxCls(), cx38v = nxVerb(w, cx38cls), cx38l = cxLines(w, cx38cls);
+    H.cx38verb = cx38v;
+    if (cx38l.length) h += '<div class="cx38-nfy" style="--ac:' + cx38c + '"><div class="cx38-nfyt"><span class="cx38-nfyk">' + (cx38l.some(function (l) { return l.k === 'you'; }) ? 'NEXT FOR YOU' : 'WHERE IT IS') + '</span>' +
+      '<div class="cx38-nfyl">' + cx38l.map(function (l) { return '<span class="cx-l ' + l.k + '">' + (l.n !== '' ? '<b>' + esc(l.n) + '</b>' : '') + '<span>' + esc(l.t) + '</span></span>'; }).join('') + '</div>' +
+      (w.perClass.length > 1 ? '<div class="cx38-lanes">' + w.perClass.map(function (pc) { return '<span class="cx38-lane' + (pc.cls === cx38cls ? ' on' : '') + '"><b>' + esc(pc.cls) + '</b>' + pc.handed + ' of ' + pc.total + ' in' + (pc.notHanded.length ? ' · <em>' + pc.notHanded.length + ' not yet</em>' : '') + '</span>'; }).join('') + '</div>' : '') +
+      '</div><button type="button" class="nx-btn ' + (cx38v.kind || '') + ' cx38-lamp" id="cx38-nfyb">' + esc(cx38v.label) + '</button></div>';
 
     var notIn = w.perClass.filter(function (pc) { return pc.notHanded.length && (!H.cls || pc.cls === H.cls); });
     var P = {};
@@ -3878,6 +4244,8 @@
     h += '<div class="drawer" id="drawer" role="dialog" aria-modal="false" aria-label="Student"></div>';
     $('view-detail').innerHTML = h;
     bindDetail(w, rows);
+    if ($('cx38-nfyb')) $('cx38-nfyb').onclick = function () { if (H.cx38verb) H.cx38verb.run(this); };
+    cx38Watch($('view-detail'));
     if ($('d-helpers-edit')) $('d-helpers-edit').onclick = function () { helpersBox(w); };
     loadHelpers(w);
   }
@@ -7735,7 +8103,7 @@
     }
     if (SKY.on && !SKY.raf) SKY.raf = requestAnimationFrame(nxStars);
   }
-  window.addEventListener('ms-theme', function () { nxSky(H.view === 'today' || (H.view === 'detail' && H.backTo === 'today')); });
+  window.addEventListener('ms-theme', function () { var u = H.view === 'detail' ? H.backTo : H.view; nxSky(u === 'today' || u === 'chx'); });
   function nxStarsMake(cv) {
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     SKY.W = cv.clientWidth; SKY.H = cv.clientHeight; cv.width = SKY.W * dpr; cv.height = SKY.H * dpr;
@@ -7749,13 +8117,21 @@
   function nxStars(t) {
     SKY.raf = 0;
     var cv = $('nx-stars');
-    if (!SKY.on || !cv || document.hidden || window.scrollY > 760) { if (SKY.on) setTimeout(function () { if (!SKY.raf) SKY.raf = requestAnimationFrame(nxStars); }, 500); return; }
+    if (!SKY.on || !cv || document.hidden || window.scrollY > (cv.clientHeight || 700) + 60) { if (SKY.on) setTimeout(function () { if (!SKY.raf) SKY.raf = requestAnimationFrame(nxStars); }, 500); return; }
     if (cv.clientWidth !== SKY.W || cv.clientHeight !== SKY.H) nxStarsMake(cv);
     var ctx = cv.getContext('2d'), still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     ctx.clearRect(0, 0, SKY.W, SKY.H);
     SKY.stars.forEach(function (st) {
-      var tw = still ? 0.8 : 0.55 + 0.45 * Math.sin(t / 1000 * st.s + st.p), a = Math.min(1, 0.15 + 0.85 * tw * (0.35 + st.z * 0.65));
-      ctx.fillStyle = 'rgba(' + st.c + ',' + a.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r * (0.6 + st.z * 0.8), 0, 6.283); ctx.fill();
+      var tw = still ? 0.8 : 0.55 + 0.45 * Math.sin(t / 1000 * st.s + st.p), a = Math.min(1, 0.15 + 0.85 * tw * (0.35 + st.z * 0.65)), r = st.r * (0.6 + st.z * 0.8);
+      // Release 38: the brightest stars look like stars: a soft halo and a thin four-point glint, the rest stay points.
+      if (st.z > 0.86 && st.r > 0.95) {
+        var g = ctx.createRadialGradient(st.x, st.y, 0, st.x, st.y, r * 5);
+        g.addColorStop(0, 'rgba(' + st.c + ',' + (a * 0.55).toFixed(3) + ')'); g.addColorStop(1, 'rgba(' + st.c + ',0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(st.x, st.y, r * 5, 0, 6.283); ctx.fill();
+        ctx.strokeStyle = 'rgba(' + st.c + ',' + (a * 0.5).toFixed(3) + ')'; ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.moveTo(st.x - r * 6, st.y); ctx.lineTo(st.x + r * 6, st.y); ctx.moveTo(st.x, st.y - r * 6); ctx.lineTo(st.x, st.y + r * 6); ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(' + st.c + ',' + a.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, r, 0, 6.283); ctx.fill();
     });
     if (!still) setTimeout(function () { if (!SKY.raf) SKY.raf = requestAnimationFrame(nxStars); }, 66);   // about 15 frames a second is plenty for a twinkle
   }
@@ -8356,6 +8732,222 @@
       (w.practice ? '' : '<ol class="cx-dots" aria-label="Stage: ' + esc(nxStageWord(w)) + '">' + NX_STAGE_WORDS.slice(0, 4).map(function (l, i) { return '<li class="' + (st.n > i ? 'done' : st.n === i ? 'now' : '') + '" title="' + l + '"></li>'; }).join('') + '</ol>') +
       '<div class="cx-cacts"><button type="button" class="nx-btn sm ' + (v.kind || '') + '" data-nxverb="' + ai + '">' + esc(v.label) + '</button></div></article>';
   }
+  /* ================= Release 38: the class page, the worksheet package and the library, as the approved boards =================
+     Each section opens with a banner: a strip of night with one of the twelve zodiac constellations, a different one per
+     section, moving on every day. A worksheet's stages are five balls (Set, Collecting, Marking, Back, Corrections): the
+     ones done are solid, the one it is at glows, and its note comes out of the label. Nothing here changes what a button
+     does; every action is the release 37 one, by the same name. */
+  var CX38_ST = [['Set', '#4FC3F7'], ['Collecting', '#B57BFF'], ['Marking', '#FFC86B'], ['Back', '#5ED39C'], ['Corrections', '#FF8A70']];
+  var CX38_ZOD = [
+    ['ARIES', [[20, 52], [110, 30], [200, 26], [280, 50]], [[0, 1], [1, 2], [2, 3]]],
+    ['TAURUS', [[10, 10], [118, 40], [150, 54], [176, 46], [152, 30], [290, 12], [206, 66]], [[0, 1], [1, 4], [4, 5], [1, 2], [2, 3], [3, 4], [2, 6]]],
+    ['GEMINI', [[40, 8], [86, 14], [70, 40], [122, 44], [108, 74], [170, 72], [54, 64]], [[0, 2], [2, 4], [1, 3], [3, 5], [2, 3], [2, 6]]],
+    ['CANCER', [[150, 40], [92, 10], [232, 18], [108, 74], [204, 76]], [[0, 1], [0, 2], [0, 3], [0, 4]]],
+    ['LEO', [[40, 22], [70, 10], [102, 18], [108, 40], [82, 54], [204, 40], [286, 30], [214, 66]], [[0, 1], [1, 2], [2, 3], [3, 4], [3, 5], [5, 6], [6, 7], [7, 4]]],
+    ['VIRGO', [[20, 20], [80, 30], [140, 40], [200, 36], [262, 20], [172, 74], [60, 70]], [[0, 1], [1, 2], [2, 3], [3, 4], [2, 5], [1, 6]]],
+    ['LIBRA', [[60, 40], [150, 12], [240, 40], [90, 74], [212, 76]], [[0, 1], [1, 2], [2, 0], [0, 3], [2, 4]]],
+    ['SCORPIUS', [[20, 18], [32, 38], [44, 58], [94, 42], [142, 48], [182, 62], [230, 72], [270, 64], [290, 44], [278, 28]], [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9]]],
+    ['SAGITTARIUS', [[60, 32], [110, 20], [160, 30], [204, 22], [232, 42], [204, 62], [140, 66], [90, 58], [282, 32], [282, 62]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0], [2, 6], [4, 8], [8, 9], [9, 5]]],
+    ['CAPRICORNUS', [[20, 22], [110, 62], [190, 70], [280, 26], [200, 32], [110, 36]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]]],
+    ['AQUARIUS', [[20, 22], [70, 36], [110, 22], [150, 42], [190, 32], [232, 58], [280, 50], [132, 8], [152, 16]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [2, 7], [7, 8]]],
+    ['PISCES', [[10, 10], [62, 30], [140, 70], [220, 42], [262, 20], [290, 14], [288, 36], [264, 32]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 4]]]
+  ];
+  function cx38Doy() { var n = new Date(); return Math.floor((n - new Date(n.getFullYear(), 0, 0)) / 864e5); }
+  // A small number from a word, so each worksheet and chapter keeps its own constellation for the day.
+  function cx38Hash(s) { var h = 0; s = String(s || ''); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+  // The banner's sky: faint field stars, then the constellation (its lines draw once, its stars light one by one) and its name.
+  function cx38Sky(off, X, opt) {
+    opt = opt || {};
+    var H2 = opt.h || 96, sc = opt.sc || 1, z = CX38_ZOD[((cx38Doy() + off) % 12 + 12) % 12], Y = opt.y == null ? 4 : opt.y;
+    var px = function (i) { return Math.min(894, Math.round(X + z[1][i][0] * sc)); }, py = function (i) { return Math.round(Y + z[1][i][1] * 0.82 * sc); };
+    var seed = (off + 7) * 9301 + 49297, rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    var h = '<svg class="cx38-bsky" viewBox="0 0 900 ' + H2 + '" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">';
+    for (var i = 0; i < 34; i++) h += '<circle class="cx38-bf" cx="' + Math.round(rnd() * 900) + '" cy="' + Math.round(rnd() * H2) + '" r="' + (0.6 + Math.round(rnd() * 2) * 0.2).toFixed(1) + '" style="--t:' + Math.round(rnd() * 1200) + 'ms"></circle>';
+    h += '<path class="cx38-bl" pathLength="100" d="' + z[2].map(function (e) { return 'M' + px(e[0]) + ' ' + py(e[0]) + ' L' + px(e[1]) + ' ' + py(e[1]); }).join(' ') + '"></path>';
+    z[1].forEach(function (p, n) { h += '<circle class="cx38-bs" cx="' + px(n) + '" cy="' + py(n) + '" r="' + ((n % 3 === 1 ? 3 : 2) * (sc < 1 ? 0.8 : 1)) + '" style="--k:' + n + '"></circle>'; });
+    if (!opt.noName) h += '<text class="cx38-bn" x="' + Math.min(894, Math.round(X + 300 * sc)) + '" y="' + (opt.ly || 90) + '" text-anchor="end">' + z[0] + '</text>';
+    return h + '</svg>';
+  }
+  // A section's banner lights the first time it comes on screen, once: drawn again later, it comes back already lit.
+  NX.cx38lit = NX.cx38lit || {};
+  function cx38Lit(k) { return ' cx38-b' + (NX.cx38lit[k] ? ' lit cx38-seen' : '') + '" data-cx38k="' + esc(k); }
+  function cx38Watch(root) {
+    var els = root.querySelectorAll('.cx38-b:not(.lit)');
+    if (!els.length) return;
+    var light = function (el) { NX.cx38lit[el.getAttribute('data-cx38k')] = 1; el.classList.add('lit'); };
+    if (!('IntersectionObserver' in window)) { Array.prototype.forEach.call(els, light); return; }
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); light(e.target); } }); }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+    Array.prototype.forEach.call(els, function (el) { io.observe(el); });
+  }
+  // A worksheet's title, number first: "2.1" in the colour of its stage, then the name in light with a shine.
+  function cx38Title(t, c) {
+    var m = /^\s*(\d+(?:\.\d+)*[a-z]?)\s+(.+)$/i.exec(String(t || ''));
+    return m ? '<span class="cx38-tt" style="--c:' + c + '"><span class="cx38-num">' + esc(m[1]) + '</span><span class="cx38-name" data-t="' + esc(m[2]) + '">' + esc(m[2]) + '</span></span>'
+      : '<span class="cx38-tt" style="--c:' + c + '"><span class="cx38-name" data-t="' + esc(t) + '">' + esc(t) + '</span></span>';
+  }
+  // Where a sheet is, 0 to 4. A sheet not out to the class yet is at Set; corrections count once the marking is back and some are due.
+  function cx38Idx(w) {
+    if (!w) return 0;
+    var n = nxStage(w).n;
+    if (n === 3 && w.showMarked && w.corrDue && (w.correctionsOpen || w.corrDone < w.corrDue)) return 4;
+    return n;
+  }
+  // What each stage's note says, from the sheet's own numbers. The stage it is at says what needs doing there.
+  function cx38Notes(w, cls, idx) {
+    var pc = sxPc(w, cls), st = stageOf(w).k, left = (pc.notHanded || []).length, b = function (n, t, k) { return '<span class="' + (k || '') + '"><b>' + esc(n) + '</b>' + esc(t) + '</span>'; };
+    var cur = cxLines(w, cls).map(function (l) { return l.n !== '' ? b(l.n, ' ' + l.t, l.k === 'you' ? 'a' : l.k === 'late' ? 'r' : 'k') : '<span class="a">' + esc(l.t) + '</span>'; }).join('');
+    var N = [
+      '<span>' + esc('Out to ' + cls + (w.dueTs ? ', due ' + nxDay(w.dueTs) : '')) + '</span>',
+      b(pc.handed, ' handed in', 'v') + (left ? b(left, nxPastDue(w) ? ' not handed in' : ' not yet', nxPastDue(w) ? 'r' : 'k') : ''),
+      idx > 2 ? b(Math.max(w.markedFiles || 0, w.scored || 0) || pc.handed, ' marked', 'a') : idx < 2 ? '<span>After hand-in closes</span>' : '',
+      idx >= 3 ? b(pc.handed, ' back with ' + cls, 'g') : '<span>Not back yet</span>',
+      w.corrDue ? b(w.corrDone || 0, ' corrections in', 'g') + (w.corrDue - (w.corrDone || 0) > 0 ? b(w.corrDue - (w.corrDone || 0), w.correctionsOpen ? ' to come' : ' overdue', w.correctionsOpen ? 'k' : 'r') : '') : '<span>' + (idx >= 3 ? 'No corrections due' : 'After it is back') + '</span>'
+    ];
+    if (cur && idx >= 0) N[idx] = cur;
+    if (st === 'marking' && idx === 2) N[2] = '<span class="a">Claude is marking</span>';
+    return N;
+  }
+  function cx38Balls(notes, idx, label) {
+    return '<ol class="cx38-balls" aria-label="' + esc(label) + '">' + CX38_ST.map(function (s, i) {
+      var cls = i < idx ? 'done' : i === idx ? 'now' : '', pos = i === 0 ? ' l' : i === 4 ? ' r' : '';
+      return '<li class="' + cls + '" style="--c:' + s[1] + '" tabindex="0"' + (i === idx ? ' aria-current="step"' : '') + '><i aria-hidden="true"></i><em>' + s[0] + '</em>' +
+        '<span class="cx38-nw' + pos + '"><span class="cx38-note"><span class="cx38-stem"></span><span class="cx38-nb">' + (notes[i] || '') + '</span></span></span></li>';
+    }).join('') + '</ol>';
+  }
+  // One worksheet as a row: its title, its five stages, and the one thing to do next (the release 37 verb).
+  function cx38Row(w, cls, acts) {
+    var v = nxVerb(w, cls), ai = acts.length, lines = cxLines(w, cls), idx = w.practice ? -1 : cx38Idx(w);
+    acts.push({ w: w, verb: v });
+    var hot = lines.some(function (l) { return l.k === 'you'; }), late = lines.some(function (l) { return l.k === 'late'; });
+    var c = idx >= 0 ? CX38_ST[idx][1] : '#8A90AA';
+    return '<article class="cx38-wr' + (hot ? ' hot' : late ? ' late' : '') + '" style="--c:' + c + '"><div class="cx38-wh"><button type="button" class="cx38-wtb" data-nxopen="' + esc(w.id) + '" aria-label="Open ' + esc(w.title) + '">' + cx38Title(w.title, c) + '</button>' +
+      moreMenu(w, { act: '' }).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-cw-') + '</div>' +
+      '<span class="cx38-when">' + esc(cxWhen(w)) + (w.practice ? '' : ' · ' + esc(nxStageWord(w))) + '</span>' +
+      (w.practice ? '<span class="cx-quiet">' + esc(nxWsSub(w, cls)) + '</span>' : cx38Balls(cx38Notes(w, cls, idx), idx, 'Stage: ' + nxStageWord(w))) +
+      '<div class="cx38-wact"><button type="button" class="nx-btn ' + (v.kind || '') + (hot ? ' cx38-lamp' : '') + '" data-nxverb="' + ai + '">' + esc(v.label) + '</button></div></article>';
+  }
+  // The worksheets section: what is waiting to go out, the sheets that still need something (what needs you first), and
+  // the finished ones folded under them.
+  function cx38SheetsHtml(cls, sheets, waiting, acts, where) {
+    var live = [], done = [];
+    sheets.forEach(function (w) { (cxDone(w, cls) ? done : live).push(w); });
+    var rank = function (w) { var l = cxLines(w, cls); return l.some(function (x) { return x.k === 'you'; }) ? 0 : l.some(function (x) { return x.k === 'late'; }) ? 1 : w.practice ? 3 : 2; };
+    live.sort(function (a, b) { return rank(a) - rank(b) || (a.dueTs || 9e15) - (b.dueTs || 9e15); });
+    done.sort(function (a, b) { return (b.dueTs || 0) - (a.dueTs || 0); });
+    var open = live.filter(function (w) { return !w.practice && w.open; }).length;
+    var h = '<section class="cx-sec cx38-sec cx-sheets" aria-labelledby="cx-wh"><div class="cx38-banner' + cx38Lit('ws|' + cls + '|' + where) + '" style="--ac:#FFC86B">' + cx38Sky(0, 380) +
+      '<span class="cx-ic w">' + CX_ICON.sheets + '</span><span class="cx38-bt"><h2 id="cx-wh" class="cx38-h">Worksheets</h2><span class="cx-meta">' + esc(where) + (open ? ' · ' + open + ' open' : '') + '</span></span><span class="nx-grow"></span>' +
+      '<button type="button" class="nx-btn sm" data-nxc2="addw">+ Worksheet</button></div><div class="cx38-sbody">';
+    // homework ready to deploy needs you, so it comes first; the rest waiting to go out comes after the live sheets
+    var wNow = waiting.filter(function (x) { return / lit"/.test(x); }), wLater = waiting.filter(function (x) { return !/ lit"/.test(x); });
+    var rows = wNow.concat(live.map(function (w) { return cx38Row(w, cls, acts); }), wLater);
+    h += rows.length ? '<div class="cx38-list">' + rows.join('') + '</div>' : '<p class="nx-muted cx-none">' + (done.length ? 'Nothing needs you here. Every sheet is back and done.' : 'No worksheets here for ' + esc(cls) + ' yet. Press + Worksheet to set one.') + '</p>';
+    if (done.length) h += '<details class="cx-done"' + (NX.cxDone ? ' open' : '') + '><summary><i class="cx-ok">' + CX_ICON.tick + '</i>Done · ' + plural(done.length, 'worksheet', 'worksheets') + '</summary><div class="cx-drows">' + done.map(function (w) {
+      var v = nxVerb(w, cls), ai = acts.length; acts.push({ w: w, verb: v });
+      return '<div class="cx-drow"><button type="button" class="nx-rtb" data-nxopen="' + esc(w.id) + '"><b>' + esc(w.title) + '</b></button><span class="nx-muted">' + esc(nxWsSub(w, cls)) + '</span>' +
+        '<span class="nx-racts"><button type="button" class="nx-btn sm ghost" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' + moreMenu(w, { act: '' }).replace('btn small ghost more', 'nx-more').replace(/pop-w-/g, 'pop-dw-') + '</span></div>';
+    }).join('') + '</div></details>';
+    return h + '<!--cx-empty--></div></section>';
+  }
+  // Lessons: the one on now or next, then the ones after it. The lessons already taught are not listed here; they are all
+  // in Every lesson below, with Teach, Upload new version and their menus, as before.
+  function cx38LessonsHtml(cur, cls, L, at) {
+    var h = '<section class="cx-sec cx38-sec cx-lessons" aria-labelledby="cx-lh"><div class="cx38-banner' + cx38Lit('ls|' + cls + '|' + cur.key) + '" style="--ac:#B9A6FF">' + cx38Sky(4, 560, { sc: 1.1 }) +
+      '<span class="cx-ic l">' + CX_ICON.lessons + '</span><span class="cx38-bt"><h2 id="cx-lh" class="cx38-h">Lessons</h2><span class="cx-meta">' + esc(nxChProgress(cur, cls)) + '</span></span>' +
+      '<span class="nx-grow"></span><button type="button" class="nx-more nx-chmore" data-nxchm="' + esc(cur.key) + '" aria-label="More for ' + esc(chShort(cur.c)) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div><div class="cx38-sbody">';
+    var ahead = [];
+    for (var i = Math.max(0, at); i < L.length; i++) if (i === at || !L[i].taught || L[i].running || L[i].next) ahead.push(i);
+    h += ahead.length ? '<div class="cx38-lpath">' + ahead.map(function (i, j) {
+      var l = L[i], first = j === 0;
+      return '<div class="cx38-lp' + (first ? ' cur' : '') + '"><span class="cx38-lorb">' + cxStar(i, false) + '</span><span class="cx38-lt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span>' +
+        (first ? l.teach : l.teach.replace('nx-btn sm dark', 'nx-btn sm')) + '</div>';
+    }).join('') + '</div>' : '<p class="nx-muted cx-none">Every lesson in ' + esc(chShort(cur.c)) + ' is taught.</p>';
+    h += '<details class="cx-alll"' + (NX.cxAllL ? ' open' : '') + '><summary>Every lesson in ' + esc(chShort(cur.c)) + ' (' + L.length + ')</summary><div class="cx-lrows">' + cur.items.map(function (it, ii) {
+      var l = L[ii];
+      return '<div class="cx-lrow' + (l.running || l.next ? ' cur' : '') + '"><span class="cx-li">' + cxStar(ii, false) + '</span><span class="nx-rt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span><span class="nx-racts">' + l.teach +
+        '<label class="nx-btn sm ghost nx-up" title="Upload a new version of these slides">Upload new version<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label>' +
+        '<button type="button" class="nx-more" data-nxlm="' + ii + '" aria-label="More for ' + esc(l.title) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>';
+    }).join('') + '<label class="nx-btn sm ghost cx-addl">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label></div></details></div></section>';
+    return h;
+  }
+  // What's next: up to three things for this class, each with the same button as its row (mark, teach, remind).
+  function cx38Next(cls, cards, L, at, acts) {
+    var out = [];
+    cards.filter(function (w) { return !cxDone(w, cls) && cxLines(w, cls).some(function (l) { return l.k === 'you'; }); }).sort(function (a, b) { return (a.dueTs || 9e15) - (b.dueTs || 9e15); }).slice(0, 2).forEach(function (w) {
+      var v = nxVerb(w, cls), ai = acts.length, l = cxLines(w, cls).filter(function (x) { return x.k === 'you'; })[0];
+      acts.push({ w: w, verb: v });
+      out.push({ ac: CX38_ST[cx38Idx(w)][1], t: cx38Title(w.title, CX38_ST[cx38Idx(w)][1]), s: (l.n !== '' ? l.n + ' ' : '') + l.t, btn: '<button type="button" class="nx-btn cx38-lamp" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' });
+    });
+    var l = at >= 0 && L[at] && (L[at].running || L[at].next) ? L[at] : null;
+    if (l) out.push({ ac: '#B9A6FF', t: '<span class="cx38-tt" style="--c:#B9A6FF"><span class="cx38-name" data-t="' + esc('Teach ' + l.title) + '">' + esc('Teach ' + l.title) + '</span></span>', s: l.when, btn: l.teach.replace('nx-btn sm dark', 'nx-btn cx38-teach').replace('nx-btn sm green', 'nx-btn green') });
+    cards.filter(function (w) { return !w.practice && stageOf(w).k === 'collecting' && w.open && (sxPc(w, cls).notHanded || []).length; }).slice(0, 3 - out.length).forEach(function (w) {
+      var v = nxVerb(w, cls), ai = acts.length; acts.push({ w: w, verb: v });
+      var n = (sxPc(w, cls).notHanded || []).length;
+      out.push({ ac: '#B57BFF', t: cx38Title(w.title, '#B57BFF'), s: n + ' not handed in yet' + (w.dueTs ? ', due ' + (dueWords(w) || w.due) : ''), btn: '<button type="button" class="nx-btn" data-nxverb="' + ai + '">' + esc(v.label) + '</button>' });
+    });
+    out = out.slice(0, 3);
+    var open = !!NX.cx38nx;
+    return '<section class="cx38-next" aria-label="What is next"><button type="button" class="cx38-nxbtn" id="cx38-nxb" aria-expanded="' + open + '" aria-controls="cx38-nxp">' +
+      '<svg class="cx38-nxc" viewBox="0 0 132 52" aria-hidden="true"><path d="M18 34 L66 14 L114 30" pathLength="100"></path><path d="M66 14 L66 44" pathLength="100"></path><circle cx="18" cy="34" r="4"></circle><circle cx="66" cy="14" r="4.6"></circle><circle cx="114" cy="30" r="4"></circle><circle cx="66" cy="44" r="2"></circle></svg>' +
+      '<b>What\'s next</b><small>' + (out.length ? plural(out.length, 'thing', 'things') + ' for ' + esc(cls) : 'Nothing waiting for you') + '</small></button>' +
+      '<div class="cx38-nxp' + (open ? ' open' : '') + '" id="cx38-nxp" role="region" aria-label="What is next for ' + esc(cls) + '"' + (open ? '' : ' inert') + '><div class="cx38-nrows">' +
+      (out.length ? out.map(function (o, i) {
+        return '<div class="cx38-nrow" style="--ac:' + o.ac + ';--r:' + i + '">' + cx38Sky(i * 4 + 1, 520, { h: 76, sc: 0.62, y: 8, noName: true }) + '<span class="cx38-nt">' + o.t + '<small>' + esc(o.s) + '</small></span>' + o.btn + '</div>';
+      }).join('') : '<p class="nx-muted cx38-nnone">Nothing needs you in ' + esc(cls) + ' right now.</p>') + '</div></div></section>';
+  }
+  // Who owes work: one list per worksheet, most overdue first, with each name readable at a glance.
+  function cx38Owe(cls, cards) {
+    var groups = [], now = Date.now();
+    cards.forEach(function (w) {
+      if (w.practice) return;
+      var pc = sxPc(w, cls), cn = chNorm(cls);
+      if (nxPastDue(w) && nxRecent(w) && (pc.notHanded || []).length) groups.push({ w: w, corr: false, names: pc.notHanded.slice(), days: w.dueTs ? Math.max(0, Math.floor((now - w.dueTs) / 864e5)) : 0 });
+      if (w.showMarked && !w.correctionsOpen && nxRecent(w)) {
+        var c = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).map(function (x) { return String(x).replace(/^\S+\s+/, ''); });
+        if (c.length) groups.push({ w: w, corr: true, names: c, days: w.dueTs ? Math.max(0, Math.floor((now - w.dueTs) / 864e5)) : 0 });
+      }
+    });
+    groups.sort(function (a, b) { return b.days - a.days; });
+    var owes = {};
+    groups.forEach(function (g) { g.names.forEach(function (n) { owes[norm(n)] = (owes[norm(n)] || 0) + 1; }); });
+    groups.forEach(function (g) { g.names.sort(function (a, b) { return (owes[norm(b)] - owes[norm(a)]) || String(a).localeCompare(String(b)); }); });
+    return { groups: groups, owes: owes, people: Object.keys(owes).length };
+  }
+  function cx38OweHtml(cls, O, where) {
+    var h = '<section class="cx-sec cx38-sec cx38-owe" aria-labelledby="cx38-oh"><div class="cx38-banner' + cx38Lit('owe|' + cls + '|' + where) + '" style="--ac:#FF8A70">' + cx38Sky(8, 586) +
+      '<span class="cx-ic o">' + CX_ICON.people + '</span><span class="cx38-bt"><h2 id="cx38-oh" class="cx38-h">Who owes work</h2><span class="cx-meta">' + (O.people ? plural(O.people, 'student', 'students') + ' in ' + esc(where) + ', most overdue first' : esc(where)) + '</span></span></div><div class="cx38-sbody">';
+    var owes = O.owes;
+    if (!O.groups.length) return h + '<p class="nx-muted cx-none">Nobody in ' + esc(cls) + ' owes past-due work here.</p></div></section>';
+    h += '<div class="cx38-groups">' + O.groups.map(function (g, gi) {
+      var late = g.corr ? 'corrections overdue' : g.days ? plural(g.days, 'day late', 'days late') : 'due today';
+      return '<div class="cx38-grp"><div class="cx38-gh">' + cx38Title(g.w.title, '#FF8A70') + (g.corr ? '<span class="cx38-gk">Corrections</span>' : '') + '<span class="nx-grow"></span><b class="cx38-gn">' + g.names.length + '</b></div>' +
+        '<div class="cx38-names">' + g.names.map(function (n) {
+          var k = owes[norm(n)];
+          return '<button type="button" class="cx38-nm" data-cx38rec="' + esc(n) + '" aria-label="' + esc(pvName(n) + ', ' + late + (k > 1 ? ', owes ' + k : '') + '. Open their record') + '"><span class="cx38-av">' + esc(pvInit(n)) + '</span><span class="cx38-pn">' + esc(pvName(n)) + '</span>' +
+            (k > 1 ? '<span class="cx38-two">owes ' + k + '</span>' : '') + '<span class="cx38-pd">' + esc(late) + '</span></button>';
+        }).join('') + '</div><button type="button" class="nx-btn sm cx38-rem" data-cx38rem="' + gi + '">Remind these ' + g.names.length + '</button></div>';
+    }).join('') + '</div>';
+    return h + '<div class="cx38-ofoot"><button type="button" class="nx-btn sm ghost" data-cx38all="see">See everyone</button><button type="button" class="nx-btn sm cx38-rem" data-cx38all="rem">Remind all ' + O.people + '</button></div></div></section>';
+  }
+  // A reminder is copied to paste into the class chat, the way Remind works for a worksheet (nudge).
+  function cx38Copy(text, done) {
+    var ok = function () { toast(done || 'Reminder copied. Paste it into your class chat.'); };
+    var show = function () {
+      modal('<h2>Reminder</h2><p>Copy this and paste it into your class chat.</p><textarea id="cx38-t" style="width:100%;min-height:140px;border:1.5px solid var(--rule);border-radius:10px;padding:10px;font:inherit">' + esc(text) + '</textarea><div class="foot"><button class="btn" id="cx38-ok">Done</button></div>');
+      $('cx38-t').select(); $('cx38-ok').onclick = closeModal;
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, show); else show();
+  }
+  function cx38RemindText(cls, gs) {
+    return gs.map(function (g) {
+      return g.corr ? 'Reminder: please hand in your corrections for "' + g.w.title + '" on the Worksheet Hub.\nStill to hand in: ' + g.names.join(', ') + '.'
+        : 'Reminder: please hand in "' + g.w.title + '" on the Worksheet Hub' + (g.w.due ? (g.w.isDue ? '. It was due ' : ' by ') + g.w.due : '') + '.\nStill to hand in: ' + g.names.join(', ') + '.';
+    }).join('\n\n');
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !NX.cx38nx || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
+    var b = $('cx38-nxb'); if (b) { b.click(); b.focus(); }
+  });
   function nxChapters() {
     var box = $('view-chx'); if (!box || box.classList.contains('hidden') && H.view !== 'chx') return;
     var cls = nxCls();
@@ -8372,7 +8964,9 @@
     else if (!cur) cur = list.filter(function (c) { return sxChapterStats(c, cls).here; })[0] || list[list.length - 1] || null;
     var trk = (H.tracker || []).filter(function (t) { return t.cls === cls; })[0];
     var subj = cur ? (cur.sub.name || '') : given.length ? (given[0].sub.name || '') : '';
-    var h = '<div class="cx"><header class="cx-head"><div class="cx-ht"><h1 class="cx-title">' + esc(cls) + '</h1><p class="cx-sub">' + esc([subj, trk ? plural(trk.rows.length, 'student', 'students') : ''].filter(Boolean).join(' · ')) + '</p></div>' +
+    var prog = cur ? nxChProgress(cur, cls) : '';
+    var h = '<div class="cx cx38"><header class="cx-head"><div class="cx-ht"><h1 class="cx-title">' + esc(cls) + '</h1><p class="cx-sub">' + esc([subj, trk ? plural(trk.rows.length, 'student', 'students') : ''].filter(Boolean).join(' · ')) +
+      (cur ? ' · <b>' + esc(chShort(cur.c)) + '</b>' + (prog ? ', ' + esc(prog.charAt(0).toLowerCase() + prog.slice(1)) : '') : '') + '</p></div>' +
       '<div class="cx-hacts"><button type="button" class="nx-btn soft" data-nxc2="lib">Lesson library</button><button type="button" class="nx-btn soft" data-nxc2="preview">See it as a student</button></div></header>';
     // the chapters, as chips (the rail of release 34)
     h += '<nav class="cx-chips" aria-label="Chapters">';
@@ -8402,21 +8996,7 @@
       if (at < 0) at = L.length - 1;
       var trio = [at - 1, at, at + 1].filter(function (i) { return i >= 0 && i < L.length; });
       var lk = function (l) { return l.running ? 'Teaching now' : l.next ? 'Next' : l.taught ? 'Last taught' : 'Up next'; };
-      h += '<section class="cx-sec cx-lessons" aria-labelledby="cx-lh"><div class="cx-sech"><span class="cx-ic l">' + CX_ICON.lessons + '</span><h2 id="cx-lh">Lessons</h2><span class="cx-meta">' + esc(chShort(cur.c)) + ' · ' + esc(nxChProgress(cur, cls)) + '</span>' +
-        '<span class="nx-grow"></span><button type="button" class="nx-more nx-chmore" data-nxchm="' + esc(cur.key) + '" aria-label="More for ' + esc(chShort(cur.c)) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></div>';
-      h += '<div class="cx-sky' + (trio.length < 3 ? ' n' + trio.length : '') + '"><div class="cx-cline" aria-hidden="true"></div>' + trio.map(function (i) {
-        var l = L[i], mid = i === at;
-        return '<div class="cx-node' + (mid ? ' mid' : '') + (l.taught && !mid ? ' was' : '') + '"><span class="cx-lbl">' + esc(i < at ? 'Last taught' : i > at ? 'After that' : lk(l)) + '</span><span class="cx-orb">' + cxStar(i, mid) + '</span>' +
-          '<b class="cx-nt">' + esc(l.title) + '</b><span class="cx-ns">' + (l.taught && !l.running ? '<i class="cx-ok">' + CX_ICON.tick + '</i>' : '') + esc(l.when) + '</span>' + (mid || l.running || l.next ? l.teach : l.teach.replace('nx-btn sm dark', 'nx-btn sm')) + '</div>';
-      }).join('') + '</div>';
-      var openL = !!NX.cxAllL;
-      h += '<details class="cx-alll"' + (openL ? ' open' : '') + '><summary>Every lesson in ' + esc(chShort(cur.c)) + ' (' + L.length + ')</summary><div class="cx-lrows">' + cur.items.map(function (it, ii) {
-        var l = L[ii];
-        return '<div class="cx-lrow' + (l.running || l.next ? ' cur' : '') + '"><span class="cx-li">' + cxStar(ii, false) + '</span><span class="nx-rt"><b>' + esc(l.title) + '</b><span>' + esc(l.when) + '</span></span><span class="nx-racts">' + l.teach +
-          '<label class="nx-btn sm ghost nx-up" title="Upload a new version of these slides">Upload new version<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label>' +
-          '<button type="button" class="nx-more" data-nxlm="' + ii + '" aria-label="More for ' + esc(l.title) + '" aria-haspopup="menu" aria-expanded="false">' + NX_ICON.more + '</button></span></div>';
-      }).join('') + '<label class="nx-btn sm ghost cx-addl">Add or update a lesson<input type="file" accept=".html,.htm,text/html" data-nxupl="1" hidden></label></div></details></section>';
-      if (!cur.given) h += '<div class="nx-give"><span>' + esc(cls) + ' does not have this chapter yet. Giving it opens all its slides to ' + esc(cls) + ' for revision.</span><button type="button" class="nx-btn dark" data-nxc2="give">Give it to ' + esc(cls) + '</button></div>';
+      var giveH = cur.given ? '' : '<div class="nx-give"><span>' + esc(cls) + ' does not have this chapter yet. Giving it opens all its slides to ' + esc(cls) + ' for revision.</span><button type="button" class="nx-btn dark" data-nxc2="give">Give it to ' + esc(cls) + '</button></div>';
       // the worksheets: homework waiting to go out, then each sheet as a card, then the finished ones folded
       var seen = {}, cards = [], waiting = [];
       cur.items.forEach(function (it, ii) {
@@ -8439,7 +9019,10 @@
           '<span class="cx-when">' + (t.mode === 'practice' ? 'Practice' : 'Topical homework') + '</span><span class="cx-quiet">Not out to ' + esc(cls) + ' yet</span><div class="cx-cacts"><button type="button" class="nx-btn sm" data-nxdep="' + ai + '">Deploy</button></div></article>');
       });
       nxChWorksheets(cur.key, cls).forEach(function (w) { if (!seen[w.id]) { seen[w.id] = 1; cards.push(w); } });
-      h += cxSheetsHtml(cls, cards, waiting, acts, chShort(cur.c));
+      var sheetsH = cx38SheetsHtml(cls, cards, waiting, acts, chShort(cur.c));
+      h += cx38Next(cls, cards, L, at, acts) + '<div class="cx38-grid2">' + sheetsH + '<div class="cx38-side">' + cx38LessonsHtml(cur, cls, L, at) + giveH + '</div></div>';
+      NX.cx38owe = cx38Owe(cls, cards);
+      h += cx38OweHtml(cls, NX.cx38owe, chShort(cur.c));
       if (empty.length) {
         folded = '<details class="nx-empty"' + (NX.emptyOpen ? ' open' : '') + '><summary>' + (empty.every(function (e) { return /^Module\s/i.test(e.r.t); }) ? 'Modules' : 'Parts') + ' with no homework yet (' + empty.length + ')</summary><div class="nx-erows">' +
           empty.map(function (e, i) {
@@ -8449,7 +9032,9 @@
         h = h.replace('<!--cx-empty-->', folded);
       }
     } else {
-      h += cxSheetsHtml(cls, loose, [], acts, 'Not in a chapter');
+      h += cx38SheetsHtml(cls, loose, [], acts, 'Not in a chapter');
+      NX.cx38owe = cx38Owe(cls, loose);
+      h += cx38OweHtml(cls, NX.cx38owe, 'Not in a chapter');
     }
     h += '</div>';
     if (box._h === h) return;
@@ -8479,6 +9064,24 @@
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxverb]'), function (b) { b.onclick = function (e) { e.stopPropagation(); var a = acts[Number(b.getAttribute('data-nxverb'))]; a.verb.run(b); }; });
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxopen]'), function (b) { b.onclick = function () { openDetail(b.getAttribute('data-nxopen')); }; });
     bindActs(box);
+    // Release 38: What's next opens and closes in place; a name opens that student's record; Remind copies a reminder.
+    var nxb = $('cx38-nxb');
+    if (nxb) nxb.onclick = function () {
+      NX.cx38nx = !NX.cx38nx; var p = $('cx38-nxp');
+      nxb.setAttribute('aria-expanded', String(NX.cx38nx)); p.classList.toggle('open', NX.cx38nx);
+      if (NX.cx38nx) p.removeAttribute('inert'); else p.setAttribute('inert', '');
+    };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-cx38rec]'), function (b) { b.onclick = function () { nxOpenRecord(cls, b.getAttribute('data-cx38rec')); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-cx38rem]'), function (b) {
+      b.onclick = function () { var g = NX.cx38owe && NX.cx38owe.groups[Number(b.getAttribute('data-cx38rem'))]; if (g) cx38Copy(cx38RemindText(cls, [g])); };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-cx38all]'), function (b) {
+      b.onclick = function () {
+        if (b.getAttribute('data-cx38all') === 'see') { NX.stuFilter = 'owe'; showTab('stu'); return; }
+        if (NX.cx38owe && NX.cx38owe.groups.length) cx38Copy(cx38RemindText(cls, NX.cx38owe.groups), 'Reminders for all ' + plural(NX.cx38owe.people, 'student', 'students') + ' copied. Paste them into your class chat.');
+      };
+    });
+    cx38Watch(box);
     Array.prototype.forEach.call(box.querySelectorAll('[data-nxc2]'), function (b) {
       b.onclick = function () {
         var a = b.getAttribute('data-nxc2');
