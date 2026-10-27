@@ -700,6 +700,94 @@
   .shell-hint { display: flex; align-items: center; gap: 12px; padding: 8px 14px; margin: 0 8px 6px; border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-size: 15px; line-height: 1.35; }
   .shell-hint span { flex: 1; }
   .shell-hint.hidden { display: none; }
+  /* r38 worksheet: the calm night desk, one Help button, full screen, Pencil-only writing and the banner that
+     says what to do. Motion follows the house rules: ease-out, under 300 ms, nothing loops, and writing never animates. */
+  #scr-edit { --ease38: cubic-bezier(0.23, 1, 0.32, 1); }
+  :root[data-theme="dark"] #scr-edit { --paper: #0C0B1A; --surface: #17142C; --surface-2: #1E1A3A; --soft: #221E42; --soft-2: #2A2550;
+    --line: #2A2648; --rule: #35305C; --blue-soft: #2A2C5A; --muted: #A7A1C6; --ink: #EEECF7; --tool-ink: #E6E3F4; --accent-soft: #241F48;
+    background: radial-gradient(120% 70% at 50% -20%, #1B1740 0%, #0C0B1A 62%); }
+  :root[data-theme="dark"] #scr-edit .page { box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05); }
+  :root[data-theme="dark"] #scr-edit .bar { background: rgba(23,20,44,.96); }
+  /* one Help: the toolbar's Help button holds the guide too, so the old one at the top is not shown */
+  #btn-help { display: none !important; }
+  .modal .selfcheck input { width: 22px; height: 22px; flex: none; padding: 0; margin: 0; }
+  .modal .selfcheck label { justify-content: flex-start; text-align: left; cursor: pointer; }
+  #t-kit { position: relative; }
+  #t-kit .kdot { position: absolute; top: 7px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  #t-full .fl-lbl { display: none; }
+  .tool:active:not(:disabled) { transform: scale(.97); }
+  .tool { transition: transform 160ms var(--ease38, ease-out); }
+  /* Help and tools, in one popover that grows from its button */
+  .kit-pop { position: fixed; z-index: 31; width: min(440px, calc(100vw - 20px)); background: var(--surface); color: var(--ink); border: 1px solid var(--rule);
+    border-radius: 18px; box-shadow: 0 18px 46px rgba(8,10,34,.34); padding: 14px; max-height: calc(100vh - 120px); overflow-y: auto; animation: kp38in 180ms var(--ease38) both; }
+  @keyframes kp38in { from { opacity: 0; transform: scale(.96) translateY(-4px); } to { opacity: 1; transform: none; } }
+  .kp-h { font: 700 12px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 2px 4px 8px; }
+  .kp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .kp-grid .kit { width: 100%; height: 48px; justify-content: flex-start; border-radius: 14px; padding: 0 12px; font-size: 15px; }
+  .kp-grid .kit svg { width: 22px; height: 22px; }
+  .kp-grid .kit em { margin-left: auto; }
+  .kp-foot { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 4px; }
+  .kp-how { justify-self: start; min-height: 44px; border: 0; background: none; padding: 0 4px; font: 700 15px var(--display); color: var(--blue); cursor: pointer; }
+  .kp-mouse { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 4px; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .kp-mouse input { width: 22px; height: 22px; accent-color: var(--shop-blue); }
+  .kp-foot small { color: var(--muted); font-size: 13px; padding: 0 4px 2px; }
+  @media (hover: hover) and (pointer: fine) { .kp-grid .kit:hover { border-color: var(--blue); } }
+  /* What to do: one coloured banner. Gold finish, blue start, green corrections, purple marks, grey waiting. */
+  .ws-status { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; margin: 8px 10px; padding: 10px 14px 10px 20px; border-radius: 14px;
+    overflow: hidden; border: 1px solid color-mix(in srgb, var(--wc) 42%, var(--rule)); background: linear-gradient(100deg, color-mix(in srgb, var(--wc) 16%, var(--surface)) 0%, var(--surface) 72%); }
+  .ws-status::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--wc); }
+  .ws-status .wv { font: 800 13px/1.2 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--wink); white-space: nowrap; }
+  .ws-status .wt { flex: 1 1 260px; min-width: 0; font-size: 15px; line-height: 1.35; color: var(--ink); }
+  .ws-status.k-finish { --wc: #F2B65A; --wink: #8A5200; }
+  .ws-status.k-start  { --wc: #7CC4EE; --wink: #1D6A96; }
+  .ws-status.k-corr   { --wc: #3FBF7F; --wink: #146B3B; }
+  .ws-status.k-marks  { --wc: #B98CFF; --wink: #6338C4; }
+  .ws-status.k-wait   { --wc: #9A9DB2; --wink: #5B5E72; background: var(--surface); border-color: var(--rule); }
+  .ws-status.k-wait .wt { color: var(--muted); }
+  :root[data-theme="dark"] .ws-status.k-finish { --wink: #F2B65A; }
+  :root[data-theme="dark"] .ws-status.k-start  { --wink: #8FD0F4; }
+  :root[data-theme="dark"] .ws-status.k-corr   { --wink: #6FDCA4; }
+  :root[data-theme="dark"] .ws-status.k-marks  { --wink: #CDAEFF; }
+  :root[data-theme="dark"] .ws-status.k-wait   { --wink: #A9ACC2; }
+  .ws-status.lit { animation: ws38in 280ms var(--ease38) both; }
+  .ws-status.lit::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-100%);
+    background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--wc) 20%, transparent) 50%, transparent 70%); animation: ws38sweep 900ms var(--ease38) 120ms both; }
+  @keyframes ws38in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @keyframes ws38sweep { to { transform: translateX(100%); } }
+  .ws-go { flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; font: 700 15px var(--display); color: #fff; background: #23965A; cursor: pointer; transition: transform 160ms var(--ease38); }
+  .ws-go:active { transform: scale(.97); }
+  body.correcting .corr-strip { display: none; }
+  #btn-handin.go-corr { background: #23965A; border-color: #23965A; color: #fff; box-shadow: 0 3px 0 #17663D; }
+  .ws-kick { margin: 0 0 4px !important; font: 800 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: #B7791F; }
+  :root[data-theme="dark"] .ws-kick { color: #F2B65A; }
+  .pen-tip { display: flex; align-items: center; gap: 10px; margin: 0 10px 8px; padding: 8px 10px 8px 14px; border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-size: 15px; line-height: 1.35; }
+  .pen-tip svg { width: 20px; height: 20px; flex: none; }
+  .pen-tip span { flex: 1; }
+  .pen-tip .linkbtn { min-height: 40px; padding: 0 10px; color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  /* Full screen: the worksheet alone on a very dark desk, with a slim floating toolbar */
+  :root.ws-focus #scr-edit { background: #07060F; }
+  :root.ws-focus #scr-edit .bar { position: absolute; z-index: 20; top: 10px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 20px);
+    display: flex; align-items: center; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+  :root.ws-focus #scr-edit .bar-row { min-height: 0; padding: 4px 6px; border-top: 0; }
+  :root.ws-focus #scr-edit .bar-row:first-child { order: 2; padding-left: 0; display: flex !important; }
+  :root.ws-focus #tools-row { order: 1; overflow-x: auto; }
+  :root.ws-focus #tools-row::before, :root.ws-focus #tools-row::after { content: none; }
+  :root.ws-focus #btn-back, :root.ws-focus #doc-title, :root.ws-focus #save-status, :root.ws-focus #btn-help,
+  :root.ws-focus .corr-strip, :root.ws-focus .ws-status, :root.ws-focus .pen-tip, :root.ws-focus .shell-hint { display: none !important; }
+  :root.ws-focus #t-full { width: auto; padding: 0 10px; gap: 6px; }
+  /* the slim bar keeps the writing tools, zoom, Help, Exit and Hand in; the rest waits for the normal view */
+  :root.ws-focus #t-zoomlabel, :root.ws-focus #t-addpage, :root.ws-focus #tools-row .sep { display: none; }
+  :root.ws-focus #t-kit { width: 42px; padding: 0; } :root.ws-focus #t-kit > span { display: none; }
+  :root.ws-focus #t-full .fl-lbl { display: inline; font-weight: 700; font-size: 14px; }
+  :root.ws-focus #pages { padding: 78px 6px 60px; gap: 22px; }
+  :root.ws-focus .page .pno { color: #8C88A8; }
+  @media (max-width: 700px) { :root.ws-focus #t-full .fl-lbl { display: none; } :root.ws-focus #t-full { width: 42px; padding: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .kit-pop { animation: kp38fade 160ms linear both; } .ws-status.lit { animation: kp38fade 200ms linear both; } .ws-status.lit::after { display: none; }
+    .tool:active:not(:disabled), .ws-go:active { transform: none; }
+  }
+  @keyframes kp38fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-transparency: reduce) { :root[data-theme="dark"] #scr-edit .bar { background: #17142C; } }
 </style>
 </head>
 <body>
@@ -790,17 +878,27 @@
       <button class="tool" id="t-zoomout" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-4-4"/></svg></button>
       <button class="tool text zl" id="t-zoomlabel" aria-label="Back to 100 percent">100%</button>
       <button class="tool" id="t-zoomin" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M11 8v6M20 20l-4-4"/></svg></button>
+      <span class="sep"></span>
+      <button class="tool text" id="t-kit" aria-label="Help and tools" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 015.4 1c0 1.9-2.7 2.4-2.7 4"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg><span>Help</span><i class="kdot hidden" id="kit-dot" aria-hidden="true"></i></button>
+      <button class="tool" id="t-full" aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" id="full-icon"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="fl-lbl">Exit</span></button>
       <span class="edit-only" style="display:contents">
         <span class="sep"></span>
-        <button class="tool text" id="t-finger" aria-label="What your finger does"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5a1.5 1.5 0 013 0v6"/><path d="M11 11V4a1.5 1.5 0 013 0v7"/><path d="M14 11V6a1.5 1.5 0 013 0v7c0 4-2.5 7-6 7-2.5 0-4-1.2-5.5-3.5L4 13a1.5 1.5 0 012.5-1.5L8 13"/></svg><span id="finger-label">Finger writes</span></button>
         <button class="tool text" id="t-addpage" aria-label="Add an extra page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg>Page</button>
       </span>
     </div>
-    <div class="bar-row kit-row" id="kit-row" aria-label="Toolkit"></div>
     <div class="corr-strip" id="corr-strip">Corrections. Everything you write is in green. Hand them in when you have finished.</div>
+    <div class="ws-status hidden" id="ws-status" role="status"><span class="wv" id="ws-verb"></span><span class="wt" id="ws-line"></span><button class="ws-go hidden" id="ws-go" type="button"></button></div>
+    <div class="pen-tip hidden" id="pen-tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg><span>Write with your Apple Pencil. Your hand can rest on the screen.</span><button class="linkbtn" id="pen-tip-ok" type="button">Got it</button></div>
   </div>
   <div class="ed-body"><div id="scroller"><div id="pages"></div></div><div id="notes" class="notes"></div></div>
   <div id="pop" class="pop hidden" role="dialog" aria-label="Tool options"></div>
+  <div id="kit-pop" class="kit-pop hidden" role="dialog" aria-label="Help and tools">
+    <div class="kp-h" id="kp-h-help">Help</div><div class="kp-grid" id="kit-help"></div>
+    <div class="kp-h" id="kp-h-tools">Tools</div><div class="kp-grid" id="kit-tools"></div>
+    <div class="kp-foot"><button class="kp-how" id="kp-how" type="button">How to do your worksheet</button>
+      <label class="kp-mouse edit-only"><input type="checkbox" id="kp-mouse"> Mouse can write (for testing)</label>
+      <small class="edit-only">On an iPad, only the Apple Pencil writes.</small></div>
+  </div>
   <div id="calc" class="float calc hidden" role="dialog" aria-label="Calculator"><div class="float-head"><b>Calculator</b><button class="fx" id="calc-x" aria-label="Close the calculator">&times;</button></div>
     <div class="calc-tape" id="calc-tape"></div><div class="calc-disp" id="calc-disp" aria-live="polite">0</div><div class="calc-keys" id="calc-keys"></div>
     <button class="btn small ghost calc-put" id="calc-put">Put the answer on the page</button></div>
@@ -862,7 +960,7 @@
     undo: [], redo: [], version: 0, savedVersion: 0, saving: false,
     zoom: FIT, scale: 1,
     tool: 'pen', color: PENS[0][0], hlColor: HLS[0][0], sizeIdx: 0, shape: 'line',
-    finger: 'draw', penSeen: false,
+    mouseWrites: false,
     near: {},
     org: null, hwView: 'todo', fsel: 'all', q: '', sort: 'new'
   };
@@ -2442,6 +2540,7 @@
       S.extras = d.extras || null;
       if (S.version === S.savedVersion) setStatus(d.submittedAt ? 'Handed in ' + d.submittedAt : '');
       $('btn-handin').textContent = d.submittedAt ? 'Hand in again' : 'Hand in';
+      wsBanner();
       var server = d.draft ? safeParse(d.draft) : null;
       var newer = server && server.pages && (server.t || 0) > ((local && local.t) || 0);
       if (d.pdf) {
@@ -2516,6 +2615,7 @@
       S.doc.submittedAt = at;
       $('btn-handin').textContent = 'Hand in again';
       setStatus('Handed in ' + at);
+      wsBanner();
       modal(starBurst() + '<h2 class="centre-text">Handed in for you</h2><p class="centre-text">It was nearly the due time, so your worksheet was handed in for you at ' + esc(at) + '.</p>', [
         { text: 'Stay here', ghost: true }, { text: 'Back to my worksheets', fn: leaveDoc }]);
     }).catch(function () {
@@ -2530,7 +2630,7 @@
     busy('Opening your marked work...');
     Promise.all([libs(), call('api_marked', S.token, a.id)]).then(function (res) {
       var d = res[1];
-      S.doc = { id: a.id, title: d.title + ' (marked)', submittedAt: '' };
+      S.doc = { id: a.id, title: d.title + ' (marked)', submittedAt: '', kind: 'marked', corrTodo: a.corr === 'todo', src: a };
       S.readOnly = true; S.mode = 'read'; S.extras = null;
       S.pdfBytes = b64ToBytes(d.pdf);
       return startDoc(null);
@@ -2543,7 +2643,7 @@
     busy('Opening the answers...');
     Promise.all([libs(), call('api_answers', S.token, a.id)]).then(function (res) {
       var d = res[1];
-      S.doc = { id: a.id, title: d.title + ' (answers)', submittedAt: '' };
+      S.doc = { id: a.id, title: d.title + ' (answers)', submittedAt: '', kind: 'key' };
       S.readOnly = true; S.mode = 'read'; S.extras = null;
       S.pdfBytes = b64ToBytes(d.pdf);
       return startDoc(null);
@@ -2587,7 +2687,7 @@
     return b.querySelector('svg').outerHTML + (b.querySelector('.dot') ? b.querySelector('.dot').outerHTML : '');
   }
   var HELP = [
-    ['t-pen', 'Write', 'Write your answers on the worksheet with the Apple Pencil. Use one finger to scroll up and down.'],
+    ['t-pen', 'Write', 'Write your answers on the worksheet with the Apple Pencil. Only the Pencil writes, so your hand can rest on the screen. Use one finger to scroll, and two fingers to zoom.'],
     ['t-style', 'Colour and size', 'Tap the round button to choose a colour and how thick the line is. Tap the pen again to open the same choices.'],
     ['t-hl', 'Highlighter', 'Tap the highlighter to mark words in see-through colour. Its colours are in the round button.'],
     ['t-shape', 'Shapes', 'Tap Shapes and choose a straight line, an arrow, a rectangle or an oval. Press on the page and drag to draw it. Use straight lines for rays and graphs.'],
@@ -2596,7 +2696,8 @@
     ['t-select', 'Select and move', 'Tap Select, then draw a loop round your writing (or tap one thing). Drag it to move it, drag the round corner to make it bigger or smaller, or tap Copy or Delete.'],
     ['t-undo', 'Undo and redo', 'Tap undo to remove your last change. Tap redo to bring it back.'],
     ['t-zoomin', 'Zoom', 'Tap the magnifying glasses to make the worksheet bigger or smaller. Tap the percentage to go back to 100%.'],
-    ['t-finger', 'No Apple Pencil?', 'Tap Finger writes so that your finger writes. Tap it again to change to Finger scrolls. When you use an Apple Pencil, your finger scrolls by itself.'],
+    ['t-kit', 'Help and tools', 'Tap Help for hints, I\'m stuck, How sure and Ask Claude, and for tools such as the ruler, the calculator and the formulas.'],
+    ['t-full', 'Full screen', 'Tap the full screen button to see only your worksheet. Tap it again, or press Escape, to come back.'],
     ['t-addpage', 'More space', 'Tap Page to add a blank page at the end for extra working.'],
     ['', 'Saving', 'Your work saves by itself. Before you close Safari, check that the top of the screen says Saved.'],
     ['handin', 'Hand in', 'When you have finished, tap Hand in. You can change your work and hand it in again until your teacher closes the worksheet.'],
@@ -2610,7 +2711,7 @@
         : '<svg viewBox="0 0 24 24" fill="none" stroke="#1d7a46" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
       return '<div class="help-row"><div class="help-icon">' + ic + '</div><div class="help-text"><b>' + h[1] + '</b><span>' + h[2] + '</span></div></div>';
     }).join('');
-    modal('<h2>How to do your worksheet</h2><p class="intro">You can open this again at any time with the Help button at the top.</p>' + rows,
+    modal('<h2>How to do your worksheet</h2><p class="intro">You can open this again at any time from the Help button on the toolbar.</p>' + rows,
       [{ text: 'Got it' }], 'help');
     helpShown = true;
     lsSet('wsh_help_seen', '1');
@@ -2620,6 +2721,95 @@
   }
   $('btn-help').onclick = showHelp;
   $('btn-list-help').onclick = showHelp;
+
+  /* ---------------- Release 38: what to do, the Pencil tip, the mouse switch and full screen ---------------- */
+  // One coloured banner says what this worksheet needs: finish it (gold), do corrections (green), see the marks
+  // (purple), or nothing, because it is waiting for Mr Cedric (grey).
+  function dueLine(d) {
+    if (!d.dueTs) return 'Tap Hand in when you have finished.';
+    var t = new Date(d.dueTs).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true });
+    return d.dueTs < Date.now() ? 'It was due ' + t + '. Hand it in now.' : 'Due ' + t + '.';
+  }
+  function wsBanner() {
+    var el = $('ws-status'), go = $('ws-go'), d = S.doc;
+    if (!d || S.mode === 'note') { el.classList.add('hidden'); return; }
+    var k = d.kind || '', b = null;
+    if (S.mode === 'corr') b = d.submittedAt ? ['wait', 'Waiting for Mr Cedric', 'Corrections handed in ' + d.submittedAt + '. You can still change them until corrections close.']
+      : ['corr', 'Do your corrections', 'Write your fixes next to the red marks. Everything you write is in green.'];
+    else if (S.mode === 'work') b = d.scratch ? ['finish', 'Try it again', 'A clean copy. It stays on this iPad and is not handed in.']
+      : d.practice ? ['start', 'Practice', 'Practise on it any time. Nothing is handed in.']
+      : d.submittedAt ? ['wait', 'Waiting for Mr Cedric', 'Handed in ' + d.submittedAt + '. You can still change it and hand it in again until it closes.']
+      : ['finish', 'Finish this', dueLine(d)];
+    else if (k === 'marked') b = ['marks', 'See your marks', d.corrTodo ? 'Read the red marks. Then do your corrections in green.' : 'Read the red marks and your teacher\'s comments.'];
+    else if (k === 'key') b = ['marks', 'The answers', 'Check your work against the answers.'];
+    else if (k === 'view') b = ['wait', 'Waiting for Mr Cedric', 'Handed in' + (d.submittedAt ? ' ' + d.submittedAt : '') + '. Nothing to do now.'];
+    else if (k === 'clean') b = ['start', 'A clean copy', 'The worksheet with nothing written on it.'];
+    if (!b) { el.classList.add('hidden'); return; }
+    var changedKind = el.getAttribute('data-k') !== b[0] || el.classList.contains('hidden');
+    el.className = 'ws-status k-' + b[0];
+    el.setAttribute('data-k', b[0]);
+    $('ws-verb').textContent = b[1]; $('ws-line').textContent = b[2];
+    // the one way on from the marked copy, when this page opened it from the list (the shell has its own)
+    var canCorr = k === 'marked' && d.corrTodo && d.src && !SHELL;
+    go.classList.toggle('hidden', !canCorr);
+    if (canCorr) { go.textContent = 'Do corrections'; go.onclick = function () { openCorrection(d.src); }; }
+    if (changedKind) { el.classList.remove('lit'); void el.offsetWidth; el.classList.add('lit'); }
+  }
+  function penTipShow() {
+    var show = !!S.doc && !S.readOnly && S.mode !== 'note' && !lsGet('wsh_pencil_tip');
+    $('pen-tip').classList.toggle('hidden', !show);
+  }
+  function penTipDone() {
+    var t = $('pen-tip');
+    if (!t || t.classList.contains('hidden')) return;
+    t.classList.add('hidden'); lsSet('wsh_pencil_tip', '1');
+  }
+  $('pen-tip-ok').onclick = penTipDone;
+  // On a computer, for testing: a mouse writes only when this is on. It is kept on this device only.
+  S.mouseWrites = lsGet('wsh_mouse_writes') === '1';
+  $('kp-mouse').checked = S.mouseWrites;
+  $('kp-mouse').onchange = function () { S.mouseWrites = $('kp-mouse').checked; lsSet('wsh_mouse_writes', S.mouseWrites ? '1' : ''); };
+  function mouseNote() {
+    if (Date.now() - (S.mouseNoted || 0) < 8000) return;
+    S.mouseNoted = Date.now();
+    toast('Only the Apple Pencil writes. To try it with a mouse, turn on Mouse can write in Help.', 3800);
+  }
+  // Full screen: the worksheet alone, large, with a slim toolbar. The writing is kept in page points, so it
+  // lines up exactly at any size; only the scale changes.
+  function fsEl() { return document.fullscreenElement || document.webkitFullscreenElement || null; }
+  function keepPlace(fn) {
+    var sc = $('scroller'), fy = sc.scrollTop / Math.max(1, sc.scrollHeight), fx = sc.scrollLeft / Math.max(1, sc.scrollWidth);
+    fn();
+    layout();
+    sc.scrollTop = fy * sc.scrollHeight; sc.scrollLeft = fx * sc.scrollWidth;
+  }
+  function focusSet(on) {
+    var root = document.documentElement;
+    if (on === root.classList.contains('ws-focus')) return;
+    kitClose(); closePop();
+    keepPlace(function () { root.classList.toggle('ws-focus', on); });
+    $('t-full').setAttribute('aria-pressed', on ? 'true' : 'false');
+    $('t-full').setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+    $('full-icon').innerHTML = on ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
+    try {
+      if (on && !fsEl()) {
+        var req = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (req) { var r = req.call(root); if (r && r.catch) r.catch(function () { /* the focus view still fills the window */ }); }
+      } else if (!on && fsEl()) {
+        var ex = document.exitFullscreen || document.webkitExitFullscreen;
+        if (ex) { var x = ex.call(document); if (x && x.catch) x.catch(function () { /* already out */ }); }
+      }
+    } catch (e) { /* the focus view is enough */ }
+  }
+  $('t-full').onclick = function () { focusSet(!document.documentElement.classList.contains('ws-focus')); };
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (t) {
+    document.addEventListener(t, function () { if (!fsEl() && document.documentElement.classList.contains('ws-focus')) focusSet(false); else layout(); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (kitOpenNow) { kitClose(); return; }
+    if (document.documentElement.classList.contains('ws-focus') && $('veil').classList.contains('hidden')) focusSet(false);
+  });
 
   function safeParse(s) { if (!s) return null; try { return JSON.parse(s); } catch (e) { return null; } }
 
@@ -2650,6 +2840,8 @@
       $('btn-handin').classList.toggle('hidden', S.readOnly || (S.mode === 'work' && !!(S.doc && S.doc.practice)));
       $('btn-handin').textContent = S.mode === 'note' ? 'Save as PDF' : S.mode === 'corr' ? (S.doc.submittedAt ? 'Hand in corrections again' : 'Hand in corrections') : (S.doc.submittedAt ? 'Hand in again' : 'Hand in');
       setStatus(S.readOnly ? '' : S.mode === 'note' ? 'Your note' : (S.doc.submittedAt ? 'Handed in ' + S.doc.submittedAt : ''));
+      $('btn-handin').classList.toggle('go-corr', S.mode === 'corr');
+      wsBanner(); penTipShow();
       updateUndo();
       zoomButtons();
       show('scr-edit');
@@ -2668,6 +2860,7 @@
     if (S.tool === 'select') S.tool = 'pen';
     S.ov = null; S.reading = false; S.cropping = false; S.tapFor = null; S.questions = null; S.graph = null; S.pendingText = null;
     if (S.tool === 'normal' || S.tool === 'stamp') S.tool = 'pen';
+    kitClose();
     if (window.speechSynthesis) speechSynthesis.cancel();
     ['calc', 'formula', 'graph', 'readbar'].forEach(function (id) { $(id).classList.add('hidden'); });
     $('scr-edit').classList.remove('split'); $('notes').innerHTML = '';
@@ -2830,16 +3023,18 @@
     if (e.target.closest && e.target.closest('.selbar')) return;   // its own buttons
     stopFling();
     closePop();
+    // Release 38: only the Apple Pencil writes, rubs out, selects or places anything. A finger or a resting hand
+    // only scrolls and zooms. A mouse writes only when "Mouse can write (for testing)" is on in Help.
     var isPen = e.pointerType === 'pen';
-    if (isPen && !S.penSeen) { S.penSeen = true; setFinger('scroll'); }
-    var writes = !S.readOnly && (isPen || e.pointerType === 'mouse' || (e.pointerType === 'touch' && S.finger === 'draw'));
+    var writes = !S.readOnly && (isPen || (e.pointerType === 'mouse' && S.mouseWrites));
     var pageEl = e.target.closest ? e.target.closest('.page') : null;
+    if (pageEl && !S.readOnly && e.pointerType === 'mouse' && !S.mouseWrites) mouseNote();
     if (pageEl && specialDown(e, pageEl, writes)) { try { $('scroller').setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } return; }
     if (pageEl && S.tool === 'select' && !S.readOnly) {
-      // A finger can always drag what is selected. A new loop needs whatever writes (Pencil, or a finger set to write).
+      // Only the Pencil makes a loop or moves what is selected; a finger scrolls.
       var si = Number(pageEl.getAttribute('data-i')), srect = pageEl.getBoundingClientRect(), spt = pagePoint(e, S.pages[si], srect);
       var hitSel = selHitAt(si, spt);
-      if (hitSel || writes) {
+      if (writes) {
         e.preventDefault(); ensurePage(si); selDown(e, si, srect, spt, hitSel);
         try { $('scroller').setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
         return;
@@ -2970,8 +3165,9 @@
   // choosing a part of the page for Claude, and the graph helper's taps.
   function specialDown(e, pageEl, writes) {
     var i = Number(pageEl.getAttribute('data-i')), pg = S.pages[i], rect = pageEl.getBoundingClientRect(), pt = pagePoint(e, pg, rect);
-    if (S.tapFor && S.graph) { e.preventDefault(); act = { kind: 'tap', id: e.pointerId, i: i, pt: pt, graph: true }; return true; }
-    if (S.cropping) { e.preventDefault(); ensurePage(i); act = { kind: 'crop', id: e.pointerId, i: i, rect: rect, p0: pt, p1: pt }; cropBox(act); return true; }
+    // a plot cross and the box for Claude come from the Pencil; a finger still scrolls
+    if (S.tapFor && S.graph && writes) { e.preventDefault(); act = { kind: 'tap', id: e.pointerId, i: i, pt: pt, graph: true }; return true; }
+    if (S.cropping && writes) { e.preventDefault(); ensurePage(i); act = { kind: 'crop', id: e.pointerId, i: i, rect: rect, p0: pt, p1: pt }; cropBox(act); return true; }
     if (S.reading) {
       e.preventDefault();
       if (e.pointerType === 'touch') { startPan(e); act.kind = 'readpan'; act.i = i; act.pt = pt; }
@@ -3292,20 +3488,74 @@
     if (a.kind === 'crop') { var cb = $('cropbox'); if (cb) cb.remove(); }
     if (a.i != null && S.pages[a.i] && S.pages[a.i].ink) redrawInk(a.i);
   }
+  /* Release 38: palm rejection for Pencil-only writing. While the Pencil is down, and for half a second after it
+     lifts, every touch is ignored, and so is a contact far bigger than a fingertip. Touch never writes; it scrolls,
+     and two fingers zoom. */
+  var PEN_AFTER_MS = 500, PALM_PX = 60;
+  var pensDown = {}, penUpAt = 0, pinch = null, touchIds = {};
+  function penBusy() { return Object.keys(pensDown).length > 0 || Date.now() - penUpAt < PEN_AFTER_MS; }
+  // The Pencil is followed on the whole page (capture), so a stroke that ends off the worksheet still counts as lifted.
+  document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'pen') pensDown[e.pointerId] = 1; }, true);
+  ['pointerup', 'pointercancel'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (e.pointerType === 'pen' && pensDown[e.pointerId]) { delete pensDown[e.pointerId]; penUpAt = Date.now(); } }, true);
+  });
+  function palmTouch(e) { return e.pointerType === 'touch' && (penBusy() || Math.max(e.width || 0, e.height || 0) > PALM_PX || Ink.Palm.isPalm(e)); }
+  function pinchStart(a, b) {
+    pinch = { a: a.id, b: b.id, pts: {}, d0: 0 };
+    pinch.pts[a.id] = [a.x, a.y]; pinch.pts[b.id] = [b.x, b.y];
+    pinch.d0 = pinch.dStart = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    pinch.t0 = Date.now(); pinch.moved = false;
+  }
+  // Two quick two-finger taps turn full screen on or off.
+  var twoTapAt = 0;
+  function pinchEnd() {
+    var p = pinch; pinch = null;
+    if (!p || p.moved || Date.now() - p.t0 > 350) return;
+    if (Date.now() - twoTapAt < 450) { twoTapAt = 0; focusSet(!document.documentElement.classList.contains('ws-focus')); }
+    else twoTapAt = Date.now();
+  }
+  function pinchMove(e) {
+    pinch.pts[e.pointerId] = [e.clientX, e.clientY];
+    var p1 = pinch.pts[pinch.a], p2 = pinch.pts[pinch.b], d = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]) || 1, r = d / pinch.d0;
+    if (Math.abs(d - pinch.dStart) > 24) pinch.moved = true;
+    if (r > 1.22 && S.zoom < ZOOMS.length - 1) { zoomTo(S.zoom + 1); pinch.d0 = d; }
+    else if (r < 0.82 && S.zoom > 0) { zoomTo(S.zoom - 1); pinch.d0 = d; }
+  }
   sc0.addEventListener('pointerdown', function (e) {
-    if (e.pointerType === 'touch' && Ink.Palm.isPalm(e)) { e.preventDefault(); return; }
+    if (e.pointerType === 'pen') penTipDone();
+    if (palmTouch(e)) { e.preventDefault(); return; }
+    if (e.pointerType === 'touch') {
+      touchIds[e.pointerId] = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      // a second finger while the first one scrolls: the two of them zoom
+      if (!pinch && act && act.kind === 'pan' && act.ptype === 'touch' && touchIds[act.id]) {
+        var first = touchIds[act.id]; act = null; stopFling(); pinchStart(first, touchIds[e.pointerId]);
+        try { sc0.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        return;
+      }
+      if (pinch) return;
+    }
     if (e.pointerType === 'pen' && act && act.ptype === 'touch') dropTouchAct();
+    if (e.pointerType === 'pen' && pinch) pinch = null;
     var before = act;
     onDown(e);
     if (act && act !== before) act.ptype = e.pointerType;
   });
-  sc0.addEventListener('pointermove', onMove);
+  sc0.addEventListener('pointermove', function (e) {
+    if (touchIds[e.pointerId]) { touchIds[e.pointerId].x = e.clientX; touchIds[e.pointerId].y = e.clientY; }
+    if (pinch && (e.pointerId === pinch.a || e.pointerId === pinch.b)) { e.preventDefault(); pinchMove(e); return; }
+    onMove(e);
+  });
+  function penLifted(e) { delete touchIds[e.pointerId]; }
   sc0.addEventListener('pointerup', function (e) {
+    penLifted(e);
+    if (pinch && (e.pointerId === pinch.a || e.pointerId === pinch.b)) { pinchEnd(); return; }
     var h = act && act.kind === 'pan' && e.pointerId === act.id ? act.hist : null;
     onUp(e);
     if (h) startFling(h);
   });
   sc0.addEventListener('pointercancel', function (e) {
+    penLifted(e);
+    if (pinch && (e.pointerId === pinch.a || e.pointerId === pinch.b)) { pinch = null; return; }
     if (act && e.pointerId === act.id && (act.kind === 'draw' || act.kind === 'hl' || act.kind === 'shape' || act.kind === 'tap' || act.kind === 'tidy' || act.kind === 'stamp' || act.kind === 'normal' || act.kind === 'ovline')) {
       var i = act.i; clearTimeout(act.holdT); act = null; redrawInk(i); ovReadout(''); return;
     }
@@ -3336,11 +3586,6 @@
     bar.style.background = S.tool === 'hl' ? S.hlColor : penColour();
     bar.style.height = Math.max(2, Math.round(size.w * 1.6)) + 'px';
     $('t-style').setAttribute('aria-label', 'Colour and size: ' + size.label);
-  }
-  function setFinger(mode) {
-    S.finger = mode;
-    $('finger-label').textContent = mode === 'draw' ? 'Finger writes' : 'Finger scrolls';
-    $('t-finger').classList.toggle('on', mode === 'draw');
   }
 
   // The small panel that opens under a tool: colours and sizes, or shapes.
@@ -3409,11 +3654,6 @@
   $('t-eraser').onclick = function () { closePop(); setTool('eraser'); };
   $('t-select').onclick = function () { closePop(); setTool(S.tool === 'select' ? 'pen' : 'select'); if (S.tool === 'select') toast('Draw a loop round your writing, or tap one thing, to select it.', 3000); };
   $('t-style').onclick = function () { if (S.tool === 'eraser') setTool('pen'); openStyle(); };
-  $('t-finger').onclick = function () { setFinger(S.finger === 'draw' ? 'scroll' : 'draw'); };
-  // An iPad that has used an Apple Pencil before starts with the finger scrolling, so a palm never writes.
-  function pencilKnown() { if (!S.penSeen) { S.penSeen = true; setFinger('scroll'); } }
-  if (Ink.Palm.seen()) pencilKnown();
-  Ink.Palm.onSeen(pencilKnown);
   $('t-undo').onclick = undo;
   $('t-redo').onclick = redo;
   $('t-zoomin').onclick = function () { zoomTo(Math.min(ZOOMS.length - 1, S.zoom + 1)); };
@@ -3429,7 +3669,6 @@
       { text: 'Add page', fn: addExtraPage }
     ]);
   };
-  setFinger(S.penSeen ? 'scroll' : 'draw');
   refreshTools();
 
   /* ---------------- Ruler and protractor ----------------
@@ -3888,7 +4127,7 @@
       var warn = rows.some(function (x) { return x[0] === 'warn'; });
       var list = '<ul class="checks">' + rows.map(function (x) { return '<li class="' + x[0] + '">' + esc(x[1]) + '</li>'; }).join('') + '</ul>' +
         '<p class="mini-h">Check for yourself</p><ul class="selfcheck">' + ['I showed my working', 'I wrote units with my answers', 'I labelled my diagrams'].map(function (t, k) { return '<li><label><input type="checkbox" id="sc' + k + '"> ' + t + '</label></li>'; }).join('') + '</ul>';
-      modal('<h2>Before you hand in ' + esc(S.doc.title) + '</h2>' + list, warn
+      modal('<p class="ws-kick">Check, then hand in</p><h2>Before you hand in ' + esc(S.doc.title) + '</h2>' + list, warn
         ? [{ text: 'Go back and check', ghost: true, fn: function () { if (r.empty.length) goToQ(r.empty[0]); } }, { text: 'Hand in anyway', fn: function () { handIn(st); } }]
         : [{ text: 'Not yet', ghost: true }, { text: 'Hand in', fn: function () { handIn(st); } }]);
     });
@@ -4087,12 +4326,39 @@
     ['sure', 'How sure?', '<circle cx="6" cy="12" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="18" cy="12" r="2.5"/>', sureOpen],
     ['claude', 'Ask Claude', '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>', function () { claudeStart(); }]
   ];
+  // Release 38: the toolkit sits behind one Help button on the toolbar, in two groups, so the worksheet gets the room.
+  var KIT_HELP = ['hints', 'stuck', 'sure', 'claude', 'notes'];
   function buildKit() {
-    $('kit-row').innerHTML = KIT.map(function (k) {
+    var btn = function (k) {
       return '<button class="kit" id="k-' + k[0] + '" aria-label="' + esc(k[1]) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + k[2] + '</svg><span>' + esc(k[1]) + '</span>' + (k[0] === 'hints' ? '<em id="k-hints-n"></em>' : '') + '</button>';
-    }).join('');
-    KIT.forEach(function (k) { $('k-' + k[0]).onclick = function () { closePop(); k[3](); }; });
+    };
+    var helpIds = KIT_HELP.slice();
+    $('kit-help').innerHTML = helpIds.map(function (id) { return btn(KIT.filter(function (k) { return k[0] === id; })[0]); }).join('');
+    $('kit-tools').innerHTML = KIT.filter(function (k) { return helpIds.indexOf(k[0]) < 0; }).map(btn).join('');
+    KIT.forEach(function (k) { $('k-' + k[0]).onclick = function () { kitClose(); closePop(); k[3](); }; });
   }
+  var kitOpenNow = false;
+  function kitOpen() {
+    var pop = $('kit-pop'), b = $('t-kit');
+    closePop();
+    pop.classList.remove('hidden');
+    var r = b.getBoundingClientRect(), w = pop.offsetWidth;
+    pop.style.top = Math.round(r.bottom + 8) + 'px';
+    pop.style.left = Math.round(Math.max(10, Math.min(window.innerWidth - w - 10, r.left + r.width / 2 - w / 2))) + 'px';
+    pop.style.transformOrigin = Math.round(r.left + r.width / 2 - parseFloat(pop.style.left)) + 'px 0';
+    b.setAttribute('aria-expanded', 'true'); b.classList.add('on');
+    kitOpenNow = true;
+  }
+  function kitClose() {
+    if (!kitOpenNow) return;
+    $('kit-pop').classList.add('hidden'); $('t-kit').setAttribute('aria-expanded', 'false'); $('t-kit').classList.remove('on');
+    kitOpenNow = false;
+  }
+  $('t-kit').onclick = function () { if (kitOpenNow) kitClose(); else kitOpen(); };
+  $('kp-how').onclick = function () { kitClose(); showHelp(); };
+  document.addEventListener('pointerdown', function (e) {
+    if (kitOpenNow && !e.target.closest('#kit-pop') && !e.target.closest('#t-kit')) kitClose();
+  });
   // Which tools show: some are the teacher's choice, some need a formula card, hints or notes.
   function kitShow() {
     var X = S.extras || {}, T = X.tools || {}, ro = S.readOnly, work = S.mode === 'work';
@@ -4100,12 +4366,18 @@
       formula: !!X.formula, notes: !!X.notes, hints: !!(X.hints && X.hints.length), stuck: !ro && work && !!S.extras, sure: !ro && work && !!S.extras, claude: !ro && !!X.nudge };
     KIT.forEach(function (k) { $('k-' + k[0]).classList.toggle('hidden', !show[k[0]]); });
     if (X.hints) $('k-hints-n').textContent = X.hints.length;
+    var anyHelp = KIT_HELP.some(function (id) { return show[id]; }), anyTool = KIT.some(function (k) { return KIT_HELP.indexOf(k[0]) < 0 && show[k[0]]; });
+    $('kp-h-help').classList.toggle('hidden', !anyHelp); $('kit-help').classList.toggle('hidden', !anyHelp);
+    $('kp-h-tools').classList.toggle('hidden', !anyTool); $('kit-tools').classList.toggle('hidden', !anyTool);
+    $('t-kit').classList.toggle('hidden', S.mode === 'note');
     kitState();
   }
   function kitState() {
     var on = { ruler: S.ov && S.ov.kind === 'ruler', protractor: S.ov && S.ov.kind === 'protractor', normal: S.tool === 'normal', stamps: S.tool === 'stamp', graph: !$('graph').classList.contains('hidden'),
       calc: !$('calc').classList.contains('hidden'), read: !!S.reading, formula: !$('formula').classList.contains('hidden'), notes: $('scr-edit').classList.contains('split'), claude: !!S.cropping };
     KIT.forEach(function (k) { $('k-' + k[0]).classList.toggle('on', !!on[k[0]]); });
+    // a tool still running (a ruler, the calculator, reading aloud) shows as a small dot on Help
+    $('kit-dot').classList.toggle('hidden', !Object.keys(on).some(function (k) { return on[k]; }));
   }
   function openStamps() {
     var groups = {};
@@ -4113,7 +4385,7 @@
     var h = Object.keys(groups).map(function (g) {
       return '<h4>' + g + '</h4><div class="chips stamps">' + groups[g].map(function (id) { return '<button class="stp' + (S.tool === 'stamp' && S.stamp === id ? ' on' : '') + '" data-stamp="' + id + '" aria-label="' + STAMPS[id].name + '">' + stampIcon(id) + '<span>' + STAMPS[id].name + '</span></button>'; }).join('') + '</div>';
     }).join('') + '<p class="note">Press where it starts and drag to where it ends. Tap for the usual size.</p>';
-    openPop($('k-stamps'), h, function (pop) {
+    openPop($('t-kit'), h, function (pop) {
       Array.prototype.forEach.call(pop.querySelectorAll('[data-stamp]'), function (b) {
         b.onclick = function () { S.stamp = b.getAttribute('data-stamp'); setTool('stamp'); closePop(); };
       });
@@ -4274,6 +4546,7 @@
   };
 
   function leaveDoc() {
+    focusSet(false);
     toolsReset();
     if (observer) observer.disconnect();
     S.pages.forEach(releasePage);
@@ -4326,6 +4599,7 @@
       var corr = S.mode === 'corr';
       $('btn-handin').textContent = corr ? 'Hand in corrections again' : 'Hand in again';
       setStatus('Handed in ' + at);
+      wsBanner();
       modal(starBurst() + (corr ? '<h2 class="centre-text">Corrections handed in</h2><p class="centre-text">Your teacher has your corrections. Handed in at ' + esc(at) + '.</p>'
                  : '<h2 class="centre-text">Handed in!</h2><p class="centre-text">Your teacher has your worksheet. Handed in at ' + esc(at) + '.</p>'), [
         { text: 'Stay here', ghost: true }, { text: 'Back to my worksheets', fn: leaveDoc }
@@ -4491,7 +4765,7 @@
         return call('api_handed', S.token, a.id).then(function (d) { return { pdf: b64ToBytes(d.pdf), draft: null, at: d.at || '' }; });
       });
     }).then(function (r) {
-      S.doc = { id: a.id, title: a.title, submittedAt: r.at || a.submittedAt };
+      S.doc = { id: a.id, title: a.title, submittedAt: r.at || a.submittedAt, kind: 'view' };
       S.readOnly = true; S.mode = 'read'; S.extras = null; S.pdfBytes = r.pdf;
       return startDoc(r.draft);
     }).then(closeModal).catch(function (e) { alertBox('Could not open', cleanMsg(e)); });
@@ -4504,7 +4778,7 @@
       if (c && c.bytes) return c.bytes;
       return call('api_clean', S.token, a.id).catch(function () { return call('api_pdf', S.token, a.id); }).then(function (d) { return b64ToBytes(d.pdf); });
     }).then(function (bytes) {
-      S.doc = { id: a.id + (write ? '_again' : '_clean'), title: a.title, submittedAt: '', practice: true, scratch: !!write };
+      S.doc = { id: a.id + (write ? '_again' : '_clean'), title: a.title, submittedAt: '', practice: true, scratch: !!write, kind: write ? '' : 'clean' };
       S.readOnly = !write; S.mode = write ? 'work' : 'read'; S.extras = null; S.pdfBytes = bytes;
       return startDoc(write ? safeParse(lsGet(backupKey())) : null);
     }).then(closeModal).catch(function (e) { alertBox('Could not open', cleanMsg(e)); });
@@ -4513,6 +4787,7 @@
   function showHint(mode) {
     var k = 'wsh_hint_' + (mode === 'corrections' ? 'corr' : mode === 'retry' ? 'again' : 'work'), h = $('shell-hint');
     if (lsGet(k)) return;
+    if (mode !== 'retry' && !$('pen-tip').classList.contains('hidden')) return;   // one tip at a time: the Pencil tip first, this one next time
     if (!h) { h = document.createElement('div'); h.id = 'shell-hint'; h.className = 'shell-hint'; $('scr-edit').querySelector('.bar').appendChild(h); }
     h.innerHTML = '';
     var t = document.createElement('span');
