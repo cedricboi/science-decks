@@ -1,16 +1,12 @@
 {
-  "build": "2026-10-27-every-page",
-  "seq": 38,
-  "ref": "f4141ecf63c95f56378f316e590382c3a9e0978c",
-  "title": "learnwithmrcedric: the new design on every page, for teacher and students",
+  "build": "2026-10-27-dark-black-hole",
+  "seq": 39,
+  "ref": "70e371e12fffd271a91af42b638928dac8f3c179",
+  "title": "learnwithmrcedric: the portal black hole, scientifically dark",
   "notes": [
     "No server code to paste: the pages update themselves within about ten minutes",
-    "Teacher Hub: Chapters shows each worksheet as five stage balls, What's next opens your next three jobs, and Who owes work is a plain list, most overdue first",
-    "Marking: the whole pile as dots, Claude's flags as things to check with two buttons each, one glowing next step, A to accept and Z to undo",
-    "The worksheet package and the Library are in the same design, with one-tap Give and notes on what is still missing",
-    "Students: a calmer home with four doors (Lessons, Homework, My files, Arcade), homework as coloured banners in due-date order, the Night market above today's puzzles, and five looks to choose from",
-    "On the worksheet only the Apple Pencil writes, so a resting hand does nothing. Help is one button and there is a full screen mode",
-    "If the New version switch in Settings is still on test, students stay on the release 33 pages until you switch it on",
+    "The sign-in portal: no stars show inside the black hole's shadow or through its disk. The disk of hot gas is opaque, so the sky behind it is hidden, as it is in nature. Stars still bend round it in the open sky",
+    "Everything from release 38 is included",
     "Fallback: add ?classic to the Hub link for the release 33 pages. That page set is pinned and kept in this list"
   ],
   "files": [
@@ -84,7 +80,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "e7f8c2cc82b483df415506ede1d40a9330b242a26b0aab4efbe1312e182d1b24"
+      "sha256": "d09b4d28a97b30f1e5941da708b4d79d8bcf4f616c4807ef912151d3203bbbdf"
     },
     {
       "name": "Styles",
@@ -106,6 +102,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 39,
+      "build": "2026-10-27-dark-black-hole",
+      "ref": "70e371e12fffd271a91af42b638928dac8f3c179",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "8f8a9e5e915300a6ea67a4b1ebb32014526b2e90e50c5ae8230f4138cc2e5f57"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "d09b4d28a97b30f1e5941da708b4d79d8bcf4f616c4807ef912151d3203bbbdf"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 38,
       "build": "2026-10-27-every-page",
