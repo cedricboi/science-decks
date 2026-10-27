@@ -3347,7 +3347,7 @@
     if (opts.undo) el.querySelector('.undo:not(.act)').onclick = function () { clearTimeout(toastT); el._onHide = null; el.classList.add('hidden'); opts.undo(); };
     toastT = setTimeout(hide, opts.ms || (opts.undo ? 6000 : 2600));
   }
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('veil').classList.contains('hidden') && !$('modal').querySelector('.spinner')) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('veil').classList.contains('hidden') && !$('modal').querySelector('.spinner')) { e.w43done = true; closeModal(); } });   // r43: one Escape closes one thing
 
   function fileToB64(blobOrFile) {
     return new Promise(function (resolve, reject) {
@@ -5425,7 +5425,7 @@
     ['drawer'].forEach(function (id) { var dr = $(id); if (dr) dr.classList.remove('open'); });
     Array.prototype.forEach.call(document.querySelectorAll('table.mk tr.sel, table.tk tr.sel'), function (x) { x.classList.remove('sel'); });
   }
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.querySelector('.drawer.open') && $('veil').classList.contains('hidden')) closeDrawer(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !e.w43done && document.querySelector('.drawer.open') && $('veil').classList.contains('hidden')) { e.w43done = true; closeDrawer(); } });
 
   function corrCell(r) {
     if (r.corr === 'done') return '<a class="st cdone" href="' + esc(r.corrUrl) + '" target="_blank" rel="noopener" title="Handed in ' + esc(r.corrAt) + '">Handed in</a>';
@@ -9293,7 +9293,7 @@
   }
   $('nx-dshade').onclick = function () { if ($('veil').classList.contains('hidden')) { closeDrawer(); nxCloseDetail(); } };
   document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape' || H.view !== 'detail' || !$('veil').classList.contains('hidden') || document.querySelector('.drawer.open') || document.querySelector('.pop:not(.hidden)')) return;
+    if (e.key !== 'Escape' || e.w43done || H.view !== 'detail' || !$('veil').classList.contains('hidden') || document.querySelector('.drawer.open') || document.querySelector('.pop:not(.hidden)')) return;
     nxCloseDetail();
   });
 
@@ -10750,7 +10750,7 @@
     }).join('\n\n');
   }
   document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape' || !NX.cx38nx || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
+    if (e.key !== 'Escape' || e.w43done || !NX.cx38nx || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
     var b = $('cx38-nxb'); if (b) { b.click(); b.focus(); }
   });
   function nxChapters() {
@@ -11296,7 +11296,7 @@
   }
   $('w43-rdx').onclick = w43RdClose; $('w43-rdshade').onclick = w43RdClose;
   document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape' || $('w43-rd').classList.contains('hidden') || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
+    if (e.key !== 'Escape' || e.w43done || $('w43-rd').classList.contains('hidden') || !$('veil').classList.contains('hidden') || document.querySelector('.pop:not(.hidden)')) return;
     e.stopPropagation(); w43RdClose();
   }, true);
   // Reset password and Sign out this iPad: both are confirmed (Ruling A8).
