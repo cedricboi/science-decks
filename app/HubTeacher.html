@@ -2521,7 +2521,7 @@
   var MAX_MB = 25;
   var $ = function (id) { return document.getElementById(id); };
   var H = { token: null, dash: null, detail: null, marks: null, tracker: null, trackerCls: null, view: 'today', cls: '' };
-  var NEWS_VERSION = '2026-10-r37';
+  var NEWS_VERSION = '2026-10-r38';
 
   var ICON = {
     copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
@@ -3099,10 +3099,11 @@
   function showNews(force) {
     var el = $('news');
     if (!force && lsGet('wsh_news') === NEWS_VERSION) { el.innerHTML = ''; return; }
-    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Chapters and Students have a new look</b><ul>' +
-      '<li><b>Chapters</b> is now the class page: the chapters as chips, the last, next and following lesson as three stars with Teach, every lesson under them, and each worksheet as a card that says what it needs.</li>' +
-      '<li>Finished worksheets fold under <b>Done</b>. The ⋯ menus, Deploy, Upload new version and All chapters work as before.</li>' +
-      '<li><b>Students</b> can show only who owes work, most overdue first. Tap a name for their whole record, as before.</li></ul></div>' +
+    el.innerHTML = '<div class="news" role="status">' + ICON.flask + '<div><b>Release 38: every page in the new design</b><ul>' +
+      '<li><b>Chapters</b> shows each worksheet as five stage balls. The one that glows is where it is, and its note says what it needs. <b>What&#39;s next</b> in the middle opens your next three jobs.</li>' +
+      '<li><b>Marking</b> shows the whole pile as dots, Claude&#39;s flags as things to check with two buttons each, and one glowing next step. A accepts, Z undoes, the arrows move between scripts.</li>' +
+      '<li><b>Students</b> see a calmer home with four doors (Lessons, Homework, My files, Arcade), each piece of homework as a coloured banner in due-date order, and a choice of looks.</li>' +
+      '<li>On the worksheet, <b>only the Apple Pencil writes</b> now. A hand resting on the screen does nothing. Help is one button, and there is a full screen mode.</li></ul></div>' +
       '<button class="btn quiet small x" id="news-x">Got it</button></div>';
     $('news-x').onclick = function () { lsSet('wsh_news', NEWS_VERSION); el.innerHTML = ''; var d = document.querySelector('.me .newdot'); if (d) d.remove(); };
   }
