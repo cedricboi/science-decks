@@ -2655,6 +2655,111 @@
     .w43-land *, .w43-rd *, .pop.w43-menu, .cx43-tuck { animation: none !important; transition: none !important; }
   }
 </style>
+<style>
+  /* r43 settings/computing: Settings in seven plain groups, and Computing with Coaches given like lessons */
+  .s43 .cx38-sec, .c43 .cx38-sec { border-radius: 22px; }
+  .s43-ic, .c43-ic { color: var(--ac); background: color-mix(in srgb, var(--ac) 14%, var(--nx-surface)); }
+  .s43-ic svg, .c43-ic svg { width: 20px; height: 20px; }
+  .s43-lede, .c43-lead { margin: 0 0 14px; font-size: 15.5px; line-height: 1.5; color: var(--nx-ink2); max-width: 72ch; }
+  .s43-link { border: 0; background: color-mix(in srgb, var(--nx-blue) 16%, transparent); color: var(--nx-link); font: 700 14px var(--text); padding: 2px 9px; border-radius: 8px; cursor: pointer; }
+  .s43-flows { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .s43-flow { text-align: left; display: flex; flex-direction: column; gap: 4px; justify-content: center; min-height: 64px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--nx-line); background: var(--nx-soft); color: var(--nx-ink); font: 600 15px var(--text); cursor: pointer; transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
+  .s43-flow small { font: 800 11px var(--text); letter-spacing: .1em; text-transform: uppercase; color: #4FC3F7; }
+  .s43-flow[aria-checked="true"] { border-color: color-mix(in srgb, #4FC3F7 70%, transparent); background: color-mix(in srgb, #4FC3F7 13%, var(--nx-surface)); box-shadow: 0 0 0 3px color-mix(in srgb, #4FC3F7 16%, transparent); }
+  .s43-flow:active, .c43-chip:active, .c43-filt button:active, .c43-cls button:active { transform: scale(.97); }
+  .s43-why { margin: 12px 0 8px; padding: 12px 14px; border-radius: 12px; background: var(--nx-soft); font-size: 15px; color: var(--nx-ink); }
+  .s43-note { margin: 6px 0 0; font-size: 14px; }
+  .s43-row { display: grid; grid-template-columns: minmax(170px, 220px) minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--nx-line); background: var(--nx-soft); margin-top: 10px; }
+  .s43-rt { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; } .s43-rt b { font: 700 16px var(--display); color: var(--nx-ink); }
+  .s43-rd { margin: 0; font-size: 14.5px; color: var(--nx-ink2); }
+  .s43-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font: 700 12.5px var(--text); background: var(--nx-chip); color: var(--nx-muted); }
+  .s43-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .8; }
+  .s43-pill.on { background: color-mix(in srgb, #5ED39C 18%, transparent); color: #1F9D63; }
+  :root[data-theme="dark"] .s43-pill.on { color: #5ED39C; }
+  .s43-sub { margin: 16px 0 8px; font: 800 12px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--nx-muted); }
+  .s43-sub:first-child { margin-top: 0; }
+  .s43-hint { font-size: 14px; align-self: center; }
+  .s43-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .s43-card { border-radius: 20px; border: 1px solid var(--nx-line); background: var(--nx-surface); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .s43-card h2 { margin: 0; font: 700 20px var(--display); color: var(--nx-ink); } .s43-card p { margin: 0; font-size: 14.5px; }
+  .s43 #st-devs .nx-devs { margin: 0 0 12px; }
+  @media (max-width: 1000px) { .s43-flows { grid-template-columns: repeat(2, minmax(0, 1fr)); } .s43-cards { grid-template-columns: minmax(0, 1fr); } .s43-row { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+
+  .c43-ph { flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .c43-pht { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 760px; }
+  .c43-clsbox { padding: 14px 16px; border-radius: 18px; border: 1px solid var(--nx-line); background: var(--nx-surface); display: flex; flex-direction: column; gap: 8px; }
+  .c43-lbl { font: 800 11px var(--text); letter-spacing: .14em; text-transform: uppercase; color: #3FAF7F; }
+  :root[data-theme="dark"] .c43-lbl { color: #5ED39C; }
+  .c43-cls { display: flex; flex-wrap: wrap; gap: 8px; }
+  .c43-cls button { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid var(--nx-line); background: var(--nx-soft); color: var(--nx-ink); font: 700 17px var(--display); cursor: pointer; transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
+  .c43-cls button small { font: 600 12px var(--text); color: var(--nx-muted); margin-left: 4px; }
+  .c43-cls button[aria-pressed="true"] { border-color: color-mix(in srgb, #5ED39C 70%, transparent); background: color-mix(in srgb, #5ED39C 14%, var(--nx-surface)); }
+  .c43-meta { font-size: 13.5px; color: var(--nx-muted); }
+  .c43-files { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--nx-line); background: var(--nx-soft); margin-bottom: 14px; }
+  .c43-files.warn { border-color: color-mix(in srgb, #FFC86B 45%, var(--nx-line)); }
+  .c43-ft { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 1 360px; } .c43-ft b { font: 700 15px var(--display); color: var(--nx-ink); } .c43-ft span { font-size: 14px; color: var(--nx-ink2); }
+  .c43-files.warn .c43-ft span { color: #B7791F; } :root[data-theme="dark"] .c43-files.warn .c43-ft span { color: #FFC86B; }
+  .c43-ch { margin-top: 12px; }
+  .c43-chh { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; }
+  .c43-chn { font: 800 12px var(--text); letter-spacing: .12em; text-transform: uppercase; color: #3FAF7F; } :root[data-theme="dark"] .c43-chn { color: #5ED39C; }
+  .c43-chc { font-size: 13.5px; color: var(--nx-muted); }
+  .c43-alldone { display: inline-flex; align-items: center; gap: 6px; font: 700 13.5px var(--text); color: #1F9D63; } :root[data-theme="dark"] .c43-alldone { color: #5ED39C; } .c43-alldone svg { width: 14px; height: 14px; }
+  .c43-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 12px 4px; border-top: 1px solid var(--nx-line); }
+  .c43-num { font: 700 21px var(--display); color: #2E9A69; font-variant-numeric: tabular-nums; } :root[data-theme="dark"] .c43-num { color: #5ED39C; }
+  .c43-rt { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .c43-rt b { font: 700 17px var(--display); color: var(--nx-ink); } .c43-rt small { font-size: 13.5px; color: var(--nx-muted); }
+  .c43-st { font: 600 13.5px var(--text); color: var(--nx-muted); } .c43-st.on { color: #1F9D63; } :root[data-theme="dark"] .c43-st.on { color: #5ED39C; }
+  .c43-gv { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .c43-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px dashed var(--nx-line2); background: transparent; color: var(--nx-ink2); font: 700 13.5px var(--text); cursor: pointer; transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), transform 160ms var(--ease-out); }
+  .c43-chip svg { width: 13px; height: 13px; }
+  .c43-chip.has { border-style: solid; border-color: color-mix(in srgb, #5ED39C 55%, transparent); background: color-mix(in srgb, #5ED39C 16%, transparent); color: #1F7A4F; }
+  :root[data-theme="dark"] .c43-chip.has { color: #BFF2D7; }
+  .c43-chip.cur { box-shadow: 0 0 0 3px color-mix(in srgb, #5ED39C 14%, transparent); }
+  .c43-chip:disabled { opacity: .55; }
+  .c43-back { margin: -4px 0 6px; }
+  .c43-ct { display: inline-flex; gap: 10px; } .c43-cn { color: #2E9A69; } :root[data-theme="dark"] .c43-cn { color: #5ED39C; }
+  .c43-line { margin: 0 0 10px; font-size: 15px; color: var(--nx-ink2); }
+  .c43-parts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .c43-part { padding: 4px 10px; border-radius: 999px; background: var(--nx-chip); font-size: 13px; color: var(--nx-ink2); } .c43-part b { color: #2E9A69; } :root[data-theme="dark"] .c43-part b { color: #5ED39C; }
+  .c43-sum { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 12px 16px; border-radius: 14px; background: var(--nx-soft); margin-bottom: 12px; font-size: 15px; color: var(--nx-ink2); }
+  .c43-sum b { font: 700 22px var(--display); color: var(--nx-ink); margin-right: 4px; font-variant-numeric: tabular-nums; }
+  .c43-sum b.g { color: #2E9A69; } .c43-sum b.a { color: #C98A12; } .c43-sum b.r { color: #D2543A; }
+  :root[data-theme="dark"] .c43-sum b.g { color: #5ED39C; } :root[data-theme="dark"] .c43-sum b.a { color: #FFC86B; } :root[data-theme="dark"] .c43-sum b.r { color: #FF8A70; }
+  .c43-fbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 10px; }
+  .c43-filt { display: flex; flex-wrap: wrap; gap: 6px; }
+  .c43-filt button { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--nx-line); background: var(--nx-soft); color: var(--nx-ink2); font: 700 14px var(--text); cursor: pointer; transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out); }
+  .c43-filt button b { margin-left: 4px; font-variant-numeric: tabular-nums; }
+  .c43-filt button[aria-pressed="true"] { border-color: color-mix(in srgb, #5ED39C 65%, transparent); background: color-mix(in srgb, #5ED39C 14%, var(--nx-surface)); color: var(--nx-ink); }
+  .c43-pin { font-size: 14px; color: var(--nx-muted); }
+  .c43-scroll { overflow-x: auto; border-radius: 14px; border: 1px solid var(--nx-line); }
+  .c43-grid { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .c43-grid th { text-align: center; font: 700 12.5px var(--text); color: var(--nx-muted); padding: 10px 8px; background: var(--nx-soft); border-bottom: 1px solid var(--nx-line); white-space: nowrap; }
+  .c43-grid td { text-align: center; padding: 8px; border-bottom: 1px solid var(--nx-line); }
+  .c43-grid tr:last-child td { border-bottom: 0; }
+  .c43-grid .nm { text-align: left; position: sticky; left: 0; background: var(--nx-surface); white-space: nowrap; z-index: 1; }
+  .c43-grid th.nm { background: var(--nx-soft); }
+  .c43-grid .cmp-name { border: 0; background: none; padding: 4px 0; font: 700 15px var(--text); color: var(--nx-ink); cursor: pointer; min-height: 36px; }
+  .c43-grid small { color: var(--nx-muted); }
+  .cmp-sc.saved { background: var(--nx-chip); color: var(--nx-ink2); }
+  .c43-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 700 12.5px var(--text); white-space: nowrap; }
+  .c43-pill.g { background: color-mix(in srgb, #5ED39C 18%, transparent); color: #1F7A4F; } .c43-pill.a { background: color-mix(in srgb, #FFC86B 20%, transparent); color: #9A6300; }
+  .c43-pill.r { background: color-mix(in srgb, #FF8A70 20%, transparent); color: #B0391F; } .c43-pill.n { background: var(--nx-chip); color: var(--nx-muted); }
+  :root[data-theme="dark"] .c43-pill.g { color: #BFF2D7; } :root[data-theme="dark"] .c43-pill.a { color: #FFE2A6; } :root[data-theme="dark"] .c43-pill.r { color: #FFC9BB; }
+  .c43-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 4px; font-size: 13px; color: var(--nx-muted); }
+  .c43-key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .c43-key i.full { background: var(--green-soft, #D7F3E5); box-shadow: inset 0 0 0 1px #5ED39C; } .c43-key i.part { background: var(--amber-soft, #FCEBC7); box-shadow: inset 0 0 0 1px #FFC86B; }
+  .c43-key i.low { background: var(--red-soft, #FCDAD2); box-shadow: inset 0 0 0 1px #FF8A70; } .c43-key i.saved { background: var(--nx-chip); }
+  .c43-note { margin: 0; font-size: 13.5px; color: var(--nx-muted); }
+  .c43-empty { padding: 18px; border-radius: 14px; background: var(--nx-soft); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; } .c43-empty p { margin: 0; flex: 1 1 320px; color: var(--nx-ink2); }
+  @media (hover: hover) and (pointer: fine) {
+    .s43-flow:hover { border-color: color-mix(in srgb, #4FC3F7 45%, var(--nx-line)); }
+    .c43-chip:not(.has):hover { border-color: #5ED39C; color: var(--nx-ink); }
+    .c43-filt button:hover, .c43-cls button:hover { border-color: var(--nx-line2); }
+  }
+  @media (max-width: 900px) {
+    .c43-row { grid-template-columns: 48px minmax(0, 1fr) auto; } .c43-gv { grid-column: 2 / -1; justify-content: flex-start; }
+  }
+  @media (prefers-reduced-motion: reduce) { .s43-flow, .c43-chip, .c43-filt button, .c43-cls button { transition: none; } }
+</style>
 </head>
 <body>
 
@@ -3122,97 +3227,181 @@
      The Spreadsheet Coaches: the computing classes (Computing students tab), which Coaches each class can open, and
      every student's newest checked file for each part, with how many tries. Names come from the Hub; Drive and the
      Computing files tab only hold codes. */
-  var CMP = { data: null, cls: lsGet('wsh_cmpcls') || '', grid: null };
-  function cmpPartShort(name) { var m = /^(P\d+|Exit)/i.exec(String(name || '')); return m ? m[1] : String(name || '').slice(0, 6); }
+  var CMP = { data: null, cls: lsGet('wsh_cmpcls') || '', grid: null, coach: '', filt: 'all' };
+  function cmpPartShort(name) { var m = /^(P\d+[a-z]?|Exit)/i.exec(String(name || '')); return m ? m[1] : String(name || '').slice(0, 6); }
+  function cmpCoach(id) { return ((CMP.data && CMP.data.coaches) || []).filter(function (c) { return c.id === id; })[0] || null; }
+  function cmpIsOpen(cls, id) { return ((CMP.data.open || {})[cls] || []).indexOf(id) >= 0; }
   function loadCmp() {
     var v = $('view-cmp');
-    if (!CMP.data) v.innerHTML = '<p class="muted" style="padding:20px 0">Opening Computing...</p>';
-    tcall('api_t_cmp').then(function (d) { CMP.data = d; renderCmp(); }).catch(function (e) { v.innerHTML = '<div class="cmp-box"><p>' + esc(msg(e)) + '</p></div>'; });
+    if (!CMP.data) v.innerHTML = '<div class="w43-page"><p class="nx-muted" style="padding:20px 0">Opening Computing...</p></div>';
+    tcall('api_t_cmp').then(function (d) { CMP.data = d; renderCmp(); }).catch(function (e) { v.innerHTML = '<div class="w43-page"><section class="w43-card2"><p>' + esc(msg(e)) + '</p></section></div>'; });
+  }
+  /* Release 43: Computing as its approved board. Coaches are given to a class the way lessons are (a chip per class, one
+     tap, Undo), and each Coach opens to its own page with every student's work part by part. */
+  function cmpStuOf(g, c, s) {
+    var full = 0, any = 0, stuck = false;
+    c.parts.forEach(function (p) {
+      var o = g.cells[s.code + '|' + c.id + '|' + p[0]]; if (!o) return; any++;
+      var L = o.last, isFull = L.score != null && L.of != null && L.score === L.of;
+      if (isFull) full++;
+      if ((L.score != null && L.of != null && L.score * 2 < L.of) || (o.tries >= 3 && !isFull)) stuck = true;
+    });
+    return !any ? 'none' : full === c.parts.length ? 'done' : stuck ? 'stuck' : 'going';
+  }
+  function cmpStarted(id) {
+    var g = CMP.grid, c = cmpCoach(id); if (!g || g.cls !== CMP.cls || !c) return null;
+    return g.students.filter(function (s) { return cmpStuOf(g, c, s) !== 'none'; }).length;
   }
   function renderCmp() {
     var d = CMP.data, v = $('view-cmp'), list = d.classes.map(function (c) { return c.cls; });
     if (CMP.cls && list.indexOf(CMP.cls) < 0) CMP.cls = '';
     if (!CMP.cls && list.length) CMP.cls = list[0];
-    var h = '<div class="cmp-head"><div><h2 class="h">Computing</h2><p>Spreadsheet Coaches, and every file your students check in them.</p></div><span class="spacer"></span>' +
-      (d.studentUrl ? '<button class="btn ghost small" id="cmp-copy" type="button">' + ICON.copy + 'Copy the students\' link</button>' : '') +
-      (d.rosterUrl ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">' + ICON.sheet + 'Class lists</a>' : '') + '</div>';
+    if (CMP.coach && !cmpCoach(CMP.coach)) CMP.coach = '';
+    var h = '<div class="w43-page cx38 c43"><header class="w43-ph c43-ph"><div class="c43-pht"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Computing</h1>' +
+      '<p class="w43-lede">Give Spreadsheet Coaches to your computing classes the way you give lessons, then open any Coach to see who is done, who is stuck and who has not started.</p>' +
+      '<div class="nx-acts">' + (d.studentUrl ? '<button class="nx-btn sm ghost" id="cmp-copy" type="button">' + ICON.copy + 'Copy the students\' link</button>' : '') +
+      (d.rosterUrl ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">' + ICON.sheet + 'Class lists</a>' : '') + '</div></div>' +
+      (list.length ? '<div class="c43-clsbox"><span class="c43-lbl">Computing class</span><div class="c43-cls" role="group" aria-label="Computing class">' + d.classes.map(function (c) {
+        return '<button type="button" data-cmpcls="' + esc(c.cls) + '" aria-pressed="' + (c.cls === CMP.cls) + '">' + esc(c.cls) + ' <small>' + c.n + '</small></button>'; }).join('') + '</div></div>' : '') + '</header>';
     if (!list.length) {
-      h += '<div class="cmp-box"><h3>Add your computing classes</h3><p class="lead">Computing students have their own tab, <b>Computing students</b>, in the Teacher Hub sheet: Class in column A, Reg No in B and Name in C, from row 2. They are kept apart from your science classes, and set up their own PIN on the Computing page.</p>' +
-        '<div class="row"><button class="btn green" id="cmp-setup" type="button">Make the tab</button>' + (d.rosterUrl ? '<a class="btn ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">Open the sheet</a>' : '') + '<button class="btn quiet" id="cmp-again" type="button">' + ICON.refresh + 'I have added them</button></div></div>';
-      v.innerHTML = h; cmpWire(); return;
+      h += '<section class="cx-sec cx38-sec"><div class="cx38-banner' + cx38Lit('cmp|setup') + '" style="--ac:#5ED39C">' + cx38Sky(3, 600, { noName: true }) +
+        '<span class="cx-ic c43-ic">' + ICON.sheet + '</span><span class="cx38-bt"><h2 class="cx38-h">Add your computing classes</h2></span></div><div class="cx38-sbody">' +
+        '<p class="c43-lead">Computing students have their own tab, <b>Computing students</b>, in the Teacher Hub sheet: Class in column A, Reg No in B and Name in C, from row 2. They are kept apart from your science classes, and set up their own PIN on the Computing page.</p>' +
+        '<div class="nx-acts"><button class="nx-btn" id="cmp-setup" type="button">Make the tab</button>' + (d.rosterUrl ? '<a class="nx-btn ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">Open the sheet</a>' : '') + '<button class="nx-btn ghost" id="cmp-again" type="button">' + ICON.refresh + 'I have added them</button></div></div></section></div>';
+      v.innerHTML = h; cmpWire(); cx38Watch(v); return;
     }
-    h += '<div class="cmp-cls" role="group" aria-label="Computing class">' + d.classes.map(function (c) { return '<button type="button" data-cmpcls="' + esc(c.cls) + '" aria-pressed="' + (c.cls === CMP.cls) + '">' + esc(c.cls) + ' <span style="opacity:.7;font-weight:400">' + c.n + '</span></button>'; }).join('') + '</div>';
-    var open = d.open[CMP.cls] || [];
-    var A = d.assets || { total: 0, missing: [] };
-    if (A.url || A.error) h += '<div class="cmp-box"><div class="row"><div style="flex:1;min-width:240px"><h3 style="font-family:var(--display);font-size:19px;margin:0 0 4px">Coach files in your Drive</h3><p class="muted" style="margin:0">' +
-      (A.error ? esc(A.error) : A.missing.length ? (A.total - A.missing.length) + ' of ' + A.total + ' files are there. Students cannot download the missing ones: ' + esc(A.missing.slice(0, 8).join(', ')) + (A.missing.length > 8 ? ' and ' + (A.missing.length - 8) + ' more' : '') + '.' : 'All ' + A.total + ' Coaches and task files are there. They stay private: only students whose class has a Coach open can download it.') +
-      '</p></div>' + (A.url ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(A.url) + '">' + ICON.folder + 'Open the folder</a>' : '') + '<button class="btn quiet small" id="cmp-again2" type="button">' + ICON.refresh + 'Check again</button></div></div>';
-    h += '<div class="cmp-box"><h3>Coaches for ' + esc(CMP.cls) + '</h3><p class="lead">Turn a Coach on to show it on this class\'s Computing page, with its task files.</p>' +
-      (d.coaches.length ? '<div class="cmp-coaches">' + d.coaches.map(function (c) {
-        var on = open.indexOf(c.id) >= 0;
-        return '<div class="cmp-coach"><span class="bd">' + esc(c.id) + '</span><span class="tt">' + esc(c.title) + '<small>' + esc(c.chapter) + '</small></span>' +
-          '<label class="switch" title="Open to ' + esc(CMP.cls) + '"><input type="checkbox" data-cmpopen="' + esc(c.id) + '"' + (on ? ' checked' : '') + '><span class="track"></span><span class="sr">Open ' + esc(c.id) + ' to ' + esc(CMP.cls) + '</span></label></div>';
-      }).join('') + '</div>' : '<p class="muted">No Coaches on the lesson site yet (computing.json).</p>') + '</div>';
-    h += '<div class="cmp-box" id="cmp-gridbox"><p class="muted">Opening ' + esc(CMP.cls) + '...</p></div>';
-    v.innerHTML = h; cmpWire(); cmpLoadGrid();
+    h += CMP.coach ? cmpCoachHtml() : cmpListHtml();
+    v.innerHTML = h + '</div>'; cmpWire(); cx38Watch(v);
+    if (!CMP.grid || CMP.grid.cls !== CMP.cls) cmpLoadGrid();
+  }
+  function cmpListHtml() {
+    var d = CMP.data, cls = CMP.cls, A = d.assets || { total: 0, missing: [] }, given = (d.open[cls] || []).filter(function (id) { return cmpCoach(id); }).length;
+    var h = '<section class="cx-sec cx38-sec"><div class="cx38-banner' + cx38Lit('cmp|list|' + cls) + '" style="--ac:#5ED39C">' + cx38Sky(3, 560, { noName: true }) +
+      '<span class="cx-ic c43-ic">' + ICON.sheet + '</span><span class="cx38-bt"><h2 class="cx38-h">Coaches for ' + esc(cls) + '</h2></span><span class="nx-grow"></span><span class="c43-meta">' + given + ' of ' + d.coaches.length + ' given</span></div><div class="cx38-sbody">' +
+      '<p class="c43-lead">Tap a class to give it a Coach, the same way you give a lesson. It shows on that class\'s Computing page straight away, with its task files. <b>Open</b> a Coach to see each student\'s work.</p>';
+    if (A.url || A.error) h += '<div class="c43-files' + (A.missing && A.missing.length || A.error ? ' warn' : '') + '"><div class="c43-ft"><b>Coach files in your Drive</b><span>' +
+      (A.error ? esc(A.error) : A.missing.length ? (A.total - A.missing.length) + ' of ' + A.total + ' files are there. Students cannot download the missing ones: ' + esc(A.missing.slice(0, 8).join(', ')) + (A.missing.length > 8 ? ' and ' + (A.missing.length - 8) + ' more' : '') + '.' : 'All ' + A.total + ' Coaches and task files are there. Only students whose class has a Coach can download it.') +
+      '</span></div><span class="nx-grow"></span>' + (A.url ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(A.url) + '">' + ICON.folder + 'Open the folder</a>' : '') + '<button class="nx-btn sm ghost" id="cmp-again2" type="button">' + ICON.refresh + 'Check again</button></div>';
+    if (!d.coaches.length) return h + '<p class="nx-muted">No Coaches on the lesson site yet (computing.json).</p></div></section>';
+    var chs = [], by = {};
+    d.coaches.forEach(function (c) { var k = c.chapter || 'Coaches'; if (!by[k]) { by[k] = []; chs.push(k); } by[k].push(c); });
+    chs.forEach(function (k) {
+      var cs = by[k], nGiven = cs.filter(function (c) { return cmpIsOpen(cls, c.id); }).length, left = cs.length - nGiven;
+      h += '<div class="c43-ch"><div class="c43-chh"><span class="c43-chn">' + esc(k) + '</span><span class="c43-chc">' + nGiven + ' of ' + cs.length + ' given to ' + esc(cls) + '</span><span class="nx-grow"></span>' +
+        (left ? '<button type="button" class="nx-btn sm ghost" data-cmpch="' + esc(k) + '">Give whole chapter to ' + esc(cls) + '</button>' : '<span class="c43-alldone">' + CX_ICON.tick + 'All given to ' + esc(cls) + '</span>') + '</div>';
+      h += cs.map(function (c) {
+        var on = cmpIsOpen(cls, c.id), st = on ? cmpStarted(c.id) : null, n = CMP.grid && CMP.grid.cls === cls ? CMP.grid.students.length : null;
+        return '<div class="c43-row"><span class="c43-num">' + esc(c.id) + '</span><div class="c43-rt"><b>' + esc(c.title) + '</b><small>' + plural(c.parts.length, 'part', 'parts') + ' · ' + plural((c.files || []).length, 'task file', 'task files') + '</small>' +
+          '<span class="c43-st' + (on ? ' on' : '') + '">' + (on ? 'Open to ' + esc(cls) + (st != null && n != null ? ' · ' + st + ' of ' + n + ' started' : '') : 'Not given to ' + esc(cls) + ' yet') + '</span></div>' +
+          '<div class="c43-gv" role="group" aria-label="Give ' + esc(c.id) + '">' + d.classes.map(function (x) {
+            var has = cmpIsOpen(x.cls, c.id);
+            return '<button type="button" class="c43-chip' + (has ? ' has' : '') + (x.cls === cls ? ' cur' : '') + '" data-cmpgive="' + esc(c.id) + '" data-cls="' + esc(x.cls) + '" aria-pressed="' + has + '" title="' + (has ? esc(x.cls) + ' has it. Take it back from inside the Coach.' : 'Give it to ' + esc(x.cls)) + '">' + (has ? CX_ICON.tick : '+ ') + esc(x.cls) + '</button>';
+          }).join('') + '</div><button type="button" class="nx-btn sm ghost c43-open" data-cmpcoach="' + esc(c.id) + '">Open <span aria-hidden="true">&rarr;</span></button></div>';
+      }).join('') + '</div>';
+    });
+    return h + '</div></section>';
+  }
+  function cmpCoachHtml() {
+    var d = CMP.data, cls = CMP.cls, c = cmpCoach(CMP.coach), on = cmpIsOpen(cls, c.id), g = CMP.grid && CMP.grid.cls === cls ? CMP.grid : null;
+    var h = '<section class="cx-sec cx38-sec"><div class="cx38-banner' + cx38Lit('cmp|coach|' + c.id) + '" style="--ac:#5ED39C">' + cx38Sky(cx38Hash(c.id) % 12, 560, { noName: true }) +
+      '<span class="cx-ic c43-ic">' + ICON.sheet + '</span><span class="cx38-bt"><h2 class="cx38-h c43-ct"><span class="c43-cn">' + esc(c.id) + '</span> ' + esc(c.title) + '</h2><span class="cx-meta">' + esc(c.chapter || '') + '</span></span><span class="nx-grow"></span>' +
+      (d.assets && d.assets.url ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(d.assets.url) + '">' + ICON.folder + 'Coach files</a>' : '') +
+      '<button type="button" class="nx-btn sm ' + (on ? 'ghost' : '') + '" data-cmptoggle="' + esc(c.id) + '">' + (on ? 'Take back from ' + esc(cls) : 'Give to ' + esc(cls)) + '</button></div><div class="cx38-sbody">' +
+      '<button type="button" class="w43-crumb c43-back" data-cmpback>‹ All Coaches</button>';
+    var started = g ? g.students.filter(function (s) { return cmpStuOf(g, c, s) !== 'none'; }).length : null;
+    h += '<p class="c43-line">' + (on ? 'Open to ' + esc(cls) : 'Not given to ' + esc(cls) + ' yet') + (g ? ' · ' + started + ' of ' + g.students.length + ' have started it' : '') + ' · ' + plural(c.parts.length, 'part', 'parts') + ', ' + plural((c.files || []).length, 'task file', 'task files') + '</p>';
+    h += '<div class="c43-parts">' + c.parts.map(function (p) { return '<span class="c43-part"><b>' + esc(cmpPartShort(p[1])) + '</b> ' + esc(String(p[1]).replace(/^(P\d+[a-z]?|Exit)\s*/i, '')) + '</span>'; }).join('') + '</div>';
+    if (!g) return h + '<p class="nx-muted">Opening ' + esc(cls) + '...</p></div></section>';
+    var rows = g.students.map(function (s) { return { s: s, k: cmpStuOf(g, c, s) }; });
+    var cnt = { done: 0, going: 0, stuck: 0, none: 0 }; rows.forEach(function (r) { cnt[r.k]++; });
+    if (!on && !rows.some(function (r) { return r.k !== 'none'; })) return h + '<div class="c43-empty"><p>Give ' + esc(c.id) + ' to ' + esc(cls) + ' first. Then each student\'s work shows here, part by part.</p><button type="button" class="nx-btn" data-cmptoggle="' + esc(c.id) + '">Give to ' + esc(cls) + '</button></div></div></section>';
+    h += '<div class="c43-sum"><span><b class="g">' + cnt.done + '</b> all correct</span><span><b class="a">' + cnt.going + '</b> working on it</span><span><b class="r">' + cnt.stuck + '</b> stuck</span><span><b>' + cnt.none + '</b> not started</span></div>';
+    var F = [['all', 'Everyone', rows.length], ['stuck', 'Stuck', cnt.stuck], ['none', 'Not started', cnt.none], ['done', 'All correct', cnt.done]];
+    var withPin = g.students.filter(function (s) { return s.pin; }).length;
+    h += '<div class="c43-fbar"><div class="c43-filt" role="group" aria-label="Show">' + F.map(function (f) { return '<button type="button" data-cmpf="' + f[0] + '" aria-pressed="' + (CMP.filt === f[0]) + '">' + f[1] + ' <b>' + f[2] + '</b></button>'; }).join('') + '</div><span class="nx-grow"></span>' +
+      '<span class="c43-pin">' + withPin + ' of ' + g.students.length + ' have a PIN</span>' + (g.folder ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(g.folder) + '">' + ICON.folder + 'Drive folder</a>' : '') +
+      '<button class="nx-btn sm ghost" id="cmp-refresh" type="button">' + ICON.refresh + 'Refresh</button>' + (cnt.none && on ? '<button class="nx-btn sm" id="cmp-remind" type="button">Remind the ' + cnt.none + ' not started</button>' : '') + '</div>';
+    var shown = rows.filter(function (r) { return CMP.filt === 'all' || r.k === CMP.filt; });
+    var SL = { done: ['All correct', 'g'], going: ['Working on it', 'a'], stuck: ['Stuck', 'r'], none: ['Not started', 'n'] };
+    h += '<div class="c43-scroll"><table class="c43-grid"><thead><tr><th class="nm">Student</th>' + c.parts.map(function (p) { return '<th title="' + esc(p[1]) + '">' + esc(cmpPartShort(p[1])) + '</th>'; }).join('') + '<th>Status</th></tr></thead><tbody>' +
+      (shown.length ? shown.map(function (r) {
+        var s = r.s;
+        return '<tr><td class="nm"><span class="cmp-dot' + (s.pin ? ' on' : '') + '" title="' + (s.pin ? 'PIN set up' : 'No PIN yet') + '"></span><button type="button" class="cmp-name" data-cmpst="' + esc(s.name) + '">' + esc(pvName(s.name)) + '</button> <small>' + esc(s.code) + '</small></td>' +
+          c.parts.map(function (p) {
+            var o = g.cells[s.code + '|' + c.id + '|' + p[0]];
+            if (!o) return '<td><span class="cmp-none">&middot;</span></td>';
+            var L = o.last, k = L.score == null || L.of == null ? 'saved' : L.score === L.of ? 'full' : L.score * 2 >= L.of ? 'part' : 'low';
+            return '<td><a class="cmp-sc ' + k + '" target="_blank" rel="noopener" href="' + esc(L.url) + '" title="Newest try, ' + esc(new Date(L.t).toLocaleString()) + '. Open the file in Drive.">' +
+              (L.score == null ? 'Saved' : L.score + '/' + L.of) + (o.tries > 1 ? ' <i>&times;' + o.tries + '</i>' : '') + '</a></td>';
+          }).join('') + '<td><span class="c43-pill ' + SL[r.k][1] + '">' + SL[r.k][0] + '</span></td></tr>';
+      }).join('') : '<tr><td colspan="' + (c.parts.length + 2) + '" class="nx-muted" style="padding:16px">No one here.</td></tr>') + '</tbody></table></div>' +
+      '<p class="c43-key"><span><i class="full"></i>Full marks</span><span><i class="part"></i>Half or more</span><span><i class="low"></i>Under half</span><span><i class="saved"></i>Saved, not marked</span></p>' +
+      '<p class="c43-note">Each cell is the newest try, with &times; the number of tries. Tap it to open that file in Drive. Stuck means under half on a part, or three tries without full marks. Tap a name to reset their PIN.</p>';
+    return h + '</div></section>';
   }
   function cmpLoadGrid() {
     var cls = CMP.cls;
-    tcall('api_t_cmpClass', cls).then(function (g) { if (cls !== CMP.cls) return; CMP.grid = g; cmpRenderGrid(); })
-      .catch(function (e) { var b = $('cmp-gridbox'); if (b) b.innerHTML = '<p>' + esc(msg(e)) + '</p>'; });
+    tcall('api_t_cmpClass', cls).then(function (g) { if (cls !== CMP.cls) return; CMP.grid = g; if (H.view === 'cmp') renderCmp(); })
+      .catch(function (e) { toast(msg(e)); });
   }
-  function cmpRenderGrid() {
-    var g = CMP.grid, d = CMP.data, box = $('cmp-gridbox'); if (!box) return;
-    // the Coaches open to the class, and any other Coach a student has saved files from
-    var used = {};
-    Object.keys(g.cells).forEach(function (k) { used[k.split('|')[1]] = 1; });
-    var coaches = d.coaches.filter(function (c) { return g.open.indexOf(c.id) >= 0 || used[c.id]; });
-    var withPin = g.students.filter(function (s) { return s.pin; }).length;
-    var h = '<div class="row" style="margin-bottom:10px"><h3 style="font-family:var(--display);font-size:19px;margin:0">' + esc(g.cls) + ': files checked</h3><span class="spacer"></span>' +
-      '<span class="muted" style="font-size:14px">' + withPin + ' of ' + g.students.length + ' have set up a PIN</span>' +
-      (g.folder ? '<a class="btn ghost small" target="_blank" rel="noopener" href="' + esc(g.folder) + '">' + ICON.folder + 'Drive folder</a>' : '') +
-      '<button class="btn quiet small" id="cmp-refresh" type="button">' + ICON.refresh + 'Refresh</button></div>';
-    if (!coaches.length) { box.innerHTML = h + '<p class="muted">Turn on a Coach above. Its parts show here once students check files.</p>'; cmpWireGrid(); return; }
-    h += '<div class="cmp-scroll"><table class="cmp-grid"><thead><tr><th class="nm cg"></th>' + coaches.map(function (c) { return '<th class="cg" colspan="' + c.parts.length + '">' + esc(c.id) + ' ' + esc(c.title) + '</th>'; }).join('') + '</tr>' +
-      '<tr><th class="nm">Student</th>' + coaches.map(function (c) { return c.parts.map(function (p) { return '<th title="' + esc(p[1]) + '">' + esc(cmpPartShort(p[1])) + '</th>'; }).join(''); }).join('') + '</tr></thead><tbody>';
-    h += g.students.map(function (s) {
-      return '<tr><td class="nm"><span class="cmp-dot' + (s.pin ? ' on' : '') + '" title="' + (s.pin ? 'PIN set up' : 'No PIN yet') + '"></span><button type="button" class="cmp-name" data-cmpst="' + esc(s.name) + '">' + esc(s.name) + '</button> <small>' + esc(s.code) + '</small></td>' +
-        coaches.map(function (c) {
-          return c.parts.map(function (p) {
-            var o = g.cells[s.code + '|' + c.id + '|' + p[0]];
-            if (!o) return '<td><span class="cmp-none">&middot;</span></td>';
-            var L = o.last, k = L.score == null || L.of == null ? '' : L.score === L.of ? 'full' : L.score * 2 >= L.of ? 'part' : 'low';
-            return '<td><a class="cmp-sc ' + k + '" target="_blank" rel="noopener" href="' + esc(L.url) + '" title="Newest try, ' + esc(new Date(L.t).toLocaleString()) + '. Open the file in Drive.">' +
-              (L.score == null ? 'Saved' : L.score + '/' + L.of) + (o.tries > 1 ? ' <i>&times;' + o.tries + '</i>' : '') + '</a></td>';
-          }).join('');
-        }).join('') + '</tr>';
-    }).join('') + '</tbody></table></div><p class="muted" style="font-size:13.5px;margin:10px 0 0">Each cell is the newest try (&times; the number of tries). Click it to open that file in Drive. Click a name to reset their PIN.</p>';
-    box.innerHTML = h; cmpWireGrid();
+  // One Coach given to (or taken back from) a class, with Undo for 5 seconds.
+  function cmpSet(cls, id, on, undo) {
+    return tcall('api_t_cmpOpen', cls, id, on).then(function (list) {
+      CMP.data.open[cls] = list; if (CMP.grid && CMP.grid.cls === cls) CMP.grid.open = list;
+      renderCmp();
+      if (undo !== false) cmpUndo((on ? 'Gave ' : 'Took back ') + id + (on ? ' to ' : ' from ') + cls, function () { return cmpSet(cls, id, !on, false); });
+      return list;
+    });
   }
+  function cmpUndo(text, fn) { toast(text, { ms: 5000, act: { label: 'Undo', run: function () { fn().then(function () { toast('Undone'); }).catch(function (e) { toast(msg(e)); }); } } }); }
   function cmpWire() {
     var v = $('view-cmp');
-    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpcls]'), function (b) { b.onclick = function () { CMP.cls = b.getAttribute('data-cmpcls'); lsSet('wsh_cmpcls', CMP.cls); renderCmp(); }; });
-    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpopen]'), function (i) {
-      i.onchange = function () {
-        var id = i.getAttribute('data-cmpopen'), on = i.checked; i.disabled = true;
-        tcall('api_t_cmpOpen', CMP.cls, id, on).then(function (list) { CMP.data.open[CMP.cls] = list; toast((on ? 'Opened ' : 'Closed ') + id + ' to ' + CMP.cls); if (CMP.grid && CMP.grid.cls === CMP.cls) { CMP.grid.open = list; cmpRenderGrid(); } })
-          .catch(function (e) { i.checked = !on; toast(msg(e)); }).then(function () { i.disabled = false; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpcls]'), function (b) { b.onclick = function () { var c = b.getAttribute('data-cmpcls'); if (c === CMP.cls) return; CMP.cls = c; CMP.filt = 'all'; lsSet('wsh_cmpcls', CMP.cls); renderCmp(); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpgive]'), function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute('data-cmpgive'), cls = b.getAttribute('data-cls');
+        if (cmpIsOpen(cls, id)) { toast(cls + ' has ' + id + '. To take it back, open the Coach.'); return; }
+        b.disabled = true; cmpSet(cls, id, true).catch(function (e) { b.disabled = false; toast(msg(e)); });
       };
     });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpch]'), function (b) {
+      b.onclick = function () {
+        var k = b.getAttribute('data-cmpch'), cls = CMP.cls, ids = CMP.data.coaches.filter(function (c) { return (c.chapter || 'Coaches') === k && !cmpIsOpen(cls, c.id); }).map(function (c) { return c.id; });
+        if (!ids.length) return; b.disabled = true;
+        var chain = Promise.resolve(), done = [];
+        ids.forEach(function (id) { chain = chain.then(function () { return tcall('api_t_cmpOpen', cls, id, true).then(function (list) { CMP.data.open[cls] = list; done.push(id); }); }); });
+        chain.then(function () {
+          renderCmp();
+          cmpUndo('Gave ' + plural(done.length, 'Coach', 'Coaches') + ' to ' + cls, function () {
+            var back = Promise.resolve(); done.forEach(function (id) { back = back.then(function () { return tcall('api_t_cmpOpen', cls, id, false).then(function (list) { CMP.data.open[cls] = list; }); }); });
+            return back.then(renderCmp);
+          });
+        }).catch(function (e) { renderCmp(); toast(msg(e)); });
+      };
+    });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpcoach]'), function (b) { b.onclick = function () { CMP.coach = b.getAttribute('data-cmpcoach'); CMP.filt = 'all'; renderCmp(); window.scrollTo(0, 0); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpback]'), function (b) { b.onclick = function () { CMP.coach = ''; renderCmp(); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmptoggle]'), function (b) {
+      b.onclick = function () { var id = b.getAttribute('data-cmptoggle'); b.disabled = true; cmpSet(CMP.cls, id, !cmpIsOpen(CMP.cls, id)).catch(function (e) { b.disabled = false; toast(msg(e)); }); };
+    });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpf]'), function (b) { b.onclick = function () { CMP.filt = b.getAttribute('data-cmpf'); renderCmp(); }; });
+    var rm = $('cmp-remind'); if (rm) rm.onclick = function () {
+      var g = CMP.grid, c = cmpCoach(CMP.coach), names = g.students.filter(function (s) { return cmpStuOf(g, c, s) === 'none'; }).map(function (s) { return s.name; });
+      cx38Copy(CMP.cls + ': please start Coach ' + c.id + ' ' + c.title + ' on the Computing page. Not started yet: ' + names.join(', ') + '.');
+    };
     var su = $('cmp-setup'); if (su) su.onclick = function () { su.disabled = true; tcall('api_t_cmpSetup').then(function (d) { CMP.data = d; toast('The Computing students tab is ready'); renderCmp(); }).catch(function (e) { su.disabled = false; toast(msg(e)); }); };
     var ag = $('cmp-again'); if (ag) ag.onclick = loadCmp;
     var ag2 = $('cmp-again2'); if (ag2) ag2.onclick = loadCmp;
+    var r = $('cmp-refresh'); if (r) r.onclick = cmpLoadGrid;
     var cp = $('cmp-copy'); if (cp) cp.onclick = function () {
       var u = CMP.data.studentUrl;
       (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast('Link copied'); }, function () { modal('<h2>The students\' link</h2><p style="word-break:break-all">' + esc(u) + '</p><div class="foot"><button class="btn" id="m-ok">OK</button></div>'); $('m-ok').onclick = closeModal; });
     };
-  }
-  function cmpWireGrid() {
-    var r = $('cmp-refresh'); if (r) r.onclick = cmpLoadGrid;
-    Array.prototype.forEach.call($('view-cmp').querySelectorAll('[data-cmpst]'), function (b) {
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpst]'), function (b) {
       b.onclick = function () {
         var name = b.getAttribute('data-cmpst');
-        modal('<h2>' + esc(name) + '</h2><p>Reset the PIN when a student has forgotten it and their security answer. They set up a new one on the Computing page with their register number.</p>' +
+        modal('<h2>' + esc(pvName(name)) + '</h2><p>Reset the PIN when a student has forgotten it and their security answer. They set up a new one on the Computing page with their register number.</p>' +
           '<div class="foot"><button class="btn ghost" id="m-out">Sign out everywhere</button><button class="btn ghost" id="m-cancel">Cancel</button><button class="btn" id="m-pin">Reset PIN</button></div>');
         var go = function (kind) {
           tcall('api_t_cmpReset', CMP.cls, name, kind).then(function () { closeModal(); toast(kind === 'pin' ? 'PIN reset for ' + name : name + ' is signed out everywhere'); cmpLoadGrid(); }).catch(function (e) { toast(msg(e)); });
@@ -10224,40 +10413,85 @@
     };
   }
 
-  /* ================= Settings: one page ================= */
+  /* ================= Settings: the approved board (release 43) =================
+     Seven plain groups. The New version switch is gone from here: the release-33 pages are retired. Your username,
+     password and PIN are in Admin; Account links there and keeps quick ways in. */
+  function s43Sec(k, ac, off, icon, title, lede, body) {
+    return '<section class="cx-sec cx38-sec s43-sec"><div class="cx38-banner' + cx38Lit('set|' + k) + '" style="--ac:' + ac + '">' + cx38Sky(off, 600, { noName: true }) +
+      '<span class="cx-ic s43-ic">' + icon + '</span><span class="cx38-bt"><h2 class="cx38-h">' + title + '</h2></span></div><div class="cx38-sbody"><p class="s43-lede">' + lede + '</p>' + body + '</div></section>';
+  }
+  function s43Row(title, sub, desc, btn) {
+    return '<div class="s43-row"><div class="s43-rt"><b>' + title + '</b>' + (sub || '') + '</div><p class="s43-rd">' + desc + '</p>' + btn + '</div>';
+  }
+  var S43_IC = {
+    hw: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M15 3v4h4M9 12h6M9 16h4"/></svg>',
+    cl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg>',
+    ph: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg>',
+    sh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M9 4v16"/></svg>'
+  };
   function nxSettings() {
     var box = $('view-set'); if (!box || box.classList.contains('hidden') && H.view !== 'set') return;
     var fl = sxFlow(), flow = flowOf(fl), on = claudeOn(), l = H.links || {};
-    var card = function (id, title, body) { return '<section class="nx-scard" id="' + id + '"><h2>' + title + '</h2>' + body + '</section>'; };
-    var h = '<h1 class="nx-h1">Settings</h1><div class="nx-sgrid">';
-    h += card('st-lesson', 'Lessons and homework',
-      '<p>Each slide starts the lesson the right way by itself. Cover and section slides start Together, and the rest start at Own pace. You change it on your phone, or with T in the slides.</p>' +
-      '<label class="nx-field">How homework runs after a lesson<select id="st-flow">' + FLOWS.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === flow ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>' +
-      '<p class="nx-muted" id="st-flowwhy">' + esc(flowWhy(flow)) + '</p>' +
-      '<p class="nx-muted">Check and return gives corrections 7 days. The answer key opens for each student once their corrections are in.</p>');
-    h += card('st-claude', 'Claude', '<p>' + (on ? 'Claude marking is connected.' : 'Claude marking is not set up yet.') + '</p><div class="nx-acts"><button type="button" class="nx-btn dark" data-st="claude">Claude marking</button><button type="button" class="nx-btn ghost" data-st="nudge">Ask Claude for students</button></div>');
-    h += card('st-points', 'Points', '<p>Points, prizes, the night market, class goals and quick bonuses are in Students, Points.</p><div class="nx-acts"><button type="button" class="nx-btn ghost" data-st="rw">Open points and prizes</button></div>');
-    h += card('st-acct', 'Account', '<p>Your username and password for the Teacher Hub. Students never see them.</p><div class="nx-acts"><button type="button" class="nx-btn ghost" data-st="acct">Username and password</button><button type="button" class="nx-btn ghost" data-st="out">Sign out</button></div>');
-    h += card('st-pin', 'Teacher PIN', '<p>The PIN is 6 to 8 numbers. You type it on this laptop only, never on an iPad.</p><div class="nx-pinrow"><label class="nx-field">Current PIN<input type="password" inputmode="numeric" id="st-pin0" autocomplete="off"></label><label class="nx-field">New PIN<input type="password" inputmode="numeric" id="st-pin1" autocomplete="off"></label><label class="nx-field">New PIN again<input type="password" inputmode="numeric" id="st-pin2" autocomplete="off"></label></div><div class="nx-acts"><button type="button" class="nx-btn dark" data-st="pin">Change the PIN</button></div><p class="err" id="st-pinerr" role="alert"></p>');
-    h += card('st-dev', 'Phone and paired devices', '<div id="st-devs"><p class="nx-muted">Looking...</p></div><div class="nx-acts"><button type="button" class="nx-btn dark" data-st="pair">Pair a phone</button><a class="nx-btn ghost" id="st-pj" href="#" target="_blank" rel="noopener" title="Open on the laptop you take to class">Projector screen</a></div>');
-    h += card('st-one', 'One sheet', '<div id="st-onebody"><p class="nx-muted">Looking...</p></div>');
-    h += card('st-next', 'New version', '<p>Which pages everyone uses. You can go back to the old pages at any time.</p><div id="st-nextbody"><p class="nx-muted">Looking...</p></div>');
-    h += card('st-more', 'Setup, guide and look', '<div class="nx-acts"><button type="button" class="nx-btn ghost" data-st="setup">Setup check and updates</button><button type="button" class="nx-btn ghost" data-st="guide">Setup guide</button><button type="button" class="nx-btn ghost" data-st="news">What\'s new</button><button type="button" class="nx-btn ghost" data-st="keys">Keyboard shortcuts</button></div>' +
-      '<div class="nx-seg nx-lookseg" role="group" aria-label="Look">' + THEMES.map(function (t) { return '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (themePick() === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
-      '<label class="nx-check"><input type="checkbox" id="st-fun"' + (lsGet('wsh_fun') === '1' ? ' checked' : '') + '> Confetti when the last script is marked</label>');
-    h += card('st-links', 'Links', '<div class="nx-acts">' + (l.student ? '<a class="nx-btn ghost" href="' + esc(l.student) + '" target="_blank" rel="noopener">Student page</a>' : '') + (l.site ? '<a class="nx-btn ghost" href="' + esc(l.site) + '" target="_blank" rel="noopener">Class site</a>' : '') +
-      (l.sheet ? '<a class="nx-btn ghost" href="' + esc(l.sheet) + '" target="_blank" rel="noopener">Sheet</a>' : '') + (l.folder ? '<a class="nx-btn ghost" href="' + esc(l.folder) + '" target="_blank" rel="noopener">Drive folder</a>' : '') +
-      (l.lessons ? '<a class="nx-btn ghost" href="' + esc(l.lessons) + '" target="_blank" rel="noopener">Lesson site</a>' : '') +
-      (l.liveboard ? '<a class="nx-btn ghost" href="' + esc(l.liveboard) + '" target="_blank" rel="noopener">Live Board</a>' : '') + '</div>');
-    h += '</div>';
+    var h = '<div class="w43-page cx38 s43"><header class="w43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Settings</h1>' +
+      '<p class="w43-lede">Homework, marking with Claude, your phone, and setup. Class lists and passwords are in <button type="button" class="s43-link" data-st="adm">Admin</button>.</p></header>';
+    h += s43Sec('hw', '#4FC3F7', 1, S43_IC.hw, 'Homework', 'How homework is handed in, marked and returned after you teach a lesson.',
+      '<div class="s43-flows" role="radiogroup" aria-label="How homework runs after a lesson">' + FLOWS.map(function (o) {
+        var rec = /recommended/i.test(o[1]), name = o[1].replace(/\s*\(recommended\)/i, '');
+        return '<button type="button" role="radio" class="s43-flow" data-flow="' + o[0] + '" aria-checked="' + (o[0] === flow) + '">' + (rec ? '<small>Recommended</small>' : '') + '<b>' + esc(name) + '</b></button>';
+      }).join('') + '</div><p class="s43-why" id="st-flowwhy">' + esc(flowWhy(flow)) + '</p>' +
+      '<p class="nx-muted s43-note">Corrections stay open for 7 days after you return the work. Each student sees the answer key once their corrections are in.</p>' +
+      '<p class="nx-muted s43-note">Slides start each lesson by themselves: cover and section slides start Together, the rest at Own pace. Change it on your phone, or with T in the slides.</p>');
+    h += s43Sec('cl', '#FFC86B', 5, S43_IC.cl, 'Marking with Claude', 'Claude marks against your marked solution, and can give students a hint when they are stuck.',
+      s43Row('Claude marking', '<span class="s43-pill' + (on ? ' on' : '') + '">' + (on ? 'Connected' : 'Not set up') + '</span>', 'Mark with Claude works on every worksheet. Paste a new URL and token only if you made a new token.', '<button type="button" class="nx-btn sm ghost" data-st="claude">' + (on ? 'Change' : 'Set up') + '</button>') +
+      s43Row('Ask Claude for students', '<span class="s43-pill" id="st-nudge">…</span>', 'Students drag a box round a question they are stuck on, and Claude replies with one guiding question. It never gives the answer.', '<button type="button" class="nx-btn sm ghost" data-st="nudge">Change</button>'));
+    h += s43Sec('ph', '#FF8A70', 9, S43_IC.ph, 'Your phone and laptop', 'Pair your phone to use it as a remote in lessons, and open the projector screen on the class laptop.',
+      '<div id="st-devs"><p class="nx-muted">Looking...</p></div><div class="nx-acts"><button type="button" class="nx-btn" data-st="pair">Pair a phone</button><a class="nx-btn ghost" id="st-pj" href="#" target="_blank" rel="noopener" title="Open on the laptop you take to class">Projector screen</a><span class="nx-muted s43-hint">Open the projector screen on the laptop you take to class.</span></div>');
+    h += s43Sec('sh', '#5ED39C', 3, S43_IC.sh, 'Sheets and setup', 'Where your work is saved, and a check that everything is connected.',
+      '<h3 class="s43-sub">One sheet</h3><div id="st-onebody"><p class="nx-muted">Looking...</p></div><h3 class="s43-sub">Setup</h3>' +
+      s43Row('Setup check and updates', '', 'Checks the web app link, the sheet, Claude marking and the server code, and shows what to paste if an update needs it.', '<button type="button" class="nx-btn sm ghost" data-st="setup">Run the check</button>') +
+      s43Row('Setup guide', '', 'Step by step, from a new sheet to your first lesson.', '<button type="button" class="nx-btn sm ghost" data-st="guide">Open the guide</button>'));
+    h += '<div class="s43-cards">' +
+      '<section class="s43-card"><h2>Look and shortcuts</h2><p class="nx-muted">How the Hub looks on this laptop.</p><div class="nx-seg nx-lookseg" role="group" aria-label="Look">' + THEMES.map(function (t) { return '<button type="button" data-theme-pick="' + t[0] + '" aria-pressed="' + (themePick() === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+        '<label class="nx-check"><input type="checkbox" id="st-fun"' + (lsGet('wsh_fun') === '1' ? ' checked' : '') + '> Confetti when the last script is marked</label>' +
+        '<div class="nx-acts"><button type="button" class="nx-btn sm ghost" data-st="keys">Keyboard shortcuts</button><button type="button" class="nx-btn sm ghost" data-st="news">What\'s new</button></div></section>' +
+      '<section class="s43-card"><h2>Account</h2><p class="nx-muted">Your username, password and teacher PIN are in Admin, with the class lists and student sign-in.</p>' +
+        '<div class="nx-acts"><button type="button" class="nx-btn sm" data-st="adm">Open Admin</button><button type="button" class="nx-btn sm ghost" data-st="acct">Username and password</button><button type="button" class="nx-btn sm ghost" data-st="pin">Teacher PIN</button><button type="button" class="nx-btn sm ghost" data-st="out">Sign out</button></div></section>' +
+      '<section class="s43-card"><h2>Links</h2><p class="nx-muted">Each opens in a new tab.</p><div class="nx-acts">' + (l.student ? '<a class="nx-btn sm ghost" href="' + esc(l.student) + '" target="_blank" rel="noopener">Student page</a>' : '') + (l.site ? '<a class="nx-btn sm ghost" href="' + esc(l.site) + '" target="_blank" rel="noopener">Class site</a>' : '') +
+        (l.sheet ? '<a class="nx-btn sm ghost" href="' + esc(l.sheet) + '" target="_blank" rel="noopener">Sheet</a>' : '') + (l.folder ? '<a class="nx-btn sm ghost" href="' + esc(l.folder) + '" target="_blank" rel="noopener">Drive folder</a>' : '') +
+        (l.lessons ? '<a class="nx-btn sm ghost" href="' + esc(l.lessons) + '" target="_blank" rel="noopener">Lesson site</a>' : '') + (l.liveboard ? '<a class="nx-btn sm ghost" href="' + esc(l.liveboard) + '" target="_blank" rel="noopener">Live Board</a>' : '') + '</div></section></div></div>';
     box.innerHTML = h;
-    var act = { claude: claudeSettings, nudge: nudgeSettings, rw: function () { showTab('rw'); }, acct: openAccount, out: nxSignOut, pair: nxPair, setup: openSetup, guide: openGuide, news: function () { showNews(true); window.scrollTo(0, 0); }, keys: shortcutsBox, pin: nxSetPin };
+    var act = { claude: claudeSettings, nudge: nudgeSettings, acct: openAccount, out: nxSignOut, pair: nxPair, setup: openSetup, guide: openGuide, news: function () { showNews(true); window.scrollTo(0, 0); }, keys: shortcutsBox, pin: s43Pin, adm: function () { showTab('adm'); } };
     Array.prototype.forEach.call(box.querySelectorAll('[data-st]'), function (b) { b.onclick = function () { act[b.getAttribute('data-st')](b); }; });
-    Array.prototype.forEach.call(box.querySelectorAll('[data-theme-pick]'), function (b) { b.onclick = function () { setTheme(b.getAttribute('data-theme-pick')); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-theme-pick]'), function (b) { b.onclick = function () { setTheme(b.getAttribute('data-theme-pick')); Array.prototype.forEach.call(box.querySelectorAll('[data-theme-pick]'), function (x) { x.setAttribute('aria-pressed', String(x === b)); }); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-flow]'), function (b) {
+      b.onclick = function () {
+        var f = b.getAttribute('data-flow');
+        Array.prototype.forEach.call(box.querySelectorAll('[data-flow]'), function (x) { x.setAttribute('aria-checked', String(x === b)); });
+        var s = flowSet(f); $('st-flowwhy').textContent = flowWhy(f); if (s) { sxKeepFlow(s); toast('Saved for the next homework you deploy'); }
+      };
+    });
     $('st-fun').onchange = function () { lsSet('wsh_fun', this.checked ? '1' : '0'); if (this.checked) celebrate(true); };
-    $('st-flow').onchange = function () { var s = flowSet(this.value); $('st-flowwhy').textContent = flowWhy(this.value); if (s) { sxKeepFlow(s); toast('Saved for the next homework you deploy'); } };
     bindProjector($('st-pj'));
-    nxDevList(); nxOneDraw(); nxNextDraw();
+    nxDevList(); nxOneDraw(); cx38Watch(box);
+    tcall('api_t_nudge').then(function (n) { var p = $('st-nudge'); if (!p) return; p.textContent = n && n.on ? 'On' : 'Off'; p.classList.toggle('on', !!(n && n.on)); }).catch(function () { var p = $('st-nudge'); if (p) p.remove(); });
+  }
+  // The teacher PIN, changed in a small window (Admin has it too).
+  function s43Pin() {
+    modal('<h2>Teacher PIN</h2><p>The PIN is 6 to 8 numbers. You type it on this laptop only, never on an iPad.</p><div class="nx-pinrow"><label class="nx-field">Current PIN<input type="password" inputmode="numeric" id="st-pin0" autocomplete="off"></label><label class="nx-field">New PIN<input type="password" inputmode="numeric" id="st-pin1" autocomplete="off"></label><label class="nx-field">New PIN again<input type="password" inputmode="numeric" id="st-pin2" autocomplete="off"></label></div><p class="err" id="st-pinerr" role="alert"></p>' +
+      '<div class="foot"><button type="button" class="btn ghost" id="sp-no">Cancel</button><button type="button" class="btn" id="sp-go">Change the PIN</button></div>');
+    $('sp-no').onclick = closeModal;
+    $('sp-go').onclick = function () {
+      var a = $('st-pin0').value.trim(), b = $('st-pin1').value.trim(), c = $('st-pin2').value.trim(), err = $('st-pinerr');
+      err.textContent = '';
+      if (!/^\d{6,8}$/.test(b)) { err.textContent = 'The new PIN must be 6 to 8 numbers.'; return; }
+      if (b !== c) { err.textContent = 'The two new PINs are not the same.'; return; }
+      tcall('t_setPin', a, b).then(function (r) {
+        if (r && r.ok === false) { err.textContent = r.why || 'The PIN was not changed.'; return; }
+        closeModal(); toast('Your teacher PIN is changed');
+      }).catch(function (e) { err.textContent = nxNeedsServer(e); });
+    };
+    setTimeout(function () { if ($('st-pin0')) $('st-pin0').focus(); }, 30);
   }
   function nxNeedsServer(e) { return nxNotFound(e) ? 'This needs the release 34 server code. Setup check shows what to paste.' : msg(e); }
   function nxDevList() {
