@@ -2655,6 +2655,101 @@
     .w43-land *, .w43-rd *, .pop.w43-menu, .cx43-tuck { animation: none !important; transition: none !important; }
   }
 </style>
+<style>
+  /* r43 admin: the Admin page (class lists, sign-in, you), as the approved board */
+  :root .adm43 .nx-btn.adm43-lamp, :root[data-theme="dark"] .adm43 .nx-btn.adm43-lamp { background: linear-gradient(135deg, #FFD58A, #F29A2E); color: #2A1500; border-color: transparent; box-shadow: 0 8px 24px rgba(242, 154, 46, .3), inset 0 1px 0 rgba(255, 255, 255, .45); }
+  :root .adm43 .nx-btn.adm43-lamp:disabled { opacity: .5; box-shadow: none; }
+  .adm43 .adm43-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
+  .adm43-top .adm43-ph { flex: 1 1 520px; min-width: 0; }
+  .adm43 .adm43-ph .w43-lede { max-width: 62ch; }
+  .adm43-cls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 18px; border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--nx-surface) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .adm43-cap { width: 100%; font: 700 11px/1 var(--display, sans-serif); letter-spacing: .12em; text-transform: uppercase; color: var(--nx-muted); }
+  .adm43-chip { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--nx-line); background: transparent; color: var(--nx-ink2); font: 700 15px var(--display, sans-serif); cursor: pointer; transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out), border-color 160ms var(--ease-out); }
+  .adm43-chip small { font-weight: 600; opacity: .6; margin-left: 4px; }
+  .adm43-chip[aria-pressed="true"] { background: color-mix(in srgb, #7CC4EE 16%, transparent); border-color: color-mix(in srgb, #7CC4EE 55%, transparent); color: var(--nx-ink); }
+  .adm43-chip:active, .adm43-nm:active, .adm43-more:active { transform: scale(.97); }
+  .adm43-sec .adm43-bh { gap: 14px; }
+  .adm43-sec .adm43-bh > .nx-btn { margin-left: auto; position: relative; z-index: 1; }
+  .adm43-ic svg { width: 22px; height: 22px; }
+  .adm43-paste { border: 1px solid var(--nx-line); border-radius: 18px; padding: 18px; background: color-mix(in srgb, var(--nx-ink) 3%, transparent); display: flex; flex-direction: column; gap: 10px; }
+  .adm43-paste h3, .adm43-prev h3, .adm43-slips h3, .adm43-yc h3 { margin: 0; font: 700 18px/1.25 var(--display, sans-serif); color: var(--nx-ink); }
+  .adm43-paste p { margin: 0; max-width: 72ch; }
+  .adm43-paste textarea { width: 100%; box-sizing: border-box; min-height: 110px; resize: vertical; border-radius: 12px; border: 1px solid var(--nx-line); background: var(--nx-surface); color: var(--nx-ink); font: 14px/1.6 ui-monospace, Menlo, Consolas, monospace; padding: 10px 12px; tab-size: 16; }
+  .adm43-paste textarea:focus-visible, .adm43-add input:focus-visible, .adm43-ren:focus-visible { outline: 2px solid #7CC4EE; outline-offset: 1px; }
+  .adm43-file { position: relative; overflow: hidden; }
+  .adm43-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .adm43-prev { margin-top: 14px; border-radius: 18px; border: 1px solid color-mix(in srgb, #7CC4EE 40%, var(--nx-line)); padding: 18px; display: flex; flex-direction: column; gap: 12px; animation: adm43-in 220ms var(--ease-out) both; }
+  .adm43-ph2 { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .adm43-ph2 h3 { margin-right: auto; }
+  .adm43-pcs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .adm43-pc { display: inline-flex; gap: 6px; align-items: baseline; padding: 6px 12px; border-radius: 999px; font-size: 14px; background: color-mix(in srgb, var(--nx-ink) 6%, transparent); color: var(--nx-ink2); }
+  .adm43-pc.new { background: color-mix(in srgb, #5ED39C 16%, transparent); color: color-mix(in srgb, #5ED39C 70%, var(--nx-ink)); }
+  .adm43-pc.mv { background: color-mix(in srgb, #FFC86B 16%, transparent); color: color-mix(in srgb, #FFC86B 70%, var(--nx-ink)); }
+  .adm43-pc.gone { background: color-mix(in srgb, var(--nx-muted) 16%, transparent); }
+  .adm43-g { border-left: 3px solid var(--nx-line); padding: 2px 0 2px 12px; }
+  .adm43-g.new { border-color: #5ED39C; } .adm43-g.mv { border-color: #FFC86B; } .adm43-g.gone { border-color: var(--nx-muted); }
+  .adm43-g h4 { margin: 0 0 4px; font: 700 14px var(--display, sans-serif); color: var(--nx-ink); } .adm43-g h4 small { color: var(--nx-muted); }
+  .adm43-gr { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; padding: 4px 0; color: var(--nx-ink); }
+  .adm43-keep { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 8px; }
+  .adm43-keep label { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; cursor: pointer; color: var(--nx-ink); }
+  .adm43-prob { border-radius: 12px; padding: 10px 14px; background: color-mix(in srgb, #FF8A70 12%, transparent); color: var(--nx-ink); } .adm43-prob ul { margin: 6px 0 0; padding-left: 18px; }
+  .adm43-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; margin-top: 16px; }
+  .adm43-row, .adm43-srow { display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid var(--nx-line); }
+  .adm43-reg { flex: none; width: 34px; text-align: right; font: 600 14px var(--display, sans-serif); color: var(--nx-muted); font-variant-numeric: tabular-nums; }
+  .adm43-nm { flex: 1 1 auto; min-width: 0; text-align: left; border: 0; background: none; padding: 8px 0; color: var(--nx-ink); font: 600 17px/1.3 var(--display, sans-serif); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: transform 160ms var(--ease-out); }
+  .adm43-dot { flex: none; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--nx-muted); opacity: .55; }
+  .adm43-dot.set { background: #5ED39C; opacity: 1; } .adm43-dot.temp { background: #FFC86B; opacity: 1; } .adm43-dot.exp { background: #FF8A70; opacity: 1; }
+  .adm43-mw { position: relative; flex: none; }
+  .adm43-more { width: 40px; height: 40px; border-radius: 12px; border: 0; background: transparent; color: var(--nx-muted); display: grid; place-items: center; cursor: pointer; transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out); }
+  .adm43-more svg { width: 18px; height: 18px; }
+  .adm43-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 220px; display: flex; flex-direction: column; padding: 6px; border-radius: 14px; border: 1px solid var(--nx-line); background: var(--nx-surface); box-shadow: 0 18px 40px rgba(0, 0, 0, .35); transform-origin: top right; animation: adm43-pop 160ms var(--ease-out) both; }
+  .adm43-menu button { min-height: 40px; text-align: left; border: 0; background: none; border-radius: 9px; padding: 0 12px; color: var(--nx-ink); font: 600 14px var(--text, sans-serif); cursor: pointer; }
+  .adm43-menu button.bad { color: #FF8A70; }
+  .adm43-mvl { padding: 8px 12px 2px; font: 700 11px var(--display, sans-serif); letter-spacing: .1em; text-transform: uppercase; color: var(--nx-muted); }
+  .adm43-ren { flex: 1 1 auto; min-width: 0; min-height: 40px; border-radius: 10px; border: 1px solid var(--nx-line); background: var(--nx-surface); color: var(--nx-ink); font: 600 16px var(--display, sans-serif); padding: 0 10px; }
+  .adm43-add { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .adm43-add input { min-height: 46px; border-radius: 12px; border: 1px solid var(--nx-line); background: var(--nx-surface); color: var(--nx-ink); font: 15px var(--text, sans-serif); padding: 0 12px; }
+  .adm43-add input:first-child { width: 110px; } .adm43-add input:nth-child(2) { flex: 1 1 260px; min-width: 0; }
+  .adm43-key { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin: 12px 0 0; font-size: 13px; color: var(--nx-muted); } .adm43-key .adm43-dot { margin-right: 6px; }
+  .adm43-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .adm43-flt { display: flex; flex-wrap: wrap; gap: 8px; }
+  .adm43-flt .adm43-chip[aria-pressed="true"] { background: color-mix(in srgb, #B57BFF 16%, transparent); border-color: color-mix(in srgb, #B57BFF 55%, transparent); }
+  .adm43-srow { flex-wrap: wrap; padding: 4px 0; }
+  .adm43-pill { flex: none; font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: color-mix(in srgb, var(--nx-ink) 6%, transparent); color: var(--nx-muted); }
+  .adm43-pill.set { background: color-mix(in srgb, #5ED39C 14%, transparent); color: color-mix(in srgb, #5ED39C 75%, var(--nx-ink)); }
+  .adm43-pill.temp { background: color-mix(in srgb, #FFC86B 16%, transparent); color: color-mix(in srgb, #FFC86B 75%, var(--nx-ink)); }
+  .adm43-pill.exp { background: color-mix(in srgb, #FF8A70 14%, transparent); color: color-mix(in srgb, #FF8A70 75%, var(--nx-ink)); }
+  .adm43-fine { font-size: 13px; margin: 12px 0 0; max-width: 90ch; }
+  .adm43-you { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .adm43-yc { border: 1px solid var(--nx-line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; margin: 0; }
+  .adm43-yc p { margin: 0; } .adm43-yc .nx-field { width: 100%; } .adm43-so { margin-top: 10px !important; }
+  .adm43-old { max-width: 720px; } .adm43-old h2 { margin: 0 0 6px; font: 700 22px var(--display, sans-serif); color: var(--nx-ink); }
+  .adm43-slips { border-radius: 22px; border: 1px dashed color-mix(in srgb, #B57BFF 50%, var(--nx-line)); padding: 20px; display: flex; flex-direction: column; gap: 12px; animation: adm43-in 220ms var(--ease-out) both; }
+  .adm43-sl { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .adm43-slip { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: 1.5px dashed var(--nx-line); border-radius: 10px; background: #fff; color: #1b1b24; break-inside: avoid; }
+  .adm43-slip b { font: 700 17px var(--display, sans-serif); } .adm43-slip span { font-size: 13px; } .adm43-slip .nx-muted { color: #555a66; }
+  .adm43-url { font-family: ui-monospace, Menlo, Consolas, monospace; word-break: break-all; }
+  .adm43-tp code { font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+  .adm43-big { margin: 8px 0 14px; } .adm43-big code { display: inline-block; font: 700 34px/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .03em; padding: 10px 18px; border-radius: 14px; background: color-mix(in srgb, #FFC86B 14%, transparent); color: var(--nx-ink, inherit); }
+  .adm43-pwl { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow: auto; margin: 6px 0 12px; }
+  .adm43-pwl div { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-bottom: 1px solid var(--nx-line); } .adm43-pwl code { font-weight: 700; }
+  @keyframes adm43-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes adm43-pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+  @media (hover: hover) and (pointer: fine) {
+    .adm43-nm:hover { color: color-mix(in srgb, #7CC4EE 70%, var(--nx-ink)); }
+    .adm43-more:hover, .adm43-menu button:hover { background: color-mix(in srgb, var(--nx-ink) 7%, transparent); }
+    .adm43-chip:hover { border-color: color-mix(in srgb, var(--nx-ink) 30%, transparent); }
+  }
+  @media (max-width: 900px) { .adm43-list { grid-template-columns: minmax(0, 1fr); } .adm43-you { grid-template-columns: minmax(0, 1fr); } }
+  @media (prefers-reduced-motion: reduce) { .adm43-prev, .adm43-slips, .adm43-menu { animation: adm43-fade 160ms linear both; } .adm43-chip, .adm43-nm, .adm43-more { transition: none; } }
+  @keyframes adm43-fade { from { opacity: 0; } to { opacity: 1; } }
+  @media print {
+    body.adm43-printing * { visibility: hidden !important; }
+    body.adm43-printing #adm-slipbox, body.adm43-printing #adm-slipbox .adm43-sl, body.adm43-printing #adm-slipbox .adm43-sl * { visibility: visible !important; }
+    body.adm43-printing #adm-slipbox { position: absolute; left: 0; top: 0; width: 100%; border: 0; padding: 0; }
+    body.adm43-printing .adm43-slip { border-color: #999; }
+  }
+</style>
 </head>
 <body>
 
@@ -8752,15 +8847,293 @@
     var all = root.querySelector('details.w43-all'); if (all) all.addEventListener('toggle', function () { NX.w43all = all.open; });
   }
   setInterval(function () { Array.prototype.forEach.call(document.querySelectorAll('#view-today .w43-cd'), function (el) { el.textContent = w43Countdown(Number(el.getAttribute('data-ts'))); }); }, 30000);
-  // Release 43: Admin has its own page from wave 2 of this release. Until then, its place in the menu says so.
+  /* ================= Release 43: Admin (the approved Admin board) =================
+     The class list is the Students tab of the Hub sheet: Admin reads it and writes it, and nothing else keeps a copy.
+     Reading uses the Hub's Live Board key (as apiStStatus does). Anything that changes a class list or a password asks
+     for the teacher PIN once in this visit (kept in memory only, never stored), and the server checks it on every
+     change. On a server without the release-43 code the page says what to paste, and nothing else in the Hub minds. */
+  var ADM = { cls: '', roster: null, err: '', old: false, filter: 'all', text: '', prev: null, rm: false, fresh: {}, slips: null, menu: '', edit: '', pin: '' };
+  var ADM_XLSX = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  function admNotFound(e) { return nxNotFound(e) && /apiAdm|apiStStatus|Script function/i.test(msg(e)); }
+  function admClasses() { return ((ADM.roster && ADM.roster.classes) || []).map(function (c) { return c.cls; }); }
+  function admStudents() { var c = ((ADM.roster && ADM.roster.classes) || []).filter(function (x) { return x.cls === ADM.cls; })[0]; return c ? c.students : []; }
+  function admState(s) {
+    var a = s.acct || {};
+    if (a.temp) return { k: 'temp', t: 'Temporary password · must change' };
+    if (a.expired && !a.set) return { k: 'exp', t: 'Temporary password ran out' };
+    if (a.set) return { k: 'set', t: 'Set up' + (a.at ? ' · ' + new Date(a.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '') };
+    return { k: 'none', t: 'Not set up yet' };
+  }
   function w43Admin() {
     var v = $('view-adm'); if (!v) return;
-    v.innerHTML = '<div class="w43-page"><header class="w43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Admin</h1><p class="w43-lede">Class lists, student passwords and your PIN.</p></header>' +
-      '<section class="w43-card2"><p>Admin is coming in this release. Until then, class lists are in the Students tab of the Hub sheet, a student\'s password resets from their record (tap their name), and your PIN is in Settings.</p>' +
-      '<div class="nx-acts"><button type="button" class="nx-btn" data-w43go="set">Open Settings</button><button type="button" class="nx-btn ghost" data-w43go="tr">Open the Tracker</button></div></section></div>';
-    Array.prototype.forEach.call(v.querySelectorAll('[data-w43go]'), function (b) { b.onclick = function () { showTab(b.getAttribute('data-w43go')); }; });
-    Array.prototype.forEach.call(v.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; });
+    if (!ADM.roster && !ADM.old) v.innerHTML = '<div class="w43-page adm43"><header class="w43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Admin</h1></header>' + skeleton('table') + '</div>';
+    admBindHome(v);
+    nxLb('apiAdmRoster').then(function (r) {
+      ADM.roster = r; ADM.old = false; ADM.err = '';
+      var cl = admClasses(); if (!ADM.cls || cl.indexOf(ADM.cls) < 0) ADM.cls = cl.indexOf(H.cls) >= 0 ? H.cls : (cl.filter(function (c) { return c !== 'TEST'; })[0] || cl[0] || '');
+      admDraw();
+    }).catch(function (e) { if (admNotFound(e)) ADM.old = true; else ADM.err = msg(e); admDraw(); });
   }
+  function admBindHome(v) { Array.prototype.forEach.call(v.querySelectorAll('[data-w43home]'), function (b) { b.onclick = function () { showTab('today'); }; }); }
+  // A change to a class list or a password: the PIN once per visit, then the call. A wrong PIN asks again.
+  function admDo(title, why, fn, args) {
+    var go = function (pin, fromBox) {
+      return call.apply(null, [fn, pin].concat(args)).then(function (r) { ADM.pin = pin; if (fromBox) closeModal(); return r; }, function (e) {
+        if (/wrong pin|too many wrong/i.test(msg(e))) {
+          ADM.pin = '';
+          if (!fromBox) return admDo(title, why, fn, args);          // the PIN changed since: ask again, then carry on
+          if ($('ap-err')) { $('ap-err').textContent = msg(e); var b = $('ap-go'); if (b) b.disabled = false; }
+          throw { quiet: 1 };
+        }
+        if (fromBox) closeModal();
+        throw e;
+      });
+    };
+    if (ADM.pin) return go(ADM.pin, false);
+    return new Promise(function (res, rej) {
+      nxAskPin(title, why + ' Your PIN is asked once in this visit.', function (p) { var b = $('ap-go'); if (b) b.disabled = true; go(p, true).then(res, function (e) { if (!e || !e.quiet) rej(e); }); });
+    });
+  }
+  function admFail(e) { if (e && e.quiet) return; if (admNotFound(e)) { ADM.old = true; admDraw(); return; } alertBox('Not done', msg(e)); }
+  function admBanner(k, colour, off, x, icon, title, sub, right) {
+    NX.cx38lit['adm|' + k] = 1;   // lit at once: a section title is never hidden while it waits to be scrolled to
+    return '<div class="cx38-banner adm43-bh' + cx38Lit('adm|' + k) + '" style="--ac:' + colour + '">' + cx38Sky(off, x, { noName: true }) +
+      '<span class="cx-ic adm43-ic" style="color:' + colour + '">' + icon + '</span><span class="cx38-bt"><h2 class="cx38-h">' + title + '</h2><span class="cx-meta">' + sub + '</span></span>' + (right || '') + '</div>';
+  }
+  var ADM_IC = {
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></svg>',
+    you: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5"/></svg>',
+    more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>'
+  };
+  function admDraw() {
+    var v = $('view-adm'); if (!v) return;
+    var head = '<header class="w43-ph adm43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Admin</h1>' +
+      '<p class="w43-lede">Class lists, student sign-in and your account. Class lists are saved in the <b>Students tab</b> of your Hub sheet, as before.</p></header>';
+    if (ADM.old) {
+      v.innerHTML = '<div class="w43-page adm43">' + head + '<section class="w43-card2 adm43-old"><h2>Admin needs the new server code</h2><p>Open Setup check to see what to paste. Everything else in the Hub works as it is.</p>' +
+        '<div class="nx-acts"><button type="button" class="nx-btn" id="adm-setup">Open Setup check</button><button type="button" class="nx-btn ghost" data-w43home>Back to the overview</button></div></section></div>';
+      $('adm-setup').onclick = openSetup; admBindHome(v); return;
+    }
+    if (ADM.err) {
+      v.innerHTML = '<div class="w43-page adm43">' + head + '<section class="w43-card2"><p>' + esc(ADM.err) + '</p><div class="nx-acts"><button type="button" class="nx-btn" id="adm-again">Try again</button></div></section></div>';
+      $('adm-again').onclick = function () { ADM.err = ''; w43Admin(); }; admBindHome(v); return;
+    }
+    if (!ADM.roster) return;
+    var cls = ADM.cls, studs = admStudents(), classes = admClasses();
+    var chips = '<div class="adm43-cls" role="group" aria-label="Class"><span class="adm43-cap">Class</span>' + classes.map(function (c) {
+      var n = (ADM.roster.classes.filter(function (x) { return x.cls === c; })[0] || { students: [] }).students.length;
+      return '<button type="button" class="adm43-chip" data-admcls="' + esc(c) + '" aria-pressed="' + (c === cls) + '">' + esc(c) + ' <small>' + n + '</small></button>';
+    }).join('') + '</div>';
+    var h = '<div class="w43-page adm43"><div class="adm43-top">' + head + chips + '</div>';
+    // ---- Class list
+    var sheet = ADM.roster.sheet ? '<a class="nx-btn sm ghost" href="' + esc(ADM.roster.sheet) + '" target="_blank" rel="noopener">Open the Students tab</a>' : '';
+    h += '<section class="cx-sec cx38-sec adm43-sec">' + admBanner('list|' + cls, '#7CC4EE', 5, 520, ADM_IC.list, 'Class list', esc(cls) + ' has ' + plural(studs.length, 'student', 'students') + ' in the Students tab', sheet) + '<div class="cx38-sbody">';
+    h += '<div class="adm43-paste"><h3>Paste or upload a class list</h3><p class="nx-muted">Copy the Class, Reg No and Name columns from Excel or Google Sheets and paste them here, or choose a .csv, .txt or .xlsx file. Rows without a class go into ' + esc(cls) + '.</p>' +
+      '<textarea id="adm-text" rows="5" spellcheck="false" placeholder="' + esc(cls) + '\t1\tTan Wei Ming&#10;' + esc(cls) + '\t2\tNur Aisyah binte Rahman">' + esc(ADM.text) + '</textarea>' +
+      '<div class="nx-acts"><button type="button" class="nx-btn" id="adm-check">Check the list</button><label class="nx-btn ghost adm43-file">Choose a file<input type="file" id="adm-file" accept=".csv,.txt,.tsv,.xlsx,text/csv,text/plain"></label><span class="nx-muted" id="adm-fnote" role="status"></span></div></div>';
+    if (ADM.prev) h += admPrevHtml(ADM.prev);
+    h += '<div class="adm43-list">' + (studs.length ? studs.map(function (s, i) {
+      var st = admState(s), key = cls + '|' + s.name, ed = ADM.edit === key;
+      return '<div class="adm43-row"><span class="adm43-reg">' + esc(s.reg || '') + '</span>' +
+        (ed ? '<input class="adm43-ren" id="adm-ren" value="' + esc(s.name) + '" maxlength="80" aria-label="New name for ' + esc(pvName(s.name)) + '"><button type="button" class="nx-btn sm" data-admsave="' + i + '">Save</button><button type="button" class="nx-btn sm ghost" data-admcancel>Cancel</button>'
+          : '<button type="button" class="adm43-nm" data-admrec="' + esc(s.name) + '">' + esc(pvName(s.name)) + '</button><span class="adm43-dot ' + st.k + '" title="' + esc(st.t) + '" aria-label="' + esc(st.t) + '"></span>' +
+            '<span class="adm43-mw"><button type="button" class="adm43-more" data-admmenu="' + i + '" aria-haspopup="menu" aria-expanded="' + (ADM.menu === key) + '" aria-label="More for ' + esc(pvName(s.name)) + '">' + ADM_IC.more + '</button>' +
+            (ADM.menu === key ? '<span class="adm43-menu" role="menu"><button type="button" role="menuitem" data-admdo="ren" data-i="' + i + '">Rename</button><span class="adm43-mvl">Move to class</span>' +
+              classes.filter(function (c) { return c !== cls; }).map(function (c) { return '<button type="button" role="menuitem" data-admdo="mv" data-i="' + i + '" data-to="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') +
+              '<button type="button" role="menuitem" class="bad" data-admdo="rm" data-i="' + i + '">Remove from the class list</button></span>' : '') + '</span>') + '</div>';
+    }).join('') : '<p class="nx-muted">No students in ' + esc(cls) + ' yet. Paste the class list above, or add them one at a time.</p>') + '</div>';
+    h += '<form class="adm43-add" id="adm-add" autocomplete="off"><input id="adm-areg" placeholder="Reg No" inputmode="numeric" maxlength="8" aria-label="Register number"><input id="adm-aname" placeholder="Name, as on the class list" maxlength="80" aria-label="Name"><button type="submit" class="nx-btn">Add one student</button></form>' +
+      '<p class="adm43-key"><i class="adm43-dot set"></i>Signed in before <i class="adm43-dot temp"></i>Has a temporary password <i class="adm43-dot none"></i>Not set up yet</p></div></section>';
+    // ---- Sign-in
+    var cnt = { all: studs.length, set: 0, none: 0, temp: 0 };
+    studs.forEach(function (s) { var k = admState(s).k; if (k === 'set') cnt.set++; else if (k === 'temp') cnt.temp++; else cnt.none++; });
+    var F = [['all', 'Everyone'], ['set', 'Set up'], ['none', 'Not set up'], ['temp', 'Temporary']];
+    var shown = studs.filter(function (s) { var k = admState(s).k; return ADM.filter === 'all' || (ADM.filter === 'none' ? (k === 'none' || k === 'exp') : k === ADM.filter); });
+    h += '<section class="cx-sec cx38-sec adm43-sec">' + admBanner('si|' + cls, '#B57BFF', 6, 560, ADM_IC.key, 'Sign-in', 'A temporary password lets a student in once. They sign in with it, then choose their own password and security question straight away.') + '<div class="cx38-sbody">' +
+      '<div class="adm43-bar"><div class="adm43-flt" role="group" aria-label="Show">' + F.map(function (f) { return '<button type="button" class="adm43-chip" data-admf="' + f[0] + '" aria-pressed="' + (ADM.filter === f[0]) + '">' + f[1] + ' <small>' + cnt[f[0]] + '</small></button>'; }).join('') + '</div><span class="nx-grow"></span>' +
+      (cnt.none ? '<button type="button" class="nx-btn adm43-lamp" id="adm-tall">Temporary passwords for the ' + cnt.none + ' not set up</button>' : '') + '<button type="button" class="nx-btn ghost" id="adm-slips">Print sign-in slips</button></div>' +
+      '<div class="adm43-si">' + (shown.length ? shown.map(function (s) {
+        var st = admState(s), i = studs.indexOf(s);
+        return '<div class="adm43-srow"><span class="adm43-reg">' + esc(s.reg || '') + '</span><button type="button" class="adm43-nm" data-admrec="' + esc(s.name) + '">' + esc(pvName(s.name)) + '</button><span class="adm43-pill ' + st.k + '">' + esc(st.t) + '</span>' +
+          '<button type="button" class="nx-btn sm ghost" data-admtemp="' + i + '">Temporary password</button><button type="button" class="nx-btn sm ghost" data-admreset="' + i + '">Reset</button><button type="button" class="nx-btn sm ghost" data-admout="' + i + '">Sign out</button></div>';
+      }).join('') : '<p class="nx-muted">No one here.</p>') + '</div>' +
+      '<p class="nx-muted adm43-fine">Reset clears their password and security question, and they set up again with their register number, as on their first day. Sign out asks every iPad they use for their password again; their password stays the same.</p></div></section>';
+    if (ADM.slips) h += admSlipsHtml();
+    // ---- You
+    h += '<section class="cx-sec cx38-sec adm43-sec">' + admBanner('you', '#5ED39C', 10, 600, ADM_IC.you, 'You', 'Your Teacher Hub sign-in and your PIN. Students never see them.') + '<div class="cx38-sbody"><div class="adm43-you">' +
+      '<div class="adm43-yc"><h3>Username and password</h3><p class="nx-muted">For the Teacher Hub.' + (lsGet('wsh_tu') ? ' Username <b>' + esc(lsGet('wsh_tu')) + '</b>.' : '') + '</p><button type="button" class="nx-btn ghost" id="adm-acct">Change username or password</button></div>' +
+      '<form class="adm43-yc" id="adm-pinf" autocomplete="off"><h3>Teacher PIN</h3><p class="nx-muted">6 to 8 numbers. You type it on this laptop only, never on an iPad.</p>' +
+      '<label class="nx-field">Current PIN<input type="password" inputmode="numeric" id="adm-pin0"></label><label class="nx-field">New PIN<input type="password" inputmode="numeric" id="adm-pin1"></label><label class="nx-field">New PIN again<input type="password" inputmode="numeric" id="adm-pin2"></label>' +
+      '<div class="err" id="adm-pinerr" role="alert"></div><button type="submit" class="nx-btn ghost">Change the PIN</button></form>' +
+      '<div class="adm43-yc"><h3>Your PIN on this laptop</h3><p class="nx-muted">' + (ADM.pin ? 'Typed in this visit. Changes to class lists and passwords do not ask again until you close the Hub.' : 'Changes to class lists and passwords ask for it once, then not again until you close the Hub.') + '</p>' +
+      (ADM.pin ? '<button type="button" class="nx-btn sm ghost" id="adm-forget">Ask for it again</button>' : '') + '<h3 class="adm43-so">Sign out</h3><p class="nx-muted">Signs the Teacher Hub out on this laptop.</p><button type="button" class="nx-btn sm ghost" id="adm-out">Sign out</button></div>' +
+      '</div></div></section></div>';
+    var sy = window.scrollY;
+    v.innerHTML = h; window.scrollTo(0, sy);
+    admBind(v);
+    cx38Watch(v);
+  }
+  function admPrevHtml(p) {
+    var group = function (k, cls, title, rows, line) { return rows.length ? '<div class="adm43-g ' + cls + '"><h4>' + title + ' <small>' + rows.length + '</small></h4>' + rows.map(function (r) { return '<div class="adm43-gr">' + line(r) + '</div>'; }).join('') + '</div>' : ''; };
+    var nm = function (n) { return esc(pvName(n)); };
+    var chip = function (n, t, c) { return n ? '<span class="adm43-pc ' + c + '"><b>' + n + '</b> ' + t + '</span>' : ''; };
+    var changes = p.added.length + p.moved.length + p.renamed.length + (p.changedReg || []).length + (ADM.rm ? p.missing.length : 0);
+    return '<div class="adm43-prev" id="adm-prev"><div class="adm43-ph2"><h3>Check before saving</h3><button type="button" class="nx-btn sm ghost" id="adm-pclose">Cancel</button></div>' +
+      '<div class="adm43-pcs">' + chip(p.added.length, 'new', 'new') + chip(p.moved.length, 'moved', 'mv') + chip(p.renamed.length, 'name changed', 'mv') + chip((p.changedReg || []).length, 'new register number', 'mv') + chip(p.missing.length, 'not in this list', 'gone') + chip(p.same.length, 'the same', 'same') + '</div>' +
+      (p.problems && p.problems.length ? '<div class="adm43-prob"><b>Rows that could not be read</b><ul>' + p.problems.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' : '') +
+      group('a', 'new', 'New students', p.added, function (r) { return '<span class="adm43-reg">' + esc(r.reg || '') + '</span>' + nm(r.name) + '<span class="nx-muted">' + esc(r.cls) + '</span>'; }) +
+      group('m', 'mv', 'Moved to another class', p.moved, function (r) { return nm(r.name) + '<span class="nx-muted">' + esc(r.from) + ' → ' + esc(r.to) + '</span>'; }) +
+      group('r', 'mv', 'Name changed', p.renamed, function (r) { return nm(r.from) + ' → ' + nm(r.to) + '<span class="nx-muted">' + esc(r.cls) + '</span>'; }) +
+      group('g', 'mv', 'New register number', p.changedReg || [], function (r) { return nm(r.name) + '<span class="nx-muted">' + esc(r.from || '–') + ' → ' + esc(r.to || '–') + '</span>'; }) +
+      (p.missing.length ? '<div class="adm43-g gone"><h4>Not in this list <small>' + p.missing.length + '</small></h4>' + p.missing.map(function (r) { return '<div class="adm43-gr">' + nm(r.name) + '<span class="nx-muted">' + esc(r.cls) + '</span></div>'; }).join('') +
+        '<div class="adm43-keep" role="radiogroup" aria-label="Students not in this list"><label><input type="radio" name="adm-rm" value="0"' + (ADM.rm ? '' : ' checked') + '> Keep them</label><label><input type="radio" name="adm-rm" value="1"' + (ADM.rm ? ' checked' : '') + '> Remove from the class list</label></div><p class="nx-muted">Their work and points are kept either way.</p></div>' : '') +
+      '<div class="nx-acts"><button type="button" class="nx-btn adm43-lamp" id="adm-apply"' + (changes ? '' : ' disabled') + '>' + (changes ? 'Save to the Students tab' : 'Nothing to change') + '</button></div></div>';
+  }
+  function admSlipsHtml() {
+    var S = ADM.slips, site = (H.links && H.links.student) || '';
+    return '<section class="adm43-slips" id="adm-slipbox" aria-label="Sign-in slips"><div class="adm43-ph2"><h3>Sign-in slips · ' + esc(S.cls) + '</h3><span class="nx-grow"></span>' +
+      '<div class="adm43-flt" role="group" aria-label="Which slips"><button type="button" class="adm43-chip" data-admsl="all" aria-pressed="' + (S.which === 'all') + '">Everyone</button><button type="button" class="adm43-chip" data-admsl="none" aria-pressed="' + (S.which === 'none') + '">Only those not set up</button></div>' +
+      '<button type="button" class="nx-btn" id="adm-print">Print</button><button type="button" class="nx-btn ghost" id="adm-slx">Close</button></div>' +
+      '<p class="nx-muted">A password prints only straight after it is made: the Hub keeps a scrambled copy, so it cannot read old ones back.</p><div class="adm43-sl">' +
+      S.list.map(function (s) {
+        var p = ADM.fresh[S.cls + '|' + s.name];
+        return '<div class="adm43-slip"><b>' + esc(s.name) + '</b><span>' + esc(S.cls) + (s.reg ? ' · Register no. ' + esc(s.reg) : '') + '</span>' + (site ? '<span class="adm43-url">' + esc(site.replace(/^https?:\/\//, '')) + '</span>' : '') +
+          (p ? '<span class="adm43-tp">Temporary password <code>' + esc(p) + '</code></span><span class="nx-muted">Sign in with it, then choose your own password.</span>'
+            : '<span class="nx-muted">First time? Tap First time here? and use your register number.</span>') + '</div>';
+      }).join('') + '</div></section>';
+  }
+  function admOpenSlips(which) {
+    var studs = admStudents();
+    var list = studs.filter(function (s) { if (which !== 'none') return true; var k = admState(s).k; return k === 'none' || k === 'exp' || k === 'temp'; });
+    ADM.slips = { cls: ADM.cls, which: which || 'all', list: list }; admDraw();
+    setTimeout(function () { var b = $('adm-slipbox'); if (b) b.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+  }
+  function admShowPass(cls, list, expires) {
+    var one = list.length === 1, until = expires ? new Date(expires).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+    list.forEach(function (x) { ADM.fresh[cls + '|' + x.name] = x.pass; });
+    modal('<h2>' + (one ? 'Temporary password for ' + esc(pvName(list[0].name)) : plural(list.length, 'temporary password', 'temporary passwords') + ' for ' + esc(cls)) + '</h2>' +
+      (one ? '<p class="adm43-big"><code id="adm-pw">' + esc(list[0].pass) + '</code></p>' : '<div class="adm43-pwl" id="adm-pw">' + list.map(function (x) { return '<div><span>' + esc(pvName(x.name)) + '</span><code>' + esc(x.pass) + '</code></div>'; }).join('') + '</div>') +
+      '<p class="nx-muted">' + (one ? 'They sign in with it, then choose their own password.' : 'Each student signs in with theirs, then chooses their own password.') + (until ? ' It works until ' + esc(until) + '.' : '') + ' <b>This is the only time it is shown.</b></p>' +
+      '<div class="foot"><button type="button" class="btn ghost" id="adm-pwslip">' + (one ? 'Print their slip' : 'Print these slips') + '</button><button type="button" class="btn ghost" id="adm-copy">Copy</button><button type="button" class="btn" id="adm-pwok">Done</button></div>', 'adm43-pwm');
+    $('adm-copy').onclick = function () {
+      var t = one ? list[0].pass : list.map(function (x) { return x.name + '\t' + x.pass; }).join('\n'), b = this;
+      var done = function () { b.textContent = 'Copied'; };
+      var sel = function () { var r = document.createRange(); r.selectNodeContents($('adm-pw')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); try { document.execCommand('copy'); done(); } catch (e) { b.textContent = 'Selected: press Ctrl+C'; } };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, sel); else sel();
+    };
+    $('adm-pwok').onclick = closeModal;
+    $('adm-pwslip').onclick = function () { closeModal(); ADM.slips = { cls: cls, which: 'fresh', list: admStudents().filter(function (s) { return ADM.fresh[cls + '|' + s.name]; }) }; admDraw(); setTimeout(function () { var b = $('adm-slipbox'); if (b) b.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); };
+  }
+  function admRefresh(r) { if (r && r.roster) ADM.roster = r.roster; admDraw(); }
+  function admStatusRefresh() {
+    // Sign-in changes: ask for this class's status again, and keep the class list as it is.
+    nxLb('apiStStatus', ADM.cls).then(function (st) {
+      admStudents().forEach(function (s) { var x = st && st[s.name]; if (x) s.acct = { set: !!x.set, at: x.at || 0, temp: !!x.temp, te: x.te || 0, expired: !!x.expired }; });
+      admDraw();
+    }).catch(function () { w43Admin(); });
+  }
+  function admWarn(r, done) {
+    var w = (r && r.warnings) || [];
+    if (w.length) alertBox(done, w.join(' ')); else toast(done);
+  }
+  function admReadFile(f) {
+    var note = $('adm-fnote'); if (note) note.textContent = 'Reading ' + f.name + '...';
+    var put = function (t) { ADM.text = t; var ta = $('adm-text'); if (ta) ta.value = t; if (note) note.textContent = f.name + ' is in the box. Check the list next.'; };
+    if (/\.xlsx$/i.test(f.name)) {
+      var parse = function () {
+        var rd = new FileReader();
+        rd.onload = function () { try { var wb = XLSX.read(new Uint8Array(rd.result), { type: 'array' }); put(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]], { FS: '\t', blankrows: false })); } catch (e) { if (note) note.textContent = 'That Excel file could not be read. Save it as .csv and choose that instead.'; } };
+        rd.readAsArrayBuffer(f);
+      };
+      if (window.XLSX) return parse();
+      var s = document.createElement('script'); s.src = ADM_XLSX; s.onload = parse;
+      s.onerror = function () { if (note) note.textContent = 'Excel files cannot be read here. Save it as .csv (File, Save as) and choose that, or copy the columns and paste them.'; };
+      document.head.appendChild(s); return;
+    }
+    var rd = new FileReader(); rd.onload = function () { put(String(rd.result || '')); }; rd.onerror = function () { if (note) note.textContent = 'That file could not be read.'; }; rd.readAsText(f);
+  }
+  function admBind(v) {
+    admBindHome(v);
+    var studs = admStudents(), cls = ADM.cls;
+    var each = function (sel, f) { Array.prototype.forEach.call(v.querySelectorAll(sel), function (b) { b.onclick = function (e) { f(b, e); }; }); };
+    each('[data-admcls]', function (b) { ADM.cls = b.getAttribute('data-admcls'); ADM.prev = null; ADM.menu = ADM.edit = ''; ADM.slips = null; admDraw(); });
+    each('[data-admrec]', function (b) { nxOpenRecord(cls, b.getAttribute('data-admrec')); });
+    each('[data-admf]', function (b) { ADM.filter = b.getAttribute('data-admf'); admDraw(); });
+    var ta = $('adm-text'); if (ta) ta.oninput = function () { ADM.text = ta.value; };
+    var fi = $('adm-file'); if (fi) fi.onchange = function () { if (fi.files && fi.files[0]) admReadFile(fi.files[0]); };
+    var ck = $('adm-check'); if (ck) ck.onclick = function () {
+      ADM.text = $('adm-text').value; if (!ADM.text.trim()) { $('adm-fnote').textContent = 'Paste the class list in the box first.'; return; }
+      ck.disabled = true; ck.textContent = 'Checking...';
+      nxLb('apiAdmPreview', ADM.text, { cls: cls }).then(function (p) { ADM.prev = p; ADM.rm = false; admDraw(); setTimeout(function () { var x = $('adm-prev'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50); })
+        .catch(function (e) { ck.disabled = false; ck.textContent = 'Check the list'; admFail(e); });
+    };
+    var pc = $('adm-pclose'); if (pc) pc.onclick = function () { ADM.prev = null; admDraw(); };
+    Array.prototype.forEach.call(v.querySelectorAll('input[name=adm-rm]'), function (r) { r.onchange = function () { ADM.rm = r.value === '1'; admDraw(); }; });
+    var ap = $('adm-apply'); if (ap) ap.onclick = function () {
+      ap.disabled = true;
+      admDo('Save the class list', 'This writes the changes to the Students tab of your Hub sheet.', 'apiAdmApply', [ADM.text, { cls: cls, removeMissing: ADM.rm }]).then(function (r) {
+        var d = (r && r.done) || {}, n = (d.added || 0) + (d.moved || 0) + (d.renamed || 0) + (d.removed || 0) + (d.changedReg || 0);
+        ADM.prev = null; ADM.text = ''; admRefresh(r); admWarn(r, 'Saved to the Students tab: ' + plural(n, 'change', 'changes') + '.');
+      }).catch(function (e) { ap.disabled = false; admFail(e); });
+    };
+    each('[data-admmenu]', function (b, e) { e.stopPropagation(); var k = cls + '|' + studs[+b.getAttribute('data-admmenu')].name; ADM.menu = ADM.menu === k ? '' : k; admDraw(); var m = v.querySelector('.adm43-menu button'); if (m) m.focus(); });
+    each('[data-admdo]', function (b, e) {
+      e.stopPropagation(); var s = studs[+b.getAttribute('data-i')], kind = b.getAttribute('data-admdo'); ADM.menu = '';
+      if (kind === 'ren') { ADM.edit = cls + '|' + s.name; admDraw(); var i = $('adm-ren'); if (i) { i.focus(); i.select(); } return; }
+      if (kind === 'mv') { var to = b.getAttribute('data-to'); admDo('Move ' + pvName(s.name), 'This moves them to ' + to + ' in the Students tab.', 'apiAdmMove', [cls, s.name, to]).then(function (r) { admRefresh(r); admWarn(r, pvName(s.name) + ' is in ' + to + ' now.'); }).catch(admFail); return; }
+      if (kind === 'rm') {
+        admDraw();
+        modal('<h2>Remove ' + esc(pvName(s.name)) + ' from ' + esc(cls) + '?</h2><p>This takes them off the class list in the Students tab. Their handed-in work, marks, points, prizes and notes are kept, and come back if you add them again with the same class and name.</p><div class="foot"><button type="button" class="btn ghost" id="adm-rmno">Cancel</button><button type="button" class="btn" id="adm-rmyes">Remove</button></div>');
+        $('adm-rmno').onclick = closeModal;
+        $('adm-rmyes').onclick = function () { closeModal(); admDo('Remove ' + pvName(s.name), 'This changes the Students tab.', 'apiAdmRemove', [cls, s.name]).then(function (r) { admRefresh(r); toast(pvName(s.name) + ' is off the ' + cls + ' list.'); }).catch(admFail); };
+      }
+    });
+    each('[data-admcancel]', function () { ADM.edit = ''; admDraw(); });
+    var save = v.querySelector('[data-admsave]');
+    var doRen = function () { var s = studs[+save.getAttribute('data-admsave')], n = $('adm-ren').value.trim(); if (!n || n === s.name) { ADM.edit = ''; admDraw(); return; }
+      save.disabled = true; admDo('Rename ' + pvName(s.name), 'This changes their name in the Students tab, and moves their work and points with them.', 'apiAdmRename', [cls, s.name, n]).then(function (r) { ADM.edit = ''; admRefresh(r); admWarn(r, 'Renamed to ' + pvName(n) + '.'); }).catch(function (e) { save.disabled = false; admFail(e); }); };
+    if (save) { save.onclick = doRen; $('adm-ren').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); doRen(); } else if (e.key === 'Escape') { e.stopPropagation(); ADM.edit = ''; admDraw(); } }; }
+    var add = $('adm-add'); if (add) add.onsubmit = function (e) {
+      e.preventDefault(); var n = $('adm-aname').value.trim(), rg = $('adm-areg').value.trim(); if (!n) { $('adm-aname').focus(); return; }
+      admDo('Add ' + n, 'This adds them to ' + cls + ' in the Students tab.', 'apiAdmAdd', [cls, n, rg]).then(function (r) { admRefresh(r); toast(pvName(n) + ' is on the ' + cls + ' list.'); }).catch(admFail);
+    };
+    each('[data-admtemp]', function (b) { var s = studs[+b.getAttribute('data-admtemp')]; b.disabled = true;
+      admDo('Temporary password', 'This gives ' + pvName(s.name) + ' a temporary password and signs them out everywhere.', 'apiAdmTemp', [cls, s.name]).then(function (r) { admShowPass(cls, [{ name: s.name, pass: r.pass }], r.expires); admStatusRefresh(); }).catch(function (e) { b.disabled = false; admFail(e); }); });
+    var tall = $('adm-tall'); if (tall) tall.onclick = function () {
+      var n = studs.filter(function (s) { var k = admState(s).k; return k === 'none' || k === 'exp'; }).length;
+      modal('<h2>Temporary passwords for ' + esc(cls) + '?</h2><p>The ' + plural(n, 'student', 'students') + ' who have not set up a password each get one. Students who have set up are not changed.</p><div class="foot"><button type="button" class="btn ghost" id="adm-tno">Cancel</button><button type="button" class="btn" id="adm-tyes">Make them</button></div>');
+      $('adm-tno').onclick = closeModal;
+      $('adm-tyes').onclick = function () { closeModal(); admDo('Temporary passwords', 'This gives temporary passwords to everyone in ' + cls + ' who has not set up.', 'apiAdmTempClass', [cls]).then(function (r) { if (!r.list || !r.list.length) { toast('Everyone in ' + cls + ' has set up a password.'); return; } admShowPass(cls, r.list, r.expires); admStatusRefresh(); }).catch(admFail); };
+    };
+    var acct = function (s, kind) {
+      var reset = kind === 'pin', who = pvName(s.name);
+      modal('<h2>' + (reset ? 'Reset ' + esc(who) + '\'s password?' : 'Sign ' + esc(who) + ' out of their iPad?') + '</h2><p>' +
+        (reset ? 'Their password is cleared and every iPad they use is signed out. Next time, they set up a new password with their register number.' : 'Every iPad they are signed in on asks for their password again. Their password stays the same.') + '</p>' +
+        '<div class="foot"><button type="button" class="btn ghost" id="adm-ano">Cancel</button><button type="button" class="btn" id="adm-ayes">' + (reset ? 'Reset the password' : 'Sign them out') + '</button></div>');
+      $('adm-ano').onclick = closeModal;
+      $('adm-ayes').onclick = function () { closeModal(); admDo(reset ? 'Reset the password' : 'Sign them out', reset ? 'This clears ' + who + '\'s password.' : 'This signs ' + who + ' out on every iPad.', 'apiStReset', [cls, s.name, reset ? 'pin' : '']).then(function () { toast(reset ? who + '\'s password is reset.' : who + ' is signed out.'); admStatusRefresh(); }).catch(admFail); };
+    };
+    each('[data-admreset]', function (b) { acct(studs[+b.getAttribute('data-admreset')], 'pin'); });
+    each('[data-admout]', function (b) { acct(studs[+b.getAttribute('data-admout')], 'out'); });
+    var sl = $('adm-slips'); if (sl) sl.onclick = function () { admOpenSlips('all'); };
+    each('[data-admsl]', function (b) { admOpenSlips(b.getAttribute('data-admsl')); });
+    var pr = $('adm-print'); if (pr) pr.onclick = function () { document.body.classList.add('adm43-printing'); try { window.print(); } catch (e) { /* the frame cannot print */ } setTimeout(function () { document.body.classList.remove('adm43-printing'); }, 800); };
+    var slx = $('adm-slx'); if (slx) slx.onclick = function () { ADM.slips = null; admDraw(); };
+    var ac = $('adm-acct'); if (ac) ac.onclick = openAccount;
+    var fg = $('adm-forget'); if (fg) fg.onclick = function () { ADM.pin = ''; admDraw(); toast('Your PIN will be asked for again.'); };
+    var ou = $('adm-out'); if (ou) ou.onclick = nxSignOut;
+    var pf = $('adm-pinf'); if (pf) pf.onsubmit = function (e) {
+      e.preventDefault(); var a = $('adm-pin0').value.trim(), b = $('adm-pin1').value.trim(), c = $('adm-pin2').value.trim(), err = $('adm-pinerr'); err.textContent = '';
+      if (!/^\d{6,8}$/.test(b)) { err.textContent = 'The new PIN must be 6 to 8 numbers.'; return; }
+      if (b !== c) { err.textContent = 'The two new PINs are not the same.'; return; }
+      tcall('t_setPin', a, b).then(function (r) { if (r && r.ok === false) { err.textContent = r.why || 'The PIN was not changed.'; return; } ADM.pin = ''; ['adm-pin0', 'adm-pin1', 'adm-pin2'].forEach(function (id) { $(id).value = ''; }); toast('Your teacher PIN is changed'); })
+        .catch(function (e2) { err.textContent = nxNeedsServer(e2); });
+    };
+  }
+  // A row's ⋯ menu closes on a tap elsewhere or Escape (the record drawer and dialogs keep their own Escape).
+  document.addEventListener('click', function (e) { if (ADM.menu && !e.target.closest('.adm43-mw')) { ADM.menu = ''; admDraw(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ADM.menu) { ADM.menu = ''; admDraw(); var b = document.querySelector('[data-admmenu]'); if (b) b.focus(); } });
 
   /* ---------- Release 36: the night design on Today (the approved landing) ----------
      The greeting, a readout of tonight's sky over Singapore, the sky photograph with its stars, and the motion rules:
@@ -9630,6 +10003,7 @@
     return { groups: groups, owes: owes, people: Object.keys(owes).length };
   }
   function cx38OweHtml(cls, O, where) {
+    NX.cx38lit['owe|' + cls + '|' + where] = 1;   /* r43 owe title: the banner is lit at once, so "Who owes work" is never hidden while it waits to be scrolled to */
     var h = '<section class="cx-sec cx38-sec cx38-owe" aria-labelledby="cx38-oh"><div class="cx38-banner' + cx38Lit('owe|' + cls + '|' + where) + '" style="--ac:#FF8A70">' + cx38Sky(8, 586) +
       '<span class="cx-ic o">' + CX_ICON.people + '</span><span class="cx38-bt"><h2 id="cx38-oh" class="cx38-h">Who owes work</h2><span class="cx-meta">' + (O.people ? plural(O.people, 'student', 'students') + ' in ' + esc(where) + ', most overdue first' : esc(where)) + '</span></span></div><div class="cx38-sbody">';
     var owes = O.owes;
