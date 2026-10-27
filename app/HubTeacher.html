@@ -1022,6 +1022,106 @@
   .cmp-name { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 </style>
 <style>
+/* r38 marking: the approved Marking design. The pile, the script you are on, Claude's flags, one next action.
+   The paper stays white with the same big red ticks and crosses. Night is the Hub's own look; light still works. */
+:root { --mk-amber: #E8A33A; --mk-glow: #FFC86B; --mk-claude: #8E5BE8; --mk-ok: #2E9E66; --mk-ink: #5B6175; }
+:root[data-theme="dark"] { --mk-amber: #FFC86B; --mk-claude: #B57BFF; --mk-ok: #5ED39C; --mk-ink: #A99BD1; }
+.rv-q .lab, .mk38-ql { font-variant-ligatures: none; font-feature-settings: "liga" 0, "dlig" 0; }
+
+/* night surround */
+:root[data-theme="dark"] #review { background: radial-gradient(1200px 500px at 70% -10%, rgba(120,80,200,.16), transparent 60%), radial-gradient(900px 600px at 10% 110%, rgba(60,90,200,.12), transparent 60%), #07051A; }
+:root[data-theme="dark"] #review .rv-top, :root[data-theme="dark"] #review .rv-tools { background: rgba(14,10,34,.86); border-color: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+:root[data-theme="dark"] #review .rv-side { background: rgba(14,10,34,.92); border-color: rgba(255,255,255,.08); }
+:root[data-theme="dark"] #review .rv-pages .pg { background: #fff; box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06); }
+
+/* the script you are on */
+#review .rv-who b { font-size: 22px; letter-spacing: -.01em; }
+:root[data-theme="dark"] #review .rv-who b { color: #FFFFFF; }
+#review .rv-nav .n { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* the pile */
+.mk38-pile { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "ph dots ring" "key key key"; align-items: center; gap: 6px 18px; padding: 10px 18px 8px; background: var(--surface); border-bottom: 1px solid var(--rule); }
+:root[data-theme="dark"] .mk38-pile { background: linear-gradient(90deg, rgba(255,200,107,.08), rgba(14,10,34,.86) 45%, rgba(181,123,255,.07)); border-color: rgba(255,255,255,.08); }
+.mk38-pile > *:not(.mk38-sky) { position: relative; z-index: 1; }
+.mk38-sky { position: absolute; right: 120px; top: 2px; width: 300px; height: 76px; pointer-events: none; opacity: .5; }
+.mk38-sky path { stroke: var(--mk-amber); stroke-width: 1; opacity: .45; fill: none; }
+.mk38-sky circle { fill: var(--mk-amber); }
+.mk38-sky text { font: 700 8px var(--text, sans-serif); letter-spacing: .2em; fill: var(--mk-ink); opacity: .8; }
+:root:not([data-theme="dark"]) .mk38-sky { opacity: .28; }
+.mk38-ph { grid-area: ph; display: flex; flex-direction: column; line-height: 1.15; }
+.mk38-ph b { font-family: var(--display); font-size: 18px; }
+:root[data-theme="dark"] .mk38-ph b { background: linear-gradient(100deg, #FFFFFF 40%, #FFD58A); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mk38-ph span { font-size: 12px; color: var(--muted); }
+.mk38-dots { grid-area: dots; display: flex; flex-wrap: wrap; gap: 2px; min-width: 0; }
+.mk38-dot { width: 26px; height: 26px; border: 0; padding: 0; background: transparent; border-radius: 50%; display: grid; place-items: center; cursor: pointer; transition: transform 160ms var(--ease-out); }
+.mk38-dot i { width: 11px; height: 11px; border-radius: 50%; background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mk-ink) 55%, transparent); transition: transform 160ms var(--ease-out); }
+.mk38-dot.d-mk i { background: color-mix(in srgb, var(--mk-claude) 28%, transparent); box-shadow: inset 0 0 0 1.5px var(--mk-claude); }
+.mk38-dot.d-flag i { background: color-mix(in srgb, var(--mk-amber) 22%, transparent); box-shadow: inset 0 0 0 2px var(--mk-amber); }
+.mk38-dot.d-ok i { background: var(--mk-ok); box-shadow: none; }
+.mk38-dot.d-now i { width: 15px; height: 15px; background: var(--mk-glow); box-shadow: 0 0 0 4px color-mix(in srgb, var(--mk-glow) 30%, transparent), 0 0 16px var(--mk-glow); }
+.mk38-dot.d-now.d-ok i { background: var(--mk-ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--mk-ok) 30%, transparent); }
+.mk38-dot:active { transform: scale(.9); }
+.mk38-dot:focus-visible { outline: 2px solid var(--mk-glow); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .mk38-dot:hover i { transform: scale(1.25); } }
+.mk38-ring { grid-area: ring; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.2; }
+.mk38-ring svg { width: 36px; height: 36px; transform: rotate(-90deg); }
+.mk38-ring .tr { fill: none; stroke: var(--rule); stroke-width: 3.2; }
+.mk38-ring .arc { fill: none; stroke: var(--mk-ok); stroke-width: 3.2; stroke-linecap: round; transition: stroke-dashoffset 300ms var(--ease-out); }
+.mk38-ring b { font-family: var(--display); font-size: 18px; color: var(--ink, inherit); font-variant-numeric: tabular-nums; }
+:root[data-theme="dark"] .mk38-ring b { color: #fff; }
+.mk38-key { grid-area: key; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); }
+.mk38-key span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.mk38-key span::before { content: ""; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mk-ink) 55%, transparent); }
+.mk38-key .k-now::before { background: var(--mk-glow); box-shadow: none; }
+.mk38-key .k-flag::before { box-shadow: inset 0 0 0 2px var(--mk-amber); }
+.mk38-key .k-mk::before { background: color-mix(in srgb, var(--mk-claude) 28%, transparent); box-shadow: inset 0 0 0 1.5px var(--mk-claude); }
+.mk38-key .k-ok::before { background: var(--mk-ok); box-shadow: none; }
+.mk38-fin { grid-area: key; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; padding: 8px 12px; border-radius: 12px; font-weight: 700; background: color-mix(in srgb, var(--mk-ok) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mk-ok) 40%, transparent); }
+.mk38-fin span { flex: 1; }
+@media (max-width: 1100px) { .mk38-key { display: none; } .mk38-sky { display: none; } }
+@media (max-width: 760px) { .mk38-pile { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "ph ring" "dots dots" "key key"; } }
+@media (max-height: 700px) { .mk38-ph span { display: none; } .mk38-pile { padding-top: 6px; padding-bottom: 6px; } }
+
+/* switching scripts: the screen stays, the paper dims for a moment */
+#review.mk38-loading .rv-body, #review.mk38-loading .rv-tools { pointer-events: none; }
+#review.mk38-loading .rv-pages { opacity: .45; transition: opacity 120ms ease; }
+
+/* Claude's flags */
+.mk38-chk { margin: 0 0 12px; padding: 12px; border-radius: 14px; background: color-mix(in srgb, var(--mk-amber) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mk-amber) 40%, transparent); }
+.mk38-chk h4 { margin: 0 0 8px !important; font-family: var(--display); font-size: 16px; color: color-mix(in srgb, var(--mk-amber) 75%, var(--ink, #222)); }
+:root[data-theme="dark"] .mk38-chk h4 { color: #FFD58A; }
+.mk38-flag { padding: 10px; border-radius: 12px; transition: box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out); }
+.mk38-flag + .mk38-flag { margin-top: 6px; }
+.mk38-flag p { margin: 0 0 8px; font-size: 14px; line-height: 1.4; }
+.mk38-ql { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: color-mix(in srgb, var(--mk-amber) 26%, transparent); }
+.mk38-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mk38-two .btn { min-height: 44px; }
+.mk38-two:has(> :only-child) { grid-template-columns: 1fr; }
+.mk38-did { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--mk-ok); }
+.mk38-did svg { width: 16px; height: 16px; }
+.mk38-flag.done { opacity: .8; }
+
+/* You changed */
+.mk38-you { display: inline-block; margin: 6px 0 0; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--mk-claude); background: color-mix(in srgb, var(--mk-claude) 14%, transparent); }
+.mk38-you.hidden { display: none; }
+.rv-q.mk38-hot { background: color-mix(in srgb, var(--mk-amber) 12%, transparent); border-radius: 10px; }
+
+/* the part of the paper a flag is about */
+.mk38-band { position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none; border-left: 5px solid #E8A33A; background: rgba(255, 184, 72, .1); opacity: 0; transition: opacity 150ms ease, background-color 150ms ease; }
+.mk38-band span { position: absolute; left: 10px; top: 6px; padding: 1px 8px; border-radius: 999px; background: #FFE2A8; color: #7A4A00; font: 700 11px var(--text, sans-serif); letter-spacing: .04em; text-transform: uppercase; }
+.mk38-band.on { opacity: 1; }
+.mk38-band.hot { opacity: 1; background: rgba(255, 184, 72, .2); }
+
+/* the one thing that glows */
+#review .btn.mk38-glow { background: linear-gradient(135deg, #FFD58A, #F2A93B); border-color: transparent; color: #2A1700; box-shadow: 0 0 0 3px rgba(255,200,107,.28), 0 8px 26px rgba(242,169,59,.45); transition: box-shadow 200ms var(--ease-out), transform 160ms var(--ease-out); }
+#review .btn.mk38-glow:active { transform: scale(.97); }
+.mk38-flag.mk38-glow { background: color-mix(in srgb, var(--mk-amber) 14%, transparent); box-shadow: 0 0 0 2px var(--mk-amber), 0 0 22px color-mix(in srgb, var(--mk-glow) 40%, transparent); }
+#review .btn, #review .tb { transition: transform 160ms var(--ease-out); }
+#review .btn:active, #review .tb:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .mk38-dot, .mk38-dot i, .mk38-ring .arc, .mk38-band, #review .btn { transition: none; } }
+@media (prefers-reduced-transparency: reduce) { :root[data-theme="dark"] #review .rv-top, :root[data-theme="dark"] #review .rv-tools { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0E0A22; } }
+</style>
+<style>
   .notes-list { list-style: none; margin: 0 0 8px; padding: 0; }
   .notes-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
   .notes-list li .nl { flex: 1; min-width: 0; }
@@ -4563,6 +4663,7 @@
       R.objects = []; R.items = {}; R.layout = null; R.tickN = null;
       ['rv-pages', 'rv-side', 'rv-strip'].forEach(function (id) { if ($(id)) $(id).classList.add('pm-loading'); });
     }
+    else if (!R.solution && $('rv-pages')) mk38_loading(r);   // r38: keep the screen, swap the script in
     else $('review').innerHTML = '<div class="rv-loading"><div class="spinner"></div>Opening ' + esc(r.name) + '...</div>';
     Promise.all([loadPdfLibs(), fetchReview(r)]).then(function (res) {
       var d = res[1];
@@ -4616,6 +4717,7 @@
     R.feedback = rv.feedback !== false && !!lay;
     R.fromClaude = !!(d.review && !d.checked);
     R.hadMarks = !!(d.review || d.markedUrl);
+    mk38_setup();
   }
 
   function totals(st) {
@@ -4634,13 +4736,14 @@
       '<button class="btn quiet" id="rv-back">&larr; Back</button>' +
       '<div class="rv-who"><b>' + esc(r.name) + '</b><span>' + (R.solution ? esc(d.title) : esc(r.cls) + (r.reg ? ', ' + esc(r.reg) : '') + ' &middot; ' + esc(d.title)) + '</span> ' + status + '</div>' +
       '<div class="rv-nav"><button class="btn ghost small" id="rv-prev" aria-label="Previous student"' + (at <= 0 ? ' disabled' : '') + '>&lsaquo;<span class="lbl"> Previous</span></button>' +
-      '<span class="n">' + (at + 1) + ' of ' + q.length + '</span>' +
+      '<span class="n">Script ' + (at + 1) + ' of ' + q.length + '</span>' +
       '<button class="btn ghost small" id="rv-next" aria-label="Next student"' + (at >= q.length - 1 ? ' disabled' : '') + '><span class="lbl">Next </span>&rsaquo;</button></div>' +
       (R.solution ? '' : '<button class="btn ghost small" id="rv-bypage" aria-pressed="' + !!R.pm + '" title="Mark one page at a time across the whole class">' + (R.pm ? 'All pages' : 'By page') + '</button>') +
       '<button class="btn ghost small rv-panelbtn" id="rv-panel">' + RICON.list + (R.solution ? 'Notes' : 'Marks') + '</button>' +
       '<button class="btn" id="rv-save">' + (R.solution ? 'Save as marked solution' : 'Save') + '</button>' +
-      (at < q.length - 1 && !R.pm ? '<button class="btn" id="rv-savenext">Save and next</button>' : '') +
-      '</div>';
+      (!R.pm && !R.solution && mk38_nextNeed() ? '<button class="btn" id="rv-savenext">Save and next</button>' : '') +
+      (!R.pm && !R.solution ? '<button class="btn hidden" id="mk38-need">Next to check &rsaquo;</button>' : '') +
+      '</div>' + (R.solution || R.pm ? '' : mk38_pileHtml());
     h += '<div class="rv-tools" role="toolbar" aria-label="Marking tools">' +
       tb('tick', RICON.tick, 'Tick (T)') + tb('cross', RICON.cross, 'Cross (X)') + tb('pen', RICON.pen, 'Pen (P)') + tb('text', RICON.text, 'Text') + tb('erase', RICON.erase, 'Eraser (E)') + tb('move', RICON.move, 'Move marks (M)') +
       '<span class="sep"></span>' +
@@ -4664,9 +4767,11 @@
       $('rv-pages').appendChild(el);
       pg.el = el; pg.base = el.children[0]; pg.ink = el.children[1];
       bindInk(pg, i);
+      mk38_bands(pg, i);
     });
     renderSide();
     bindReviewTop();
+    mk38_after();
     setRvTool(R.tool);
     if (R.zoom == null) R.zoom = fitZoom();
     if (R.pm) { R.pages.forEach(function (p, i) { p.el.style.display = i + 1 === R.pm.page ? '' : 'none'; }); }
@@ -4828,6 +4933,7 @@
   function setDirty() {
     R.dirty = true;
     if ($('rv-undo')) { $('rv-undo').disabled = !R.undo.length; $('rv-redo').disabled = !R.redo.length; }
+    mk38_glow();
   }
 
   function hitObj(page, x, y, rad) {
@@ -5060,6 +5166,206 @@
     box.className = 'rv-pages t-' + t + (R.finger ? ' finger' : '');
   }
 
+  /* ----- r38 marking: the pile, Claude's flags, one next action (from the approved Marking design) -----
+     Everything here comes from the real marks table and Claude's "Please check" list. Nothing is guessed:
+     a flag only gets the two mark buttons when its note names one of the worksheet's questions. */
+  var MK38_Z = [
+    ['ARIES', [[20,52],[110,30],[200,26],[280,50]], [[0,1],[1,2],[2,3]]],
+    ['TAURUS', [[10,10],[118,40],[150,54],[176,46],[152,30],[290,12],[206,66]], [[0,1],[1,4],[4,5],[1,2],[2,3],[3,4],[2,6]]],
+    ['GEMINI', [[40,8],[86,14],[70,40],[122,44],[108,74],[170,72],[54,64]], [[0,2],[2,4],[1,3],[3,5],[2,3],[2,6]]],
+    ['CANCER', [[150,40],[92,10],[232,18],[108,74],[204,76]], [[0,1],[0,2],[0,3],[0,4]]],
+    ['LEO', [[40,22],[70,10],[102,18],[108,40],[82,54],[204,40],[286,30],[214,66]], [[0,1],[1,2],[2,3],[3,4],[3,5],[5,6],[6,7],[7,4]]],
+    ['VIRGO', [[20,20],[80,30],[140,40],[200,36],[262,20],[172,74],[60,70]], [[0,1],[1,2],[2,3],[3,4],[2,5],[1,6]]],
+    ['LIBRA', [[60,40],[150,12],[240,40],[90,74],[212,76]], [[0,1],[1,2],[2,0],[0,3],[2,4]]],
+    ['SCORPIUS', [[20,18],[32,38],[44,58],[94,42],[142,48],[182,62],[230,72],[270,64],[290,44],[278,28]], [[0,1],[1,2],[1,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9]]],
+    ['SAGITTARIUS', [[60,32],[110,20],[160,30],[204,22],[232,42],[204,62],[140,66],[90,58],[282,32],[282,62]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[2,6],[4,8],[8,9],[9,5]]],
+    ['CAPRICORNUS', [[20,22],[110,62],[190,70],[280,26],[200,32],[110,36]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]],
+    ['AQUARIUS', [[20,22],[70,36],[110,22],[150,42],[190,32],[232,58],[280,50],[132,8],[152,16]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[2,7],[7,8]]],
+    ['PISCES', [[10,10],[62,30],[140,70],[220,42],[262,20],[290,14],[288,36],[264,32]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,4]]]
+  ];
+  // The day's constellation, as a small SVG (off picks a different sign from the class page's).
+  function mk38_sky(off) {
+    var now = new Date(), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5), z = MK38_Z[(doy + off) % 12];
+    var pt = function (i) { return z[1][i][0] + ',' + Math.round(z[1][i][1] * 0.82 + 4); };
+    return '<svg class="mk38-sky" viewBox="0 0 300 76" aria-hidden="true"><path d="' + z[2].map(function (e) { return 'M' + pt(e[0]) + 'L' + pt(e[1]); }).join('') + '"/>' +
+      z[1].map(function (p, i) { return '<circle cx="' + p[0] + '" cy="' + Math.round(p[1] * 0.82 + 4) + '" r="' + (i % 3 === 1 ? 2.6 : 1.8) + '"/>'; }).join('') +
+      '<text x="296" y="74" text-anchor="end">' + z[0] + '</text></svg>';
+  }
+  function mk38_checks() { return R && !R.solution ? claudeChecks(R.id) : []; }
+  // Where a script is: checked, flagged by Claude, marked by Claude, or not marked yet.
+  function mk38_state(r, checks) {
+    if (r.checked) return 'ok';
+    if (flagged(r, checks)) return 'flag';
+    if (r.markedUrl || String(r.score || '').trim()) return 'mk';
+    return 'wait';
+  }
+  var MK38_WORD = { ok: 'Checked', flag: 'Claude asks you to check', mk: 'Marked by Claude', wait: 'Not marked yet' };
+  function mk38_pileHtml() {
+    var q = R.queue, at = q.indexOf(R.row), checks = mk38_checks(), n = 0;
+    var dots = q.map(function (r, j) {
+      var st = mk38_state(r, checks); if (st === 'ok') n++;
+      return '<button type="button" class="mk38-dot d-' + st + (j === at ? ' d-now' : '') + '" data-mk38="' + j + '" aria-label="' + esc(r.name) + ', ' + MK38_WORD[st] + (j === at ? ', open now' : '') + '" title="' + esc(r.name) + ' · ' + MK38_WORD[st] + '"' + (j === at ? ' aria-current="true"' : '') + '><i></i></button>';
+    }).join('');
+    var all = n === q.length, C = 2 * Math.PI * 15, off = C * (1 - (q.length ? n / q.length : 0));
+    var cls = (byId(R.id) || (H.marks && H.marks.worksheet) || {}).classes || [];
+    return '<div class="mk38-pile" id="mk38-pile">' + mk38_sky(5) +
+      '<div class="mk38-ph"><b>The pile</b><span>' + (all ? 'Every script is checked.' : 'Tap a dot to open that script.') + '</span></div>' +
+      '<div class="mk38-dots" role="group" aria-label="Scripts in this pile">' + dots + '</div>' +
+      '<div class="mk38-ring" role="img" aria-label="' + n + ' of ' + q.length + ' checked"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" class="tr"/><circle cx="18" cy="18" r="15" class="arc" style="stroke-dasharray:' + C.toFixed(1) + ';stroke-dashoffset:' + off.toFixed(1) + '"/></svg><span><b>' + n + '</b> of ' + q.length + '<br>checked</span></div>' +
+      (all ? '<div class="mk38-fin"><span>All ' + q.length + ' checked. They are ready to go back.</span><button type="button" class="btn mk38-glowable" id="mk38-return">Return to ' + esc(listJoin(cls.length ? cls : [R.row.cls])) + '</button></div>' :
+        '<div class="mk38-key" aria-hidden="true"><span class="k-now">Open now</span><span class="k-flag">To check</span><span class="k-mk">Marked by Claude</span><span class="k-ok">Checked</span><span class="k-wait">Not marked yet</span></div>') +
+      '</div>';
+  }
+  function mk38_nextNeed() {
+    if (!R || !R.queue) return null;
+    var q = R.queue, at = q.indexOf(R.row);
+    for (var j = at + 1; j < q.length; j++) if (!q[j].checked) return q[j];
+    for (j = 0; j < at; j++) if (!q[j].checked) return q[j];
+    return null;
+  }
+  function mk38_goNeed(saved) {
+    var r = mk38_nextNeed();
+    if (!r) { if (saved) { drawReviewFrame(); toast('Every script is checked.'); } return; }
+    if (saved) loadReview(r); else leaveReview(function () { loadReview(r); });
+  }
+  // While the next script loads, the screen stays: its name and dot change at once.
+  function mk38_loading(r) {
+    $('review').classList.add('mk38-loading');
+    var who = $('review').querySelector('.rv-who b'); if (who) who.textContent = r.name;
+    var at = R.queue.indexOf(r);
+    Array.prototype.forEach.call($('review').querySelectorAll('.mk38-dot'), function (d) { var on = Number(d.getAttribute('data-mk38')) === at; d.classList.toggle('d-now', on); });
+    var n = $('review').querySelector('.rv-nav .n'); if (n) n.textContent = 'Script ' + (at + 1) + ' of ' + R.queue.length;
+  }
+  // Claude's flags on this script, each matched to a question when its note names one.
+  function mk38_setup() {
+    R.mk38orig = {}; R.mk38dec = {};
+    if (R.fromClaude && R.layout) Object.keys(R.items).forEach(function (q) { R.mk38orig[q] = R.items[q].got; });
+    var checks = R.solution ? [] : ((byId(R.id) || (H.marks && H.marks.worksheet) || {}).job || {}).checks || [];
+    var mine = checks.filter(function (c) { return namesScript(R.row, c); });
+    R.mk38flags = mine.map(function (c, i) {
+      var text = String(c).replace(/^\s*[^:]{1,40}:\s*/, ''), it = null;
+      if (R.layout) R.layout.items.forEach(function (x) { if (!it && mk38_names(text, x)) it = x; });
+      if (it) [it.label, it.q].forEach(function (lab) { if (lab != null && text.toLowerCase().indexOf(String(lab).toLowerCase() + ' ') === 0) text = text.slice(String(lab).length + 1); });
+      text = text.charAt(0).toUpperCase() + text.slice(1);
+      return { i: i, text: text, it: it };
+    });
+  }
+  // Does a note name this question? "3(b)" counts as a whole token; a plain number only as "Q3" or "question 3".
+  function mk38_names(text, x) {
+    var t = String(text).toLowerCase();
+    return [x.label, x.q].some(function (lab) {
+      if (lab == null || lab === '') return false;
+      var L = String(lab).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (/^[0-9]+$/.test(String(lab))) return new RegExp('(^|[^a-z0-9])(q|question\\s*)' + L + '(?![0-9a-z(])').test(t);
+      return new RegExp('(^|[^a-z0-9])' + L + '(?![a-z0-9])').test(t);
+    });
+  }
+  function mk38_undecided() { return (R && R.mk38flags || []).filter(function (f) { return !R.mk38dec[f.i]; }); }
+  function mk38_checksHtml() {
+    if (R.solution || !R.mk38flags || !R.mk38flags.length) return '';
+    var left = mk38_undecided().length;
+    return '<div class="mk38-chk" id="mk38-chk"><h4>' + (left ? plural(left, 'thing', 'things') + ' to check' : 'Checked what Claude asked') + '</h4>' +
+      R.mk38flags.map(function (f) {
+        var dec = R.mk38dec[f.i], it = f.it, v = it ? R.items[it.q] : null, lab = it ? esc(it.label || it.q) : '';
+        var h = '<div class="mk38-flag' + (dec ? ' done' : '') + '" data-flag="' + f.i + '"' + (it ? ' data-q="' + esc(it.q) + '"' : '') + ' tabindex="-1">' +
+          '<p>' + (it ? '<b class="mk38-ql">' + lab + '</b> ' : '') + esc(f.text) + '</p>';
+        if (dec) h += '<span class="mk38-did">' + ICON.tick + esc(dec) + '</span>';
+        else if (it) {
+          var g = Number(v.got) || 0, mx = Number(it.max) || 0, other = g < mx ? mx : Math.max(0, mx - 1);
+          h += '<div class="mk38-two"><button type="button" class="btn" data-keep="' + f.i + '">Keep ' + fmtN(g) + '</button><button type="button" class="btn" data-give="' + f.i + '" data-v="' + other + '">Give ' + fmtN(other) + '</button></div>';
+        } else h += '<div class="mk38-two"><button type="button" class="btn" data-seen="' + f.i + '">I have looked at it</button></div>';
+        return h + '</div>';
+      }).join('') + '</div>';
+  }
+  function mk38_bindChecks() {
+    var box = $('mk38-chk'); if (!box) return;
+    var decide = function (i, word) { R.mk38dec[i] = word; renderSide(); mk38_glow(); mk38_hl(null); };
+    Array.prototype.forEach.call(box.querySelectorAll('[data-keep]'), function (b) {
+      b.onclick = function () { var f = R.mk38flags[Number(b.getAttribute('data-keep'))]; decide(f.i, 'Kept ' + fmtN(R.items[f.it.q].got) + ' for ' + (f.it.label || f.it.q)); };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-give]'), function (b) {
+      b.onclick = function () {
+        var f = R.mk38flags[Number(b.getAttribute('data-give'))], v = Number(b.getAttribute('data-v'));
+        R.items[f.it.q].got = v; R.items[f.it.q].manual = true; setDirty();
+        decide(f.i, 'Gave ' + fmtN(v) + ' for ' + (f.it.label || f.it.q));
+      };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-seen]'), function (b) { b.onclick = function () { decide(Number(b.getAttribute('data-seen')), 'Looked at'); }; });
+    Array.prototype.forEach.call(box.querySelectorAll('.mk38-flag[data-q]'), function (el) {
+      var q = el.getAttribute('data-q'), on = function () { mk38_hl(q); }, off = function () { mk38_hl(null); };
+      el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off);
+      el.addEventListener('focusin', on); el.addEventListener('focusout', off);
+    });
+  }
+  // A soft band on the paper behind each flagged question; the one you point at is stronger.
+  function mk38_bands(pg, i) {
+    if (!R.layout || !R.mk38flags || !R.mk38flags.length) return;
+    var items = R.layout.items.filter(function (x) { return x.page === i + 1; }).sort(function (a, b) { return a.top - b.top; });
+    items.forEach(function (it, k) {
+      if (!R.mk38flags.some(function (f) { return f.it === it; })) return;
+      var top = Math.max(0, it.top - 18), bot = k + 1 < items.length ? items[k + 1].top - 18 : Math.min(pg.h, it.top + 110);
+      var b = document.createElement('div'); b.className = 'mk38-band'; b.setAttribute('data-q', it.q);
+      b.style.top = (top / pg.h * 100) + '%'; b.style.height = ((bot - top) / pg.h * 100) + '%';
+      b.innerHTML = '<span>Check</span>';
+      pg.el.appendChild(b);
+    });
+    mk38_hl(null);
+  }
+  function mk38_hl(q) {
+    var und = mk38_undecided().map(function (f) { return f.it && String(f.it.q); });
+    Array.prototype.forEach.call(document.querySelectorAll('#review .mk38-band'), function (b) {
+      var bq = b.getAttribute('data-q');
+      b.classList.toggle('on', und.indexOf(bq) >= 0); b.classList.toggle('hot', q != null && bq === String(q));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#rv-side .rv-q'), function (el) { el.classList.toggle('mk38-hot', q != null && el.getAttribute('data-q') === String(q)); });
+  }
+  function mk38_youHtml(it) { return R.mk38orig && R.mk38orig[it.q] != null ? '<span class="mk38-you hidden" data-you="' + esc(it.q) + '">You changed this · Claude gave ' + fmtN(R.mk38orig[it.q]) + '</span>' : ''; }
+  function mk38_tags() {
+    if (!R || !R.mk38orig) return;
+    Array.prototype.forEach.call(document.querySelectorAll('#rv-side [data-you]'), function (el) {
+      var q = el.getAttribute('data-you'); el.classList.toggle('hidden', !(R.items[q] && Number(R.items[q].got) !== Number(R.mk38orig[q])));
+    });
+  }
+  // Exactly one thing glows: the next flag to decide, then Accept or Save, then Next to check.
+  function mk38_glow() {
+    if (!R || R.solution || R.pm || !$('review')) return;
+    Array.prototype.forEach.call($('review').querySelectorAll('.mk38-glow'), function (x) { x.classList.remove('mk38-glow'); });
+    var d = R.data || {}, und = mk38_undecided(), sv = $('rv-save'), sn = $('rv-savenext'), nd = $('mk38-need'), ret = $('mk38-return');
+    var accept = R.fromClaude && !R.dirty && !d.checked;
+    if (sv) sv.textContent = accept ? 'Accept the marks' : 'Save';
+    if (sn) sn.textContent = accept ? 'Accept and next' : 'Save and next';
+    var clean = d.checked && !R.dirty, need = mk38_nextNeed();
+    if (nd) nd.classList.toggle('hidden', !(clean && need));
+    var t = null;
+    if (und.length) t = $('review').querySelector('.mk38-flag[data-flag="' + und[0].i + '"]');
+    else if (!clean) t = sn || sv;
+    else if (need) t = nd;
+    else t = ret;
+    if (t) t.classList.add('mk38-glow');
+  }
+  function mk38_after() {
+    $('review').classList.remove('mk38-loading');
+    Array.prototype.forEach.call($('review').querySelectorAll('[data-mk38]'), function (b) {
+      b.onclick = function () { var r = R.queue[Number(b.getAttribute('data-mk38'))]; if (!r || r === R.row) return; leaveReview(function () { loadReview(r); }); };
+    });
+    if ($('mk38-return')) $('mk38-return').onclick = function () {
+      var id = R.id; leaveReview(function () { H.nxAfterReview = function () { loadDash(); nxReturn(id); }; closeReview(); });
+    };
+    mk38_glow();
+  }
+  // Keys, on top of T X P E M and Ctrl+Z: A accepts or saves, Z undoes, the arrows move, Enter does what glows.
+  function mk38_key(e, k) {
+    if (k === 'z') { rvUndo(); return true; }
+    if (k === 'a') { if (R.data) saveReview(); return true; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(1); return true; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); return true; }
+    if (e.key === 'Enter' && !/BUTTON|A/.test((e.target && e.target.tagName) || '')) {
+      var g = $('review').querySelector('.mk38-glow'); if (!g) return false;
+      e.preventDefault(); var b = g.matches('button') ? g : g.querySelector('button'); if (b) b.click(); return true;
+    }
+    return false;
+  }
+
   /* ----- marks panel ----- */
 
   function renderSolutionSide() {
@@ -5094,6 +5400,7 @@
     if (R.solution) { renderSolutionSide(); return; }
     var d = R.data, h = '<button class="btn quiet small rv-close-panel" id="rv-cpanel">Close &times;</button>';
     if (d.released) h += '<p class="rv-warn">Students can already see this marking. Saving changes what they see.</p>';
+    h += mk38_checksHtml();
     if (R.layout) {
       var t = totals();
       h += '<div class="rv-total"><b id="rv-tot">' + fmtN(t.got) + '/' + t.max + '</b><span>Total, added up from the questions</span></div>';
@@ -5105,7 +5412,7 @@
           '<button class="stp" data-d="-1" aria-label="One mark less for ' + esc(it.label || it.q) + '">&minus;</button>' +
           '<input class="got" inputmode="decimal" value="' + fmtN(v.got) + '" aria-label="Marks for ' + esc(it.label || it.q) + '">' +
           '<button class="stp" data-d="1" aria-label="One mark more for ' + esc(it.label || it.q) + '">+</button>' +
-          '<span class="mx">/ ' + it.max + '</span></div>' +
+          '<span class="mx">/ ' + it.max + '</span></div>' + mk38_youHtml(it) +
           '<textarea class="note" placeholder="Feedback for this question (optional)" aria-label="Feedback for ' + esc(it.label || it.q) + '">' + esc(v.note) + '</textarea></div>';
       });
     } else {
@@ -5133,6 +5440,7 @@
       var row = $('rv-side').querySelector('.rv-q[data-q="' + (window.CSS && CSS.escape ? CSS.escape(it.q) : it.q) + '"] input.got');
       if (row) { var g = R.items[it.q].got; row.classList.toggle('ok', g >= it.max); row.classList.toggle('lost', g < it.max); }
     });
+    mk38_tags();
     redrawAll();
   }
 
@@ -5166,6 +5474,7 @@
       }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
     };
     $('rv-cpanel').onclick = function () { $('review').classList.remove('panel-open'); };
+    mk38_bindChecks();
     updateTotal();
   }
 
@@ -5179,7 +5488,8 @@
       if (!pmReady()) return;
       var was = R.dirty; pmLeave(); toast(was ? 'Saving ' + (R.pm.hide ? 'this script' : R.row.name) + '.' : 'Nothing new to save.');
     };
-    if ($('rv-savenext')) $('rv-savenext').onclick = function () { saveReview(function () { go(1, true); }); };
+    if ($('rv-savenext')) $('rv-savenext').onclick = function () { saveReview(function () { mk38_goNeed(true); }); };
+    if ($('mk38-need')) $('mk38-need').onclick = function () { mk38_goNeed(false); };
     $('rv-panel').onclick = function () { $('review').classList.toggle('panel-open'); };
     Array.prototype.forEach.call($('review').querySelectorAll('[data-tool]'), function (b) { b.onclick = function () { setRvTool(b.getAttribute('data-tool')); }; });
     Array.prototype.forEach.call($('review').querySelectorAll('[data-col]'), function (b) {
@@ -5251,6 +5561,7 @@
     if (R.pm && !pmReady()) return;
     if (R.pm && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { e.preventDefault(); if (e.key === 'ArrowRight') pmNext(); else go(-1); return; }
     if (R.pm && k === 'a') { pmAccept(); return; }
+    if (!R.pm && !R.solution && mk38_key(e, k)) return;
     if (k === 't') setRvTool('tick'); else if (k === 'x') setRvTool('cross'); else if (k === 'p') setRvTool('pen'); else if (k === 'e') setRvTool('erase'); else if (k === 'm') setRvTool('move');
   });
 
