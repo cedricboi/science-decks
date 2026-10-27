@@ -4,30 +4,46 @@
 <base target="_top">
 <meta charset="utf-8">
 <script>
-  /* Light or dark: this device's own setting, unless Me > Look chose the other. Kept on this device for every
-     learnwithmrcedric page on it, and pages already open change with it. */
+  /* Release 38: the student picks a Look (Me, or the Look button at the top): Night sky (the default), Dawn, Ocean,
+     Forest, or Paper for the daytime, or "Same as my iPad". Paper is the light theme and the others are dark ones, so
+     every page that reads ms_theme still gets light or dark. Kept on this device, as ms_look. */
   (function () {
-    var K = 'ms_theme', root = document.documentElement, mem = '';
+    var K = 'ms_theme', LK = 'ms_look', root = document.documentElement, mem = '', memLook = '';
+    var LOOKS = ['night', 'dawn', 'ocean', 'forest', 'paper', 'auto'];
     function chosen() { var v = mem; try { v = localStorage.getItem(K) || ''; } catch (e) { /* storage blocked */ } return v === 'dark' || v === 'light' ? v : ''; }
     function device() { return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
-    function now() { return chosen() || device(); }
+    function look() {
+      var v = memLook; try { v = localStorage.getItem(LK) || memLook; } catch (e) { /* storage blocked */ }
+      if (LOOKS.indexOf(v) >= 0) return v;
+      return chosen() === 'light' ? 'paper' : 'night';          // a student who picked Day before keeps a light page
+    }
+    function now() { var l = look(); return l === 'paper' ? 'light' : l === 'auto' ? (chosen() || device()) : 'dark'; }
     function store(v) { mem = v || ''; try { if (v) localStorage.setItem(K, v); else localStorage.removeItem(K); } catch (e) { /* kept in mem */ } }
     try { if (!localStorage.getItem(K + '_was')) { localStorage.setItem(K + '_was', '1'); if (localStorage.getItem('wsh_theme') === 'dark' || localStorage.getItem('wsh_look') === 'dark') store('dark'); } } catch (e) {}
+    function lookNow() { var l = look(); return l === 'auto' ? (now() === 'light' ? 'paper' : 'night') : l; }
     function apply() {
-      var t = now(), was = root.getAttribute('data-theme');
-      if (was !== t) { root.setAttribute('data-theme', t); if (was) { try { window.dispatchEvent(new Event('ms-theme')); } catch (e) {} } }
+      var t = now(), was = root.getAttribute('data-theme'), lk = lookNow(), wasL = root.getAttribute('data-look');
+      if (wasL !== lk) root.setAttribute('data-look', lk);
+      if (was !== t) root.setAttribute('data-theme', t);
+      if (was && (was !== t || wasL !== lk)) { try { window.dispatchEvent(new Event('ms-theme')); } catch (e) {} }
     }
-    window.msTheme = { now: now, isDark: function () { return now() === 'dark'; }, chosen: chosen, apply: apply,
-      set: function (v) { store(v === 'dark' || v === 'light' ? v : ''); apply(); } };
+    function setLook(k) {
+      if (LOOKS.indexOf(k) < 0) k = 'night';
+      memLook = k; try { localStorage.setItem(LK, k); } catch (e) { /* kept in mem */ }
+      store(k === 'paper' ? 'light' : k === 'auto' ? '' : 'dark');
+      apply();
+    }
+    window.msTheme = { now: now, isDark: function () { return now() === 'dark'; }, chosen: chosen, apply: apply, look: look, setLook: setLook, lookNow: lookNow,
+      set: function (v) { setLook(v === 'light' ? 'paper' : v === 'dark' ? 'night' : 'auto'); } };
     apply();
     if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply); }
-    window.addEventListener('storage', function (e) { if (!e.key || e.key === K) apply(); });
+    window.addEventListener('storage', function (e) { if (!e.key || e.key === K || e.key === LK) apply(); });
   })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Outfit:wght@500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <title>learnwithmrcedric</title>
 <style>
   :root {
@@ -380,6 +396,326 @@
     #qc h2 { font-size: 30px; }
   }
 </style>
+<style>
+  /* r38 student home: the calm night, four doors, one coloured banner per worksheet, and a Look the student picks.
+     Every colour comes from the tokens below, set by the Look (data-look on the page). Motion: ease-out, entrances
+     once, presses at .97 over 160ms, hover only with a mouse, nothing loops. */
+  :root { --e-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --r-tx: #ECE8F5; --r-tx2: #B2ABC6; --r-tx3: #8E88A3; --r-bg: #07060D; --r-shd: 7,6,13; --r-inkrgb: 255,255,255;
+    --r-card: #100E1A; --r-card2: #16131F; --r-raise: #1C1730; --r-tabon: #18142A; --r-hov: #211C30; --r-solid: #2A2440; --r-panel: #17142A; --r-inp: #0E0C18; --r-me: #231D38;
+    --r-line: rgba(255,255,255,.07); --r-line2: rgba(255,255,255,.12); --r-acc: 191,162,236; --r-focus: #C9B9FF;
+    --lamp: #E4B565; --lampH: #EBC077; --lampTx: #1E1405; --late: #EBA592;
+    --s0: #8CCDE8; --s1: #BFA2EC; --s2: #E8C891; --s3: #8FD3B0; --s4: #EBA592; --s5: #E7A6CF;
+    --tk-finish: #F2B65A; --tk-start: #7CC4EE; --tk-corr: #5ED39C; --tk-wait: #8C8FA6; --tk-marks: #B98CFF; --tk-dark: #15110A;
+    --skyF: saturate(.75); --skyO: .4; --hillO: .22; --starO: 1;
+    --r-display: 'Outfit', 'Bricolage Grotesque', system-ui, sans-serif; --r-body: 'Manrope', 'Atkinson Hyperlegible', system-ui, sans-serif; }
+  :root[data-look="dawn"] { --r-shd: 14,8,10; --r-bg: #0E080A; --r-card: #1A1014; --r-card2: #22161A; --r-raise: #2E1C21; --r-tabon: #26171C; --r-hov: #2C1B20; --r-solid: #3A242A; --r-panel: #24161B; --r-inp: #130B0D; --r-me: #3A2328;
+    --r-acc: 240,180,154; --r-focus: #F3C4AE; --r-tx: #F4EAE5; --r-tx2: #CDB6AF; --r-tx3: #A38D87;
+    --s0: #9CCFE0; --s1: #D8A9D6; --s2: #F0C98C; --s3: #A9D6A8; --s4: #F2A88E; --s5: #F0A9BF;
+    --skyF: sepia(.55) saturate(1.15) hue-rotate(-28deg) brightness(.85); --skyO: .42; --hillO: .2; }
+  :root[data-look="ocean"] { --r-shd: 4,15,18; --r-bg: #041013; --r-card: #0A1A1E; --r-card2: #0F2327; --r-raise: #153036; --r-tabon: #112A2F; --r-hov: #143036; --r-solid: #1A3A40; --r-panel: #0F2428; --r-inp: #06141A; --r-me: #173840;
+    --r-acc: 127,211,204; --r-focus: #9EE3DC; --r-tx: #E5F3F2; --r-tx2: #A8C6C4; --r-tx3: #80A09E;
+    --s0: #86D0EA; --s1: #9FB8F0; --s2: #E6CB8F; --s3: #7FD8BF; --s4: #F0A795; --s5: #B7A9F0;
+    --skyF: hue-rotate(-95deg) saturate(.7) brightness(.9); --skyO: .42; --hillO: .18; }
+  :root[data-look="forest"] { --r-shd: 6,13,9; --r-bg: #060D09; --r-card: #0D1711; --r-card2: #121F17; --r-raise: #192B20; --r-tabon: #15241B; --r-hov: #18291F; --r-solid: #20362A; --r-panel: #12221A; --r-inp: #08120C; --r-me: #1D3526;
+    --r-acc: 164,214,156; --r-focus: #B9E4B2; --r-tx: #E7F1E9; --r-tx2: #ABC4B1; --r-tx3: #839C89;
+    --s0: #8FCBDD; --s1: #BBA8E6; --s2: #E7C67E; --s3: #9AD9A2; --s4: #EDA88F; --s5: #E2AECB;
+    --skyF: hue-rotate(-150deg) saturate(.5) brightness(.8); --skyO: .4; --hillO: .24; }
+  :root[data-look="paper"] { --r-inkrgb: 46,36,28; --r-shd: 237,232,223; --r-bg: #EDE8DF; --r-card: #F7F3EC; --r-card2: #F1ECE3; --r-raise: #E7E0D3; --r-tabon: #FBF8F2; --r-hov: #EAE4D9; --r-solid: #E5DDF0; --r-panel: #FAF7F1; --r-inp: #FFFDF9; --r-me: #E1D8EC;
+    --r-line: rgba(46,36,28,.1); --r-line2: rgba(46,36,28,.17); --r-acc: 122,85,194; --r-focus: #6B48B8;
+    --r-tx: #2A2420; --r-tx2: #574E46; --r-tx3: #6F665D; --lamp: #D9A24A; --lampH: #E2AE5A; --late: #A84E35;
+    --s0: #2B7397; --s1: #7150B5; --s2: #8F6210; --s3: #2B7F56; --s4: #A84E35; --s5: #A5427F;
+    --tk-finish: #A86A0E; --tk-start: #246C98; --tk-corr: #1C7A49; --tk-wait: #7A7468; --tk-marks: #7150B5; --tk-dark: #FFFFFF;
+    --skyF: grayscale(1) brightness(1.6); --skyO: .08; --hillO: .06; --starO: 0; }
+  /* the older parts of the app (Me, a sheet's side cards, dialogs) take the same colours */
+  #v-app, #dlg, #toast, .r38-pop { --ink: var(--r-tx); --ink-2: var(--r-tx2); --muted: var(--r-tx3); --line: var(--r-line2); --canvas: var(--r-bg); --card: var(--r-card); --soft: var(--r-card2);
+    --blue-soft: var(--r-solid); --blue-ink: var(--r-tx); --blue: rgb(var(--r-acc)); --ok-soft: color-mix(in srgb, var(--s3) 16%, transparent); --ok: var(--s3); --bad: var(--late); --bad-soft: color-mix(in srgb, var(--late) 14%, transparent);
+    --hl: var(--lamp); --navy: var(--r-raise); --paper: var(--r-card); }
+  #v-app { background: var(--r-bg); color: var(--r-tx); font-family: var(--r-body); }
+  #v-app button { -webkit-tap-highlight-color: transparent; }
+  #v-app :focus-visible { outline: 2px solid var(--r-focus); outline-offset: 2px; }
+  #v-app h1, #v-app h2, #v-app h3 { font-family: var(--r-display); letter-spacing: -.005em; }
+  #v-app nav.side { display: none; }
+  #v-app .stage { position: relative; z-index: 1; background: transparent; }
+  .r38-band { position: absolute; left: 0; right: 0; top: 0; height: 760px; overflow: hidden; pointer-events: none; z-index: 0; }
+  .r38-band .sky { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 24%; opacity: var(--skyO); filter: var(--skyF); transition: opacity 320ms var(--e-out); }
+  .r38-band .fx { position: absolute; inset: 0; width: 100%; height: 100%; -webkit-mask-image: linear-gradient(#000 45%, transparent 90%); mask-image: linear-gradient(#000 45%, transparent 90%); opacity: var(--starO); }
+  .r38-band .hills { position: absolute; left: 50%; bottom: -200px; width: max(1500px, 110vw); transform: translateX(-50%) scaleX(-1); opacity: var(--hillO); filter: var(--skyF); }
+  .r38-band .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(var(--r-shd),.45) 0%, rgba(var(--r-shd),.62) 40%, rgba(var(--r-shd),.92) 75%, var(--r-bg) 100%); }
+  @media (prefers-reduced-transparency: reduce) { .r38-band .sky, .r38-band .hills { display: none; } }
+
+  /* one column, 920 wide, the same gutters everywhere */
+  #v-app { --gut: max(32px, calc((100% - 920px) / 2)); }
+  .stage > .r38-top, .stage > header.top, .stage > .r38-doors { padding-left: var(--gut); padding-right: var(--gut); }
+  #v-app .panel { padding: 2px var(--gut) 40px; gap: 16px; }
+  .r38-top { flex: none; display: flex; align-items: center; gap: 10px; padding-top: 14px; padding-bottom: 4px; }
+  .r38-sp { flex: 1; }
+  .r38-brand { display: inline-flex; align-items: center; min-height: 48px; padding: 0 4px; border: 0; border-radius: 12px; background: none; color: var(--r-tx); font: 700 19px var(--r-display); letter-spacing: .01em; }
+  .r38-brand .bh { display: none; }
+  .r38-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--r-line2); background: var(--r-card2); color: var(--r-tx); font: 700 15px var(--r-body); white-space: nowrap; text-decoration: none; transition: transform 160ms var(--e-out), background-color 160ms var(--e-out); }
+  .r38-btn:active { transform: scale(.97); }
+  .r38-btn.r38-ghost { background: transparent; }
+  .r38-lookbtn .sw3 { display: inline-flex; gap: 3px; }
+  .r38-lookbtn .sw3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .r38-me { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; font: 700 15px var(--r-display); color: var(--r-tx); background: var(--r-me); box-shadow: inset 0 0 0 1px var(--r-line2); overflow: hidden; padding: 0; transition: transform 160ms var(--e-out); }
+  .r38-me:active { transform: scale(.94); }
+  .r38-me img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+  .r38-me[aria-current="page"] { box-shadow: inset 0 0 0 2px rgb(var(--r-acc)); }
+
+  /* the greeting, or the name of the room you are in */
+  #v-app header.top { min-height: 0; padding-top: 10px; padding-bottom: 14px; gap: 14px; }
+  #v-app header.top h1 { font: 700 clamp(28px, 4vw, 38px)/1.15 var(--r-display); color: var(--r-tx); letter-spacing: -.01em; }
+  #v-app header.top .sub { font-size: 17px; color: var(--r-tx2); margin-top: 4px; white-space: normal; }
+  #v-app header.top .fresh { color: var(--r-tx3); }
+  #v-app .wallet { display: none !important; }
+  #v-app #p-now { overflow-y: auto; }
+  .r38-still .r38-in, .r38-still .r38-task, .r38-still .bsky * { animation: none !important; }
+  .r38-still .r38-task.first::after { display: none; }
+  #v-app .backpill { background: var(--r-card2); border-color: var(--r-line2); color: var(--r-tx); box-shadow: none; min-height: 48px; transition: transform 160ms var(--e-out); }
+  #v-app .backpill:active { transform: scale(.97); }
+  body.inlayer .r38-top, body.inlayer .r38-doors, body.inlayer .r38-band { display: none !important; }
+  body.inlayer #v-app header.top { padding-top: 14px; }
+
+  /* the four doors */
+  .r38-doors { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding-bottom: 18px; }
+  .r38-door { position: relative; display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 12px 16px; border-radius: 20px; border: 1px solid var(--r-line); background: var(--r-card); color: var(--r-tx); text-align: left; overflow: hidden; isolation: isolate;
+    transition: transform 160ms var(--e-out), background-color 160ms var(--e-out), border-color 160ms var(--e-out); }
+  .r38-door:active { transform: scale(.97); }
+  .r38-door > span { position: relative; z-index: 1; }
+  .r38-door .ic { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--dc) 12%, transparent); color: var(--dc); }
+  .r38-door .tx { min-width: 0; }
+  .r38-door .tl { display: block; font: 700 19px/1.2 var(--r-display); color: var(--r-tx); }
+  .r38-door .ts { display: block; font-size: 14px; line-height: 1.35; color: var(--r-tx2); margin-top: 2px; }
+  .r38-door .ts .pts { display: inline-flex; align-items: center; min-height: 22px; padding: 0 9px; border-radius: 999px; font-weight: 700; font-size: 13px; color: var(--dc); background: color-mix(in srgb, var(--dc) 13%, transparent); }
+  .r38-door .ts .pts:empty { display: none; }
+  .d-l { --dc: var(--s0); } .d-h { --dc: var(--s2); } .d-f { --dc: var(--s1); } .d-a { --dc: var(--s5); }
+  .r38-door[aria-current="page"] { background: var(--r-tabon); border-color: color-mix(in srgb, var(--dc) 40%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--dc) 18%, transparent), 0 10px 34px -14px color-mix(in srgb, var(--dc) 45%, transparent); }
+  .r38-door[aria-current="page"]::after { content: ''; position: absolute; left: 22px; right: 22px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--dc); }
+  .r38-door[aria-current="page"] .tl { background: linear-gradient(90deg, var(--r-tx) 30%, color-mix(in srgb, var(--dc) 75%, var(--r-tx))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .r38-door[aria-current="page"] .ic { background: color-mix(in srgb, var(--dc) 20%, transparent); }
+  .r38-door .badge-n { position: absolute; top: 6px; left: 50px; right: auto; z-index: 2; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 11px; background: var(--late); color: #1B0B06; font: 800 12px var(--r-body); display: flex; align-items: center; justify-content: center; }
+  .tcz { position: absolute; right: -6px; bottom: -4px; width: 62%; max-width: 190px; height: 70%; pointer-events: none; z-index: 0; opacity: .5; transition: opacity 220ms var(--e-out);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%); mask-image: linear-gradient(90deg, transparent, #000 40%); }
+  .tcz .bl { fill: none; stroke: rgba(var(--r-inkrgb), .16); stroke-width: 1.2; stroke-dasharray: 100 100; }
+  .tcz .bs { fill: rgba(var(--r-inkrgb), .3); transform-box: fill-box; transform-origin: center; }
+  .r38-door[aria-current="page"] .tcz { opacity: 1; }
+  .r38-door[aria-current="page"] .tcz .bl { stroke: color-mix(in srgb, var(--dc) 55%, transparent); }
+  .r38-door[aria-current="page"] .tcz .bs { fill: var(--dc); }
+  .r38-door.now .tcz .bl { animation: r38draw 760ms var(--e-out) both; }
+  .r38-door.now .tcz .bs { animation: r38star 340ms var(--e-out) both; animation-delay: calc(140ms + var(--k) * 70ms); }
+  @keyframes r38draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+  @keyframes r38star { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+  @keyframes r38rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes r38fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (hover: hover) and (pointer: fine) {
+    .r38-door:hover, .r38-btn:hover { background: var(--r-hov); }
+    .r38-tbtn:hover, .r38-lamp:hover { filter: brightness(1.08); }
+    .r38-row .r38-open:hover { background: var(--r-hov); }
+  }
+
+  /* cards, banners, labels */
+  .r38-card { background: var(--r-card); border: 1px solid var(--r-line); border-radius: 22px; color: var(--r-tx); flex: none; }
+  .r38-in { animation: r38rise 420ms var(--e-out) both; }
+  .r38-lbl { font: 700 13px var(--r-body); letter-spacing: .1em; text-transform: uppercase; color: var(--r-tx3); }
+  .r38-num { font-family: var(--r-display); font-weight: 700; color: var(--nc, var(--r-tx2)); margin-right: .32em; }
+  .r38-banner { position: relative; overflow: hidden; isolation: isolate; }
+  .r38-banner > *:not(.bsky) { position: relative; z-index: 1; }
+  .bsky { position: absolute; right: 0; top: 0; width: 900px; max-width: none; height: 96px; pointer-events: none; z-index: 0; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%); }
+  .bsky .bf { fill: rgba(var(--r-inkrgb), 1); opacity: .16; }
+  .bsky .bl { fill: none; stroke: color-mix(in srgb, var(--ac) 38%, transparent); stroke-width: 1; stroke-dasharray: 100 100; stroke-dashoffset: 0; }
+  .bsky .bs { fill: var(--ac); opacity: .75; transform-box: fill-box; transform-origin: center; }
+  .bsky .bn { font: 800 9px var(--r-body); letter-spacing: .24em; fill: var(--ac); opacity: .42; }
+  .r38-banner:not(.lit) .bsky .bl { stroke-dashoffset: 100; }
+  .r38-banner:not(.lit) .bsky .bs, .r38-banner:not(.lit) .bsky .bf, .r38-banner:not(.lit) .bsky .bn { opacity: 0; }
+  .r38-banner.lit .bsky .bf { animation: r38fade 900ms var(--e-out) both; animation-delay: var(--t); }
+  .r38-banner.lit .bsky .bl { animation: r38draw 1100ms 200ms var(--e-out) both; }
+  .r38-banner.lit .bsky .bs { animation: r38star 360ms var(--e-out) both; animation-delay: calc(220ms + var(--k) * 110ms); }
+  .r38-banner.lit .bsky .bn { animation: r38fade 500ms 1200ms var(--e-out) both; }
+  .r38-banner.lit h2 .tx { background: linear-gradient(90deg, var(--r-tx) 40%, color-mix(in srgb, var(--ac) 70%, var(--r-tx))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .r38-sech { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 16px 22px; width: 100%; border: 0; background: none; text-align: left; color: var(--r-tx); }
+  .r38-sech h2 { margin: 0; font: 700 22px/1.2 var(--r-display); color: var(--r-tx); }
+  .r38-sech .sub { font-size: 15px; color: var(--r-tx2); margin-top: 2px; }
+  .r38-sech .chev { margin-left: auto; color: var(--r-tx3); transition: transform 200ms var(--e-out); flex: none; }
+  .r38-sech[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .r38-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 11px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; background: rgba(var(--r-inkrgb), .05); color: var(--r-tx2); }
+  .r38-chip.late { background: color-mix(in srgb, var(--late) 12%, transparent); color: var(--late); }
+  .r38-chip.now { background: color-mix(in srgb, var(--s0) 14%, transparent); color: var(--s0); }
+
+  /* buttons in the night */
+  .r38-lamp, .r38-tbtn { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px; border-radius: 999px; border: 0; font: 700 17px var(--r-display); text-decoration: none; white-space: nowrap; color: var(--tk-dark); background: var(--tc, var(--lamp));
+    transition: transform 160ms var(--e-out), filter 200ms var(--e-out); }
+  .r38-lamp:active, .r38-tbtn:active, .r38-open:active { transform: scale(.97); }
+  .r38-lamp.big { min-height: 58px; padding: 0 30px; font-size: 18px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--tc, var(--lamp)) 25%, transparent), 0 8px 28px color-mix(in srgb, var(--tc, var(--lamp)) 18%, transparent); }
+  .r38-open { flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--r-line2); background: var(--r-card2); color: var(--r-tx); font: 700 16px var(--r-body); white-space: nowrap; transition: transform 160ms var(--e-out), background-color 160ms var(--e-out); }
+  .r38-open.solid { background: var(--r-solid); border-color: rgba(var(--r-acc), .28); }
+
+  /* home: one thing to do next */
+  .r38-next { padding: 26px 28px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px 24px; --ac: var(--tc, var(--s1)); }
+  .r38-next h2 { margin: 6px 0 6px; font: 700 28px/1.2 var(--r-display); color: var(--r-tx); overflow-wrap: anywhere; }
+  .r38-next .bsky .bn { display: none; }
+  .r38-next p { margin: 0; color: var(--r-tx2); font-size: 17px; line-height: 1.45; }
+  .r38-next p b { color: var(--late); font-weight: 700; }
+  .r38-next .r38-lbl { color: var(--tc, var(--r-tx3)); }
+  .r38-next .live { display: inline-flex; align-items: center; gap: 8px; }
+  .r38-next .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--tc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tc) 25%, transparent); }
+  .r38-dots { display: flex; gap: 6px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+  .r38-dots i { width: 22px; height: 6px; border-radius: 3px; background: rgba(var(--r-inkrgb), .1); }
+  .r38-dots i.d { background: var(--tc, var(--s1)); }
+  .r38-dots span { margin-left: 8px; font-size: 14px; color: var(--r-tx2); }
+  .r38-after { grid-column: 1 / -1; border-top: 1px solid var(--r-line); padding-top: 14px; font-size: 15px; color: var(--r-tx3); }
+  .r38-after b { color: var(--r-tx2); }
+  .r38-minis { display: flex; flex-direction: column; overflow: hidden; }
+  .r38-mini { display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 12px 22px; border-top: 1px solid var(--r-line); }
+  .r38-mini:first-child { border-top: 0; }
+  .r38-mini .rt { flex: 1; min-width: 0; }
+  .r38-mini .k { font: 700 12px var(--r-body); letter-spacing: .08em; text-transform: uppercase; color: var(--mc, var(--r-tx3)); }
+  .r38-mini .t { font: 600 17px/1.3 var(--r-body); color: var(--r-tx); }
+  .r38-mini .s { font-size: 14px; color: var(--r-tx2); }
+  .r38-mini .ring { flex: none; width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--s3); display: grid; place-items: center; font: 800 13px var(--r-display); color: var(--s3); }
+  .r38-strip { padding: 14px 20px; border-radius: 16px; border: 1px dashed var(--r-line2); color: var(--r-tx2); font-size: 15px; flex: none; }
+
+  /* lessons */
+  .r38-row { display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 12px 22px; border-top: 1px solid var(--r-line); }
+  .r38-row .rt { flex: 1; min-width: 0; }
+  .r38-row .t { font: 600 18px/1.3 var(--r-body); color: var(--r-tx); }
+  .r38-row .s { font-size: 14px; color: var(--r-tx2); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+  .r38-row.today { background: color-mix(in srgb, var(--s0) 6%, transparent); }
+  .r38-sec { overflow: hidden; }
+  .r38-empty { padding: 34px 24px; text-align: center; color: var(--r-tx2); border: 1px dashed var(--r-line2); border-radius: 18px; flex: none; }
+
+  /* homework: one coloured banner per worksheet says what to do */
+  .r38-tasks { display: flex; flex-direction: column; gap: 12px; padding: 4px 18px 18px; }
+  .r38-task { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tc) 34%, var(--r-line)); background: linear-gradient(100deg, color-mix(in srgb, var(--tc) 13%, var(--r-card)) 0%, var(--r-card) 62%);
+    animation: r38rise 420ms var(--e-out) both; animation-delay: calc(var(--i) * 60ms); }
+  .r38-task::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--tc); }
+  .r38-task .tb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 20px 0 24px; }
+  .r38-task .tv { font: 800 13px/1 var(--r-display); letter-spacing: .09em; text-transform: uppercase; color: var(--tc); }
+  .r38-task .tl { font: 700 13px/1 var(--r-body); padding: 5px 10px; border-radius: 999px; color: var(--late); background: color-mix(in srgb, var(--late) 14%, transparent); }
+  .r38-task .tw { margin-left: auto; font-size: 14px; color: var(--r-tx2); }
+  .r38-task .tbody { display: flex; align-items: center; gap: 16px; padding: 8px 20px 16px 24px; }
+  .r38-task .rt { flex: 1; min-width: 0; }
+  .r38-task .t { font: 700 20px/1.25 var(--r-display); color: var(--r-tx); overflow-wrap: anywhere; }
+  .r38-task .r38-num { color: var(--tc); margin-right: 8px; }
+  .r38-task .s { margin-top: 4px; font-size: 15px; color: var(--r-tx2); }
+  .r38-task.first { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tc) 30%, transparent), 0 14px 40px color-mix(in srgb, var(--tc) 14%, transparent); }
+  .r38-task.first::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--tc) 18%, transparent) 50%, transparent 70%); transform: translateX(-100%); animation: r38sweep 1100ms var(--e-out) 380ms both; }
+  @keyframes r38sweep { to { transform: translateX(100%); } }
+  .r38-task.is-wait { background: var(--r-card); border-color: var(--r-line); opacity: .66; }
+  .r38-task.is-wait .t, .r38-task.is-wait .r38-num { color: var(--r-tx2); }
+  .r38-task.is-wait::before { opacity: .5; }
+  .r38-task .look { position: absolute; inset: 0; z-index: 2; border: 0; background: none; border-radius: 20px; }
+  .r38-fold { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 0 22px; border: 0; border-top: 1px solid var(--r-line); background: none; color: var(--r-tx2); font: 700 16px var(--r-body); }
+  .r38-fold .n { font-size: 13px; color: var(--r-tx3); background: rgba(var(--r-inkrgb), .05); border-radius: 999px; padding: 2px 9px; }
+  .r38-fold .chev { margin-left: auto; transition: transform 200ms var(--e-out); }
+  .r38-fold[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .r38-mark { font: 700 16px var(--r-display); color: var(--s3); white-space: nowrap; }
+
+  /* the door rooms that the Homework engine draws (My files, Arcade): the slot fills the room */
+  #v-app .sheetlay.door .slot { border-radius: 22px; background: var(--r-card); border-color: var(--r-line); color: var(--r-tx2); }
+  #v-app .slot { background: var(--r-card); border-color: var(--r-line); color: var(--r-tx2); }
+  #v-app .side .card { background: var(--r-card); border: 1px solid var(--r-line); }
+  #v-app .side .score { color: var(--s3); }
+  .r38-closed { padding: 34px 28px; text-align: center; }
+  .r38-closed h2 { margin: 12px 0 6px; font: 700 24px/1.25 var(--r-display); color: var(--r-tx); }
+  .r38-closed p { margin: 0 auto; max-width: 440px; color: var(--r-tx2); font-size: 16px; }
+  .r38-closed svg { color: var(--s1); }
+
+  /* Me, in the night */
+  #v-app .card { background: var(--r-card); border: 1px solid var(--r-line); color: var(--r-tx); }
+  #v-app .tile { background: var(--r-card); border: 1px solid var(--r-line); color: var(--r-tx); transition: transform 160ms var(--e-out); }
+  #v-app .tile:active { transform: scale(.97); }
+  #v-app .tile .ic { background: var(--r-solid) !important; color: var(--s1) !important; }
+  #v-app .avatarbox { background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--s5) 22%, var(--r-card2)), var(--r-card2) 70%); }
+  #v-app .avatarbox .ini { background: var(--r-solid); }
+  #v-app .stat { background: var(--r-card2) !important; color: var(--r-tx) !important; }
+  #v-app .stat span { color: var(--r-tx2) !important; }
+  #v-app .btn { background: var(--r-card2); color: var(--r-tx); border: 1px solid var(--r-line2); transition: transform 160ms var(--e-out); }
+  #v-app .btn:active { transform: scale(.97); }
+  #v-app .btn.corr { background: var(--tk-corr); color: var(--tk-dark); border-color: transparent; }
+  #v-app .btn.line { background: transparent; color: var(--r-tx); border: 1px solid var(--r-line2); }
+  #v-app .seg { background: var(--r-card2); }
+  #v-app .seg button[aria-pressed="true"] { background: var(--r-solid); color: var(--r-tx); box-shadow: none; }
+  #v-app .mefoot .link { min-height: 44px; }
+  .r38-lookcard { display: flex; flex-direction: column; gap: 12px; }
+  .r38-looks { display: flex; flex-direction: column; gap: 6px; }
+  #v-app .r38-lookcard .r38-looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .r38-lk { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px; padding: 8px 12px; border-radius: 16px; border: 1px solid var(--r-line); background: none; text-align: left; color: var(--r-tx);
+    transition: transform 160ms var(--e-out), background-color 160ms var(--e-out), border-color 160ms var(--e-out); }
+  .r38-lk:active { transform: scale(.97); }
+  .r38-lk .pv { flex: none; width: 52px; height: 40px; border-radius: 12px; background: var(--b); position: relative; box-shadow: inset 0 0 0 1px rgba(var(--r-inkrgb), .14); overflow: hidden; }
+  .r38-lk .pv i { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--c1); top: 9px; left: 9px; }
+  .r38-lk .pv i + i { background: var(--c2); top: 21px; left: 22px; }
+  .r38-lk .pv i + i + i { background: var(--c3); top: 11px; left: 35px; }
+  .r38-lk b { display: block; font: 700 16px var(--r-display); color: var(--r-tx); }
+  .r38-lk small { display: block; font-size: 13.5px; color: var(--r-tx2); }
+  .r38-lk .ck { margin-left: auto; color: var(--r-tx); opacity: 0; }
+  .r38-lk[aria-checked="true"] { border-color: rgba(var(--r-acc), .6); background: var(--r-raise); }
+  .r38-lk[aria-checked="true"] .ck { opacity: 1; }
+  @media (hover: hover) and (pointer: fine) { .r38-lk:hover { background: var(--r-hov); } }
+
+  /* popovers, dialogs, the toast */
+  .r38-scrim { position: fixed; inset: 0; z-index: 84; background: rgba(4,3,9,.5); animation: r38fade 180ms var(--e-out) both; }
+  .r38-pop { position: fixed; z-index: 85; top: 66px; right: 16px; width: min(360px, calc(100vw - 32px)); max-height: calc(100vh - 90px); overflow: auto; padding: 20px 22px; border-radius: 20px; background: var(--r-panel); border: 1px solid var(--r-line2); color: var(--r-tx); font-family: var(--r-body);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5); transform-origin: top right; animation: r38pop 200ms var(--e-out) both; }
+  .r38-pop h2 { margin: 0 0 8px; font: 700 20px var(--r-display); }
+  .r38-pop p { margin: 0 0 10px; color: var(--r-tx2); font-size: 16px; line-height: 1.45; }
+  .r38-pop p b { color: var(--r-tx); }
+  @keyframes r38pop { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: none; } }
+  #dlg .box { background: var(--r-panel); color: var(--r-tx); border: 1px solid var(--r-line2); font-family: var(--r-body); }
+  #dlg .box p { color: var(--r-tx2); }
+  #dlg .btn { background: var(--r-card2); color: var(--r-tx); border: 1px solid var(--r-line2); }
+  #dlg .btn:last-child { background: var(--lamp); color: #1E1405; border-color: transparent; }
+  #dlg.modal { background: rgba(4,3,9,.62); }
+  #toast { background: var(--r-panel); color: var(--r-tx); border: 1px solid var(--r-line2); font-family: var(--r-body); box-shadow: 0 14px 40px rgba(0,0,0,.45); animation: r38fade 200ms var(--e-out) both; }
+
+  @media (max-width: 900px) {
+    #v-app { --gut: 20px; }
+    .r38-doors { gap: 8px; padding-bottom: 14px; }
+    #toast { bottom: 24px; }
+  }
+  @media (max-width: 760px) {
+    .r38-door { flex-direction: column; align-items: flex-start; gap: 6px; min-height: 92px; padding: 12px; }
+    .r38-door .ic { width: 38px; height: 38px; border-radius: 12px; }
+    .r38-door .tl { font-size: 16px; }
+    .r38-door .ts { font-size: 12.5px; }
+    .tcz { width: 80%; }
+    .r38-door .badge-n { left: 40px; top: 4px; }
+  }
+  @media (max-width: 560px) {
+    .r38-doors { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .r38-door { min-height: 72px; padding: 10px 6px; align-items: center; text-align: center; border-radius: 16px; }
+    .r38-door .tx { width: 100%; }
+    .r38-door .tl { font-size: 13.5px; }
+    .r38-door .ts { display: none; }
+    .r38-door .badge-n { top: 4px; left: calc(50% + 8px); }
+    .r38-lookbtn .lbx { display: none; }
+    #v-app header.top { padding-bottom: 10px; }
+    #v-app header.top h1 { font-size: 26px; }
+    #v-app header.top .sub { font-size: 15px; }
+    .r38-next { grid-template-columns: minmax(0, 1fr); padding: 22px; }
+    .r38-next .r38-lamp { width: 100%; }
+    .r38-task .tbody { flex-wrap: wrap; }
+    .r38-task .r38-tbtn { width: 100%; }
+    .r38-task .tw { margin-left: 0; width: 100%; }
+    .r38-tasks { padding: 4px 12px 12px; }
+    .r38-row { flex-wrap: wrap; }
+    .r38-row .r38-open { flex: 1 1 100%; }
+    .r38-mini { flex-wrap: wrap; }
+    .r38-mini .r38-open { flex: 1 1 100%; }
+  }
+  @media (max-width: 480px) { .r38-top { gap: 6px; } .r38-brand { font-size: 16px; min-width: 0; overflow: hidden; } .r38-brand .bt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .r38-btn { padding: 0 13px; } }
+  @media (max-width: 360px) { .r38-brand .bt { display: none; } .r38-brand .bh { display: block; } }
+  @media (prefers-reduced-motion: reduce) {
+    .r38-in, .r38-task, .r38-pop, .r38-scrim, #toast { animation: r38fade 160ms linear both; }
+    .r38-task.first::after { display: none; }
+    .r38-door.now .tcz .bl, .r38-door.now .tcz .bs { animation: none; }
+    .r38-banner.lit .bsky .bl, .r38-banner.lit .bsky .bs { animation: r38fade 300ms linear both; }
+    .r38-door:active, .r38-btn:active, .r38-lamp:active, .r38-tbtn:active, .r38-open:active, .r38-lk:active, #v-app .tile:active, #v-app .btn:active { transform: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) { .r38-scrim, #dlg.modal { background: #050409; } }
+</style>
+
 </head>
 <body>
 
@@ -430,6 +766,13 @@
 
 <!-- ============ APP ============ -->
 <div id="v-app" class="hidden">
+  <!-- Release 38: the night, turned right down. A faint Milky Way, a few quiet stars drawn once, a heavy shade. -->
+  <div class="r38-band" aria-hidden="true">
+    <img class="sky" alt="" src="https://cedricboi.github.io/science-decks/media/hub-sky.webp" decoding="async">
+    <canvas class="fx" id="r38-stars"></canvas>
+    <img class="hills" alt="" src="https://cedricboi.github.io/science-decks/media/hub-hills.webp" decoding="async">
+    <div class="shade"></div>
+  </div>
   <nav class="side" aria-label="Main">
     <div class="logo"><img id="nav-mark" alt="" class="hidden"><span id="nav-mark-text">lw</span></div>
     <button id="nav-now" aria-current="page"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Now</button>
@@ -438,6 +781,14 @@
   </nav>
 
   <div class="stage">
+    <!-- Release 38: the top bar holds only Look, Help and the avatar (Me) -->
+    <div class="r38-top" id="r38-top">
+      <button class="r38-brand" id="r38-brand" type="button" aria-label="learnwithmrcedric, back to the start"><svg class="bh" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg><span class="bt">learnwithmrcedric</span></button>
+      <span class="r38-sp"></span>
+      <button class="r38-btn r38-ghost r38-lookbtn" id="r38-look" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Change how your page looks"><span class="sw3" aria-hidden="true"><i style="--c:var(--s0)"></i><i style="--c:var(--s1)"></i><i style="--c:var(--s2)"></i></span><span class="lbx">Look</span></button>
+      <button class="r38-btn r38-ghost" id="r38-help" type="button" aria-haspopup="dialog" aria-expanded="false">Help</button>
+      <button class="r38-me" id="r38-me" type="button" aria-label="Me: my avatar, points and settings"><span id="r38-me-ini"></span><img id="r38-me-pic" alt="" class="hidden"></button>
+    </div>
     <!-- the one header: the page title, or a Back pill that says where it goes -->
     <header class="top" id="hdr">
       <button class="backpill hidden" id="backpill" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span id="backpill-t">Back</span></button>
@@ -445,29 +796,22 @@
       <a class="wallet" href="#" id="wallet"><svg width="22" height="22" viewBox="0 0 24 24" fill="#F5B400" stroke="#C98F00" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span id="wallet-n">points</span></a>
     </header>
 
+    <!-- Release 38: four doors. Each has its colour and a small constellation of the day. -->
+    <nav class="r38-doors" id="r38-doors" aria-label="Where to go">
+      <button type="button" class="r38-door d-l" id="door-lessons" data-door="lessons"><svg class="tcz" viewBox="0 0 300 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"></svg><span class="ic"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M10 8.5l4 1.8-4 1.8z"/></svg></span><span class="tx"><span class="tl">Lessons</span><span class="ts" id="door-lessons-s"></span></span></button>
+      <button type="button" class="r38-door d-h" id="door-homework" data-door="file"><svg class="tcz" viewBox="0 0 300 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"></svg><span class="ic"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h3"/></svg></span><span class="tx"><span class="tl">Homework</span><span class="ts" id="door-homework-s"></span></span></button>
+      <button type="button" class="r38-door d-f" id="door-files" data-door="files"><svg class="tcz" viewBox="0 0 300 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"></svg><span class="ic"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span class="tx"><span class="tl">My files</span><span class="ts" id="door-files-s"></span></span></button>
+      <button type="button" class="r38-door d-a" id="door-arcade" data-door="arcade"><svg class="tcz" viewBox="0 0 300 80" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"></svg><span class="ic"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9h12a4 4 0 0 1 4 4v1a4 4 0 0 1-7.2 2.4L14 15h-4l-.8 1.4A4 4 0 0 1 2 14v-1a4 4 0 0 1 4-4z"/><path d="M7 11.5v3M5.5 13h3"/><circle cx="16" cy="12.2" r=".6" fill="currentColor"/><circle cx="18" cy="14" r=".6" fill="currentColor"/></svg></span><span class="tx"><span class="tl">Arcade</span><span class="ts"><span class="pts" id="door-arcade-s"></span></span></span></button>
+    </nav>
+
     <!-- NOW -->
     <main class="panel" id="p-now"></main>
 
-    <!-- MY FILE -->
-    <main class="panel hidden" id="p-file">
-      <div class="legend">
-        <span><i class="tabc glow" style="background:var(--bad)"></i>I still owe it</span>
-        <span><i class="tabc" style="background:var(--ok)"></i>It is in</span>
-        <span><i class="tabc" style="background:var(--hl)"></i>Lesson slides</span>
-        <span><i class="tabc" style="background:var(--grey-tab)"></i>Practice, never due</span>
-        <span><i style="width:24px;height:24px;border-radius:12px;border:3px solid var(--bad)"></i>Marked, with my score</span>
-      </div>
-      <div class="filelay">
-        <div class="binderwrap">
-          <div class="binder">
-            <div class="rings" aria-hidden="true"><i></i><i></i><i></i></div>
-            <div class="pages" id="pages"></div>
-            <div class="dividers" id="dividers" role="tablist" aria-label="Chapter dividers"></div>
-          </div>
-        </div>
-        <aside class="owed card" id="owed"></aside>
-      </div>
-    </main>
+    <!-- LESSONS (release 38) -->
+    <main class="panel hidden" id="p-lessons"></main>
+
+    <!-- HOMEWORK (release 38: one coloured banner per worksheet, the one due first at the top) -->
+    <main class="panel hidden" id="p-file"></main>
 
     <!-- ME -->
     <main class="panel hidden" id="p-me">
@@ -484,9 +828,9 @@
             <button class="tile" id="t-arcade" type="button"><span class="ic" style="background:#E2F6EC;color:#0B6E47"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 11v3M6.5 12.5h3M15 12h.01M17 14h.01"/></svg></span><span><span class="t">Arcade</span><span class="s" id="t-arcade-s">Puzzles, quests and revision rush</span></span></button>
             <button class="tile" id="t-badges" type="button"><span class="ic" style="background:#EFE7FF;color:#5B3BB0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></span><span><span class="t">Badges</span><span class="s" id="t-badges-s">The badges you have earned</span></span></button>
           </div>
-          <section class="card" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px">
-            <span style="font-weight:700;font-size:17px">Look</span>
-            <div class="seg" id="look"><button type="button" data-v="light">Day</button><button type="button" data-v="dark">Night</button><button type="button" data-v="">Same as iPad</button></div>
+          <section class="card r38-lookcard">
+            <span style="font-weight:700;font-size:17px">How my page looks</span>
+            <div class="r38-looks" id="look" role="radiogroup" aria-label="Looks"></div>
           </section>
           <div class="mefoot">
             <button class="link" id="btn-hist" type="button">See where my points came from</button>
@@ -509,6 +853,22 @@
 
 <div id="dlg" class="modal hidden" role="dialog" aria-modal="true"><div class="box" id="dlg-box"></div></div>
 <div id="toast" class="hidden" role="status"></div>
+
+<!-- Release 38: Look and Help, small popovers from the top bar -->
+<div id="r38-scrim" class="r38-scrim hidden"></div>
+<div id="r38-pop-look" class="r38-pop hidden" role="dialog" aria-labelledby="r38-pl-t">
+  <h2 id="r38-pl-t">How your page looks</h2>
+  <p>Pick the one that is easiest on your eyes. You can change it any time.</p>
+  <div class="r38-looks" id="r38-looks" role="radiogroup" aria-label="Looks"></div>
+</div>
+<div id="r38-pop-help" class="r38-pop hidden" role="dialog" aria-labelledby="r38-ph-t">
+  <h2 id="r38-ph-t">How this works</h2>
+  <p><b>Lessons</b> has the slides from class. Open any of them to revise.</p>
+  <p><b>Homework</b> shows what to do. The one due first is always at the top.</p>
+  <p><b>My files</b> keeps your worksheets and notes in folders. Homework goes into its chapter by itself.</p>
+  <p><b>Arcade</b> is where your points live: puzzles, quests, and the night market.</p>
+  <p>Stuck on a question? Open the worksheet and tap <b>Help</b>. Mr Cedric can see when you are stuck.</p>
+</div>
 
 <script>
 (function () {
@@ -868,9 +1228,10 @@
   function isOwed(it) { return !it.practice && (it.owed === true || (it.owed !== false && (it.status === 'new' || it.status === 'started' || it.status === 'corrDue'))); }
   function dueOf(it) { return it.status === 'corrDue' && it.corr ? (it.corr.dueTs || null) : (it.dueTs || null); }
   function band(it) { var d = dueOf(it); if (!d) return 3; var ms = d - Date.now(); return ms < 0 ? 0 : ms <= 2 * 864e5 ? 1 : 2; }
+  // Release 38: always the one due first at the top (corrections by their own due date); no date goes last.
   function owedList() {
     return items().filter(isOwed).sort(function (a, b) {
-      return band(a) - band(b) || ((b.status === 'corrDue') - (a.status === 'corrDue')) || ((dueOf(a) || 9e15) - (dueOf(b) || 9e15));
+      return ((dueOf(a) || 9e15) - (dueOf(b) || 9e15)) || ((b.status === 'corrDue') - (a.status === 'corrDue'));
     });
   }
   function backItem() {
@@ -914,26 +1275,44 @@
     var s = loadSnap();
     if (s && !D) { D = s.d; V = s.v || ''; snapAt = s.at || 0; local = s.local || freshLocal(); if (!local.done) local.done = {}; }
     liveAt = 0; fails = 0; layers = [];
-    setPanel('now');
+    panel = ''; setPanel('now');
     drawAll(); drawFresh();
+    requestAnimationFrame(drawStars);
     refresh();
   }
+  // Release 38: the rooms. now (home), lessons, file (Homework), me; files and arcade are drawn by the Homework engine.
+  var PANELS = ['now', 'lessons', 'file', 'me'];
   function setPanel(p) {
+    var was = panel;
     panel = p;
     if (layers.length) closeLayers(true);
-    ['now', 'file', 'me'].forEach(function (x) { $('p-' + x).classList.toggle('hidden', x !== p); var b = $('nav-' + x); if (x === p) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    PANELS.forEach(function (x) { $('p-' + x).classList.toggle('hidden', x !== p); });
+    ['now', 'file', 'me'].forEach(function (x) { var b = $('nav-' + x); if (x === p) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     $('p-sheet').classList.add('hidden');
-    drawHeader();
-    if (p === 'file') { fileChosen = false; drawFile(); } if (p === 'me') drawMe(); if (p === 'now') drawNow();
+    if (was !== p) { entering['p-' + p] = true; chChosen = false; }
+    if (p === 'files' || p === 'arcade') { drawDoors(was !== p); openDoorRoom(p); return; }
+    drawDoors(was !== p); drawHeader();
+    if (p === 'file') drawFile(); if (p === 'me') drawMe(); if (p === 'now') drawNow(); if (p === 'lessons') drawLessons();
+    var pn = $('p-' + p); if (pn && was !== p) pn.scrollTop = 0;
   }
   $('nav-now').addEventListener('click', function () { setPanel('now'); });
   $('nav-file').addEventListener('click', function () { setPanel('file'); });
   $('nav-me').addEventListener('click', function () { setPanel('me'); });
   $('wallet').addEventListener('click', function (e) { e.preventDefault(); setPanel('me'); });
+  $('r38-brand').addEventListener('click', function () { r38Close(); setPanel('now'); });
+  $('r38-me').addEventListener('click', function () { r38Close(); setPanel('me'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.r38-door'), function (b) { b.addEventListener('click', function () { r38Close(); setPanel(b.getAttribute('data-door')); }); });
   $('backpill').addEventListener('click', back);
 
   function drawHeader() {
     var L = layers[layers.length - 1];
+    if ((L && L.door) || (!L && (panel === 'files' || panel === 'arcade'))) {
+      var dr = L ? L.door : panel;
+      document.body.classList.remove('inlayer'); $('backpill').classList.add('hidden');
+      $('h1').textContent = dr === 'files' ? 'My files' : 'Arcade';
+      $('hsub').textContent = dr === 'files' ? 'Your worksheets and notes. Homework goes into its chapter by itself.' : 'Your points and tokens. Play today\'s puzzles. Spend your tokens at the night market.';
+      drawFresh(); return;
+    }
     document.body.classList.toggle('inlayer', !!L);
     $('backpill').classList.toggle('hidden', !L);
     $('wallet').classList.toggle('hidden', !!L);
@@ -943,17 +1322,18 @@
       drawFresh(); return;
     }
     if (!me) return;
-    var n = (D && D.now) || {};
+    var n = (D && D.now) || {}, o = D ? owedList() : [];
     if (panel === 'now' && n.lesson) { $('h1').textContent = 'Science lesson'; $('hsub').textContent = me.name + ' · ' + me.cls; }
-    else if (panel === 'now') { $('h1').textContent = greet() + ', ' + firstName(me.name); $('hsub').textContent = me.cls + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); }
-    else if (panel === 'file') { $('h1').textContent = 'My Science file'; $('hsub').textContent = me.name + ' · ' + me.cls; }
+    else if (panel === 'now') { $('h1').textContent = greet() + ', ' + firstName(me.name) + '.'; $('hsub').textContent = 'Science · ' + me.cls + ' · ' + new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); }
+    else if (panel === 'lessons') { $('h1').textContent = 'Lessons'; $('hsub').textContent = n.lesson ? 'Your class is in ' + (n.lesson.title || 'a Science lesson') + ' now.' : 'The slides from class, any time.'; }
+    else if (panel === 'file') { $('h1').textContent = 'Homework'; $('hsub').textContent = o.length ? (o.length === 1 ? '1 to do.' : o.length + ' to do.') + ' The one due first is at the top.' : 'Nothing to do right now.'; }
     else { $('h1').textContent = 'Me'; $('hsub').textContent = me.name + ' · ' + me.cls; }
     drawFresh();
   }
   function backLabel() {
-    if (layers.length > 1) return 'Back to ' + (layers[layers.length - 2].backName || 'the sheet');
-    var from = layers[0].from;
-    return from === 'file' ? 'Put it back in my file' : from === 'me' ? 'Back to Me' : 'Back to Now';
+    if (layers.length > 1 && !layers[layers.length - 2].door) return 'Back to ' + (layers[layers.length - 2].backName || 'the sheet');
+    var from = layers[layers.length > 1 && layers[layers.length - 2].door ? layers.length - 1 : 0].from;
+    return from === 'file' ? 'Back to Homework' : from === 'files' ? 'Back to My files' : from === 'me' ? 'Back to Me' : from === 'lessons' ? 'Back to Lessons' : 'Back to home';
   }
   function drawAll() {
     if (!me || !D) { drawHeader(); return; }
@@ -962,12 +1342,14 @@
     if (q) drawQuick(q); else hideQuick();
     if (layers.length) drawLayerSide();
     if (panel === 'now') drawNow();
-    drawFile();                  // kept current while hidden, so a tab turns green at once
+    drawFile();                  // kept current while hidden, so a hand-in shows at once
+    if (panel === 'lessons') drawLessons();
     if (panel === 'me') drawMe();
+    drawDoors(false);
   }
   function wallet() { return (D && D.wallet) || { points: 0, tokens: 0 }; }
   function drawWallet() { var w = wallet(); $('wallet-n').textContent = (Number(w.points) || 0).toLocaleString() + ' points'; }
-  function drawBadge() { var n = owedList().length, b = $('file-badge'); b.textContent = n; b.classList.toggle('hidden', !n); }
+  function drawBadge() { var n = owedList().length, b = $('file-badge'); b.textContent = n; b.classList.toggle('hidden', !n); drawDoors(false); }
   function funOpen() { return !(D && D.fun && D.fun.open === false); }
 
   /* ---------- decks open in one named tab (Ruling A15) ---------- */
@@ -1007,112 +1389,201 @@
   }
   function hero(cls) { var h = el('section', 'hero' + (cls ? ' ' + cls : '')); h.setAttribute('data-hero', ''); var b = el('div', 'body'); h.appendChild(b); return { h: h, b: b }; }
   function heroBtn(h, text, cls, fn) { var x = el('button', 'btn big ' + (cls || 'hl'), text); x.type = 'button'; x.addEventListener('click', fn); h.appendChild(x); return x; }
+  /* ---------- Release 38: the sky, the constellations, the doors ---------- */
+  // The twelve constellations of the zodiac, the same set as the teacher's class page. Each place has its own, and it
+  // changes each day.
+  var ZOD = [
+    ['ARIES', [[20,52],[110,30],[200,26],[280,50]], [[0,1],[1,2],[2,3]]],
+    ['TAURUS', [[10,10],[118,40],[150,54],[176,46],[152,30],[290,12],[206,66]], [[0,1],[1,4],[4,5],[1,2],[2,3],[3,4],[2,6]]],
+    ['GEMINI', [[40,8],[86,14],[70,40],[122,44],[108,74],[170,72],[54,64]], [[0,2],[2,4],[1,3],[3,5],[2,3],[2,6]]],
+    ['CANCER', [[150,40],[92,10],[232,18],[108,74],[204,76]], [[0,1],[0,2],[0,3],[0,4]]],
+    ['LEO', [[40,22],[70,10],[102,18],[108,40],[82,54],[204,40],[286,30],[214,66]], [[0,1],[1,2],[2,3],[3,4],[3,5],[5,6],[6,7],[7,4]]],
+    ['VIRGO', [[20,20],[80,30],[140,40],[200,36],[262,20],[172,74],[60,70]], [[0,1],[1,2],[2,3],[3,4],[2,5],[1,6]]],
+    ['LIBRA', [[60,40],[150,12],[240,40],[90,74],[212,76]], [[0,1],[1,2],[2,0],[0,3],[2,4]]],
+    ['SCORPIUS', [[20,18],[32,38],[44,58],[94,42],[142,48],[182,62],[230,72],[270,64],[290,44],[278,28]], [[0,1],[1,2],[1,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9]]],
+    ['SAGITTARIUS', [[60,32],[110,20],[160,30],[204,22],[232,42],[204,62],[140,66],[90,58],[282,32],[282,62]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[2,6],[4,8],[8,9],[9,5]]],
+    ['CAPRICORNUS', [[20,22],[110,62],[190,70],[280,26],[200,32],[110,36]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]],
+    ['AQUARIUS', [[20,22],[70,36],[110,22],[150,42],[190,32],[232,58],[280,50],[132,8],[152,16]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[2,7],[7,8]]],
+    ['PISCES', [[10,10],[62,30],[140,70],[220,42],[262,20],[290,14],[288,36],[264,32]], [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,4]]]
+  ];
+  function zodOf(off) { var n = new Date(), doy = Math.floor((n - new Date(n.getFullYear(), 0, 0)) / 864e5); return ZOD[(doy + off) % 12]; }
+  // the stars and lines of one sign, placed at x, scaled by sc (the svg's own units)
+  function zodSvg(off, X, sc, Y0, maxX, cls) {
+    var z = zodOf(off), px = function (i) { return Math.min(maxX, Math.round(X + z[1][i][0] * sc)); }, py = function (i) { return Math.round(Y0 + z[1][i][1] * 0.82 * sc); };
+    var d = z[2].map(function (e) { return 'M' + px(e[0]) + ' ' + py(e[0]) + ' L' + px(e[1]) + ' ' + py(e[1]); }).join(' ');
+    var h = '<path class="bl" d="' + d + '" pathLength="100"></path>';
+    z[1].forEach(function (st, n) { h += '<circle class="bs" cx="' + px(n) + '" cy="' + py(n) + '" r="' + ((n % 3 === 1 ? 3 : 2) * (sc < 1 ? 0.8 : 1)) + '" style="--k:' + n + '"></circle>'; });
+    return { svg: h, name: z[0] };
+  }
+  // a calm banner on a section header: a few field stars, the sign of the day, its name; lit once when seen
+  function bannerSky(off, X, sc) {
+    var z = zodSvg(off, X, sc || 0.8, 4, 894), seed = off * 97 + 13, r = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }, f = '';
+    for (var i = 0; i < 14; i++) f += '<circle class="bf" cx="' + Math.round(300 + r() * 590) + '" cy="' + Math.round(4 + r() * 84) + '" r="' + (0.6 + r() * 0.5).toFixed(1) + '" style="--t:' + Math.round(r() * 1200) + 'ms"></circle>';
+    return '<svg class="bsky" viewBox="0 0 900 96" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">' + f + z.svg + '<text class="bn" x="' + Math.min(894, Math.round(X + 300 * (sc || 0.8))) + '" y="88" text-anchor="end">' + z.name + '</text></svg>';
+  }
+  var litOnce = {};
+  function watchLit(el, key) {
+    if (!el) return;
+    if (litOnce[key]) { el.classList.add('lit'); return; }
+    var light = function () { litOnce[key] = 1; el.classList.add('lit'); };
+    if (!('IntersectionObserver' in window)) { light(); return; }
+    var o = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { o.disconnect(); light(); } }, { threshold: 0.3 });
+    o.observe(el);
+  }
+  var doorsBuilt = false;
+  function buildDoors() {
+    if (doorsBuilt) return; doorsBuilt = true;
+    [['door-lessons', 0], ['door-homework', 3], ['door-files', 6], ['door-arcade', 9]].forEach(function (x) { $(x[0]).querySelector('.tcz').innerHTML = zodSvg(x[1], 6, 0.86, 4, 296).svg; });
+  }
+  function drawDoors(changed) {
+    buildDoors();
+    var cur = panel === 'now' || panel === 'me' ? '' : panel;
+    Array.prototype.forEach.call(document.querySelectorAll('.r38-door'), function (b) {
+      var on = b.getAttribute('data-door') === cur;
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      if (on && changed) { b.classList.remove('now'); void b.offsetWidth; b.classList.add('now'); clearTimeout(b._t); b._t = setTimeout(function () { b.classList.remove('now'); }, 1400); }
+    });
+    if (panel === 'me') $('r38-me').setAttribute('aria-current', 'page'); else $('r38-me').removeAttribute('aria-current');
+    if (!me || !D) { ['lessons', 'homework', 'files', 'arcade'].forEach(function (k) { $('door-' + k + '-s').textContent = ''; }); return; }
+    var n = D.now || {}, nl = 0, fix = 0;
+    ((D.binder && D.binder.chapters) || []).forEach(function (c) { (c.lessons || []).forEach(function (l) { if (l.open !== false) { nl++; if (l.fix > 0) fix++; } }); });
+    $('door-lessons-s').textContent = n.lesson ? 'In class now' : fix ? (fix === 1 ? '1 to put right' : fix + ' to put right') : nl ? (nl === 1 ? '1 lesson' : nl + ' lessons') : 'Slides from class';
+    var o = owedList(), late = o.filter(function (x) { var d = dueOf(x); return d && d < Date.now(); }).length;
+    $('door-homework-s').textContent = o.length ? (o.length + ' to do' + (late ? ' · ' + late + ' late' : '')) : 'All done';
+    var ns = items().length;
+    $('door-files-s').textContent = ns ? (ns === 1 ? '1 worksheet' : ns + ' worksheets') : 'Folders and notes';
+    var w = wallet();
+    $('door-arcade-s').textContent = funOpen() ? (Number(w.points) || 0).toLocaleString() + ' points' : 'Closed in lesson';
+    var hb = $('door-homework').querySelector('.badge-n');
+    if (late && !hb) { hb = el('span', 'badge-n'); $('door-homework').appendChild(hb); }
+    if (hb) { if (late) { hb.textContent = late; hb.setAttribute('aria-label', late + ' late'); } else hb.remove(); }
+    drawTopMe();
+  }
+  function drawTopMe() {
+    if (!me) return;
+    $('r38-me-ini').textContent = initials(me.name).toUpperCase();
+    var src = avatarSrc(), pic = $('r38-me-pic');
+    if (src) { if (pic.getAttribute('src') !== src) pic.src = src; pic.classList.remove('hidden'); $('r38-me-ini').classList.add('hidden'); }
+    else { pic.classList.add('hidden'); $('r38-me-ini').classList.remove('hidden'); }
+  }
+  // A few quiet stars behind the page, drawn once (and again after a resize). Nothing in the sky moves.
+  var starList = null, starT = 0;
+  function drawStars() {
+    var c = $('r38-stars'); if (!c) return;
+    var ctx = c.getContext && c.getContext('2d'); if (!ctx) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight;
+    if (!W || !H) return;
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    if (!starList) { var sd = 11, r = function () { sd = (sd * 16807) % 2147483647; return sd / 2147483647; }; starList = []; for (var i = 0; i < 260; i++) { var k = r(); starList.push({ x: r(), y: r(), z: r(), r: r() * 0.9 + 0.3, c: k < 0.12 ? '240,214,170' : (k < 0.3 ? '205,196,240' : '235,235,245') }); } }
+    var n = Math.min(starList.length, Math.round(W * H / 9000));
+    for (var j = 0; j < n; j++) {
+      var s = starList[j], x = s.x * W, y = s.y * H, a = 0.12 + 0.38 * s.z, rr = s.r * (0.6 + s.z * 0.6);
+      if (rr > 0.9) { var g = ctx.createRadialGradient(x, y, 0, x, y, rr * 3.2); g.addColorStop(0, 'rgba(' + s.c + ',' + (a * 0.3).toFixed(3) + ')'); g.addColorStop(1, 'rgba(' + s.c + ',0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rr * 3.2, 0, 6.283); ctx.fill(); }
+      ctx.fillStyle = 'rgba(' + s.c + ',' + a.toFixed(3) + ')'; ctx.beginPath(); ctx.arc(x, y, Math.max(0.45, rr * 0.7), 0, 6.283); ctx.fill();
+    }
+  }
+  window.addEventListener('resize', function () { clearTimeout(starT); starT = setTimeout(drawStars, 150); });
+
+  /* ---------- Release 38: words for a worksheet ---------- */
+  function numOf(t) { var m = String(t || '').match(/^\s*(\d+(?:\.\d+)*)\s*[:.\-–]?\s+(.+)$/); return m ? { num: m[1], name: m[2] } : { num: '', name: String(t || '') }; }
+  function titleHtml(t) { var x = numOf(t), h = el('span'); if (x.num) h.appendChild(el('span', 'r38-num', x.num)); h.appendChild(document.createTextNode(x.name)); return h; }
+  function daysLate(ts) { var d = Math.floor((Date.now() - ts) / 864e5); return d <= 0 ? 'Late' : d === 1 ? '1 day late' : d + ' days late'; }
+  function shortName(it) { var x = numOf(it.title); return (x.num || x.name) + (it.status === 'corrDue' ? ' corrections' : ''); }
+  // What to do with a worksheet, in one colour: finish (gold), start (blue), corrections (green), marks (purple), waiting (grey)
+  function taskOf(it) {
+    if (it.status === 'corrDue') return { k: 'corr', verb: 'Do your corrections', tc: 'var(--tk-corr)', btn: it.corr && it.corr.started ? 'Carry on corrections' : 'Do corrections', mode: 'corrections' };
+    if (it.status === 'started') return { k: 'finish', verb: 'Finish this', tc: 'var(--tk-finish)', btn: 'Carry on', mode: 'write' };
+    if (it.status === 'new') return { k: 'start', verb: 'Start this', tc: 'var(--tk-start)', btn: 'Start', mode: 'write' };
+    if ((it.status === 'marked' || it.status === 'corrIn') && it.hasMarked !== false && it.seen === false) return { k: 'marks', verb: 'See your marks', tc: 'var(--tk-marks)', btn: 'See my marks', mode: 'marked' };
+    if (it.status === 'handedIn') return { k: 'wait', verb: 'Waiting for Mr Cedric', tc: 'var(--tk-wait)', mode: 'view' };
+    return null;
+  }
+  function taskLine(it, t) {
+    if (t.k === 'corr') return 'Fix the crosses on your marked copy. Everything you write is in green.' + (reminded(it.id) ? ' Mr Cedric reminded you about this.' : '');
+    if (t.k === 'finish') return (it.pages && it.pages.total ? 'You have done ' + (it.pages.done || 0) + ' of ' + it.pages.total + ' pages. ' : 'You have started it. ') + 'Finish it, then hand it in.' + (reminded(it.id) ? ' Mr Cedric reminded you about this.' : '');
+    if (t.k === 'start') { var d = dueOf(it); return (d && d - Date.now() > 2 * 864e5 ? 'You have time. ' : '') + 'Open it and start with question 1.' + (reminded(it.id) ? ' Mr Cedric reminded you about this.' : ''); }
+    if (t.k === 'marks') return it.score ? 'Mr Cedric marked it. You scored ' + scoreText(it.score) + '.' : 'Mr Cedric marked it. Look at the marking on your copy.';
+    return 'Handed in' + (it.handedTs ? ' ' + fmtWhen(it.handedTs) : '') + '. Nothing to do now. It comes back here when it is marked.';
+  }
+  function whenLine(it, t) {
+    if (t.k === 'marks') return it.status === 'corrIn' ? 'Corrections in' : 'Marked';
+    if (t.k === 'wait') return 'Handed in';
+    var d = dueOf(it); if (!d) { var s0 = t.k === 'corr' ? (it.corr && it.corr.due) : it.due; return s0 ? 'Due ' + s0 : ''; }
+    return (d < Date.now() ? 'Was due ' : 'Due ') + fmtDay(d);
+  }
+
+  /* ---------- NOW (home): one thing to do next ---------- */
+  function nextCard(o) {
+    var c = el('section', 'r38-card r38-next r38-banner r38-in'); if (o.tc) c.style.setProperty('--tc', o.tc);
+    c.innerHTML = bannerSky(1, 620, 0.85);
+    var b = el('div'); c.appendChild(b);
+    var lb = el('span', 'r38-lbl'); if (o.live) { lb.classList.add('live'); lb.appendChild(el('i')); } lb.appendChild(document.createTextNode(o.label)); b.appendChild(lb);
+    var h = el('h2'); if (o.titleNode) h.appendChild(o.titleNode); else h.textContent = o.title; b.appendChild(h);
+    if (o.lead || o.late) { var p = el('p'); if (o.late) { p.appendChild(el('b', '', o.late + '.')); p.appendChild(document.createTextNode(' ')); } p.appendChild(document.createTextNode(o.lead || '')); b.appendChild(p); }
+    if (o.pages) {
+      var dt = el('div', 'r38-dots'); dt.setAttribute('aria-label', o.pages.done + ' of ' + o.pages.total + ' pages done');
+      if (o.pages.total <= 14) for (var i = 0; i < o.pages.total; i++) dt.appendChild(el('i', i < o.pages.done ? 'd' : ''));
+      dt.appendChild(el('span', '', o.pages.done + ' of ' + o.pages.total)); b.appendChild(dt);
+    }
+    var btn = el('button', 'r38-lamp big', o.btn); btn.type = 'button'; btn.addEventListener('click', o.fn); c.appendChild(btn);
+    if (o.after) { var af = el('div', 'r38-after'); af.appendChild(document.createTextNode('After that: ')); af.appendChild(el('b', '', o.after)); c.appendChild(af); }
+    watchLit(c, 'nx');
+    return c;
+  }
+  function miniRow(kick, title, sub, btnText, fn, lead, mc) {
+    var r = el('div', 'r38-mini'); if (mc) r.style.setProperty('--mc', mc);
+    if (lead) r.appendChild(lead);
+    var tx = el('div', 'rt'); tx.appendChild(el('div', 'k', kick)); var t = el('div', 't'); t.appendChild(titleHtml(title)); tx.appendChild(t); if (sub) tx.appendChild(el('div', 's', sub)); r.appendChild(tx);
+    var b = el('button', 'r38-open', btnText); b.type = 'button'; b.addEventListener('click', fn); r.appendChild(b);
+    return r;
+  }
   function drawNow() {
     if (!me) return;
     var body = $('p-now'); body.innerHTML = '';
-    var L = ladder(), n = (D && D.now) || {}, cards = [];
+    var L = ladder(), n = (D && D.now) || {}, minis = [];
     body.setAttribute('data-state', String(L.k));
-    if (!D) { var w = el('section', 'hero calm'); w.appendChild(el('div', 'body')).appendChild(el('h2', '', 'Opening your file')); body.appendChild(w); return; }
+    if (!D) { var w0 = el('section', 'r38-card r38-next'); w0.appendChild(el('div')).appendChild(el('h2', '', 'Opening your work…')); body.appendChild(w0); return; }
     if (L.k === 1) {
-      var qh = hero('blue'); qh.b.appendChild(el('span', 'pill', 'Mr Cedric is asking')); qh.b.appendChild(el('h2', '', 'Answer the question on your screen.'));
-      heroBtn(qh.h, 'Answer now', '', function () { var q = quickNow(); if (q) drawQuick(q); }); body.appendChild(qh.h);
+      body.appendChild(nextCard({ label: 'Mr Cedric is asking', live: true, tc: 'var(--lamp)', title: 'Answer the question on your screen.', btn: 'Answer now', fn: function () { var q = quickNow(); if (q) drawQuick(q); } }));
     } else if (L.k === 2) {
-      var l = n.lesson, h2 = hero('blue');
-      var lv = el('div', 'live'); lv.appendChild(el('i')); lv.appendChild(el('span', '', 'In class now')); h2.b.appendChild(lv);
-      h2.b.appendChild(el('h2', '', l.title || 'Science lesson'));
-      h2.b.appendChild(el('div', 'lead', 'Your answers count.'));
-      var j = heroBtn(h2.h, 'Join the lesson', '', function () { openDeck(l.url); }); j.style.background = '#fff'; j.style.color = '#1B1F3B';
-      body.appendChild(h2.h);
-      if (n.ask && !deckOpen()) cards.push(askCard(n.ask));
+      var l = n.lesson;
+      body.appendChild(nextCard({ label: 'In class now', live: true, tc: 'var(--s0)', title: l.title || 'Science lesson', lead: 'Your answers count.', btn: 'Join the lesson', fn: function () { openDeck(l.url); } }));
+      if (n.ask && !deckOpen()) minis.push(miniRow('Mr Cedric is asking', n.ask.question || n.ask.deckTitle || 'A question from the slides', '', 'Answer now', function () { openDeck(n.ask.url, n.ask.taskId); }, null, 'var(--lamp)'));
     } else if (L.k === 3) {
-      var h3 = hero(''); h3.b.appendChild(el('span', 'pill', 'Mr Cedric is asking'));
-      h3.b.appendChild(el('h2', '', n.ask.question || 'A question from the slides'));
-      if (n.ask.deckTitle) h3.b.appendChild(el('div', 'lead', n.ask.deckTitle));
-      heroBtn(h3.h, 'Answer now', 'hl', function () { openDeck(n.ask.url, n.ask.taskId); }); body.appendChild(h3.h);
+      body.appendChild(nextCard({ label: 'Mr Cedric is asking', live: true, tc: 'var(--lamp)', title: n.ask.question || 'A question from the slides', lead: n.ask.deckTitle || '', btn: 'Answer now', fn: function () { openDeck(n.ask.url, n.ask.taskId); } }));
     } else if (L.k === 4 || L.k === 5) {
-      var it = L.it, now4 = L.k === 4, h4 = hero(now4 ? '' : 'calm');
-      h4.b.appendChild(el('span', 'pill' + (now4 ? '' : ' blue'), now4 ? (band(it) === 0 ? 'Overdue' : 'Do this now') : 'Next up'));
-      h4.b.appendChild(el('h2', '', it.title));
-      var lead = dueText(it);
-      if (it.status === 'corrDue') lead += ' Fix them in green on your marked copy.';
-      else if (it.pages && it.pages.total) lead += ' You have done ' + (it.pages.done || 0) + ' of ' + it.pages.total + ' pages.';
-      if (reminded(it.id)) lead += ' Mr Cedric reminded you about this.';
-      h4.b.appendChild(el('div', 'lead', lead.trim()));
-      if (it.pages && it.pages.total) { var bar = el('div', 'bar'); var bb = el('b'); bb.style.width = Math.round(100 * (it.pages.done || 0) / it.pages.total) + '%'; bar.appendChild(bb); h4.b.appendChild(bar); }
-      var label = it.status === 'corrDue' ? (it.corr && it.corr.started ? 'Carry on corrections' : 'Do corrections') : it.status === 'started' ? 'Carry on' : 'Start';
-      heroBtn(h4.h, label, now4 ? 'hl' : 'blue', function () { openSheet(it, 'now', it.status === 'corrDue' ? 'corrections' : 'write'); });
-      body.appendChild(h4.h);
+      var it = L.it, t = taskOf(it) || { verb: 'Next up', tc: 'var(--tk-start)', btn: 'Open', mode: 'write' }, d = dueOf(it);
+      var lead = taskLine(it, t) + (d && d >= Date.now() ? ' ' + dueText(it) : '');
+      var rest = (L.rest || []).slice(0, 2).map(shortName);
+      body.appendChild(nextCard({ label: 'Next up · ' + t.verb, tc: t.tc, titleNode: titleHtml(it.title), late: d && d < Date.now() ? daysLate(d) : '', lead: lead,
+        pages: t.k === 'finish' && it.pages && it.pages.total ? { done: it.pages.done || 0, total: it.pages.total } : null,
+        btn: t.btn, fn: function () { openSheet(it, 'now', t.mode); }, after: rest.length ? rest.join(', then ') + '.' : '' }));
     } else if (L.k === 6) {
-      var m = L.it, h6 = hero('');
-      h6.b.appendChild(el('span', 'pill', 'Back from Mr Cedric'));
-      h6.b.appendChild(el('h2', '', m.title));
-      h6.b.appendChild(el('div', 'lead', (m.score ? 'You scored ' + scoreText(m.score) + '. ' : 'It is marked. ') + (m.comment ? 'Mr Cedric wrote a comment for you.' : 'Look at the marking on your copy.')));
-      heroBtn(h6.h, 'See my marked copy', 'hl', function () { openSheet(m, 'now', 'marked'); });
-      body.appendChild(h6.h);
+      var m = L.it;
+      body.appendChild(nextCard({ label: 'Back from Mr Cedric · See your marks', tc: 'var(--tk-marks)', titleNode: titleHtml(m.title),
+        lead: (m.score ? 'You scored ' + scoreText(m.score) + '. ' : 'It is marked. ') + (m.comment ? 'Mr Cedric wrote a comment for you.' : 'Look at the marking on your copy.'),
+        btn: 'See my marked copy', fn: function () { openSheet(m, 'now', 'marked'); } }));
     } else {
-      var h7 = hero('');
-      h7.b.appendChild(el('span', 'pill green', 'All done'));
-      h7.b.appendChild(el('h2', '', 'Nothing is due.'));
-      var pz = D.puzzle;
-      if (funOpen() && pz && pz.left > 0) {
-        h7.b.appendChild(el('div', 'lead', 'Every worksheet is in. Today\'s puzzle is waiting for you.'));
-        heroBtn(h7.h, 'Play today\'s puzzle', 'hl', function () { openPanel('arcade', 'now'); });
-      } else {
-        h7.b.appendChild(el('div', 'lead', 'Every worksheet is in. You can revise any lesson in your file.'));
-        heroBtn(h7.h, 'Open my file', 'hl', function () { setPanel('file'); });
-      }
-      body.appendChild(h7.h);
+      body.appendChild(nextCard({ label: 'All done', tc: 'var(--tk-corr)', title: 'Nothing is due.', lead: funOpen() ? 'Every worksheet is in. Today\'s puzzles are in the Arcade.' : 'Every worksheet is in. You can revise any lesson.',
+        btn: funOpen() ? 'Open the Arcade' : 'Open my lessons', fn: function () { setPanel(funOpen() ? 'arcade' : 'lessons'); } }));
     }
-    if (L.k >= 3) cards = cards.concat(nowCards(L));
-    if (cards.length) {
-      var g = el('div', 'cards'); cards.slice(0, 3).forEach(function (c) { g.appendChild(c); }); body.appendChild(g);
-      if (cards.length === 3) g.lastChild.style.gridColumn = '1 / -1';
+    if (L.k >= 3) {
+      var heroId = L.it ? L.it.id : '', fix = [];
+      ((D.binder && D.binder.chapters) || []).forEach(function (c) { (c.lessons || []).forEach(function (x) { if (x.fix > 0 && x.open !== false) fix.push(x); }); });
+      if (fix.length) { var f = fix[0]; minis.push(miniRow('Put right', (f.num ? f.num + ' ' : '') + f.title, f.fix + (f.fix === 1 ? ' answer' : ' answers') + ' to put right from the lesson', 'Open the slides', function () { openDeck(f.url, null, true); }, null, 'var(--late)')); }
+      var bk = backItem();
+      if (bk && bk.id !== heroId) { var ring = el('div', 'ring', bk.score ? shortScore(bk.score) : 'New'); minis.push(miniRow('Back from Mr Cedric', bk.title, bk.status === 'corrDue' ? dueText(bk) : (bk.score ? 'Marked, ' + scoreText(bk.score) + '.' : 'Marked.'), bk.status === 'corrDue' ? 'Do corrections' : 'See my marks', function () { openSheet(bk, 'now', bk.status === 'corrDue' ? 'corrections' : 'marked'); }, ring, 'var(--tk-marks)')); }
     }
-    var end = el('div', 'now-end');
+    if (minis.length) { var box = el('section', 'r38-card r38-minis r38-in'); box.style.animationDelay = '60ms'; minis.slice(0, 2).forEach(function (x) { box.appendChild(x); }); body.appendChild(box); }
     if (L.k === 2) {
-      var next = owedList()[0];
-      var af = el('div', 'strip');
-      af.appendChild(el('span', '', next ? 'After class, ' + next.title + ' is next. ' + dueText(next) : 'After class, nothing is due yet.'));
-      if (!funOpen()) af.appendChild(el('span', 'quiet', 'Puzzles open after the lesson'));
-      end.appendChild(af);
+      var nx = owedList()[0];
+      body.appendChild(el('div', 'r38-strip', nx ? 'After class, ' + shortName(nx) + ' is next. ' + dueText(nx) : 'After class, nothing is due yet.' + (funOpen() ? '' : ' Puzzles open after the lesson.')));
     } else if (n.before && n.before.at && n.before.at > Date.now() && n.before.at - Date.now() <= 15 * 60000) {
-      var t = new Date(n.before.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      end.appendChild(el('div', 'strip', 'Science starts at ' + t + '. The Join button appears here when Mr Cedric starts.'));
+      var tm = new Date(n.before.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      body.appendChild(el('div', 'r38-strip', 'Science starts at ' + tm + '. The Join button appears here when Mr Cedric starts.'));
     }
-    if (end.children.length) body.appendChild(end);
   }
   function reminded(id) { return ((D && D.remind) || []).some(function (r) { return r.id === id; }); }
-  function askCard(ask) {
-    var c = el('section', 'card ask');
-    c.appendChild(el('span', 'pill', 'Mr Cedric is asking'));
-    c.appendChild(el('div', 'q', ask.question || ask.deckTitle || 'A question from the slides'));
-    var a = el('button', 'btn', 'Answer now'); a.type = 'button'; a.style.alignSelf = 'flex-start'; a.addEventListener('click', function () { openDeck(ask.url, ask.taskId); }); c.appendChild(a);
-    return c;
-  }
-  function rowCard(kick, title, sub, btnText, fn, lead) {
-    var c = el('section', 'card row');
-    if (lead) c.appendChild(lead);
-    var tx = el('div', 'txt'); tx.appendChild(el('span', 'kicker', kick)); tx.appendChild(el('span', 't', title)); if (sub) tx.appendChild(el('span', 's', sub)); c.appendChild(tx);
-    var b = el('button', 'btn soft', btnText); b.type = 'button'; b.addEventListener('click', fn); c.appendChild(b);
-    return c;
-  }
-  function nowCards(L) {
-    var out = [], heroId = L.it ? L.it.id : '';
-    var fix = [];
-    ((D.binder && D.binder.chapters) || []).forEach(function (c) { (c.lessons || []).forEach(function (l) { if (l.fix > 0 && l.open !== false) fix.push(l); }); });
-    if (fix.length) { var f = fix[0]; out.push(rowCard('PUT RIGHT', f.title, f.fix + (f.fix === 1 ? ' answer' : ' answers') + ' to put right from the lesson', 'Open the slides', function () { openDeck(f.url, null, true); })); }
-    var b = backItem();
-    if (b && b.id !== heroId) {
-      var ring = el('div', 'ring', b.score ? shortScore(b.score) : 'New');
-      out.push(rowCard('BACK FROM MR CEDRIC', b.title, b.status === 'corrDue' ? dueText(b) : (b.score ? 'Marked, ' + scoreText(b.score) + '.' : 'Marked.'), b.status === 'corrDue' ? 'Do corrections' : 'Open', function () { openSheet(b, 'now', b.status === 'corrDue' ? 'corrections' : 'marked'); }, ring));
-    }
-    // a sheet already shown above (the hero, or Back from Mr Cedric) is not shown twice
-    var more = (L.rest || []).filter(function (x) { return x.id !== heroId && !(b && x.id === b.id); })[0];
-    if (more) out.push(rowCard('ALSO TO DO', more.title, dueText(more), more.status === 'corrDue' ? 'Do corrections' : more.status === 'started' ? 'Carry on' : 'Start', function () { openSheet(more, 'now', more.status === 'corrDue' ? 'corrections' : 'write'); }));
-    var pz = D.puzzle;
-    if (L.k !== 7 && funOpen() && pz) out.push(rowCard('TODAY\'S PUZZLE', pz.left > 0 ? (pz.left === 1 ? '1 puzzle left' : pz.left + ' puzzles left') : 'All done today', pz.streak ? pz.streak + '-day streak' : '', 'Play', function () { openPanel('arcade', 'now'); }));
-    return out;
-  }
 
   /* ---------- the quick check, full screen in the app (Ruling A4: no counts while it is open) ---------- */
   function hideQuick() { if ($('qc').classList.contains('hidden')) return; $('qc').classList.add('hidden'); $('v-app').style.visibility = ''; placeHw(); }
@@ -1184,112 +1655,136 @@
     }).catch(function (e) { if (isSignedOut(e)) { signedOutNow(); return; } toast('Your answer did not send. Tap it again.'); delete local.mine[key]; drawQuick(q); });
   }
 
-  /* ---------- MY FILE: the binder (the filing rules) ---------- */
-  var curDiv = '', fileChosen = false;
-  function chNum(c) { var m = String(c.key || '').split(':')[1] || ''; if (/^\d+$/.test(m)) return m; var n = String(c.name || '').match(/^(?:Chapter\s*)?(\d+)/i); return n ? n[1] : ''; }
-  function dividers() {
+  /* ---------- Release 38: a room plays its entrance once per visit; a redraw from new data is still ---------- */
+  var entering = {};
+  function enterRoom(id) { var b = $(id), first = !!entering[id]; entering[id] = false; b.classList.toggle('r38-still', !first); return b; }
+  function chev() { var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'chev'); s.setAttribute('width', '22'); s.setAttribute('height', '22'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'; return s; }
+
+  /* ---------- LESSONS: the chapters the class has, the one in use open ---------- */
+  var openCh = {}, chChosen = false;
+  function chapterList() {
     var b = (D && D.binder) || {}, out = [];
     (b.chapters || []).forEach(function (c) {
-      var num = chNum(c), sheets = (c.sheets || []).map(function (it) { return withLocal(it, c); });
-      out.push({ key: c.key, label: num ? 'Ch ' + num : String(c.name || '').split(/\s+/)[0], title: num ? 'Chapter ' + num : c.name, name: c.name, color: c.color || '#2F5BFF', lessons: c.lessons || [], sheets: sheets });
+      var num = chNum(c), lessons = (c.lessons || []).filter(function (l) { return l.open !== false; });
+      out.push({ key: c.key, num: num, name: String(c.name || '').replace(/^Chapter\s*\d+\s*/i, '') || c.name, full: c.name, color: c.color || '', lessons: lessons, sheets: (c.sheets || []).map(function (it) { return withLocal(it, c); }) });
     });
-    var loose = (b.loose || []).map(function (it) { return withLocal(it, null); });
-    if (loose.length) out.push({ key: 'other', label: 'Other', title: 'Other work', name: 'Worksheets not in a chapter', color: '#474D6B', lessons: [], sheets: loose });
-    out.push({ key: 'mine', label: 'My notes', title: 'My notes', name: 'Notes I wrote myself', color: '#6B48C8', mine: true, lessons: [], sheets: [] });
     return out;
   }
-  function newestDivider(list) {
-    var best = null, bestT = -1;
-    list.forEach(function (d) {
-      if (d.mine) return;
-      var t = 0;
-      d.lessons.forEach(function (l) { t = Math.max(t, Number(l.taught) || 0); });
-      d.sheets.forEach(function (s) { t = Math.max(t, Number(s.handedTs) || 0, s.dueTs ? s.dueTs - 7 * 864e5 : 0); });
-      if (t > bestT) { bestT = t; best = d; }
+  function chNum(c) { var m = String(c.key || '').split(':')[1] || ''; if (/^\d+$/.test(m)) return m; var n = String(c.name || '').match(/^(?:Chapter\s*)?(\d+)/i); return n ? n[1] : ''; }
+  function newestCh(list) {
+    var run = D && D.now && D.now.lesson, best = null, bestT = -1;
+    list.forEach(function (c) {
+      if (run && c.lessons.some(function (l) { return l.id === run.deckId; })) { best = c; bestT = 9e15; return; }
+      var t = 0; c.sheets.forEach(function (s) { t = Math.max(t, Number(s.handedTs) || 0, s.dueTs ? s.dueTs - 7 * 864e5 : 0); });
+      if (t > bestT) { bestT = t; best = c; }
     });
     return best;
   }
+  function drawLessons() {
+    if (!me) return;
+    var body = enterRoom('p-lessons'); body.innerHTML = '';
+    if (!D) { body.appendChild(el('div', 'r38-empty', 'Opening your lessons…')); return; }
+    var n = D.now || {}, list = chapterList().filter(function (c) { return c.lessons.length; }), cur = newestCh(list);
+    if (!chChosen && cur) { openCh = {}; openCh[cur.key] = true; }
+    if (n.lesson) {
+      body.appendChild(nextCard({ label: 'In class now', live: true, tc: 'var(--s0)', title: n.lesson.title || 'Science lesson', lead: 'Your answers count.', btn: 'Join the lesson', fn: function () { openDeck(n.lesson.url); } }));
+    }
+    if (n.ask && !deckOpen()) { var ab = el('section', 'r38-card r38-minis r38-in'); ab.appendChild(miniRow('Mr Cedric is asking', n.ask.question || n.ask.deckTitle || 'A question from the slides', '', 'Answer now', function () { openDeck(n.ask.url, n.ask.taskId); }, null, 'var(--lamp)')); body.appendChild(ab); }
+    if (!list.length) { body.appendChild(el('div', 'r38-empty', 'No lessons yet. Mr Cedric puts the slides here after each lesson.')); return; }
+    list.slice().reverse().forEach(function (c, ci) {
+      var sec = el('section', 'r38-card r38-sec r38-banner r38-in'); sec.style.setProperty('--ac', 'var(--s0)'); sec.style.animationDelay = (ci * 50) + 'ms';
+      sec.innerHTML = bannerSky(4 + ci * 3, 520, 0.8);
+      var open = !!openCh[c.key], h = el('button', 'r38-sech'); h.type = 'button'; h.setAttribute('aria-expanded', String(open));
+      var ht = el('div'); var h2 = el('h2'); if (c.num) { var nm = el('span', 'r38-num', c.num); nm.style.setProperty('--nc', 'var(--s0)'); h2.appendChild(nm); } h2.appendChild(el('span', 'tx', c.name)); ht.appendChild(h2);
+      var fixN = c.lessons.filter(function (l) { return l.fix > 0; }).length;
+      ht.appendChild(el('div', 'sub', (c.lessons.length === 1 ? '1 lesson' : c.lessons.length + ' lessons') + (fixN ? ' · ' + (fixN === 1 ? '1 has answers to put right' : fixN + ' have answers to put right') : ''))); h.appendChild(ht); h.appendChild(chev());
+      h.addEventListener('click', function () { chChosen = true; openCh[c.key] = !openCh[c.key]; drawLessons(); });
+      sec.appendChild(h);
+      if (open) c.lessons.forEach(function (l) {
+        var live = n.lesson && n.lesson.deckId === l.id, row = el('div', 'r38-row' + (live ? ' today' : ''));
+        var rt = el('div', 'rt'), t = el('div', 't'); if (l.num) { var ln = el('span', 'r38-num', l.num); ln.style.setProperty('--nc', 'var(--s0)'); t.appendChild(ln); } t.appendChild(document.createTextNode(numOf(l.title).num === l.num ? numOf(l.title).name : l.title)); rt.appendChild(t);
+        if (live || l.fix > 0) { var s = el('div', 's'); if (live) s.appendChild(el('span', 'r38-chip now', 'In class now')); if (l.fix > 0) s.appendChild(el('span', 'r38-chip late', l.fix + (l.fix === 1 ? ' answer' : ' answers') + ' to put right')); rt.appendChild(s); }
+        row.appendChild(rt);
+        var ob = el('button', 'r38-open' + (live || l.fix > 0 ? ' solid' : ''), live ? 'Join' : l.fix > 0 ? 'Put it right' : 'Open'); ob.type = 'button';
+        ob.setAttribute('aria-label', (live ? 'Join ' : 'Open ') + l.title);
+        ob.addEventListener('click', function () { openDeck(l.url, null, l.fix > 0 && !live); });
+        row.appendChild(ob); sec.appendChild(row);
+      });
+      body.appendChild(sec); watchLit(sec, 'ch' + c.key);
+    });
+  }
+
+  /* ---------- HOMEWORK: one coloured banner per worksheet, the one due first at the top ---------- */
+  var doneOpen = false, pracOpen = false;
   function drawFile() {
     if (!me || !D) return;
-    var list = dividers(), cur = null;
-    if (fileChosen) list.forEach(function (d) { if (d.key === curDiv) cur = d; });
-    if (!cur) cur = newestDivider(list) || list[0];
-    curDiv = cur.key;
-    var dv = $('dividers'); dv.innerHTML = '';
-    list.forEach(function (d) {
-      var b = el('button', 'divider'); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(d === cur)); b.setAttribute('aria-label', d.title + ', ' + d.name); b.style.background = d.color;
-      b.setAttribute('data-key', d.key);
-      b.appendChild(el('span', '', d.label));
-      if (d.sheets.some(isOwed)) b.appendChild(el('i', 'dotr glow'));
-      b.addEventListener('click', function () { curDiv = d.key; fileChosen = true; drawFile(); });
-      dv.appendChild(b);
+    var body = enterRoom('p-file'); body.innerHTML = '';
+    var all = items(), owed = owedList();
+    var marks = all.filter(function (it) { var t = taskOf(it); return t && t.k === 'marks'; }).sort(function (a, b) { return (b.rel || 0) - (a.rel || 0); });
+    var wait = all.filter(function (it) { return it.status === 'handedIn'; }).sort(function (a, b) { return (b.handedTs || 0) - (a.handedTs || 0); });
+    var todo = owed.concat(marks).concat(wait);
+    var inTodo = {}; todo.forEach(function (x) { inTodo[x.id] = 1; });
+    var done = all.filter(function (it) { return !inTodo[it.id] && !it.practice && (it.status === 'marked' || it.status === 'corrIn' || it.status === 'missed'); })
+      .sort(function (a, b) { return (b.rel || b.handedTs || b.dueTs || 0) - (a.rel || a.handedTs || a.dueTs || 0); });
+    var prac = all.filter(function (it) { return it.practice; });
+    if (!all.length) { body.appendChild(el('div', 'r38-empty', 'No worksheets yet. When Mr Cedric sets one, it appears here.')); return; }
+    var sec = el('section', 'r38-card r38-sec r38-banner r38-in'); sec.style.setProperty('--ac', 'var(--s2)');
+    sec.innerHTML = bannerSky(10, 600, 0.8);
+    var hd = el('div', 'r38-sech'); var ht = el('div'); var h2 = el('h2'); h2.appendChild(el('span', 'tx', 'To do')); ht.appendChild(h2);
+    ht.appendChild(el('div', 'sub', owed.length ? 'The one due first is at the top. One at a time is fine.' : 'Nothing to hand in. Well done.')); hd.appendChild(ht); sec.appendChild(hd);
+    var list = el('div', 'r38-tasks');
+    if (!todo.length) list.appendChild(el('div', 'r38-empty', 'Every worksheet is in.'));
+    todo.forEach(function (it, i) {
+      var t = taskOf(it); if (!t) return;
+      var d = dueOf(it), late = (t.k === 'finish' || t.k === 'start' || t.k === 'corr') && d && d < Date.now();
+      var c = el('div', 'r38-task t-' + t.k + (t.k === 'wait' ? ' is-wait' : '') + (i === 0 && t.k !== 'wait' ? ' first' : '')); c.style.setProperty('--tc', t.tc); c.style.setProperty('--i', String(Math.min(i, 8)));
+      c.setAttribute('data-id', it.id); c.setAttribute('data-task', t.k);
+      var tb = el('div', 'tb'); tb.appendChild(el('span', 'tv', t.verb)); if (late) tb.appendChild(el('span', 'tl', daysLate(d))); var wl = whenLine(it, t); if (wl) tb.appendChild(el('span', 'tw', wl)); c.appendChild(tb);
+      var bd = el('div', 'tbody'), rt = el('div', 'rt'), tt = el('div', 't'); tt.appendChild(titleHtml(it.title)); rt.appendChild(tt); rt.appendChild(el('div', 's', taskLine(it, t))); bd.appendChild(rt);
+      if (t.k === 'wait') {
+        var lk = el('button', 'look'); lk.type = 'button'; lk.setAttribute('aria-label', it.title + '. Handed in. Waiting for Mr Cedric. Tap to look at your copy.');
+        lk.addEventListener('click', function () { openSheet(it, 'file', 'view'); }); c.appendChild(lk);
+      } else {
+        var b = el('button', 'r38-tbtn', t.btn); b.type = 'button'; b.setAttribute('aria-label', t.btn + ': ' + it.title);
+        b.insertAdjacentHTML('beforeend', '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+        b.addEventListener('click', function () { openSheet(it, 'file', t.mode); }); bd.appendChild(b);
+      }
+      c.appendChild(bd); list.appendChild(c);
     });
-    var pg = $('pages'); pg.innerHTML = '';
-    var head = el('div', 'chhead'); head.style.background = cur.color; head.appendChild(el('b', '', cur.title)); if (cur.name && cur.name !== cur.title) head.appendChild(el('span', '', cur.name)); pg.appendChild(head);
-    if (cur.mine) {
-      var sm = el('section', 'rowsec'); sm.appendChild(el('h3', '', 'MY OWN NOTES'));
-      sm.appendChild(el('p', 'note', 'Your own folders and notes are here. You can have up to 3 notes.'));
-      sm.appendChild(el('p', 'note', 'Mr Cedric can see your notes.')).style.fontWeight = '700';
-      var acts = el('div', 'row'); acts.style.flexWrap = 'wrap';
-      var o1 = el('button', 'btn', 'Open my notes'); o1.type = 'button'; o1.addEventListener('click', function () { openPanel('notes', 'file'); });
-      var o2 = el('button', 'btn ghost', 'New note'); o2.type = 'button'; o2.addEventListener('click', function () { openPanel('newNote', 'file'); });
-      acts.appendChild(o1); acts.appendChild(o2); sm.appendChild(acts); pg.appendChild(sm);
-    } else {
-      var s1 = el('section', 'rowsec'); s1.appendChild(el('h3', '', 'LESSONS')); var sh1 = el('div', 'shelf'); s1.appendChild(sh1); pg.appendChild(s1);
-      if (!cur.lessons.length) sh1.appendChild(el('span', 'quiet', 'No lesson slides filed yet.'));
-      cur.lessons.forEach(function (it) {
-        var open = it.open !== false, a = el('button', 'sheet'); a.type = 'button';
-        a.appendChild(el('span', 'tab' + (open ? '' : ' l'), 'Lesson ' + (it.num || '')));
-        var p = pageEl(); if (it.fix > 0) p.appendChild(flagEl('r', it.fix + ' to put right')); else if (!open) p.appendChild(flagEl('l', 'Not yet')); a.appendChild(p);
-        a.appendChild(el('span', 'meta', it.title));
-        a.appendChild(el('span', 'meta2', open ? 'Tap to open the slides' : 'Opens when Mr Cedric releases it'));
-        a.setAttribute('aria-label', 'Lesson ' + it.title + (open ? '' : ', not open yet'));
-        a.addEventListener('click', function () { if (open) openDeck(it.url, null, it.fix > 0); else toast('This lesson opens when Mr Cedric releases it.'); });
-        sh1.appendChild(a);
-      });
-      var s2 = el('section', 'rowsec'); s2.appendChild(el('h3', '', 'WORKSHEETS')); var sh2 = el('div', 'shelf'); s2.appendChild(sh2); pg.appendChild(s2);
-      if (!cur.sheets.length) sh2.appendChild(el('span', 'quiet', 'No worksheets in this chapter yet.'));
-      cur.sheets.forEach(function (h) { sh2.appendChild(sheetEl(h)); });
-    }
-    if (list.length === 1) {
-      pg.appendChild(el('p', 'quiet', 'Your file is empty for now. Mr Cedric puts lesson notes and worksheets here after each lesson.')).style.padding = '0 22px 18px 40px';
-    }
-    var ow = $('owed'); ow.innerHTML = ''; ow.appendChild(el('div', 'kicker', 'STILL TO HAND IN'));
-    var o = owedList();
-    if (!o.length) ow.appendChild(el('div', 'none', 'Nothing. Every tab is green.'));
-    o.forEach(function (h) {
-      var it = el('button', 'it'); it.type = 'button'; it.setAttribute('data-id', h.id);
-      it.appendChild(el('b', '', h.title)); it.appendChild(el('span', '', dueText(h)));
-      it.addEventListener('click', function () { openSheet(h, 'file'); });
-      ow.appendChild(it);
-    });
+    sec.appendChild(list);
+    var fold = function (label, n, isOpen, toggle, rows) {
+      if (!n) return;
+      var f = el('button', 'r38-fold'); f.type = 'button'; f.setAttribute('aria-expanded', String(isOpen)); f.appendChild(document.createTextNode(label)); f.appendChild(el('span', 'n', String(n))); f.appendChild(chev());
+      f.addEventListener('click', toggle); sec.appendChild(f);
+      if (isOpen) rows.forEach(function (r) { sec.appendChild(r); });
+    };
+    fold('Finished', done.length, doneOpen, function () { doneOpen = !doneOpen; drawFile(); }, done.map(function (it) {
+      var row = el('div', 'r38-row'), rt = el('div', 'rt'), t = el('div', 't'); t.appendChild(titleHtml(it.title)); rt.appendChild(t);
+      rt.appendChild(el('div', 's', it.status === 'missed' ? 'It closed before you handed it in.' : it.status === 'corrIn' ? 'Marked · corrections handed in' : 'Marked' + (it.late ? ', handed in late' : ''))); row.appendChild(rt);
+      if (it.score) row.appendChild(el('span', 'r38-mark', shortScore(it.score)));
+      var ob = el('button', 'r38-open', it.status === 'missed' ? 'Look at it' : 'See marked work'); ob.type = 'button'; ob.addEventListener('click', function () { openSheet(it, 'file'); }); row.appendChild(ob);
+      return row;
+    }));
+    fold('Practice, never due', prac.length, pracOpen, function () { pracOpen = !pracOpen; drawFile(); }, prac.map(function (it) {
+      var row = el('div', 'r38-row'), rt = el('div', 'rt'), t = el('div', 't'); t.appendChild(titleHtml(it.title)); rt.appendChild(t); rt.appendChild(el('div', 's', 'Practise as often as you like. It is not handed in.')); row.appendChild(rt);
+      var ob = el('button', 'r38-open', 'Practise'); ob.type = 'button'; ob.addEventListener('click', function () { openSheet(it, 'file', 'write'); }); row.appendChild(ob);
+      return row;
+    }));
+    body.appendChild(sec); watchLit(sec, 'hw');
   }
-  // red means I owe it (corrections due too), green means it is in, grey means practice
-  function kindOf(h) { return h.practice ? 'p' : isOwed(h) ? 'r' : h.status === 'missed' ? 'm' : 'g'; }
-  function sheetEl(h) {
-    var owed = isOwed(h), kind = kindOf(h), b = el('button', 'sheet' + (owed ? ' owes' : '')); b.type = 'button';
-    b.setAttribute('data-id', h.id); b.setAttribute('data-kind', kind);
-    var head = String(h.title || '').split(':')[0].trim() || h.title;
-    var tab = el('span', 'tab ' + kind + (owed ? ' glow' : ''), head); b.appendChild(tab);
-    var p = pageEl();
-    if ((h.status === 'marked' || h.status === 'corrDue' || h.status === 'corrIn') && h.score) p.appendChild(el('span', 'stamp', shortScore(h.score)));
-    if (h.status === 'corrDue') p.appendChild(flagEl('r', 'Corrections due'));
-    else if (owed) p.appendChild(flagEl('r', tabDue(h)));
-    else if (h.status === 'handedIn') p.appendChild(flagEl('g', 'Handed in'));
-    else if (h.status === 'corrIn') p.appendChild(flagEl('g', 'Corrections in'));
-    else if (h.status === 'missed') p.appendChild(flagEl('l', 'Closed'));
-    else if (h.practice) p.appendChild(flagEl('l', 'Practice'));
-    if (h.seen === false && (h.status === 'marked' || h.status === 'corrDue' || h.status === 'corrIn')) p.appendChild(el('span', 'newdot', 'New'));
-    b.appendChild(p);
-    b.appendChild(el('span', 'meta', h.title));
-    var line = h.practice ? 'Practice, never due' : h.status === 'corrDue' ? dueText(h) : owed ? dueText(h) : h.status === 'handedIn' ? 'Waiting for marking' : h.status === 'missed' ? 'It closed before you handed it in' : h.status === 'corrIn' ? 'Corrections handed in' : 'Marked' + (h.late ? ', handed in late' : '');
-    b.appendChild(el('span', 'meta2' + (owed ? ' r' : ''), line));
-    b.setAttribute('aria-label', h.title + '. ' + line + '.');
-    b.addEventListener('click', function () { openSheet(h, 'file'); });
-    return b;
+
+  /* ---------- My files and the Arcade: rooms the Homework engine draws, with the doors kept above them ---------- */
+  function openDoorRoom(which) {
+    if (which === 'arcade' && !funOpen()) {
+      var box = $('p-sheet'); box.classList.remove('hidden'); box.innerHTML = '';
+      var c = el('section', 'r38-card r38-closed r38-in');
+      c.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+      c.appendChild(el('h2', '', 'The Arcade is resting'));
+      c.appendChild(el('p', '', 'It is closed while your class is in its Science lesson. It opens again after the lesson. Your points are safe.'));
+      box.appendChild(c); drawHeader(); return;
+    }
+    pushLayer({ kind: 'panel', panel: which === 'files' ? 'notes' : 'arcade', door: which, from: which, title: which === 'files' ? 'My files' : 'Arcade', sub: '' });
   }
-  function pageEl() { var p = el('span', 'page'); var l = el('span', 'lines'); l.innerHTML = '<i class="h"></i><i style="width:92%"></i><i style="width:84%"></i><i style="width:92%;height:28px;background:none;border:1px solid #D6DAE4;border-radius:3px"></i><i style="width:80%"></i>'; p.appendChild(l); return p; }
-  function flagEl(kind, text) { return el('span', 'flag ' + kind, text); }
 
   /* ---------- a sheet taken out: owed opens the editor, handed in is read only, marked has three copies ---------- */
   function findItem(id) { return items().filter(function (x) { return x.id === id; })[0] || null; }
@@ -1310,6 +1805,8 @@
     return it.chName || '';
   }
   function openPanel(which, from) {
+    if (which === 'arcade') { setPanel('arcade'); return; }       // release 38: the Arcade is a door
+    if (which === 'notes') { setPanel('files'); return; }         // and so is My files
     if ((which === 'arcade' || which === 'badges') && !funOpen()) { toast('The Arcade opens after the lesson.'); return; }
     var t = { arcade: 'Arcade', badges: 'Badges', notes: 'My notes', newNote: 'My notes' }[which];
     pushLayer({ kind: 'panel', panel: which, from: from || panel, title: t, sub: which === 'notes' || which === 'newNote' ? 'Mr Cedric can see your notes.' : '' });
@@ -1320,9 +1817,9 @@
     showLayer(L);
   }
   function showLayer(L) {
-    ['now', 'file', 'me'].forEach(function (x) { $('p-' + x).classList.add('hidden'); });
+    PANELS.forEach(function (x) { $('p-' + x).classList.add('hidden'); });
     var box = $('p-sheet'); box.classList.remove('hidden'); box.innerHTML = '';
-    var lay = el('div', 'sheetlay ' + (L.kind === 'view' ? 'view' : 'edit')), left = el('div', 'left');
+    var lay = el('div', 'sheetlay ' + (L.kind === 'view' ? 'view' : 'edit') + (L.door ? ' door' : '')), left = el('div', 'left');
     lay.appendChild(left); box.appendChild(lay);
     if (L.kind === 'view') {
       var segs = segsFor(L.it);
@@ -1401,7 +1898,7 @@
   function endLayers(to) {
     $('p-sheet').classList.add('hidden'); $('p-sheet').innerHTML = '';
     hwOff();
-    setPanel(to === 'file' || to === 'me' ? to : 'now');
+    setPanel(to === 'file' || to === 'me' || to === 'lessons' ? to : 'now');
   }
 
   /* ---------- the Homework engine: one hidden iframe, made on first need and kept (WP12) ---------- */
@@ -1473,7 +1970,7 @@
       if (!hw.win || e.source !== hw.win) {
         hw.win = e.source; hw.origin = e.origin;
         var ch = msTheme.chosen();
-        try { hw.win.postMessage({ to: 'wsh', t: 'hello', st: me.st, dark: ch === 'dark' ? true : ch === 'light' ? false : '' }, hw.origin); } catch (x) {}
+        try { hw.win.postMessage({ to: 'wsh', t: 'hello', st: me.st, dark: msTheme.isDark(), look: msTheme.lookNow() }, hw.origin); } catch (x) {}
         var q = hw.q; hw.q = []; q.forEach(hwSend);
       }
     } else if (m.t === 'opened') {
@@ -1487,10 +1984,16 @@
     else if (m.t === 'wallet' && typeof m.points === 'number') { if (D) { D.wallet = { points: m.points, tokens: Number(m.tokens) || 0 }; drawWallet(); if (panel === 'me') drawMe(); } }
     else if (m.t === 'points' || m.t === 'arcade') setTimeout(refresh, 800);
     else if (m.t === 'rewards') openRewards(m.tab === 'market' ? 'market' : 'shop');
+    else if (m.t === 'openItem') {
+      // release 38: a worksheet tapped in My files opens as its own sheet, with Back to My files
+      var fi = findItem(String(m.id || '')), act = String(m.act || '');
+      if (!fi) { hwSend({ t: 'openHere', id: String(m.id || ''), act: act }); return; }
+      openSheet(fi, panel === 'files' ? 'files' : panel, act === 'answers' ? 'key' : act === 'corr' ? 'corrections' : act === 'open' ? (fi.practice || fi.status === 'new' || fi.status === 'started' ? 'write' : 'view') : 'marked');
+    }
     else if (m.t === 'error') { var Le = layers[layers.length - 1]; if (Le && hw.want && hw.want.L === Le) slotText(String(m.text || 'It did not open. Try again.'), true); }
     else if (m.t === 'signedout') call('s_home', me.st, { v: V }).then(function (r) { if (!r || r.ok === false) signedOutNow(); }).catch(function (e2) { if (isSignedOut(e2)) signedOutNow(); });
   });
-  window.addEventListener('ms-theme', function () { var ch = msTheme.chosen(); if (hw.win) hwSend({ t: 'theme', dark: ch === 'dark' ? true : ch === 'light' ? false : '' }); });
+  window.addEventListener('ms-theme', function () { if (hw.win) hwSend({ t: 'theme', dark: msTheme.isDark(), look: msTheme.lookNow() }); });
 
   /* ---------- ME ---------- */
   function initials(n) { var p = String(n || '').trim().split(/\s+/); return ((p[0] || '')[0] || '') + (p.length > 1 ? p[p.length - 1][0] : ''); }
@@ -1515,11 +2018,9 @@
     $('t-market-s').textContent = open ? 'Spend your tokens at the stalls' : closedTxt;
     $('t-arcade-s').textContent = open ? 'Puzzles, quests and revision rush' + (pz && pz.left ? ' · ' + pz.left + ' left today' : '') : closedTxt;
     $('t-badges-s').textContent = open ? 'The badges you have earned' : closedTxt;
-    var ch = msTheme.chosen();
-    Array.prototype.forEach.call($('look').children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === ch)); });
+    drawLooks($('look')); drawTopMe();
   }
-  Array.prototype.forEach.call($('look').children, function (b) { b.addEventListener('click', function () { msTheme.set(b.getAttribute('data-v')); drawMe(); }); });
-  $('t-arcade').addEventListener('click', function () { openPanel('arcade', 'me'); });
+  $('t-arcade').addEventListener('click', function () { setPanel('arcade'); });
   $('t-badges').addEventListener('click', function () { openPanel('badges', 'me'); });
   $('t-shop').addEventListener('click', function () { openRewards('shop'); });
   $('t-market').addEventListener('click', function () { openRewards('market'); });
@@ -1568,6 +2069,54 @@
     }).catch(function (e) { toast(e.message); });
   }
   function hwHide() { hwOff(); }
+
+  /* ---------- Release 38: Look and Help, from the top bar ---------- */
+  var LOOKS = [
+    { k: 'night', name: 'Night sky', sub: 'Deep purple and quiet stars', b: '#07060D', c1: '#8CCDE8', c2: '#BFA2EC', c3: '#E8C891' },
+    { k: 'dawn', name: 'Dawn', sub: 'Warm, like the sky before sunrise', b: '#170C0F', c1: '#F2A88E', c2: '#D8A9D6', c3: '#F0C98C' },
+    { k: 'ocean', name: 'Ocean', sub: 'Deep teal, calm and cool', b: '#061518', c1: '#7FD8BF', c2: '#86D0EA', c3: '#9FB8F0' },
+    { k: 'forest', name: 'Forest', sub: 'Dark green, soft and still', b: '#08120C', c1: '#9AD9A2', c2: '#E7C67E', c3: '#8FCBDD' },
+    { k: 'paper', name: 'Paper', sub: 'Light and soft, for the daytime', b: '#EDE8DF', c1: '#7150B5', c2: '#2B7397', c3: '#D9A24A' },
+    { k: 'auto', name: 'Same as my iPad', sub: 'Night sky or Paper, as the iPad is set', b: 'linear-gradient(135deg,#07060D 50%,#EDE8DF 50%)', c1: '#BFA2EC', c2: '#7150B5', c3: '#E8C891' }
+  ];
+  function drawLooks(box) {
+    if (!box) return;
+    var cur = msTheme.look(); box.innerHTML = '';
+    LOOKS.forEach(function (l) {
+      var b = el('button', 'r38-lk'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(cur === l.k)); b.setAttribute('data-look', l.k);
+      var pv = el('span', 'pv'); pv.style.setProperty('--b', l.b); pv.style.setProperty('--c1', l.c1); pv.style.setProperty('--c2', l.c2); pv.style.setProperty('--c3', l.c3);
+      pv.style.background = l.b; pv.appendChild(el('i')); pv.appendChild(el('i')); pv.appendChild(el('i')); b.appendChild(pv);
+      var t = el('span'); t.appendChild(el('b', '', l.name)); t.appendChild(el('small', '', l.sub)); b.appendChild(t);
+      b.appendChild(el('span', 'ck', '✓')).setAttribute('aria-hidden', 'true');
+      b.addEventListener('click', function () { msTheme.setLook(l.k); drawLooks($('r38-looks')); drawLooks($('look')); });
+      box.appendChild(b);
+    });
+  }
+  var popOpen = '';
+  function r38Close() {
+    if (!popOpen) return;
+    $('r38-pop-' + popOpen).classList.add('hidden'); $('r38-scrim').classList.add('hidden');
+    var t = $(popOpen === 'look' ? 'r38-look' : 'r38-help'); t.setAttribute('aria-expanded', 'false');
+    popOpen = ''; try { t.focus(); } catch (e) {}
+  }
+  function r38Pop(which) {
+    if (popOpen === which) { r38Close(); return; }
+    r38Close();
+    var trig = $(which === 'look' ? 'r38-look' : 'r38-help'), pop = $('r38-pop-' + which), r = trig.getBoundingClientRect();
+    if (which === 'look') drawLooks($('r38-looks'));
+    pop.style.top = Math.round(r.bottom + 10) + 'px';
+    pop.style.right = Math.max(12, Math.round(window.innerWidth - r.right)) + 'px';
+    pop.style.transformOrigin = 'top right';
+    pop.classList.remove('hidden'); $('r38-scrim').classList.remove('hidden'); trig.setAttribute('aria-expanded', 'true');
+    popOpen = which;
+    var f = pop.querySelector('[aria-checked="true"]') || pop.querySelector('button'); if (f) try { f.focus(); } catch (e) {}
+  }
+  $('r38-look').addEventListener('click', function () { r38Pop('look'); });
+  $('r38-help').addEventListener('click', function () { r38Pop('help'); });
+  $('r38-scrim').addEventListener('click', r38Close);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && popOpen) { e.preventDefault(); r38Close(); } });
+  window.addEventListener('ms-theme', function () { drawLooks($('look')); if (popOpen === 'look') drawLooks($('r38-looks')); });
+  window.addEventListener('resize', function () { r38Close(); });
 
   // for testing only
   window.__shell = { state: function () { return { panel: panel, layers: layers.map(function (L) { return { kind: L.kind, mode: L.mode, id: L.it && L.it.id, panel: L.panel, ready: L.ready }; }), ladder: D ? ladder().k : 0, V: V, polling: !!pollT, rw: !!rwToken, hw: !!hw.frame, local: local }; },
