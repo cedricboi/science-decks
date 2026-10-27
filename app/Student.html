@@ -80,6 +80,9 @@
   .kicker { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
 
   /* ---------- portal: a glass sign-in card over NASA's black hole ---------- */
+  .po-teacher { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); font-size: 14px; color: rgba(255,255,255,.62); }
+  .po-teacher a { color: #FFD2A8; font-weight: 700; text-decoration: none; padding: 10px 4px; }
+  @media (hover: hover) and (pointer: fine) { .po-teacher a:hover { color: #fff; text-decoration: underline; } }
   #v-portal { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: flex-end; gap: 40px; padding: 48px 7vw 48px 56px; position: relative; isolation: isolate; color: #EEF2FF; background: #000;
     --ink: #EEF2FF; --ink-2: #CDD4EE; --muted: #9EA6C6; --line: rgba(255,200,160,.18); --card: rgba(255,255,255,.06); --soft: rgba(255,255,255,.04);
     --blue-soft: rgba(255,170,110,.14); --blue-ink: #FFC08F; --bad-soft: rgba(255,110,110,.16); --bad: #FFA4A4; --canvas: #07070d; --warm: #FF9A4D; --warm-2: #FFC46B; }
@@ -745,6 +748,7 @@
       </form>
       <div class="po-links"><button type="button" class="link" id="door-new">First time here?</button><span aria-hidden="true">&middot;</span><button type="button" class="link" id="lnk-forgot">Forgot password?</button></div>
       <p class="po-remember"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>This iPad remembers you after the first time.</p>
+      <div class="po-teacher"><span>Teacher?</span><a id="door-teacher" href="#" target="_top">Sign in to the Teacher Hub</a></div>
     </section>
 
     <!-- signed in to Computing: open its page -->
@@ -921,7 +925,16 @@
   var DEV = load('lb_dev');
   if (!DEV) { DEV = 'm' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); store('lb_dev', DEV); }
   var last = load('lb_last') || {}, cmpInfo = null, subj = load('lb_subj') === 'cmp' ? 'cmp' : 'sci';
-  function base() { return location.href.split('?')[0].split('#')[0]; }
+  /* The app's own web address (…/exec). Inside Apps Script this page runs in Google's sandbox frame (googleusercontent.com),
+     so its own address is not the app's: the page that holds it is (when the browser tells us), or else the address
+     learnwithmrcedric has always had. */
+  var APP_URL = 'https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec';
+  function base() {
+    var ok = /^https:\/\/script\.google\.com\/(a\/[^\/]+\/)?macros\/s\/[\w-]+\/exec$/, h = location.href.split('?')[0].split('#')[0];
+    if (ok.test(h)) return h;
+    var r = String(document.referrer || '').split('?')[0].split('#')[0];
+    return ok.test(r) ? r : APP_URL;
+  }
   function poShow(id) { ['po-doors', 'po-cmpgo', 'po-form'].forEach(function (v) { $(v).classList.toggle('hidden', v !== id); }); document.querySelector('.po-subj').classList.toggle('hidden', id === 'po-cmpgo'); poMsg(''); window.scrollTo(0, 0); }
   function poMsg(t, info) { var m = $('po-msg'); m.textContent = t || ''; m.className = 'msg' + (info ? ' info' : '') + (t ? '' : ' hidden'); }
   function siInfoLoad() {
@@ -945,6 +958,7 @@
     $('v-app').classList.add('hidden'); $('v-portal').classList.remove('hidden'); hwHide();
     poShow('po-doors'); setSubj(subj, true); if (note) poMsg(note, true);
     $('cmpgo-link').href = base() + '?computing';
+    $('door-teacher').href = base() + '?teacher';
     // Signed out of the Computing page: it sends the student here with ?signin=computing.
     try { google.script.url.getLocation(function (loc) { if (loc && loc.parameter && loc.parameter.signin === 'computing') setSubj('cmp', true); }); } catch (e) { /* not in Apps Script */ }
     if (!$('in-name').value) setTimeout(function () { $('in-name').focus(); }, 80);
