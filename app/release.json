@@ -9,7 +9,7 @@
     "Student home: the avatar sits in the points box, and the Arcade has no Did you know or Colours",
     "The worksheet: the title on the night sky with a large what-to-do card beside it, as the design",
     "Homework opened on its own shows one page that sends students to learnwithmrcedric",
-    "The Teacher Hub is unchanged. Fallback: ?classic on the Hub link still opens the release 33 Teacher Hub"
+    "The old release 33 pages are retired: ?classic and the New version switch now open the same new pages as everyone else"
   ],
   "files": [
     {
@@ -454,10 +454,15 @@
     },
     {
       "seq": 33,
-      "build": "2026-10-27-classic-teacher-new-student",
-      "ref": "6d80697cb85bedcf7545c7904727f189227603ab",
+      "build": "2026-10-27-old-pages-retired",
+      "ref": "ebac5aae03b3dcc8f8e5e7059f0a0eaa30bdfb4b",
       "needsServer": 33,
       "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
         {
           "name": "Guide",
           "path": "Guide.html",
@@ -471,12 +476,17 @@
         {
           "name": "HubTeacher",
           "path": "HubTeacher.html",
-          "sha256": "d4e46b36ba719de272432c1dc1ca96c381b8fb9d86a0644e75f53f17729ef0a4"
+          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
         },
         {
           "name": "Ink",
           "path": "Ink.html",
           "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
         },
         {
           "name": "Rewards",
@@ -496,12 +506,7 @@
         {
           "name": "Teacher",
           "path": "Teacher.html",
-          "sha256": "933f6429cff389aba5b35d8bae3ea7a5d45f9d486b74fb84a009b62e037c2f1b"
-        },
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
         }
       ],
       "pinned": true
@@ -594,5 +599,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/CiL47ZmvkhvUeHKTCjumog",
-  "classicRef": "6d80697cb85bedcf7545c7904727f189227603ab"
+  "classicRef": "ebac5aae03b3dcc8f8e5e7059f0a0eaa30bdfb4b"
 }
