@@ -983,6 +983,8 @@
     call(s === 'cmp' ? 'apiCmpSignIn2' : 'apiStSignIn2', n, p, cls || '').then(function (r) {
       if (r.needClass) { pickClass(r.needClass); return; }
       $('po-cls').classList.add('hidden');
+      // Release 43: signed in with a temporary password from Mr Cedric: now they choose their own.
+      if (r.mustChoose && s !== 'cmp') { remember(r.cls, r.name); formSetup(r.key, { cls: r.cls, name: r.name }, true); return; }
       var done = function (x) { if (s === 'cmp') cmpDone(x); else { remember(x.cls, x.name); signedIn(x); } };
       if (r.weak) askNewPass(s, p, r, done); else done(r);
     }).catch(function (e) { poMsg(e.message); $('in-pass').value = ''; $('in-pass').focus(); })
@@ -1026,9 +1028,11 @@
   function field(box, label, input, note) { var f = el('label', 'field', label); f.appendChild(input); if (note) f.appendChild(el('span', 'note', note)); box.appendChild(f); return input; }
   function passInput() { var i = el('input'); i.type = 'password'; i.autocomplete = 'new-password'; i.maxLength = 60; i.spellcheck = false; return i; }
   function textInput(ph) { var i = el('input'); i.type = 'text'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph; return i; }
-  function who(box, v, fixed) {
+  function whoFields(box, v, fixed) {
     var cls = el('select'); cls.appendChild(new Option('Choose your class', '')); classList().forEach(function (c) { cls.appendChild(new Option(c, c)); });
-    var l = subj === 'cmp' ? (load('cmp_last') || {}) : last; if (v.cls || l.cls) cls.value = v.cls || l.cls;
+    var l = subj === 'cmp' ? (load('cmp_last') || {}) : last;
+    if (fixed && v.cls && !Array.prototype.some.call(cls.options, function (o) { return o.value === v.cls; })) cls.appendChild(new Option(v.cls, v.cls));
+    if (v.cls || l.cls) cls.value = v.cls || l.cls;
     field(box, subj === 'cmp' ? 'Your computing class' : 'Your class', cls);
     var name = textInput('Your full name, as on the class list'); name.autocomplete = 'name'; name.setAttribute('autocapitalize', 'words'); name.maxLength = 80; name.value = v.name || l.name || '';
     field(box, 'Your name', name);
@@ -1046,12 +1050,12 @@
     if (subj === 'cmp') cmpDone(r); else { remember(x.cls, x.name); signedIn(r); }
   }
 
-  function formSetup(key, v) {
+  function formSetup(key, v, temp) {
     var cmp = subj === 'cmp';
-    formOpen(cmp ? 'Set up your computing password' : 'Set up your password', function (box) {
-      if (key) { var ok = el('div', 'wait'); ok.style.background = 'var(--ok-soft)'; ok.style.color = 'var(--ok)'; ok.textContent = 'Mr Cedric let you in. Now choose your password.'; box.appendChild(ok); }
+    formOpen(temp ? 'Choose your own password' : cmp ? 'Set up your computing password' : 'Set up your password', function (box) {
+      if (key) { var ok = el('div', 'wait'); ok.style.background = 'var(--ok-soft)'; ok.style.color = 'var(--ok)'; ok.textContent = temp ? 'You are in with the password Mr Cedric gave you. Now choose your own password. The one from Mr Cedric stops working after this.' : 'Mr Cedric let you in. Now choose your password.'; box.appendChild(ok); }
       else box.appendChild(el('p', 'quiet', 'Type your name as it is on the class list, and your register number to show it is you.'));
-      var w = who(box, v || {}, !!key), reg = null;
+      var w = whoFields(box, v || {}, !!key), reg = null;
       if (!key) { reg = field(box, 'Your register number', textInput(), cmp ? '' : 'In your class\'s own Science lesson you can leave this empty.'); reg.inputMode = 'numeric'; }
       var two = el('div', 'two'); box.appendChild(two);
       var p1 = field(two, 'Password', passInput()), p2 = field(two, 'Password again', passInput());
@@ -1077,7 +1081,7 @@
     var cmp = subj === 'cmp';
     formOpen(cmp ? 'Forgot your computing password?' : 'Forgot your password?', function (box) {
       box.appendChild(el('p', 'quiet', 'Choose the question you picked when you set up your password, type your answer, then choose a new password.'));
-      var w = who(box, v || {});
+      var w = whoFields(box, v || {});
       var q = field(box, 'Your question', questionSelect('Choose your question'));
       var ans = field(box, 'Your answer', textInput('Your answer'));
       var two = el('div', 'two'); box.appendChild(two);
@@ -1098,7 +1102,7 @@
   function formGate(v) {
     formOpen('Ask Mr Cedric', function (box) {
       box.appendChild(el('p', 'quiet', 'Mr Cedric lets you in the first time. Type your name as it is on the class list.'));
-      var w = who(box, v || {});
+      var w = whoFields(box, v || {});
       var wait = el('div', 'wait hidden'); wait.appendChild(el('span', 'dot')); wait.appendChild(el('span', '', 'Mr Cedric sees your name on his phone. Wait here.')); box.appendChild(wait);
       var go = el('button', 'btn', 'Ask to be let in'); box.appendChild(go);
       go.addEventListener('click', function () {
