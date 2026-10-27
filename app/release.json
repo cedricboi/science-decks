@@ -1,25 +1,31 @@
 {
-  "build": "2026-10-28-portal-forms",
-  "seq": 43,
-  "ref": "4a9ff95ff2261f8619073432ea679dd436eaedda",
-  "title": "learnwithmrcedric: the sign-in forms work again",
+  "build": "2026-10-28-teacher-hub-boards",
+  "seq": 44,
+  "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
+  "title": "learnwithmrcedric: the Teacher Hub as the approved boards",
   "notes": [
-    "No server code to paste: the pages update themselves within about ten minutes",
-    "Sign-in fix: First time here?, Forgot password? and Ask Mr Cedric show their class and name boxes again, so students can set up and reset their passwords",
-    "The Teacher Hub is unchanged"
+    "The pages update themselves within about ten minutes. Admin also needs the release 43 server code (App.gs and Code.gs) pasted once",
+    "Overview is the landing page: each class's next steps on its own row, the Let in bar, and everything that needs you",
+    "The top bar is the boards': Overview, Library, Names shown, and a Settings menu with Points and night market, Computing, Admin, Settings and Tracker",
+    "Class page as the board: no chapter chips or week strip, Lesson library and See it as a student kept, the rest under More; Returned; tap a name for the student's record",
+    "The worksheet package and the Library are their own pages; the Library has search and no more 'undefined lessons'",
+    "Marking has the Scripts list beside the paper; every tool you kept is still there",
+    "Points: choose a class first; prizes to hand out as a short list; change prizes on their cards",
+    "Settings in plain groups (no New version switch); Computing gives Coaches like lessons and opens each Coach to see every student's work",
+    "Admin: class lists, temporary passwords, sign-in slips, your username, password and PIN"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "a94dc0206d151d283d17ee6ef8840007c9e13cbfc55fdb2d3fbd5a75e8265773"
+      "sha256": "616bed7e3e5ea2d60d4b283504009d518cc05bb68b234c49663ebc0a187ed919"
     },
     {
       "name": "Code",
       "type": "SERVER_JS",
       "path": "Code.gs",
-      "sha256": "d6f30e98ccb00ed4700906299e99c9625358ac86770c01f0ffa158d728ed7717"
+      "sha256": "4c2a113a30cd9efe7cb682b17b28c5ca2926c210bb4613387935b70d8d4ac4cc"
     },
     {
       "name": "Computing",
@@ -55,7 +61,7 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+      "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
     },
     {
       "name": "Ink",
@@ -101,6 +107,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 44,
+      "build": "2026-10-28-teacher-hub-boards",
+      "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 43,
       "build": "2026-10-28-portal-forms",
@@ -392,67 +456,9 @@
       ]
     },
     {
-      "seq": 38,
-      "build": "2026-10-27-every-page",
-      "ref": "f4141ecf63c95f56378f316e590382c3a9e0978c",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "8f8a9e5e915300a6ea67a4b1ebb32014526b2e90e50c5ae8230f4138cc2e5f57"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "e7f8c2cc82b483df415506ede1d40a9330b242a26b0aab4efbe1312e182d1b24"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
       "seq": 33,
       "build": "2026-10-27-old-pages-retired",
-      "ref": "4a9ff95ff2261f8619073432ea679dd436eaedda",
+      "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
       "needsServer": 33,
       "files": [
         {
@@ -473,7 +479,7 @@
         {
           "name": "HubTeacher",
           "path": "HubTeacher.html",
-          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+          "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
         },
         {
           "name": "Ink",
@@ -510,6 +516,18 @@
     }
   ],
   "server": [
+    {
+      "seq": 43,
+      "files": [
+        "App.gs",
+        "Code.gs"
+      ],
+      "notes": [
+        "Release 43 server code: paste App.gs and Code.gs into Apps Script, then deploy a new version",
+        "It turns on Admin: class lists saved to the Students tab, temporary passwords, and the Choose your own password step for students",
+        "Until you paste it, everything else works as before and Admin shows a short card saying it needs this update"
+      ]
+    },
     {
       "seq": 35,
       "files": [
@@ -596,5 +614,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/CiL47ZmvkhvUeHKTCjumog",
-  "classicRef": "4a9ff95ff2261f8619073432ea679dd436eaedda"
+  "classicRef": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2"
 }
