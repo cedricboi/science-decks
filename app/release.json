@@ -1,12 +1,13 @@
 {
-  "build": "2026-10-27-dark-black-hole",
-  "seq": 39,
-  "ref": "70e371e12fffd271a91af42b638928dac8f3c179",
-  "title": "learnwithmrcedric: the portal black hole, scientifically dark",
+  "build": "2026-10-27-teacher-link",
+  "seq": 40,
+  "ref": "88d6f4677375c8ca894a7867534da67c107ec515",
+  "title": "learnwithmrcedric: the Teacher Hub link on the portal works",
   "notes": [
     "No server code to paste: the pages update themselves within about ten minutes",
-    "The sign-in portal: no stars show inside the black hole's shadow or through its disk. The disk of hot gas is opaque, so the sky behind it is hidden, as it is in nature. Stars still bend round it in the open sky",
-    "Everything from release 38 is included",
+    "The portal's Teacher? Sign in to the Teacher Hub link opens the Teacher Hub sign-in page, not a white page. It is back on the new portal too",
+    "The same fix for the classic (release 33) pages, which students see while the New version switch is not on",
+    "Includes release 39: no stars inside the black hole or through its disk",
     "Fallback: add ?classic to the Hub link for the release 33 pages. That page set is pinned and kept in this list"
   ],
   "files": [
@@ -80,7 +81,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "d09b4d28a97b30f1e5941da708b4d79d8bcf4f616c4807ef912151d3203bbbdf"
+      "sha256": "f62844dddf8e44c802d68f60ed395c2df948fe72bcfbf6da1340074373a05209"
     },
     {
       "name": "Styles",
@@ -102,6 +103,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 40,
+      "build": "2026-10-27-teacher-link",
+      "ref": "88d6f4677375c8ca894a7867534da67c107ec515",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "8f8a9e5e915300a6ea67a4b1ebb32014526b2e90e50c5ae8230f4138cc2e5f57"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "f62844dddf8e44c802d68f60ed395c2df948fe72bcfbf6da1340074373a05209"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 39,
       "build": "2026-10-27-dark-black-hole",
@@ -335,125 +394,9 @@
       ]
     },
     {
-      "seq": 35,
-      "build": "2026-10-25-teacher-hub-glance",
-      "ref": "bb8c1f7585d4a36e5017fe2ac05909c7d621b009",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "2d84457094f3759685292b2a95e138e3bc063afbcb704d5e3663ee416e7585e2"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
-      "seq": 34,
-      "build": "2026-10-25-one-platform",
-      "ref": "206f8718224592ad9a81f55a4cdd68af0c5e0736",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "4bdc73f2708df7fa5173df4927c6ddf555ab4bca502969a09bd8cc59f9606c60"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "fa56e9203c9c8bfaf8c16e69b3dd47f0861f4e820a05ffcd3ec03e8de7630e77"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "040cb629f4b7ac6e66d4560d553dc014960aaecf20467e8adda53ff3e5abe0eb"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
       "seq": 33,
-      "build": "2026-10-25-passwords",
-      "ref": "06b1834f69c890265470d7d0fe0c2aab007186eb",
+      "build": "2026-10-27-passwords-links",
+      "ref": "2addff0b42e03466c97ec1597c44d06e7de15859",
       "needsServer": 33,
       "files": [
         {
@@ -484,7 +427,7 @@
         {
           "name": "Student",
           "path": "Student.html",
-          "sha256": "aed3123b46454a5865aaebdec154bba29ba8b041e62fd77cf397d4dd6e0f31ff"
+          "sha256": "c16c779d5b88ceda7a014df1ec19170226d7a3181ba9d8e1e85caaaf0006c5a5"
         },
         {
           "name": "Styles",
@@ -592,5 +535,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/CiL47ZmvkhvUeHKTCjumog",
-  "classicRef": "06b1834f69c890265470d7d0fe0c2aab007186eb"
+  "classicRef": "2addff0b42e03466c97ec1597c44d06e7de15859"
 }
