@@ -682,6 +682,94 @@
   .in-shell.shell-panel .fv-find { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; min-height: 52px; font-size: 16px; }
   .in-shell.shell-panel .fv-new { border-color: var(--rule); color: var(--s1); }
   .in-shell.shell-panel .fv-bar h2 { font-family: var(--display); font-weight: 700; }
+  /* r45 My files as a ring binder (the release 34 file): coloured divider tabs down the right edge, one per chapter
+     and one per folder of the student's own, and + for a new tab. A sheet moves by dragging it onto a tab, or with its ⋯. */
+  .bd { --bd-cover: color-mix(in srgb, var(--ink, #1B1F3B) 14%, var(--surface-2, #E9E4F2)); --bd-page: var(--surface, #FFFFFF);
+    --bd-sheet: color-mix(in srgb, #FFFFFF 88%, var(--paper, #FFFFFF)); --bd-lines: color-mix(in srgb, #9AA2B8 55%, var(--bd-sheet));
+    --bd-ease: cubic-bezier(0.23, 1, 0.32, 1); display: flex; flex-direction: column; gap: 14px; }
+  :root[data-theme="dark"] .bd { --bd-sheet: #D9DCE4; --bd-lines: #AEB4C4; }
+  .bd-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .bd-top .fv-find { flex: 1 1 260px; min-width: 0; margin: 0; }
+  .bd-top .sp { flex: 1 0 0; }
+  .bd-wrap { padding-right: 78px; }
+  .binder { position: relative; display: flex; min-height: 460px; padding: 14px 0 14px 14px; border-radius: 26px 10px 10px 26px; background: var(--bd-cover);
+    box-shadow: 0 0 0 1px var(--rule, rgba(0,0,0,.1)), 0 12px 30px rgba(0,0,0,.28); }
+  .bd-rings { width: 30px; flex: none; display: flex; flex-direction: column; justify-content: space-around; align-items: flex-end; position: relative; z-index: 2; }
+  .bd-rings i { width: 50px; height: 22px; border-radius: 999px; border: 5px solid color-mix(in srgb, #C9CFDA 80%, var(--bd-cover)); margin-right: -26px; }
+  .bd-pages { flex: 1 1 0; min-width: 0; border-radius: 8px; background: var(--bd-page); display: flex; flex-direction: column; overflow: hidden; }
+  .bd-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 14px 22px 14px 40px; border-bottom: 4px solid var(--c); background: color-mix(in srgb, var(--c) 16%, var(--bd-page)); }
+  .bd-head h2 { margin: 0; display: flex; align-items: center; gap: 10px; font: 800 22px/1.2 var(--display); color: var(--ink); }
+  .bd-head h2 i { width: 14px; height: 14px; border-radius: 4px; background: var(--c); flex: none; }
+  .bd-head .sub { flex: 1 1 100%; margin: 0; font-size: 14px; color: var(--muted); }
+  .bd-head .sp { flex: 1 0 0; }
+  .bd-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 44px 20px; padding: 44px 24px 28px 40px; align-content: start; }
+  .bd-empty { padding: 26px 24px 28px 40px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .bd-sheet { position: relative; min-width: 0; cursor: pointer; border-radius: 4px; outline: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    transition: transform 160ms var(--bd-ease), opacity 160ms var(--bd-ease); }
+  .bd-sheet:focus-visible .bd-page { box-shadow: 0 0 0 3px var(--shop-blue, #2F6FE4); }
+  .bd-sheet:active { transform: scale(.97); }
+  .bd-sheet.lifted { opacity: .35; }
+  .bd-sheet .bd-tab { position: absolute; top: -27px; left: 0; max-width: 100%; height: 28px; padding: 6px 10px 0; border-radius: 9px 9px 0 0; background: var(--tc); color: var(--tk, #1B1F3B);
+    font: 700 13px/1.2 var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bd-sheet .bd-page { position: relative; display: block; height: 164px; border-radius: 3px; background: var(--bd-sheet); box-shadow: 0 2px 8px rgba(0,0,0,.22); overflow: hidden; }
+  .bd-sheet .bd-lines { position: absolute; inset: 14px 12px 12px 18px; display: flex; flex-direction: column; gap: 7px; }
+  .bd-sheet .bd-lines i { display: block; height: 4px; border-radius: 2px; background: var(--bd-lines); }
+  .bd-sheet .bd-lines i.h { height: 7px; width: 70%; background: #3A4066; margin-bottom: 5px; }
+  .bd-sheet .bd-lines i.box { height: 28px; background: none; border: 1px solid var(--bd-lines); border-radius: 3px; }
+  .bd-sheet.note .bd-lines i { background: none; height: 0; border-top: 1px solid #9FB4D9; border-radius: 0; }
+  .bd-sheet.note.grid .bd-page, .bd-sheet.note.graph .bd-page { background-image: linear-gradient(#C9D3E6 1px, transparent 1px), linear-gradient(90deg, #C9D3E6 1px, transparent 1px); background-size: 12px 12px; }
+  .bd-sheet.note.grid .bd-lines i, .bd-sheet.note.graph .bd-lines i, .bd-sheet.note.blank .bd-lines i { border-top-color: transparent; }
+  .bd-sheet .bd-stamp { position: absolute; right: 8px; bottom: 44px; min-width: 52px; height: 52px; padding: 0 4px; border-radius: 26px; border: 3px solid #7A4FD0; color: #6338C4; background: rgba(255,255,255,.9);
+    display: flex; align-items: center; justify-content: center; font: 800 13px var(--display); transform: rotate(-10deg); }
+  .bd-sheet .bd-flag { position: absolute; left: 7px; right: 7px; bottom: 8px; min-height: 30px; padding: 4px 8px; border-radius: 15px; display: flex; align-items: center; justify-content: center;
+    text-align: center; font: 700 13px/1.15 var(--text); background: var(--fc); color: var(--fk); }
+  .bd-sheet .fv-more { position: absolute; top: 4px; right: 4px; z-index: 2; width: 40px; height: 36px; border-radius: 10px; border: 0; background: rgba(255,255,255,.86); color: #1B1F3B; font-size: 18px; line-height: 1; cursor: pointer; }
+  .bd-sheet .bd-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-top: 8px; font: 700 15px/1.25 var(--text); color: var(--ink); }
+  .bd-sheet .bd-m { display: block; padding-top: 2px; font-size: 13px; line-height: 1.3; color: var(--muted); }
+  /* what each tab colour means: the same colours as the banners on the worksheet */
+  .bd-sheet.k-start  { --tc: #7CC4EE; --fc: #DDEFFA; --fk: #1D5F86; }
+  .bd-sheet.k-finish { --tc: #F2B65A; --fc: #FCEBCF; --fk: #7A4A00; }
+  .bd-sheet.k-late   { --tc: #E5484D; --tk: #fff; --fc: #E5484D; --fk: #fff; }
+  .bd-sheet.k-corr   { --tc: #3FBF7F; --fc: #DDF3E7; --fk: #146B3B; }
+  .bd-sheet.k-marks  { --tc: #B98CFF; --fc: #EEE4FF; --fk: #5530B0; }
+  .bd-sheet.k-wait   { --tc: #A9ACC2; --fc: #E6E7EE; --fk: #4E5166; }
+  .bd-sheet.k-prac   { --tc: #8FA3C7; --fc: #E3E8F2; --fk: #3E4C6B; }
+  .bd-sheet.k-note   { --tc: var(--nc, #F59E0B); --tk: #fff; }
+  .bd-divs { position: absolute; top: 22px; right: -76px; width: 82px; display: flex; flex-direction: column; gap: 6px; max-height: calc(100% - 22px); overflow-y: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .bd-divs::-webkit-scrollbar { display: none; }
+  .bd-div { position: relative; flex: none; width: 62px; height: 88px; padding: 0; border: 0; border-radius: 0 14px 14px 0; background: var(--c); color: var(--ck, #fff); cursor: pointer;
+    font: 800 16px/1 var(--display); display: flex; align-items: center; justify-content: center; transition: width 200ms var(--bd-ease), box-shadow 200ms var(--bd-ease), transform 160ms var(--bd-ease); }
+  .bd-div span { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 84px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  .bd-div[aria-selected="true"] { width: 82px; box-shadow: 0 4px 12px rgba(0,0,0,.32); }
+  .bd-div:active { transform: scale(.97); }
+  .bd-div .n { display: none; position: absolute; top: 6px; right: 6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: rgba(0,0,0,.28); color: #fff; font: 700 11px/20px var(--text); text-shadow: none; }
+  .bd-div.add { height: 52px; background: transparent; color: var(--muted); border: 2px dashed var(--rule, rgba(0,0,0,.2)); border-left: 0; font-size: 26px; }
+  .bd-div.add span { writing-mode: horizontal-tb; transform: none; }
+  .bd-div.drop { width: 88px; box-shadow: 0 0 0 3px #fff, 0 6px 16px rgba(0,0,0,.35); }
+  .bd-div.nodrop { opacity: .4; }
+  .bd-ghost { display: block; position: fixed; z-index: 80; width: 132px; pointer-events: none; transform: translate(-92%, -96%) rotate(-4deg) scale(.9); filter: drop-shadow(0 14px 22px rgba(0,0,0,.45)); }
+  .bd-ghost .bd-sheet { cursor: grabbing; }
+  .bd-hint { margin: 0; font-size: 14px; color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) {
+    .bd-sheet:hover .bd-page { box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+    .bd-div:not([aria-selected="true"]):hover { width: 70px; }
+  }
+  @media (max-width: 760px) {
+    .bd-wrap { padding-right: 0; }
+    .binder { flex-direction: column; padding: 12px; border-radius: 22px; min-height: 0; }
+    .bd-rings { display: none; }
+    .bd-pages { flex: none; }
+    .binder { min-height: 0 !important; }
+    .bd-divs { position: static; width: auto; max-height: none; flex-direction: row; flex-wrap: wrap; gap: 8px; order: -1; margin-bottom: 12px; overflow: visible; }
+    .bd-div, .bd-div[aria-selected="true"], .bd-div.drop { width: auto; height: 44px; padding: 0 14px; border-radius: 12px; font-size: 15px; }
+    .bd-div[aria-selected="true"] { box-shadow: 0 0 0 3px var(--ink); }
+    .bd-div span { writing-mode: horizontal-tb; transform: none; max-height: none; max-width: 160px; }
+    .bd-div .n { display: inline-block; position: static; margin-left: 8px; }
+    .bd-div.add { height: 44px; border: 2px dashed var(--rule, rgba(0,0,0,.2)); }
+    .bd-head, .bd-shelf, .bd-empty { padding-left: 18px; padding-right: 18px; }
+    .bd-shelf { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 40px 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bd-sheet, .bd-div { transition: none; } .bd-sheet:active, .bd-div:active { transform: none; } }
   .in-shell.shell-panel .btn { transition: transform 160ms var(--e-out); border-radius: 999px; font-family: var(--text); font-weight: 700; }
   .in-shell.shell-panel .btn:not(.ghost) { background: var(--s2); color: #1E1405; box-shadow: none; }
   .in-shell.shell-panel .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
@@ -907,6 +995,20 @@
   :root.ws-focus #pages { padding: 78px 6px 60px; gap: 22px; }
   :root.ws-focus .page .pno { color: #8C88A8; }
   @media (max-width: 700px) { :root.ws-focus #t-full .fl-lbl { display: none; } :root.ws-focus #t-full { width: 42px; padding: 0; } }
+  /* r45: in full screen the toolbar can be dragged by its grip to anywhere on the screen, and hidden behind one
+     small round button (which can be dragged too). Where it was put is kept on this iPad. */
+  #t-grip, #t-hidebar, .bar-peek { display: none; }
+  :root.ws-focus #t-grip { display: inline-flex; width: 34px; padding: 0; cursor: grab; touch-action: none; color: var(--muted); }
+  :root.ws-focus #t-grip:active { cursor: grabbing; }
+  :root.ws-focus #t-hidebar { display: inline-flex; }
+  :root.ws-focus.ws-barmoved #scr-edit .bar { transform: none; }
+  :root.ws-focus.ws-bardrag #scr-edit .bar { box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+  :root.ws-focus.ws-barhid #scr-edit .bar { display: none !important; }
+  :root.ws-focus.ws-barhid .bar-peek { display: flex; position: absolute; z-index: 21; top: 12px; right: 12px; width: 56px; height: 56px; border-radius: 28px; padding: 0;
+    align-items: center; justify-content: center; border: 1px solid var(--rule); background: var(--surface); color: var(--tool-ink, var(--ink)); box-shadow: 0 10px 28px rgba(0,0,0,.5);
+    cursor: pointer; touch-action: none; animation: kp38in 180ms var(--ease38) both; }
+  .bar-peek svg { width: 24px; height: 24px; }
+  :root.ws-focus.ws-barhid #pages { padding-top: 24px; }
   @media (prefers-reduced-motion: reduce) {
     .kit-pop { animation: kp38fade 160ms linear both; } .ws-status.lit { animation: kp38fade 200ms linear both; } .ws-status.lit::after { display: none; }
     .tool:active:not(:disabled), .ws-go:active { transform: none; }
@@ -1004,6 +1106,7 @@
   </header>
   <div class="bar">
     <div class="bar-row" id="tools-row">
+      <button class="tool" id="t-grip" type="button" aria-label="Move the toolbar" title="Drag to move the toolbar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg></button>
       <span class="edit-only" style="display:contents">
         <button class="tool on" id="t-pen" aria-label="Pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg><span class="dot" id="pen-dot" style="background:#1a1a1a"></span></button>
         <button class="tool not-corr" id="t-hl" aria-label="Highlighter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l-4 5h6l2-2"/><path d="M9 15l7-10 4 3-7 10z"/></svg><span class="dot" id="hl-dot" style="background:#facc15"></span></button>
@@ -1022,6 +1125,7 @@
       <span class="sep"></span>
       <button class="tool text" id="t-kit" aria-label="Help and tools" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 015.4 1c0 1.9-2.7 2.4-2.7 4"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg><span>Help</span><i class="kdot hidden" id="kit-dot" aria-hidden="true"></i></button>
       <button class="tool" id="t-full" aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" id="full-icon"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="fl-lbl">Exit</span></button>
+      <button class="tool" id="t-hidebar" type="button" aria-label="Hide the toolbar" title="Hide the toolbar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
       <span class="edit-only" style="display:contents">
         <span class="sep"></span>
         <button class="tool text" id="t-addpage" aria-label="Add an extra page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 12v6M9 15h6"/></svg>Page</button>
@@ -1034,6 +1138,7 @@
     <div class="corr-strip" id="corr-strip">Corrections. Everything you write is in green. Hand them in when you have finished.</div>
     <div class="pen-tip hidden" id="pen-tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg><span>Write with your Apple Pencil. Your hand can rest on the screen.</span><button class="linkbtn" id="pen-tip-ok" type="button">Got it</button></div>
   </div>
+  <button class="bar-peek" id="bar-peek" type="button" aria-label="Show the toolbar" title="Show the toolbar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg></button>
   <div class="ed-body"><div id="scroller"><div id="pages"></div></div><div id="notes" class="notes"></div></div>
   <div id="pop" class="pop hidden" role="dialog" aria-label="Tool options"></div>
   <div id="kit-pop" class="kit-pop hidden" role="dialog" aria-label="Help and tools">
@@ -1667,6 +1772,24 @@
     return out;
   }
 
+  /* r45: My files is a ring binder. The dividers down its right edge are Everything, a tab for each chapter (the
+     teacher's homework files itself there), a tab for each of the student's own folders, Other (only when something is
+     in it) and + for a new tab. A sheet is moved by dragging it onto a tab (hold it first with a finger), or with ⋯. */
+  function bdChLabel(c) { var m = String(c.name || '').match(/(?:chapter|ch\.?)\s*(\d+)/i) || String(c.name || '').match(/^(\d+)\b/); return m ? 'Ch ' + m[1] : String(c.name || '').split(/\s+/).slice(0, 2).join(' '); }
+  function bdKind(a) {
+    if (a.practice) return { k: 'prac', tab: 'Practice', flag: 'Practice', line: 'Never due' };
+    if (a.status === 'marked') {
+      if (a.corr === 'todo') return { k: 'corr', tab: 'Corrections', flag: 'Corrections to do', line: a.score ? 'Marked, ' + a.score : 'Marked', stamp: a.score };
+      return { k: 'marks', tab: 'Marked', flag: a.corr === 'done' ? 'Corrections in' : 'Marked', line: a.score ? 'Marked, ' + a.score : 'Marked', stamp: a.score };
+    }
+    if (a.status === 'submitted') return { k: 'wait', tab: 'Handed in', flag: 'Handed in', line: 'Waiting for marking' };
+    if (a.status === 'missed') return { k: 'wait', tab: 'Closed', flag: 'Not handed in', line: 'It closed before it was handed in' };
+    var late = a.dueTs && a.dueTs < Date.now();
+    if (late) return { k: 'late', tab: 'Late', flag: a.due ? 'Was due ' + a.due : 'Late', line: a.status === 'started' ? 'Started. Finish it now.' : 'Not started yet' };
+    if (a.status === 'started') return { k: 'finish', tab: 'Finish', flag: a.due ? 'Due ' + a.due : 'Started', line: 'Started' };
+    return { k: 'start', tab: 'To do', flag: a.due ? 'Due ' + a.due : 'To do', line: 'Not started yet' };
+  }
+  function bdLines() { return '<span class="bd-lines" aria-hidden="true"><i class="h"></i><i style="width:92%"></i><i style="width:84%"></i><i class="box" style="width:92%"></i><i style="width:78%"></i><i style="width:88%"></i></span>'; }
   function renderFolders() {
     var org = S.org || { folders: [], items: {}, notes: [] };
     var chs = chFolders(), chOf = function (id) { return chs.filter(function (c) { return c.id === id; })[0] || null; };
@@ -1680,55 +1803,153 @@
       org.notes.forEach(function (x) { if (fid === 'all' || (fid === 'none' ? !x.f || !folderOf(x.f) : x.f === fid)) n++; });
       return n;
     };
-    var side = '<input class="fv-find" id="fv-find" type="search" placeholder="Find a worksheet or note" aria-label="Find a worksheet or note" value="' + esc(S.q) + '">' +
-      '<div class="fv-chips"><h3>Folders</h3>' +
-      '<button class="fv-f' + (S.fsel === 'all' ? ' on' : '') + '" data-f="all"><i style="--c:#CBD2DE"></i>Everything<span>' + count('all') + '</span></button>' +
-      (chs.length ? '<h3>Chapters</h3>' + chs.map(function (c) { return '<button class="fv-f chf' + (S.fsel === c.id ? ' on' : '') + '" data-f="' + esc(c.id) + '"><i style="--c:' + esc(c.color || '#8FA3C7') + '"></i>' + esc(c.name) + '<span>' + count(c.id) + '</span></button>'; }).join('') + '<h3>My folders</h3>' : '') +
-      org.folders.map(function (f) { return '<button class="fv-f' + (S.fsel === f.id ? ' on' : '') + '" data-f="' + f.id + '"><i style="--c:' + COLS[f.color] + '"></i>' + esc(f.name) + '<span>' + count(f.id) + '</span></button>'; }).join('') +
-      '<button class="fv-f' + (S.fsel === 'none' ? ' on' : '') + '" data-f="none"><i style="--c:#E6E1D8"></i>Not in a folder<span>' + count('none') + '</span></button>' +
-      '<button class="fv-new" id="fv-newf">+ New folder</button></div>';
-    var cur = folderOf(S.fsel), chc = chOf(S.fsel);
-    var title = S.fsel === 'all' ? 'Everything' : S.fsel === 'none' ? 'Not in a folder' : chc ? chc.name : cur.name;
-    var col = cur ? COLS[cur.color] : chc ? esc(chc.color || '#8FA3C7') : '#CBD2DE';
+    // the dividers, in the order they hang in the binder
+    var divs = [{ id: 'all', label: 'All', title: 'Everything', color: '#6E7591' }];
+    var chNo = function (c) { var m = bdChLabel(c).match(/^Ch (\d+)$/); return m ? Number(m[1]) : 999; };
+    chs.slice().sort(function (x, y) { return chNo(x) - chNo(y) || String(x.name).localeCompare(String(y.name)); }).forEach(function (c) { divs.push({ id: c.id, label: bdChLabel(c), title: c.name, color: c.color || '#5B7BD6', ch: c }); });
+    org.folders.forEach(function (f) { divs.push({ id: f.id, label: f.name, title: f.name, color: COLS[f.color] || '#8B5CF6', own: f }); });
+    if (count('none') || S.fsel === 'none') divs.push({ id: 'none', label: 'Other', title: 'Not in a folder', color: '#5A607D' });
+    var cur = folderOf(S.fsel), chc = chOf(S.fsel), dv = divs.filter(function (d) { return d.id === S.fsel; })[0] || divs[0];
     var left = NOTE_MAX - org.notes.length;
-    var bar = '<div class="fv-bar"><h2><i style="--c:' + col + '"></i>' + esc(title) + '</h2>' +
-      (cur ? '<button class="btn small ghost" id="fv-editf">Rename or colour</button>' : '') + '<span class="sp"></span>' +
+    var top = '<div class="bd-top"><input class="fv-find" id="fv-find" type="search" placeholder="Find a worksheet or note" aria-label="Find a worksheet or note" value="' + esc(S.q) + '">' +
       '<span class="note-left">' + (left > 0 ? left + ' of ' + NOTE_MAX + ' notes left' : 'You have ' + NOTE_MAX + ' notes. Delete one to make another.') + '</span>' +
       '<button class="btn small" id="fv-newnote"' + (left > 0 ? '' : ' disabled') + '>+ New note</button></div>';
-    if (chc) bar += '<p class="fv-sub">' + (chc.subject ? esc(chc.subject) + '. ' : '') + 'Your teacher\'s homework for this chapter comes here by itself.</p>';
+    var head = '<div class="bd-head" style="--c:' + esc(dv.color) + '"><h2><i></i>' + esc(dv.title) + '</h2><span class="sp"></span>' +
+      (cur ? '<button class="btn small ghost" id="fv-editf">Rename or colour</button>' : '') +
+      '<p class="sub">' + (chc ? (chc.subject ? esc(chc.subject) + '. ' : '') + 'Your teacher\'s homework for this chapter files itself here.' :
+        cur ? 'Your own tab. Drag a worksheet or note onto it to file it here.' : S.fsel === 'none' ? 'Worksheets and notes that are not in a chapter or a folder.' :
+        'Everything in your file. To file something, hold it and drag it onto a tab, or tap ⋯.') + '</p></div>';
     var cards = [];
     S.list.forEach(function (a, i) {
       var o = orgItem(a.id);
       if (!inW(a)) return;
       if (q && (a.title + ' ' + (o.n || '')).toLowerCase().indexOf(q) < 0) return;
-      cards.push('<div class="fv-it" role="button" tabindex="0" data-w="' + i + '" style="--c:' + esc(itemColour(a) || (a.chapter && a.chapter.color) || '#CBD2DE') + '"><button class="fv-more" data-wm="' + i + '" aria-label="Rename, move or colour">⋯</button>' +
-        '<div class="k">' + kindLine(a) + '</div><div class="t">' + esc(o.n || a.title) + '</div>' + (o.n ? '<div class="r">' + esc(a.title) + '</div>' : '') +
-        (a.chapter && a.chapter.name && S.fsel !== 'ch:' + a.chapter.key ? '<div class="r">' + esc(a.chapter.name) + '</div>' : '') + '<div class="tags">' + statusTag(a) + (a.status !== 'marked' && a.status !== 'submitted' && a.status !== 'missed' ? dueChip(a).replace('duechip', 'duechip small') : '') + '</div></div>');
+      var k = bdKind(a), nm = o.n || a.title;
+      cards.push('<div class="bd-sheet k-' + k.k + '" role="button" tabindex="0" data-w="' + i + '" aria-label="' + esc(nm + '. ' + k.flag + '. ' + k.line) + '">' +
+        '<span class="bd-tab">' + esc(k.tab) + '</span><span class="bd-page">' + bdLines() + (k.stamp ? '<span class="bd-stamp">' + esc(k.stamp) + '</span>' : '') +
+        '<span class="bd-flag">' + esc(k.flag) + '</span><button class="fv-more" data-wm="' + i + '" aria-label="Rename, move or colour ' + esc(nm) + '">⋯</button></span>' +
+        '<span class="bd-t">' + esc(nm) + '</span><span class="bd-m">' + esc(o.n ? a.title : a.chapter && a.chapter.name && S.fsel !== 'ch:' + a.chapter.key ? a.chapter.name : k.line) + '</span></div>');
     });
     org.notes.forEach(function (x, j) {
       if (!inF(x.f)) return;
       if (q && x.title.toLowerCase().indexOf(q) < 0) return;
       var f = x.f && folderOf(x.f), c = x.c && COLS[x.c] ? COLS[x.c] : f ? COLS[f.color] : '#F59E0B';
-      cards.push('<div class="fv-it" role="button" tabindex="0" data-n="' + j + '" style="--c:' + c + '"><button class="fv-more" data-nm="' + j + '" aria-label="Rename, move, colour or delete">⋯</button>' +
-        '<div class="k">✎ My note · ' + (x.pages || 1) + (x.pages === 1 || !x.pages ? ' page' : ' pages') + ' · ' + (PAPER_NAME[x.paper] || '') + '</div><div class="t">' + esc(x.title) + '</div>' +
-        '<div class="paper paper-' + esc(x.paper || 'blank') + '"></div></div>');
+      cards.push('<div class="bd-sheet note k-note ' + esc(x.paper || 'blank') + '" role="button" tabindex="0" data-n="' + j + '" style="--nc:' + c + '" aria-label="' + esc('My note. ' + x.title) + '">' +
+        '<span class="bd-tab">My note</span><span class="bd-page">' + bdLines() + '<button class="fv-more" data-nm="' + j + '" aria-label="Rename, move, colour or delete ' + esc(x.title) + '">⋯</button></span>' +
+        '<span class="bd-t">' + esc(x.title) + '</span><span class="bd-m">' + (x.pages || 1) + (x.pages === 1 || !x.pages ? ' page' : ' pages') + ' · ' + esc(PAPER_NAME[x.paper] || '') + '</span></div>');
     });
-    var grid = cards.length ? '<div class="fv-grid">' + cards.join('') + '</div>'
-      : '<p class="fv-empty">' + (q ? 'Nothing here matches "' + esc(S.q) + '".' : S.fsel === 'all' ? 'No worksheets or notes yet.' : chc ? 'Nothing in this chapter yet. Its homework comes here by itself.' : 'Nothing in this folder yet. Tap ⋯ on a worksheet or note to move it here.') + '</p>';
+    var shelf = cards.length ? '<div class="bd-shelf">' + cards.join('') + '</div>'
+      : '<p class="bd-empty">' + (q ? 'Nothing here matches "' + esc(S.q) + '".' : S.fsel === 'all' ? 'Your file is empty for now. Worksheets come here by themselves when Mr Cedric sets them.' : chc ? 'Nothing in this chapter yet. Its homework files itself here.' : 'Nothing in this tab yet. Drag a worksheet or note onto its tab, or tap ⋯ on it.') + '</p>';
+    var tabs = divs.map(function (d) {
+      var n = count(d.id);
+      return '<button type="button" class="bd-div" role="tab" data-f="' + esc(d.id) + '" aria-selected="' + (d === dv) + '" aria-label="' + esc(d.title + ', ' + n + (n === 1 ? ' item' : ' items')) + '" style="--c:' + esc(d.color) + '"><span>' + esc(d.label) + '</span>' + (n ? '<b class="n">' + n + '</b>' : '') + '</button>';
+    }).join('') + '<button type="button" class="bd-div add" id="fv-newf" aria-label="Make a new tab"' + (org.folders.length >= 20 ? ' disabled' : '') + '><span>+</span></button>';
     drawNav();
-    $('list-body').innerHTML = '<div class="fv"><div class="fv-side">' + side + '</div><div class="fv-main">' + bar + grid + '</div></div>';
+    $('list-body').innerHTML = '<div class="bd">' + top + '<div class="bd-wrap"><div class="binder" style="min-height:' + Math.max(460, 44 + divs.length * 94 + 56) + 'px"><div class="bd-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div>' +
+      '<div class="bd-pages">' + head + shelf + '</div><div class="bd-divs" role="tablist" aria-label="The tabs in my file">' + tabs + '</div></div></div>' +
+      '<p class="bd-live" id="bd-live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></p></div>';
     wireFind();
-    Array.prototype.forEach.call(document.querySelectorAll('.fv-f'), function (b) { b.onclick = function () { S.fsel = b.getAttribute('data-f'); renderFolders(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.bd-div[data-f]'), function (b) { b.onclick = function () { if (S.bdDragged) return; S.fsel = b.getAttribute('data-f'); renderFolders(); }; });
     $('fv-newf').onclick = function () { folderBox(null); };
     if ($('fv-editf')) $('fv-editf').onclick = function () { folderBox(cur); };
     $('fv-newnote').onclick = function () { newNoteBox(cur ? cur.id : ''); };
-    Array.prototype.forEach.call(document.querySelectorAll('.fv-it'), function (el) {
+    Array.prototype.forEach.call(document.querySelectorAll('.bd-sheet'), function (el) {
       var go = function () { if (el.hasAttribute('data-w')) worksheetBox(S.list[Number(el.getAttribute('data-w'))]); else openNote(org.notes[Number(el.getAttribute('data-n'))]); };
-      el.onclick = function (e) { if (e.target.closest('.fv-more')) return; go(); };
+      el.onclick = function (e) { if (S.bdDragged || e.target.closest('.fv-more')) return; go(); };
       el.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+      bdDrag(el);
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-wm]'), function (b) { b.onclick = function (e) { e.stopPropagation(); orgItemBox(S.list[Number(b.getAttribute('data-wm'))], null); }; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-nm]'), function (b) { b.onclick = function (e) { e.stopPropagation(); orgItemBox(null, org.notes[Number(b.getAttribute('data-nm'))]); }; });
+  }
+  // Where a sheet may go: a worksheet into the student's own tabs, or back to its own chapter; a note into the
+  // student's own tabs, or Other.
+  function bdCanDrop(el, fid) {
+    if (!fid || fid === 'all') return false;
+    if (el.hasAttribute('data-w')) {
+      var a = S.list[Number(el.getAttribute('data-w'))]; if (!a) return false;
+      if (folderOf(fid)) return wsPlace(a) !== fid;
+      if (fid.indexOf('ch:') === 0) return !!(a.chapter && 'ch:' + a.chapter.key === fid && wsPlace(a) !== fid);
+      if (fid === 'none') return !a.chapter && wsPlace(a) !== '';
+      return false;
+    }
+    var x = S.org.notes[Number(el.getAttribute('data-n'))]; if (!x) return false;
+    if (folderOf(fid)) return x.f !== fid;
+    return fid === 'none' && !!x.f;
+  }
+  function bdDrop(el, fid) {
+    var org = S.org, name = fid === 'none' ? 'Other' : folderOf(fid) ? folderOf(fid).name : (chFolders().filter(function (c) { return c.id === fid; })[0] || {}).name || '';
+    if (el.hasAttribute('data-w')) {
+      var a = S.list[Number(el.getAttribute('data-w'))], o = org.items[a.id] || (org.items[a.id] = {});
+      if (folderOf(fid)) o.f = fid; else delete o.f;
+    } else {
+      var x = org.notes[Number(el.getAttribute('data-n'))]; x.f = folderOf(fid) ? fid : '';
+    }
+    saveOrg(); renderFolders();
+    var t = document.querySelector('.bd-div[data-f="' + fid.replace(/"/g, '') + '"]');
+    if (t && t.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) t.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+    var lv = $('bd-live'); if (lv) lv.textContent = 'Filed in ' + name + '.';
+  }
+  // Drag a sheet onto a tab. A mouse or the Pencil drags at once; a finger holds still for a moment first, so
+  // scrolling the file still works.
+  function bdDrag(el) {
+    var st = null;
+    function tabAt(x, y) { var t = document.elementFromPoint(x, y); t = t && t.closest ? t.closest('.bd-div[data-f]') : null; return t; }
+    function begin(x, y) {
+      st.on = true; S.bdDragged = true; el.classList.add('lifted');
+      var g = document.createElement('div'); g.className = 'bd bd-ghost'; g.appendChild(el.cloneNode(true)); g.firstChild.classList.remove('lifted');
+      document.body.appendChild(g); st.g = g; move(x, y);
+      Array.prototype.forEach.call(document.querySelectorAll('.bd-div[data-f]'), function (t) { t.classList.toggle('nodrop', !bdCanDrop(el, t.getAttribute('data-f'))); });
+      try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { /* no buzz */ }
+    }
+    function move(x, y) {
+      if (!st || !st.on) return;
+      st.g.style.left = x + 'px'; st.g.style.top = y + 'px';
+      var t = tabAt(x, y), ok = t && bdCanDrop(el, t.getAttribute('data-f'));
+      if (st.over && st.over !== t) st.over.classList.remove('drop');
+      st.over = ok ? t : null; if (st.over) st.over.classList.add('drop');
+      // near the top or bottom edge of the tabs, they scroll
+      var dvs = document.querySelector('.bd-divs');
+      if (dvs) { var r = dvs.getBoundingClientRect(); if (x > r.left - 30 && x < r.right + 30) { if (y < r.top + 30) dvs.scrollTop -= 8; else if (y > r.bottom - 30) dvs.scrollTop += 8; } }
+    }
+    function end(cancel) {
+      if (!st) return;
+      clearTimeout(st.hold);
+      var was = st; st = null;
+      if (!was.on) return;
+      if (was.g) was.g.remove();
+      el.classList.remove('lifted');
+      Array.prototype.forEach.call(document.querySelectorAll('.bd-div'), function (t) { t.classList.remove('drop', 'nodrop'); });
+      setTimeout(function () { S.bdDragged = false; }, 60);
+      if (!cancel && was.over) bdDrop(el, was.over.getAttribute('data-f'));
+    }
+    el.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch' || e.button > 0 || e.target.closest('.fv-more')) return;
+      st = { x: e.clientX, y: e.clientY, on: false, id: e.pointerId };
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (!st || st.id !== e.pointerId) return;
+      if (!st.on && Math.hypot(e.clientX - st.x, e.clientY - st.y) > 6) { try { el.setPointerCapture(e.pointerId); } catch (x) { /* fine */ } begin(e.clientX, e.clientY); }
+      if (st && st.on) { e.preventDefault(); move(e.clientX, e.clientY); }
+    });
+    el.addEventListener('pointerup', function (e) { if (st && st.id === e.pointerId) { if (st.on) { var t = tabAt(e.clientX, e.clientY); if (st.over !== t && !(t && bdCanDrop(el, t.getAttribute('data-f')))) st.over = null; } end(false); } });
+    el.addEventListener('pointercancel', function (e) { if (st && st.id === e.pointerId) end(true); });
+    // a finger: hold for a moment, then drag
+    el.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1 || e.target.closest('.fv-more')) return;
+      var t0 = e.touches[0];
+      st = { x: t0.clientX, y: t0.clientY, on: false, touch: true, lx: t0.clientX, ly: t0.clientY };
+      st.hold = setTimeout(function () { if (st && !st.on) begin(st.lx, st.ly); }, 380);
+    }, { passive: true });
+    el.addEventListener('touchmove', function (e) {
+      if (!st || !st.touch) return;
+      var t0 = e.touches[0]; st.lx = t0.clientX; st.ly = t0.clientY;
+      if (!st.on) { if (Math.hypot(t0.clientX - st.x, t0.clientY - st.y) > 10) { clearTimeout(st.hold); st = null; } return; }
+      e.preventDefault(); move(t0.clientX, t0.clientY);
+    }, { passive: false });
+    el.addEventListener('touchend', function (e) { if (st && st.touch) { if (st.on) e.preventDefault(); end(false); } });
+    el.addEventListener('touchcancel', function () { if (st && st.touch) end(true); });
+    el.addEventListener('contextmenu', function (e) { if (st && st.touch) e.preventDefault(); });
   }
 
   // A worksheet in My folders opens as its usual card, with its usual buttons.
@@ -2976,6 +3197,8 @@
     keepPlace(function () { root.classList.toggle('ws-focus', on); });
     $('t-full').setAttribute('aria-pressed', on ? 'true' : 'false');
     $('t-full').setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+    barApply();
+    if (SHELL) shellSay('focus', { on: on });   // r45: the student app gives the worksheet the whole screen
     $('full-icon').innerHTML = on ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>' : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
     try {
       if (on && !fsEl()) {
@@ -2988,6 +3211,49 @@
     } catch (e) { /* the focus view is enough */ }
   }
   $('t-full').onclick = function () { focusSet(!document.documentElement.classList.contains('ws-focus')); };
+  /* r45: the toolbar in full screen. Drag it by its grip; hide it behind the round button and bring it back with a tap. */
+  var BARPOS_K = 'wsh_barpos';
+  function barPosGet() { try { return JSON.parse(lsGet(BARPOS_K) || 'null') || {}; } catch (e) { return {}; } }
+  function barPosPut(k, v) { var p = barPosGet(); p[k] = v; lsSet(BARPOS_K, JSON.stringify(p)); }
+  function clampTo(el, x, y) {
+    var w = el.offsetWidth || 56, h = el.offsetHeight || 56;
+    return { x: Math.round(Math.max(4, Math.min(window.innerWidth - w - 4, x))), y: Math.round(Math.max(4, Math.min(window.innerHeight - h - 4, y))) };
+  }
+  function barApply() {
+    var root = document.documentElement, bar = document.querySelector('#scr-edit .bar'), pk = $('bar-peek');
+    if (!bar) return;
+    if (!root.classList.contains('ws-focus')) { bar.style.left = ''; bar.style.top = ''; pk.style.left = ''; pk.style.top = ''; pk.style.right = ''; root.classList.remove('ws-barmoved', 'ws-barhid', 'ws-bardrag'); return; }
+    var p = barPosGet();
+    if (p.bar) { var c = clampTo(bar, p.bar.x, p.bar.y); bar.style.left = c.x + 'px'; bar.style.top = c.y + 'px'; root.classList.add('ws-barmoved'); }
+    else { bar.style.left = ''; bar.style.top = ''; root.classList.remove('ws-barmoved'); }
+    if (p.peek) { var d = clampTo(pk, p.peek.x, p.peek.y); pk.style.left = d.x + 'px'; pk.style.top = d.y + 'px'; pk.style.right = 'auto'; }
+  }
+  // Drags el by handle; calls done(moved) at the end.
+  function dragBy(handle, el, onMove, done) {
+    handle.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      var r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, sx = e.clientX, sy = e.clientY, moved = false;
+      try { handle.setPointerCapture(e.pointerId); } catch (x) { /* fine */ }
+      var mv = function (ev) {
+        if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+        moved = true; ev.preventDefault();
+        var c = clampTo(el, ev.clientX - dx, ev.clientY - dy); onMove(c);
+      };
+      var up = function () { handle.removeEventListener('pointermove', mv); handle.removeEventListener('pointerup', up); handle.removeEventListener('pointercancel', up); done(moved); };
+      handle.addEventListener('pointermove', mv); handle.addEventListener('pointerup', up); handle.addEventListener('pointercancel', up);
+    });
+  }
+  (function () {
+    var root = document.documentElement, bar = document.querySelector('#scr-edit .bar'), pk = $('bar-peek'), last = null, peekMoved = false;
+    dragBy($('t-grip'), bar, function (c) { kitClose(); closePop(); root.classList.add('ws-barmoved', 'ws-bardrag'); bar.style.left = c.x + 'px'; bar.style.top = c.y + 'px'; last = c; },
+      function (moved) { root.classList.remove('ws-bardrag'); if (moved && last) barPosPut('bar', last); });
+    $('t-grip').onclick = function (e) { e.preventDefault(); };
+    $('t-hidebar').onclick = function () { kitClose(); closePop(); root.classList.add('ws-barhid'); barApply(); setTimeout(function () { pk.focus(); }, 30); };
+    dragBy(pk, pk, function (c) { pk.style.left = c.x + 'px'; pk.style.top = c.y + 'px'; pk.style.right = 'auto'; last = c; peekMoved = true; },
+      function (moved) { if (moved && last) barPosPut('peek', last); });
+    pk.onclick = function () { if (peekMoved) { peekMoved = false; return; } root.classList.remove('ws-barhid'); barApply(); setTimeout(function () { $('t-hidebar').focus(); }, 30); };
+    window.addEventListener('resize', function () { if (root.classList.contains('ws-focus')) barApply(); });
+  })();
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (t) {
     document.addEventListener(t, function () { if (!fsEl() && document.documentElement.classList.contains('ws-focus')) focusSet(false); else layout(); });
   });
