@@ -1790,6 +1790,20 @@
     return { k: 'start', tab: 'To do', flag: a.due ? 'Due ' + a.due : 'To do', line: 'Not started yet' };
   }
   function bdLines() { return '<span class="bd-lines" aria-hidden="true"><i class="h"></i><i style="width:92%"></i><i style="width:84%"></i><i class="box" style="width:92%"></i><i style="width:78%"></i><i style="width:88%"></i></span>'; }
+  // A student's own name for a chapter tab or Other, kept with their file (as an entry the server already keeps).
+  function tabKey(id) { return 'tab-' + String(id).replace(/[^A-Za-z0-9_\-]/g, '_').slice(0, 36); }
+  function tabName(id) { return (orgItem(tabKey(id)).n || '').trim(); }
+  function tabRenameBox(d) {
+    var org = S.org; if (!org) return;
+    var k = tabKey(d.id), mine = tabName(d.id), plain = d.ch ? d.ch.name : 'Other';
+    var save = function (n) { if (n && n !== plain) org.items[k] = { n: n }; else delete org.items[k]; saveOrg(); renderFolders(); };
+    var btns = [{ text: 'Cancel', ghost: true }];
+    if (mine) btns.push({ text: d.ch ? 'Use the chapter\'s name' : 'Call it Other again', ghost: true, fn: function () { save(''); } });
+    btns.push({ text: 'Save', keep: true, fn: function () { var n = String($('tb-name').value || '').trim().slice(0, 40); if (!n) { $('tb-name').focus(); return; } closeModal(); save(n); } });
+    modal('<h2>Rename this tab</h2>' + (d.ch ? '<p>Only the name on your tab changes. Mr Cedric\'s homework for ' + esc(d.ch.name) + ' still comes here by itself.</p>' : '') +
+      '<label class="fld-label" for="tb-name">Name</label><input class="fld-in" id="tb-name" maxlength="40" value="' + esc(mine || plain) + '" placeholder="For example: Light">', btns);
+    setTimeout(function () { var i = $('tb-name'); if (i) { i.focus(); i.select(); } }, 50);
+  }
   function renderFolders() {
     var org = S.org || { folders: [], items: {}, notes: [] };
     var chs = chFolders(), chOf = function (id) { return chs.filter(function (c) { return c.id === id; })[0] || null; };
@@ -1806,18 +1820,18 @@
     // the dividers, in the order they hang in the binder
     var divs = [{ id: 'all', label: 'All', title: 'Everything', color: '#6E7591' }];
     var chNo = function (c) { var m = bdChLabel(c).match(/^Ch (\d+)$/); return m ? Number(m[1]) : 999; };
-    chs.slice().sort(function (x, y) { return chNo(x) - chNo(y) || String(x.name).localeCompare(String(y.name)); }).forEach(function (c) { divs.push({ id: c.id, label: bdChLabel(c), title: c.name, color: c.color || '#5B7BD6', ch: c }); });
+    chs.slice().sort(function (x, y) { return chNo(x) - chNo(y) || String(x.name).localeCompare(String(y.name)); }).forEach(function (c) { var t = tabName(c.id); divs.push({ id: c.id, label: t || bdChLabel(c), title: t || c.name, color: c.color || '#5B7BD6', ch: c }); });
     org.folders.forEach(function (f) { divs.push({ id: f.id, label: f.name, title: f.name, color: COLS[f.color] || '#8B5CF6', own: f }); });
-    if (count('none') || S.fsel === 'none') divs.push({ id: 'none', label: 'Other', title: 'Not in a folder', color: '#5A607D' });
+    if (count('none') || S.fsel === 'none') divs.push({ id: 'none', label: tabName('none') || 'Other', title: tabName('none') || 'Not in a folder', color: '#5A607D' });
     var cur = folderOf(S.fsel), chc = chOf(S.fsel), dv = divs.filter(function (d) { return d.id === S.fsel; })[0] || divs[0];
     var left = NOTE_MAX - org.notes.length;
     var top = '<div class="bd-top"><input class="fv-find" id="fv-find" type="search" placeholder="Find a worksheet or note" aria-label="Find a worksheet or note" value="' + esc(S.q) + '">' +
       '<span class="note-left">' + (left > 0 ? left + ' of ' + NOTE_MAX + ' notes left' : 'You have ' + NOTE_MAX + ' notes. Delete one to make another.') + '</span>' +
       '<button class="btn small" id="fv-newnote"' + (left > 0 ? '' : ' disabled') + '>+ New note</button></div>';
     var head = '<div class="bd-head" style="--c:' + esc(dv.color) + '"><h2><i></i>' + esc(dv.title) + '</h2><span class="sp"></span>' +
-      (cur ? '<button class="btn small ghost" id="fv-editf">Rename or colour</button>' : '') +
-      '<p class="sub">' + (chc ? (chc.subject ? esc(chc.subject) + '. ' : '') + 'Your teacher\'s homework for this chapter files itself here.' :
-        cur ? 'Your own tab. Drag a worksheet or note onto it to file it here.' : S.fsel === 'none' ? 'Worksheets and notes that are not in a chapter or a folder.' :
+      (cur ? '<button class="btn small ghost" id="fv-editf">Rename tab</button>' : dv.id !== 'all' ? '<button class="btn small ghost" id="fv-rentab">Rename tab</button>' : '') +
+      '<p class="sub">' + (chc ? (tabName(chc.id) ? esc(chc.name) + '. ' : chc.subject ? esc(chc.subject) + '. ' : '') + 'Your teacher\'s homework for this chapter files itself here.' :
+        cur ? 'Your own tab. Drag a worksheet or note onto it to file it here. Tap the tab again to rename it.' : S.fsel === 'none' ? 'Worksheets and notes that are not in a chapter or a folder.' :
         'Everything in your file. To file something, hold it and drag it onto a tab, or tap ⋯.') + '</p></div>';
     var cards = [];
     S.list.forEach(function (a, i) {
@@ -1849,9 +1863,10 @@
       '<div class="bd-pages">' + head + shelf + '</div><div class="bd-divs" role="tablist" aria-label="The tabs in my file">' + tabs + '</div></div></div>' +
       '<p class="bd-live" id="bd-live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></p></div>';
     wireFind();
-    Array.prototype.forEach.call(document.querySelectorAll('.bd-div[data-f]'), function (b) { b.onclick = function () { if (S.bdDragged) return; S.fsel = b.getAttribute('data-f'); renderFolders(); }; });
+    Array.prototype.forEach.call(document.querySelectorAll('.bd-div[data-f]'), function (b) { b.onclick = function () { if (S.bdDragged) return; var id = b.getAttribute('data-f'); if (id === S.fsel && id !== 'all') { if (cur) folderBox(cur); else tabRenameBox(dv); return; } S.fsel = id; renderFolders(); }; });
     $('fv-newf').onclick = function () { folderBox(null); };
     if ($('fv-editf')) $('fv-editf').onclick = function () { folderBox(cur); };
+    if ($('fv-rentab')) $('fv-rentab').onclick = function () { tabRenameBox(dv); };
     $('fv-newnote').onclick = function () { newNoteBox(cur ? cur.id : ''); };
     Array.prototype.forEach.call(document.querySelectorAll('.bd-sheet'), function (el) {
       var go = function () { if (el.hasAttribute('data-w')) worksheetBox(S.list[Number(el.getAttribute('data-w'))]); else openNote(org.notes[Number(el.getAttribute('data-n'))]); };
@@ -1986,25 +2001,25 @@
 
   function folderBox(f) {
     var org = S.org; if (!org) return;
-    if (!f && org.folders.length >= 20) { alertBox('Too many folders', 'You can have up to 20 folders.'); return; }
+    if (!f && org.folders.length >= 20) { alertBox('Too many tabs', 'You can have up to 20 tabs of your own.'); return; }
     var name = f ? f.name : '', color = f ? f.color : COL_ORDER[org.folders.length % COL_ORDER.length];
     var btns = [{ text: 'Cancel', ghost: true }];
-    if (f) btns.push({ text: 'Delete folder', ghost: true, fn: function () {
-      modal('<h2>Delete "' + esc(f.name) + '"?</h2><p>The worksheets and notes in it are not deleted. They move to Not in a folder.</p>', [{ text: 'Cancel', ghost: true }, { text: 'Delete folder', fn: function () {
+    if (f) btns.push({ text: 'Delete tab', ghost: true, fn: function () {
+      modal('<h2>Delete "' + esc(f.name) + '"?</h2><p>The worksheets and notes in it are not deleted. Worksheets go back to their chapter, and notes go to Other.</p>', [{ text: 'Cancel', ghost: true }, { text: 'Delete tab', fn: function () {
         org.folders = org.folders.filter(function (x) { return x.id !== f.id; });
         Object.keys(org.items).forEach(function (k) { if (org.items[k].f === f.id) delete org.items[k].f; });
         org.notes.forEach(function (x) { if (x.f === f.id) x.f = ''; });
         S.fsel = 'all'; saveOrg(); renderFolders();
       } }]);
     } });
-    btns.push({ text: f ? 'Save' : 'Make folder', keep: true, fn: function () {
+    btns.push({ text: f ? 'Save' : 'Make tab', keep: true, fn: function () {
       var n = String($('fb-name').value || '').trim().slice(0, 40);
       if (!n) { $('fb-name').focus(); return; }
       closeModal();
       if (f) { f.name = n; f.color = color; } else { var nf = { id: newFolderId(), name: n, color: color }; org.folders.push(nf); S.fsel = nf.id; }
       saveOrg(); renderFolders();
     } });
-    modal('<h2>' + (f ? 'Rename or colour this folder' : 'New folder') + '</h2><label class="fld-label" for="fb-name">Name</label><input class="fld-in" id="fb-name" maxlength="40" value="' + esc(name) + '" placeholder="For example: Light, or Revision for the test">' +
+    modal('<h2>' + (f ? 'Rename or colour this tab' : 'New tab') + '</h2><label class="fld-label" for="fb-name">Name</label><input class="fld-in" id="fb-name" maxlength="40" value="' + esc(name) + '" placeholder="For example: Light, or Revision for the test">' +
       '<label class="fld-label">Colour</label>' + swatches('fb-col', color, false), btns);
     pickOne('fb-col', 'data-c', function (c) { color = c; });
     setTimeout(function () { var i = $('fb-name'); if (i) i.focus(); }, 50);
