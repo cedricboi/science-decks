@@ -1,14 +1,13 @@
 {
-  "build": "2026-10-31-binder-fullscreen",
-  "seq": 45,
-  "ref": "600e50531be71b6862fe5dd3ff5ae0b0e5001925",
-  "title": "learnwithmrcedric: My files as a binder, and full screen worksheets",
+  "build": "2026-10-31-rename-tabs",
+  "seq": 46,
+  "ref": "06ab036e9993369ec76aec0593c3816626e2f43d",
+  "title": "learnwithmrcedric: students can rename every tab in My files",
   "notes": [
     "No server code to paste: the pages update themselves within about ten minutes",
-    "My files opens as a ring binder: coloured tabs down the side for All, each chapter and each of the student's own tabs, and + for a new tab",
-    "Students file a worksheet or note by holding it and dragging it onto a tab, or with its ⋯ button",
-    "Full screen on any worksheet (to do, handed in, marked or try again) now fills the whole screen in the student app",
-    "In full screen the toolbar can be dragged anywhere by its grip and hidden behind a small round button. The iPad remembers where it was put",
+    "Every tab in My files except All can be renamed: the student's own tabs, the chapter tabs and Other",
+    "Tap Rename tab at the top of the page, or tap the open tab again",
+    "A renamed chapter tab still collects that chapter's homework by itself, and Use the chapter's name puts the name back",
     "The Teacher Hub is unchanged"
   ],
   "files": [
@@ -46,7 +45,7 @@
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "7f644ffccc5a569b6646743669448ce8f672a3324414febe24b025c7dedff76f"
+      "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
     },
     {
       "name": "Hub",
@@ -104,6 +103,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 46,
+      "build": "2026-10-31-rename-tabs",
+      "ref": "06ab036e9993369ec76aec0593c3816626e2f43d",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 45,
       "build": "2026-10-31-binder-fullscreen",
@@ -453,67 +510,9 @@
       ]
     },
     {
-      "seq": 39,
-      "build": "2026-10-27-dark-black-hole",
-      "ref": "70e371e12fffd271a91af42b638928dac8f3c179",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "f2d2e13054fa90f437e4cea5d8cc96481021988a4457bc427594d01df2c44230"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "8f8a9e5e915300a6ea67a4b1ebb32014526b2e90e50c5ae8230f4138cc2e5f57"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "d09b4d28a97b30f1e5941da708b4d79d8bcf4f616c4807ef912151d3203bbbdf"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
       "seq": 33,
       "build": "2026-10-27-old-pages-retired",
-      "ref": "600e50531be71b6862fe5dd3ff5ae0b0e5001925",
+      "ref": "06ab036e9993369ec76aec0593c3816626e2f43d",
       "needsServer": 33,
       "files": [
         {
@@ -529,7 +528,7 @@
         {
           "name": "Homework",
           "path": "Homework.html",
-          "sha256": "7f644ffccc5a569b6646743669448ce8f672a3324414febe24b025c7dedff76f"
+          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
         },
         {
           "name": "HubTeacher",
@@ -669,5 +668,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/5zzPWs9E8TUuTD4Kovmkvg",
-  "classicRef": "600e50531be71b6862fe5dd3ff5ae0b0e5001925"
+  "classicRef": "06ab036e9993369ec76aec0593c3816626e2f43d"
 }
