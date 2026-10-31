@@ -1,18 +1,15 @@
 {
-  "build": "2026-10-28-teacher-hub-boards",
-  "seq": 44,
-  "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
-  "title": "learnwithmrcedric: the Teacher Hub as the approved boards",
+  "build": "2026-10-31-binder-fullscreen",
+  "seq": 45,
+  "ref": "600e50531be71b6862fe5dd3ff5ae0b0e5001925",
+  "title": "learnwithmrcedric: My files as a binder, and full screen worksheets",
   "notes": [
-    "The pages update themselves within about ten minutes. Admin also needs the release 43 server code (App.gs and Code.gs) pasted once",
-    "Overview is the landing page: each class's next steps on its own row, the Let in bar, and everything that needs you",
-    "The top bar is the boards': Overview, Library, Names shown, and a Settings menu with Points and night market, Computing, Admin, Settings and Tracker",
-    "Class page as the board: no chapter chips or week strip, Lesson library and See it as a student kept, the rest under More; Returned; tap a name for the student's record",
-    "The worksheet package and the Library are their own pages; the Library has search and no more 'undefined lessons'",
-    "Marking has the Scripts list beside the paper; every tool you kept is still there",
-    "Points: choose a class first; prizes to hand out as a short list; change prizes on their cards",
-    "Settings in plain groups (no New version switch); Computing gives Coaches like lessons and opens each Coach to see every student's work",
-    "Admin: class lists, temporary passwords, sign-in slips, your username, password and PIN"
+    "No server code to paste: the pages update themselves within about ten minutes",
+    "My files opens as a ring binder: coloured tabs down the side for All, each chapter and each of the student's own tabs, and + for a new tab",
+    "Students file a worksheet or note by holding it and dragging it onto a tab, or with its ⋯ button",
+    "Full screen on any worksheet (to do, handed in, marked or try again) now fills the whole screen in the student app",
+    "In full screen the toolbar can be dragged anywhere by its grip and hidden behind a small round button. The iPad remembers where it was put",
+    "The Teacher Hub is unchanged"
   ],
   "files": [
     {
@@ -49,7 +46,7 @@
       "name": "Homework",
       "type": "HTML",
       "path": "Homework.html",
-      "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
+      "sha256": "7f644ffccc5a569b6646743669448ce8f672a3324414febe24b025c7dedff76f"
     },
     {
       "name": "Hub",
@@ -85,7 +82,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
+      "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
     },
     {
       "name": "Styles",
@@ -107,6 +104,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 45,
+      "build": "2026-10-31-binder-fullscreen",
+      "ref": "600e50531be71b6862fe5dd3ff5ae0b0e5001925",
+      "needsServer": 34,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "7f644ffccc5a569b6646743669448ce8f672a3324414febe24b025c7dedff76f"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 44,
       "build": "2026-10-28-teacher-hub-boards",
@@ -458,7 +513,7 @@
     {
       "seq": 33,
       "build": "2026-10-27-old-pages-retired",
-      "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
+      "ref": "600e50531be71b6862fe5dd3ff5ae0b0e5001925",
       "needsServer": 33,
       "files": [
         {
@@ -474,7 +529,7 @@
         {
           "name": "Homework",
           "path": "Homework.html",
-          "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
+          "sha256": "7f644ffccc5a569b6646743669448ce8f672a3324414febe24b025c7dedff76f"
         },
         {
           "name": "HubTeacher",
@@ -499,7 +554,7 @@
         {
           "name": "Student",
           "path": "Student.html",
-          "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
+          "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
         },
         {
           "name": "Styles",
@@ -614,5 +669,5 @@
     }
   ],
   "codePage": "https://claude.ai/artifact/5zzPWs9E8TUuTD4Kovmkvg",
-  "classicRef": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2"
+  "classicRef": "600e50531be71b6862fe5dd3ff5ae0b0e5001925"
 }
