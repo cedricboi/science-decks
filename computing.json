@@ -208,6 +208,196 @@
     "DRINKS_Farah.xlsx",
     "POOL.xlsx"
    ]
+  },
+  {
+   "id": "9.2",
+   "title": "Logical Functions",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.2.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "SCORE.xlsx",
+    "PAPERDRIVE.xlsx",
+    "SPORTSDAY.xlsx",
+    "FLAGDAY_Wei.xlsx",
+    "READATHON.xlsx"
+   ]
+  },
+  {
+   "id": "9.3a",
+   "title": "Round, Sum and Average",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.3a.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "prac1",
+     "P5 Practice"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "RECORDS.xlsx",
+    "GARDENING.xlsx",
+    "RECYCLING.xlsx",
+    "LONGJUMP_Hafiz.xlsx",
+    "WEATHER.xlsx",
+    "STEPCOUNT.xlsx"
+   ]
+  },
+  {
+   "id": "9.3b",
+   "title": "Counting",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.3b.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "prac1",
+     "P5 Practice"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "FORMULA.xlsx",
+    "CELLS.xlsx",
+    "HEATS.xlsx",
+    "READING_Wei.xlsx",
+    "STUDENTLIST.xlsx",
+    "ECODRIVE.xlsx"
+   ]
+  },
+  {
+   "id": "9.4",
+   "title": "Text Functions",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.4.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "STUDENTINFO.xlsx",
+    "BUSPASS.xlsx",
+    "DELIVERY.xlsx",
+    "BIBS_WeiLing.xlsx",
+    "DEVICES.xlsx"
+   ]
+  },
+  {
+   "id": "9.5",
+   "title": "Lookup Functions",
+   "chapter": "Chapter 9 Data Processing",
+   "file": "Spreadsheet Coach 9.5.html",
+   "parts": [
+    [
+     "follow",
+     "P1 Follow Me"
+    ],
+    [
+     "copilot",
+     "P2 Copilot"
+    ],
+    [
+     "solo",
+     "P3 Solo"
+    ],
+    [
+     "fixit",
+     "P4 Fix It"
+    ],
+    [
+     "prac1",
+     "P5 Practice"
+    ],
+    [
+     "exit",
+     "Exit Task"
+    ]
+   ],
+   "files": [
+    "COUNTRIES.xlsx",
+    "PHONEBILL.xlsx",
+    "BUBBLETEA.xlsx",
+    "CARPARK_Wei.xlsx",
+    "WORKSHOP.xlsx",
+    "CAMP.xlsx"
+   ]
   }
  ]
 }
