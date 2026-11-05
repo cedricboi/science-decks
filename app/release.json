@@ -1,21 +1,21 @@
 {
-  "build": "2026-10-31-rename-tabs",
-  "seq": 46,
-  "ref": "06ab036e9993369ec76aec0593c3816626e2f43d",
-  "title": "learnwithmrcedric: students can rename every tab in My files",
+  "build": "2026-11-05-ch10-progress",
+  "seq": 47,
+  "ref": "7622f01f21ef3633d6372f30ce534221c2c6a632",
+  "title": "Computing: the Chapter 10 interactive textbook reports progress to the Teacher Hub",
   "notes": [
-    "No server code to paste: the pages update themselves within about ten minutes",
-    "Every tab in My files except All can be renamed: the student's own tabs, the chapter tabs and Other",
-    "Tap Rename tab at the top of the page, or tap the open tab again",
-    "A renamed chapter tab still collects that chapter's homework by itself, and Use the chapter's name puts the name back",
-    "The Teacher Hub is unchanged"
+    "Paste App.gs and ComputingCode.gs into Apps Script, then deploy a new version. The pages update themselves once that is done",
+    "The Chapter 10 Networking Interactive Textbook (10.B) opens from the Computing page like a Coach, and every mission, quick check and the boss game it finishes is saved to the hub",
+    "Open 10.B to a class in the Computing tab to see who is finished, who is working on it, who is stuck and who has not started, by section or by activity",
+    "A new Computing progress tab in the sheet keeps each student's best save and tries. The Coaches are unchanged",
+    "Put the textbook file in Worksheet Hub > Computing > Coaches and task files, like a Coach"
   ],
   "files": [
     {
       "name": "App",
       "type": "SERVER_JS",
       "path": "App.gs",
-      "sha256": "616bed7e3e5ea2d60d4b283504009d518cc05bb68b234c49663ebc0a187ed919"
+      "sha256": "70c6d1abab56873d34d2c2a4aea2db25ec305dc9331b50569a295b77ac1ba89d"
     },
     {
       "name": "Code",
@@ -27,13 +27,13 @@
       "name": "Computing",
       "type": "HTML",
       "path": "Computing.html",
-      "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+      "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
     },
     {
       "name": "ComputingCode",
       "type": "SERVER_JS",
       "path": "ComputingCode.gs",
-      "sha256": "c52b820ae4032ae0450f1f1bf959943012694de4148a271e2dfc05111fc70459"
+      "sha256": "0cfd817951e211a0012e9d0d0caf079d22ebe5da298f0a4018c2e12047f626ff"
     },
     {
       "name": "Guide",
@@ -57,7 +57,7 @@
       "name": "HubTeacher",
       "type": "HTML",
       "path": "HubTeacher.html",
-      "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
+      "sha256": "0c8935591afc486f6ff4b5b32abfa9b8efadbde8aef3587caac08e1549506157"
     },
     {
       "name": "Ink",
@@ -103,6 +103,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 47,
+      "build": "2026-11-05-ch10-progress",
+      "ref": "7622f01f21ef3633d6372f30ce534221c2c6a632",
+      "needsServer": 47,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "0c8935591afc486f6ff4b5b32abfa9b8efadbde8aef3587caac08e1549506157"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 46,
       "build": "2026-10-31-rename-tabs",
@@ -570,6 +628,17 @@
     }
   ],
   "server": [
+    {
+      "seq": 47,
+      "files": [
+        "App.gs",
+        "ComputingCode.gs"
+      ],
+      "notes": [
+        "Release 47 server code: paste App.gs and ComputingCode.gs into Apps Script, then deploy a new version",
+        "It lets the Chapter 10 interactive textbook save progress to the hub and the Teacher Hub show the book grid. Until you paste it, the Coaches work as before and the textbook keeps its saves in the browser"
+      ]
+    },
     {
       "seq": 43,
       "files": [
