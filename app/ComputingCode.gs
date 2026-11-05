@@ -14,14 +14,22 @@
 //     Drive, in Worksheet Hub > Computing > Coaches and task files. computing.json on the lesson site only lists their
 //     names. Students download a Coach from the Computing page, open it on their laptop and sign in once inside it.
 //     The teacher opens each Coach to a class in the Teacher Hub's Computing tab.
+//   - Release 47: the interactive textbooks (kind 'book' in computing.json). Their activities are not Excel files
+//     (scene missions, picture questions, drag and drop, a boss game), so each one is a row in the "Computing progress"
+//     tab, one row per student and activity, kept up to date with the best score and the number of tries. The textbook
+//     reads its own rows back, so a student who opens it on another laptop carries on where they were.
 //
 // One web address, as before:
 //   /exec?computing        the students' computing page
-//   doPost { api: 'cmp' }  the Coaches: sign in, save a checked file, list files
+//   doPost { api: 'cmp' }  the Coaches: sign in, save a checked file, list files, save and read back textbook progress
 
 var CMP_ROSTER_TAB = 'Computing students';
 var CMP_LOG_TAB = 'Computing files';
 var CMP_LOG_COLS = ['Saved at', 'Class', 'Code', 'Coach', 'Part', 'Part name', 'Try', 'Score', 'Out of', 'File name', 'File ID', 'Upload ID'];
+var CMP_PROG_TAB = 'Computing progress';
+var CMP_PROG_COLS = ['When', 'Class', 'Code', 'Book', 'Activity', 'Kind', 'Score', 'Of', 'Tries', 'UID'];
+var CMP_PROG_KINDS = ['mission', 'mcq', 'dnd', 'tf', 'order', 'game', 'section'];
+var CMP_PROG_MAX = 60;                   // activities in one 'progress' call
 var CMP_FOLDER = 'Computing';
 var CMP_MAX_BYTES = 8 * 1024 * 1024;     // an Excel file from a Coach task is far smaller than this
 var CMP_ASSETS = 'Coaches and task files';
@@ -206,7 +214,10 @@ function apiCmpSignOutAll(ct) {
 
 /* ---------- the Coaches on the lesson site ---------- */
 
-/* computing.json: { coaches: [{ id: '8.4', title, chapter, file, parts: [[id, name]], files: [paths] }] }, ten minutes. */
+/* computing.json: { coaches: [{ id: '8.4', title, chapter, file, parts: [[id, name]], files: [paths] }] }, ten minutes.
+   Release 47: an entry may carry kind 'book' (an interactive textbook; the default is 'coach') and an activities list,
+   [[id, name, section, kind]], so the Teacher Hub can name the columns of its progress grid (kind is one of
+   CMP_PROG_KINDS and may be left out, which means mission). */
 function cmpCatalog_() {
   var cache = CacheService.getScriptCache(), hit = cache.get('cmp_cat');
   if (hit) { try { return JSON.parse(hit); } catch (err) { /* read again */ } }
@@ -216,9 +227,11 @@ function cmpCatalog_() {
     if (res.getResponseCode() === 200) {
       var r = JSON.parse(res.getContentText('UTF-8'));
       cat.coaches = (Array.isArray(r.coaches) ? r.coaches : []).filter(function (c) { return c && /^[\w.-]{1,12}$/.test(String(c.id || '')); }).slice(0, 80).map(function (c) {
-        return { id: String(c.id), title: String(c.title || '').slice(0, 80), chapter: String(c.chapter || '').slice(0, 80), file: String(c.file || '').split('/').pop().slice(0, 120),
+        return { id: String(c.id), kind: c.kind === 'book' ? 'book' : 'coach', title: String(c.title || '').slice(0, 80), chapter: String(c.chapter || '').slice(0, 80), file: String(c.file || '').split('/').pop().slice(0, 120),
           parts: (Array.isArray(c.parts) ? c.parts : []).slice(0, 20).map(function (p) { return [String(p[0]).slice(0, 12), String(p[1] || p[0]).slice(0, 40)]; }),
-          files: (Array.isArray(c.files) ? c.files : []).slice(0, 30).map(function (f) { return String(f).split('/').pop().slice(0, 120); }) };
+          files: (Array.isArray(c.files) ? c.files : []).slice(0, 30).map(function (f) { return String(f).split('/').pop().slice(0, 120); }),
+          activities: (Array.isArray(c.activities) ? c.activities : []).filter(function (a) { return Array.isArray(a) && /^[\w.-]{1,40}$/.test(String(a[0] || '')); }).slice(0, 120)
+            .map(function (a) { return [String(a[0]), String(a[1] || a[0]).slice(0, 60), String(a[2] || '').slice(0, 20), CMP_PROG_KINDS.indexOf(a[3]) >= 0 ? a[3] : 'mission']; }) };
       });
       cachePut_('cmp_cat', JSON.stringify(cat), 600);
       cachePut_('cmp_cat_last', JSON.stringify(cat), 21600);
@@ -319,6 +332,84 @@ function cmpFileOf_(who, id) {
   return { ok: true, name: name.replace(/[\\\/:*?"<>|]+/g, ' '), data: Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()) };
 }
 
+/* ---------- the interactive textbooks' progress (release 47) ---------- */
+//
+// One row per student, book and activity in the "Computing progress" tab. A row is made the first time an activity is
+// saved and brought up to date after that: the best score stays, Tries counts every save, When is the newest save and
+// UID is the newest save's id. A save that comes in twice (the same UID, from a retry) changes nothing.
+
+function cmpProgSheet_() { return cmpTab_(CMP_PROG_TAB, CMP_PROG_COLS); }
+/* Every progress row, as objects, with its row number in the sheet. */
+function cmpProg_() {
+  var sh = cmpProgSheet_(), last = sh.getLastRow();
+  if (last < 2) return [];
+  return sh.getRange(2, 1, last - 1, CMP_PROG_COLS.length).getValues().map(function (r, i) {
+    return { row: i + 2, t: r[0] ? new Date(r[0]).getTime() : 0, cls: cmpNormClass_(r[1]), code: String(r[2]), book: String(r[3]), id: String(r[4]), kind: String(r[5]),
+      score: r[6] === '' ? null : Number(r[6]), of: r[7] === '' ? null : Number(r[7]), tries: Number(r[8]) || 1, uid: String(r[9]) };
+  });
+}
+function cmpProgKey_(x) { return x.cls + '|' + x.code + '|' + x.book + '|' + x.id; }
+function cmpProgNum_(v) { return v == null || v === '' || isNaN(Number(v)) ? '' : Math.max(0, Math.round(Number(v))); }
+/* Whether a new save is at least as good as the row's best: by the share of the marks when both have marks, else by
+   the score itself (a game's best score has no marks). A save with no score never beats one with a score. */
+function cmpProgBetter_(score, of, oldScore, oldOf) {
+  if (oldScore == null || oldScore === '') return true;
+  if (score == null || score === '') return false;
+  if (of != null && of !== '' && oldOf != null && oldOf !== '') {
+    var a = score / Math.max(1, of), b = oldScore / Math.max(1, oldOf);
+    return a !== b ? a > b : score >= oldScore;
+  }
+  return score >= oldScore;
+}
+
+/* d: { ct, book, items: [{ id, kind, score, of, uid }] }, up to CMP_PROG_MAX items. The book must be open to the
+   student's class, as a Coach must be for its files. Gives { ok: true, saved: n, skipped: n }. */
+function cmpProgress_(d) {
+  var who = cmpWho_(d.ct), book = String(d.book || '');
+  if (!/^[\w.-]{1,12}$/.test(book)) throw new Error('This book is not known.');
+  var c = cmpCoach_(book);
+  if (!c || cmpOpenFor_(who.cls).indexOf(c.id) < 0) throw new Error('This book is not open to your class.');
+  var items = Array.isArray(d.items) ? d.items.slice(0, CMP_PROG_MAX) : [];
+  if (!items.length) throw new Error('There is nothing to save.');
+  items = items.map(function (it) {
+    it = it || {};
+    var id = String(it.id || ''), kind = String(it.kind || ''), uid = it.uid == null ? '' : String(it.uid);
+    if (!/^[\w.-]{1,40}$/.test(id)) throw new Error('This activity is not known.');
+    if (CMP_PROG_KINDS.indexOf(kind) < 0) throw new Error('This kind of activity is not known.');
+    if (uid && !/^[\w-]{1,40}$/.test(uid)) throw new Error('This save has no proper id.');
+    return { id: id, kind: kind, score: cmpProgNum_(it.score), of: cmpProgNum_(it.of), uid: uid };
+  });
+  return withLock_(function () {
+    var sh = cmpProgSheet_(), rows = cmpProg_(), by = {}, seen = {};
+    rows.forEach(function (x) { by[cmpProgKey_(x)] = x; if (x.uid) seen[x.uid] = 1; });
+    var now = new Date(), saved = 0, skipped = 0, fresh = [], W = CMP_PROG_COLS.length;
+    items.forEach(function (it) {
+      if (it.uid && seen[it.uid]) { skipped++; return; }
+      if (it.uid) seen[it.uid] = 1;
+      var k = who.cls + '|' + who.code + '|' + book + '|' + it.id, old = by[k];
+      if (old) {
+        // the best score stays, the tries go up, and the time and id are the newest save's
+        if (cmpProgBetter_(it.score, it.of, old.score, old.of)) { old.score = it.score === '' ? null : it.score; old.of = it.of === '' ? null : it.of; }
+        old.tries = old.tries + 1; old.kind = it.kind; old.uid = it.uid; old.t = now.getTime();
+        if (old.row) sh.getRange(old.row, 1, 1, W).setValues([cmpProgRow_(old)]);   // a row made earlier in this call is written with the new ones below
+      } else {
+        fresh.push(by[k] = { row: 0, t: now.getTime(), cls: who.cls, code: who.code, book: book, id: it.id, kind: it.kind, score: it.score === '' ? null : it.score, of: it.of === '' ? null : it.of, tries: 1, uid: it.uid });
+      }
+      saved++;
+    });
+    if (fresh.length) sh.getRange(sh.getLastRow() + 1, 1, fresh.length, W).setValues(fresh.map(cmpProgRow_));
+    return { ok: true, saved: saved, skipped: skipped };
+  }, 20000);
+}
+function cmpProgRow_(x) { return [new Date(x.t), x.cls, x.code, x.book, x.id, x.kind, x.score == null ? '' : x.score, x.of == null ? '' : x.of, x.tries, x.uid]; }
+/* The student's own rows for one book: { ok: true, items: [{ id, kind, score, of, tries, t }] }. */
+function cmpProgressOf_(who, book) {
+  book = String(book || '');
+  if (!/^[\w.-]{1,12}$/.test(book)) throw new Error('This book is not known.');
+  return { ok: true, items: cmpProg_().filter(function (x) { return x.cls === who.cls && x.code === who.code && x.book === book; })
+    .map(function (x) { return { id: x.id, kind: x.kind, score: x.score, of: x.of, tries: x.tries, t: x.t }; }) };
+}
+
 /* ---------- the student's page ---------- */
 
 function cmpPage_() {
@@ -347,6 +438,8 @@ function cmpPost_(d) {
     if (d.op === 'me') return apiCmpMe(d.ct);
     if (d.op === 'save') return cmpSave_(d);
     if (d.op === 'files') return { ok: true, files: cmpFilesOf_(cmpWho_(d.ct)) };
+    if (d.op === 'progress') return cmpProgress_(d);
+    if (d.op === 'progressOf') return cmpProgressOf_(cmpWho_(d.ct), d.book);
   } catch (err) {
     return { ok: false, error: String(err && err.message || err) };
   }
@@ -401,6 +494,55 @@ function api_t_cmpClass(token, cls) {
     cells: by
   };
 }
+/* Which bucket of the progress grid an activity counts in: missions, questions, the game, or none (a section marker). */
+function cmpProgBucket_(kind) { return kind === 'mission' ? 'm' : kind === 'game' ? 'g' : kind === 'section' ? '' : 'q'; }
+/* A mission is done when its best score is all its marks (or it was saved without marks); a question is right when
+   its best score is all its marks. */
+function cmpProgDone_(x) { return x.of == null ? x.score == null || x.score > 0 : x.score != null && x.score >= x.of; }
+/* A class's progress in one textbook (release 47): the book's sections and activities (from computing.json, plus any
+   activity the book saved that the list does not name, under Other), and for each student every activity's best
+   score, marks, tries and time, with each section's missions done, questions right and best game score. */
+function api_t_cmpBook(token, cls, bookId) {
+  teacher_(token);
+  cls = cmpNormClass_(cls); bookId = String(bookId || '');
+  if (!/^[\w.-]{1,12}$/.test(bookId)) throw new Error('Choose a book.');
+  var c = cmpCoach_(bookId);
+  if (!c) throw new Error('That book is not on the lesson site (computing.json).');
+  var list = cmpRoster_()[cls] || [], props = PropertiesService.getScriptProperties();
+  var secs = [], secBy = {}, actKind = {};
+  var section = function (name) { if (!secBy[name]) { secBy[name] = { name: name, acts: [], mt: 0, qt: 0, gt: 0 }; secs.push(secBy[name]); } return secBy[name]; };
+  (c.activities || []).forEach(function (a) {
+    if (actKind[a[0]]) return;
+    var kind = CMP_PROG_KINDS.indexOf(a[3]) >= 0 ? a[3] : 'mission', s = section(a[2] || 'Activities'), b = cmpProgBucket_(kind);
+    actKind[a[0]] = { kind: kind, sec: s.name }; s.acts.push([a[0], a[1], kind]);
+    if (b === 'm') s.mt++; else if (b === 'q') s.qt++; else if (b === 'g') s.gt++;
+  });
+  var cells = {};
+  cmpProg_().forEach(function (x) {
+    if (x.cls !== cls || x.book !== bookId) return;
+    if (!actKind[x.id]) {   // saved by the book, not named in computing.json
+      var kind = CMP_PROG_KINDS.indexOf(x.kind) >= 0 ? x.kind : 'mission', s = section('Other'), b = cmpProgBucket_(kind);
+      actKind[x.id] = { kind: kind, sec: 'Other' }; s.acts.push([x.id, x.id, kind]);
+      if (b === 'm') s.mt++; else if (b === 'q') s.qt++; else if (b === 'g') s.gt++;
+    }
+    (cells[x.code] = cells[x.code] || {})[x.id] = { score: x.score, of: x.of, tries: x.tries, t: x.t, kind: x.kind };
+  });
+  return {
+    cls: cls, book: bookId, open: cmpOpenFor_(cls).indexOf(bookId) >= 0, sections: secs,
+    students: list.map(function (s) {
+      var a = null; try { a = JSON.parse(props.getProperty('acct_' + acctId_('CMP:' + cls, s.name)) || 'null'); } catch (err) { a = null; }
+      var mine = cells[s.code] || {}, by = {};
+      secs.forEach(function (sec) { by[sec.name] = { md: 0, qr: 0, game: null }; });
+      Object.keys(mine).forEach(function (id) {
+        var k = actKind[id], o = by[k.sec], x = mine[id], b = cmpProgBucket_(k.kind);
+        if (b === 'm') { if (cmpProgDone_(x)) o.md++; }
+        else if (b === 'q') { if (x.of != null && cmpProgDone_(x)) o.qr++; }
+        else if (b === 'g') { if (!o.game || (x.score || 0) > (o.game.score || 0)) o.game = { score: x.score, of: x.of, tries: x.tries }; }
+      });
+      return { name: s.name, reg: s.reg, code: s.code, pin: !!(a && a.ph), cells: mine, secs: by };
+    })
+  };
+}
 /* Sign a computing student out everywhere (kind 'out'), or reset their PIN so they set it up again (kind 'pin'). */
 function api_t_cmpReset(token, cls, name, kind) {
   teacher_(token);
@@ -424,10 +566,10 @@ function cmpAssetState_() {
     return { url: cmpAssetFolder_().getUrl(), total: n, missing: missing };
   } catch (err) { return { url: '', total: 0, missing: [], error: String(err && err.message || err) }; }
 }
-/* Makes the two tabs (if they are not there yet) and gives each student a code. */
+/* Makes the three tabs (if they are not there yet) and gives each student a code. */
 function api_t_cmpSetup(token) {
   teacher_(token);
-  cmpRosterSheet_(); cmpLogSheet_();
+  cmpRosterSheet_(); cmpLogSheet_(); cmpProgSheet_();
   CacheService.getScriptCache().remove('cmp_roster');
   return api_t_cmp(token);
 }

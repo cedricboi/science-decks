@@ -1,5 +1,5 @@
 {
- "about": "The Spreadsheet Coaches for learnwithmrcedric's Computing page (Teacher Hub > Computing). Each Coach is one sub-chapter, and its parts are the file checkers inside it. The files themselves are private: they sit in the teacher's Drive (Worksheet Hub > Computing > Coaches and task files), so this list holds only their names.",
+ "about": "The Spreadsheet Coaches for learnwithmrcedric's Computing page (Teacher Hub > Computing). Each Coach is one sub-chapter, and its parts are the file checkers inside it. The files themselves are private: they sit in the teacher's Drive (Worksheet Hub > Computing > Coaches and task files), so this list holds only their names. An entry with kind \"book\" is an interactive textbook: its activities (missions, questions and the boss game) are not Excel files, so the book saves them to the Computing progress tab, and the activities list here names them for the Teacher Hub, as [id, name, section, kind].",
  "coaches": [
   {
    "id": "8.1",
@@ -397,6 +397,449 @@
     "CARPARK_Wei.xlsx",
     "WORKSHOP.xlsx",
     "CAMP.xlsx"
+   ]
+  },
+  {
+   "id": "10.B",
+   "kind": "book",
+   "title": "Networking Interactive Textbook",
+   "chapter": "Chapter 10 Networking",
+   "file": "Chapter 10 Networking Interactive Textbook.html",
+   "parts": [],
+   "files": [],
+   "activities": [
+    [
+     "scene-booth-m1",
+     "Booth mission 1",
+     "10.1",
+     "mission"
+    ],
+    [
+     "scene-booth-m2",
+     "Booth mission 2",
+     "10.1",
+     "mission"
+    ],
+    [
+     "scene-booth-m3",
+     "Booth mission 3",
+     "10.1",
+     "mission"
+    ],
+    [
+     "scene-booth-m4",
+     "Booth mission 4",
+     "10.1",
+     "mission"
+    ],
+    [
+     "s10-1-flip0",
+     "Flip card 1",
+     "10.1",
+     "mission"
+    ],
+    [
+     "s10-1-flip1",
+     "Flip card 2",
+     "10.1",
+     "mission"
+    ],
+    [
+     "s10-1-flip2",
+     "Flip card 3",
+     "10.1",
+     "mission"
+    ],
+    [
+     "s10-1-flip3",
+     "Flip card 4",
+     "10.1",
+     "mission"
+    ],
+    [
+     "q101a",
+     "Question 10.1a",
+     "10.1",
+     "mcq"
+    ],
+    [
+     "q101b",
+     "Question 10.1b",
+     "10.1",
+     "mcq"
+    ],
+    [
+     "scene-map-m1",
+     "Map mission 1",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-map-m2",
+     "Map mission 2",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-doors-m1",
+     "Doors mission 1",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-doors-m2",
+     "Doors mission 2",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-doors-m3",
+     "Doors mission 3",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-server-m1",
+     "Server mission 1",
+     "10.2",
+     "mission"
+    ],
+    [
+     "scene-server-m2",
+     "Server mission 2",
+     "10.2",
+     "mission"
+    ],
+    [
+     "s10-2-table0",
+     "Table 10.2",
+     "10.2",
+     "dnd"
+    ],
+    [
+     "q102a",
+     "Question 10.2a",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "q102b",
+     "Question 10.2b",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "q102c",
+     "Question 10.2c",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "q102f",
+     "Question 10.2f",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "q102d",
+     "Question 10.2d",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "q102e",
+     "Question 10.2e",
+     "10.2",
+     "mcq"
+    ],
+    [
+     "scene-cafe-m1",
+     "Cafe mission 1",
+     "10.3",
+     "mission"
+    ],
+    [
+     "scene-cafe-m2",
+     "Cafe mission 2",
+     "10.3",
+     "mission"
+    ],
+    [
+     "scene-cafe-m3",
+     "Cafe mission 3",
+     "10.3",
+     "mission"
+    ],
+    [
+     "scene-cafe-m4",
+     "Cafe mission 4",
+     "10.3",
+     "mission"
+    ],
+    [
+     "s10-3-table0",
+     "Table 10.3",
+     "10.3",
+     "dnd"
+    ],
+    [
+     "s10-3-range-cables",
+     "Range of cables",
+     "10.3",
+     "mission"
+    ],
+    [
+     "s10-3-range-wireless",
+     "Range of wireless",
+     "10.3",
+     "mission"
+    ],
+    [
+     "q103a",
+     "Question 10.3a",
+     "10.3",
+     "mcq"
+    ],
+    [
+     "q103c",
+     "Question 10.3c",
+     "10.3",
+     "mcq"
+    ],
+    [
+     "q103b",
+     "Question 10.3b",
+     "10.3",
+     "mcq"
+    ],
+    [
+     "scene-home-m1",
+     "Home mission 1",
+     "10.4",
+     "mission"
+    ],
+    [
+     "scene-home-m2",
+     "Home mission 2",
+     "10.4",
+     "mission"
+    ],
+    [
+     "scene-home-m3",
+     "Home mission 3",
+     "10.4",
+     "mission"
+    ],
+    [
+     "scene-home-m4",
+     "Home mission 4",
+     "10.4",
+     "mission"
+    ],
+    [
+     "q104d",
+     "Question 10.4d",
+     "10.4",
+     "mcq"
+    ],
+    [
+     "q104a",
+     "Question 10.4a",
+     "10.4",
+     "mcq"
+    ],
+    [
+     "q104b",
+     "Question 10.4b",
+     "10.4",
+     "mcq"
+    ],
+    [
+     "q104c",
+     "Question 10.4c",
+     "10.4",
+     "mcq"
+    ],
+    [
+     "scene-cloud-m1",
+     "Cloud mission 1",
+     "10.5",
+     "mission"
+    ],
+    [
+     "scene-cloud-m2",
+     "Cloud mission 2",
+     "10.5",
+     "mission"
+    ],
+    [
+     "scene-cloud-m3",
+     "Cloud mission 3",
+     "10.5",
+     "mission"
+    ],
+    [
+     "scene-cloud-m4",
+     "Cloud mission 4",
+     "10.5",
+     "mission"
+    ],
+    [
+     "sort-storage",
+     "Sort the storage",
+     "10.5",
+     "dnd"
+    ],
+    [
+     "sort-apps",
+     "Sort the apps",
+     "10.5",
+     "dnd"
+    ],
+    [
+     "q105a",
+     "Question 10.5a",
+     "10.5",
+     "mcq"
+    ],
+    [
+     "q105b",
+     "Question 10.5b",
+     "10.5",
+     "mcq"
+    ],
+    [
+     "q105c",
+     "Question 10.5c",
+     "10.5",
+     "mcq"
+    ],
+    [
+     "ord106",
+     "Put in order 10.6",
+     "10.6",
+     "order"
+    ],
+    [
+     "b-form-f1",
+     "Form field 1",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f2",
+     "Form field 2",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f3",
+     "Form field 3",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f4",
+     "Form field 4",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f5",
+     "Form field 5",
+     "10.6",
+     "mission"
+    ],
+    [
+     "q106a",
+     "Question 10.6a",
+     "10.6",
+     "mcq"
+    ],
+    [
+     "q106b",
+     "Question 10.6b",
+     "10.6",
+     "mcq"
+    ],
+    [
+     "q106c",
+     "Question 10.6c",
+     "10.6",
+     "mcq"
+    ],
+    [
+     "b-poster-p1",
+     "Poster part 1",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-poster-p2",
+     "Poster part 2",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-poster-p3",
+     "Poster part 3",
+     "10.7",
+     "mission"
+    ],
+    [
+     "s10-7-table0",
+     "Table 10.7",
+     "10.7",
+     "dnd"
+    ],
+    [
+     "b-site-s1",
+     "Site step 1",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-site-s2",
+     "Site step 2",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-site-s3",
+     "Site step 3",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-site-s4",
+     "Site step 4",
+     "10.7",
+     "mission"
+    ],
+    [
+     "b-site-s5",
+     "Site step 5",
+     "10.7",
+     "mission"
+    ],
+    [
+     "q107a",
+     "Question 10.7a",
+     "10.7",
+     "mcq"
+    ],
+    [
+     "q107b",
+     "Question 10.7b",
+     "10.7",
+     "mcq"
+    ],
+    [
+     "boss-best",
+     "Boss game best score",
+     "Boss game",
+     "game"
+    ]
    ]
   }
  ]

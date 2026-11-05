@@ -3004,6 +3004,14 @@
   .c43-key i.low { background: var(--red-soft, #FCDAD2); box-shadow: inset 0 0 0 1px #FF8A70; } .c43-key i.saved { background: var(--nx-chip); }
   .c43-note { margin: 0; font-size: 13.5px; color: var(--nx-muted); }
   .c43-empty { padding: 18px; border-radius: 14px; background: var(--nx-soft); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; } .c43-empty p { margin: 0; flex: 1 1 320px; color: var(--nx-ink2); }
+  /* Release 47: a textbook's progress grid. One column per section, each cell holding its missions, questions and game
+     chips, or (Details) one column per activity under a row of section names. */
+  .c43-grid th.c43-sec { font: 800 12.5px var(--text); letter-spacing: .04em; color: #2E9A69; border-left: 1px solid var(--nx-line); } :root[data-theme="dark"] .c43-grid th.c43-sec { color: #5ED39C; }
+  .c43-grid th.c43-act { font-weight: 600; text-transform: none; letter-spacing: 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .c43-grid td.c43-first, .c43-grid th.c43-first { border-left: 1px solid var(--nx-line); }
+  .c43-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+  .c43-chips .cmp-sc { font-size: 13px; padding: 2px 7px; } .c43-chips .cmp-sc i { font-size: 11px; letter-spacing: .04em; }
+  .c43-grid .c43-chips .cmp-sc.saved { background: var(--nx-chip); color: var(--nx-ink2); }
   @media (hover: hover) and (pointer: fine) {
     .s43-flow:hover { border-color: color-mix(in srgb, #4FC3F7 45%, var(--nx-line)); }
     .c43-chip:not(.has):hover { border-color: #5ED39C; color: var(--nx-ink); }
@@ -3578,10 +3586,12 @@
      The Spreadsheet Coaches: the computing classes (Computing students tab), which Coaches each class can open, and
      every student's newest checked file for each part, with how many tries. Names come from the Hub; Drive and the
      Computing files tab only hold codes. */
-  var CMP = { data: null, cls: lsGet('wsh_cmpcls') || '', grid: null, coach: '', filt: 'all' };
+  var CMP = { data: null, cls: lsGet('wsh_cmpcls') || '', grid: null, coach: '', filt: 'all', book: null, detail: false };
   function cmpPartShort(name) { var m = /^(P\d+[a-z]?|Exit)/i.exec(String(name || '')); return m ? m[1] : String(name || '').slice(0, 6); }
   function cmpCoach(id) { return ((CMP.data && CMP.data.coaches) || []).filter(function (c) { return c.id === id; })[0] || null; }
   function cmpIsOpen(cls, id) { return ((CMP.data.open || {})[cls] || []).indexOf(id) >= 0; }
+  // Release 47: an interactive textbook (kind 'book' in computing.json) saves activities, not Excel files, so it has its own grid.
+  function cmpIsBook(c) { return !!(c && c.kind === 'book'); }
   function loadCmp() {
     var v = $('view-cmp');
     if (!CMP.data) v.innerHTML = '<div class="w43-page"><p class="nx-muted" style="padding:20px 0">Opening Computing...</p></div>';
@@ -3600,16 +3610,31 @@
     return !any ? 'none' : full === c.parts.length ? 'done' : stuck ? 'stuck' : 'going';
   }
   function cmpStarted(id) {
-    var g = CMP.grid, c = cmpCoach(id); if (!g || g.cls !== CMP.cls || !c) return null;
+    var c = cmpCoach(id);
+    if (cmpIsBook(c)) { var b = cmpBookData(id); return b ? b.students.filter(function (s) { return cmpBookStuOf(b, s) !== 'none'; }).length : null; }
+    var g = CMP.grid; if (!g || g.cls !== CMP.cls || !c) return null;
     return g.students.filter(function (s) { return cmpStuOf(g, c, s) !== 'none'; }).length;
   }
+  /* The book grid already loaded for this class and book, or null. */
+  function cmpBookData(id) { var b = CMP.book; return b && b.cls === CMP.cls && b.book === id ? b : null; }
+  /* A student's standing in a textbook: every mission done and every question right is done; a question tried three
+     times and still not right is stuck; anything saved is going; nothing saved is not started. */
+  function cmpBookStuOf(b, s) {
+    var ids = Object.keys(s.cells || {}); if (!ids.length) return 'none';
+    var md = 0, mt = 0, qr = 0, qt = 0, stuck = false;
+    b.sections.forEach(function (sec) { var o = s.secs[sec.name] || { md: 0, qr: 0 }; md += o.md; mt += sec.mt; qr += o.qr; qt += sec.qt; });
+    b.sections.forEach(function (sec) { sec.acts.forEach(function (a) { var x = s.cells[a[0]]; if (x && cmpBookBucket(a[2]) === 'q' && x.tries >= 3 && !(x.of != null && x.score != null && x.score >= x.of)) stuck = true; }); });
+    return mt + qt > 0 && md === mt && qr === qt ? 'done' : stuck ? 'stuck' : 'going';
+  }
+  function cmpBookBucket(kind) { return kind === 'mission' ? 'm' : kind === 'game' ? 'g' : kind === 'section' ? '' : 'q'; }
+  function cmpBookDone(x) { return x.of == null ? x.score == null || x.score > 0 : x.score != null && x.score >= x.of; }
   function renderCmp() {
     var d = CMP.data, v = $('view-cmp'), list = d.classes.map(function (c) { return c.cls; });
     if (CMP.cls && list.indexOf(CMP.cls) < 0) CMP.cls = '';
     if (!CMP.cls && list.length) CMP.cls = list[0];
     if (CMP.coach && !cmpCoach(CMP.coach)) CMP.coach = '';
     var h = '<div class="w43-page cx38 c43"><header class="w43-ph c43-ph"><div class="c43-pht"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button><h1 class="w43-h1">Computing</h1>' +
-      '<p class="w43-lede">Give Spreadsheet Coaches to your computing classes the way you give lessons, then open any Coach to see who is done, who is stuck and who has not started.</p>' +
+      '<p class="w43-lede">Give Spreadsheet Coaches and interactive textbooks to your computing classes the way you give lessons, then open any one to see who is done, who is stuck and who has not started.</p>' +
       '<div class="nx-acts">' + (d.studentUrl ? '<button class="nx-btn sm ghost" id="cmp-copy" type="button">' + ICON.copy + 'Copy the students\' link</button>' : '') +
       (d.rosterUrl ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">' + ICON.sheet + 'Class lists</a>' : '') + '</div></div>' +
       (list.length ? '<div class="c43-clsbox"><span class="c43-lbl">Computing class</span><div class="c43-cls" role="group" aria-label="Computing class">' + d.classes.map(function (c) {
@@ -3621,9 +3646,11 @@
         '<div class="nx-acts"><button class="nx-btn" id="cmp-setup" type="button">Make the tab</button>' + (d.rosterUrl ? '<a class="nx-btn ghost" target="_blank" rel="noopener" href="' + esc(d.rosterUrl) + '">Open the sheet</a>' : '') + '<button class="nx-btn ghost" id="cmp-again" type="button">' + ICON.refresh + 'I have added them</button></div></div></section></div>';
       v.innerHTML = h; cmpWire(); cx38Watch(v); return;
     }
-    h += CMP.coach ? cmpCoachHtml() : cmpListHtml();
+    var book = CMP.coach && cmpIsBook(cmpCoach(CMP.coach));
+    h += CMP.coach ? (book ? cmpBookHtml() : cmpCoachHtml()) : cmpListHtml();
     v.innerHTML = h + '</div>'; cmpWire(); cx38Watch(v);
     if (!CMP.grid || CMP.grid.cls !== CMP.cls) cmpLoadGrid();
+    if (book && !cmpBookData(CMP.coach)) cmpLoadBook();
   }
   function cmpListHtml() {
     var d = CMP.data, cls = CMP.cls, A = d.assets || { total: 0, missing: [] }, given = (d.open[cls] || []).filter(function (id) { return cmpCoach(id); }).length;
@@ -3642,7 +3669,8 @@
         (left ? '<button type="button" class="nx-btn sm ghost" data-cmpch="' + esc(k) + '">Give whole chapter to ' + esc(cls) + '</button>' : '<span class="c43-alldone">' + CX_ICON.tick + 'All given to ' + esc(cls) + '</span>') + '</div>';
       h += cs.map(function (c) {
         var on = cmpIsOpen(cls, c.id), st = on ? cmpStarted(c.id) : null, n = CMP.grid && CMP.grid.cls === cls ? CMP.grid.students.length : null;
-        return '<div class="c43-row"><span class="c43-num">' + esc(c.id) + '</span><div class="c43-rt"><b>' + esc(c.title) + '</b><small>' + plural(c.parts.length, 'part', 'parts') + ' · ' + plural((c.files || []).length, 'task file', 'task files') + '</small>' +
+        var what = cmpIsBook(c) ? 'Interactive textbook · ' + plural((c.activities || []).length, 'activity', 'activities') : plural(c.parts.length, 'part', 'parts') + ' · ' + plural((c.files || []).length, 'task file', 'task files');
+        return '<div class="c43-row"><span class="c43-num">' + esc(c.id) + '</span><div class="c43-rt"><b>' + esc(c.title) + '</b><small>' + what + '</small>' +
           '<span class="c43-st' + (on ? ' on' : '') + '">' + (on ? 'Open to ' + esc(cls) + (st != null && n != null ? ' · ' + st + ' of ' + n + ' started' : '') : 'Not given to ' + esc(cls) + ' yet') + '</span></div>' +
           '<div class="c43-gv" role="group" aria-label="Give ' + esc(c.id) + '">' + d.classes.map(function (x) {
             var has = cmpIsOpen(x.cls, c.id);
@@ -3689,6 +3717,76 @@
       '<p class="c43-key"><span><i class="full"></i>Full marks</span><span><i class="part"></i>Half or more</span><span><i class="low"></i>Under half</span><span><i class="saved"></i>Saved, not marked</span></p>' +
       '<p class="c43-note">Each cell is the newest try, with &times; the number of tries. Tap it to open that file in Drive. Stuck means under half on a part, or three tries without full marks. Tap a name to reset their PIN.</p>';
     return h + '</div></section>';
+  }
+  /* Release 47: a textbook's page. One row per student and one column per section, each cell with the section's missions
+     done, questions right and best game score; Details widens it to every activity. The same chips as a Coach's grid. */
+  function cmpBookChip(k, text, tag, title) { return '<span class="cmp-sc ' + k + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + (tag ? '<i>' + esc(tag) + '</i>' : '') + esc(text) + '</span>'; }
+  function cmpBookShare(n, t) { return n >= t ? 'full' : n * 2 >= t ? 'part' : 'low'; }
+  function cmpBookSecCell(sec, s) {
+    var o = s.secs[sec.name] || { md: 0, qr: 0, game: null }, chips = [];
+    if (!sec.acts.some(function (a) { return s.cells[a[0]]; })) return '<span class="cmp-none">&middot;</span>';
+    if (sec.mt) chips.push(cmpBookChip(cmpBookShare(o.md, sec.mt), o.md + '/' + sec.mt, 'M', o.md + ' of ' + sec.mt + ' missions done'));
+    if (sec.qt) chips.push(cmpBookChip(cmpBookShare(o.qr, sec.qt), o.qr + '/' + sec.qt, 'Q', o.qr + ' of ' + sec.qt + ' questions right'));
+    if (sec.gt && o.game) chips.push(cmpBookChip(o.game.of != null ? cmpBookShare(o.game.score, o.game.of) : 'saved', o.game.score == null ? 'Played' : String(o.game.score) + (o.game.of != null ? '/' + o.game.of : ''), 'Best', 'Best game score' + (o.game.tries > 1 ? ', ' + plural(o.game.tries, 'game', 'games') : '')));
+    return '<span class="c43-chips">' + chips.join('') + '</span>';
+  }
+  function cmpBookActCell(a, s) {
+    var x = s.cells[a[0]], b = cmpBookBucket(a[2]);
+    if (!x) return '<span class="cmp-none">&middot;</span>';
+    var when = 'Newest save ' + new Date(x.t).toLocaleString() + (x.tries > 1 ? ', ' + plural(x.tries, 'try', 'tries') : ''), more = x.tries > 1 ? ' <i>&times;' + x.tries + '</i>' : '';
+    if (b === 'm') return '<span class="cmp-sc ' + (cmpBookDone(x) ? 'full' : 'low') + '" title="' + esc(when) + '">' + (cmpBookDone(x) ? 'Done' : 'Tried') + more + '</span>';
+    if (b === 'g') return '<span class="cmp-sc ' + (x.of != null ? cmpBookShare(x.score, x.of) : 'saved') + '" title="' + esc(when) + '">' + (x.score == null ? 'Played' : x.score + (x.of != null ? '/' + x.of : '')) + more + '</span>';
+    if (x.score == null || x.of == null) return '<span class="cmp-sc saved" title="' + esc(when) + '">Saved' + more + '</span>';
+    return '<span class="cmp-sc ' + cmpBookShare(x.score, x.of) + '" title="' + esc(when) + '">' + x.score + '/' + x.of + more + '</span>';
+  }
+  function cmpBookHtml() {
+    var d = CMP.data, cls = CMP.cls, c = cmpCoach(CMP.coach), on = cmpIsOpen(cls, c.id), b = cmpBookData(c.id), acts = c.activities || [];
+    var h = '<section class="cx-sec cx38-sec"><div class="cx38-banner' + cx38Lit('cmp|book|' + c.id) + '" style="--ac:#5ED39C">' + cx38Sky(cx38Hash(c.id) % 12, 560, { noName: true }) +
+      '<span class="cx-ic c43-ic">' + ICON.sheet + '</span><span class="cx38-bt"><h2 class="cx38-h c43-ct"><span class="c43-cn">' + esc(c.id) + '</span> ' + esc(c.title) + '</h2><span class="cx-meta">' + esc(c.chapter || '') + '</span></span><span class="nx-grow"></span>' +
+      (d.assets && d.assets.url ? '<a class="nx-btn sm ghost" target="_blank" rel="noopener" href="' + esc(d.assets.url) + '">' + ICON.folder + 'Coach files</a>' : '') +
+      '<button type="button" class="nx-btn sm ' + (on ? 'ghost' : '') + '" data-cmptoggle="' + esc(c.id) + '">' + (on ? 'Take back from ' + esc(cls) : 'Give to ' + esc(cls)) + '</button></div><div class="cx38-sbody">' +
+      '<button type="button" class="w43-crumb c43-back" data-cmpback>‹ All Coaches</button>';
+    var started = b ? b.students.filter(function (s) { return cmpBookStuOf(b, s) !== 'none'; }).length : null;
+    var nm = 0, nq = 0, ng = 0; acts.forEach(function (a) { var k = cmpBookBucket(a[3]); if (k === 'm') nm++; else if (k === 'q') nq++; else if (k === 'g') ng++; });
+    h += '<p class="c43-line">' + (on ? 'Open to ' + esc(cls) : 'Not given to ' + esc(cls) + ' yet') + (b ? ' · ' + started + ' of ' + b.students.length + ' have started it' : '') +
+      ' · Interactive textbook with ' + plural(nm, 'mission', 'missions') + ', ' + plural(nq, 'question', 'questions') + (ng ? ' and a boss game' : '') + '</p>';
+    var secNames = []; acts.forEach(function (a) { var n = a[2] || 'Activities'; if (secNames.indexOf(n) < 0) secNames.push(n); });
+    h += '<div class="c43-parts">' + secNames.map(function (n) { return '<span class="c43-part"><b>' + esc(n) + '</b> ' + plural(acts.filter(function (a) { return (a[2] || 'Activities') === n; }).length, 'activity', 'activities') + '</span>'; }).join('') + '</div>';
+    if (!b) return h + '<p class="nx-muted">Opening ' + esc(cls) + '...</p></div></section>';
+    var rows = b.students.map(function (s) { return { s: s, k: cmpBookStuOf(b, s) }; });
+    var cnt = { done: 0, going: 0, stuck: 0, none: 0 }; rows.forEach(function (r) { cnt[r.k]++; });
+    if (!on && !rows.some(function (r) { return r.k !== 'none'; })) return h + '<div class="c43-empty"><p>Give ' + esc(c.id) + ' to ' + esc(cls) + ' first. Then each student\'s missions, questions and game scores show here, section by section.</p><button type="button" class="nx-btn" data-cmptoggle="' + esc(c.id) + '">Give to ' + esc(cls) + '</button></div></div></section>';
+    h += '<div class="c43-sum"><span><b class="g">' + cnt.done + '</b> finished</span><span><b class="a">' + cnt.going + '</b> working on it</span><span><b class="r">' + cnt.stuck + '</b> stuck</span><span><b>' + cnt.none + '</b> not started</span></div>';
+    var F = [['all', 'Everyone', rows.length], ['stuck', 'Stuck', cnt.stuck], ['none', 'Not started', cnt.none], ['done', 'Finished', cnt.done]];
+    var withPin = b.students.filter(function (s) { return s.pin; }).length;
+    h += '<div class="c43-fbar"><div class="c43-filt" role="group" aria-label="Show">' + F.map(function (f) { return '<button type="button" data-cmpf="' + f[0] + '" aria-pressed="' + (CMP.filt === f[0]) + '">' + f[1] + ' <b>' + f[2] + '</b></button>'; }).join('') + '</div><span class="nx-grow"></span>' +
+      '<span class="c43-pin">' + withPin + ' of ' + b.students.length + ' have a PIN</span>' +
+      '<button class="nx-btn sm ghost" id="cmp-detail" type="button" aria-pressed="' + CMP.detail + '">' + (CMP.detail ? 'By section' : 'Details') + '</button>' +
+      '<button class="nx-btn sm ghost" id="cmp-refresh" type="button">' + ICON.refresh + 'Refresh</button>' + (cnt.none && on ? '<button class="nx-btn sm" id="cmp-remind" type="button">Remind the ' + cnt.none + ' not started</button>' : '') + '</div>';
+    var shown = rows.filter(function (r) { return CMP.filt === 'all' || r.k === CMP.filt; });
+    var SL = { done: ['Finished', 'g'], going: ['Working on it', 'a'], stuck: ['Stuck', 'r'], none: ['Not started', 'n'] };
+    var secs = b.sections, ncol = CMP.detail ? secs.reduce(function (n, sec) { return n + sec.acts.length; }, 0) : secs.length;
+    var head = CMP.detail ?
+      '<tr><th class="nm" rowspan="2">Student</th>' + secs.map(function (sec) { return '<th class="c43-sec" colspan="' + sec.acts.length + '">' + esc(sec.name) + '</th>'; }).join('') + '<th rowspan="2">Status</th></tr>' +
+      '<tr>' + secs.map(function (sec) { return sec.acts.map(function (a, i) { return '<th class="c43-act' + (i ? '' : ' c43-first') + '" title="' + esc(a[1]) + '">' + esc(a[1]) + '</th>'; }).join(''); }).join('') + '</tr>' :
+      '<tr><th class="nm">Student</th>' + secs.map(function (sec) { return '<th class="c43-sec" title="' + esc(plural(sec.mt, 'mission', 'missions') + ', ' + plural(sec.qt, 'question', 'questions') + (sec.gt ? ', game' : '')) + '">' + esc(sec.name) + '</th>'; }).join('') + '<th>Status</th></tr>';
+    h += '<div class="c43-scroll"><table class="c43-grid"><thead>' + head + '</thead><tbody>' +
+      (shown.length ? shown.map(function (r) {
+        var s = r.s;
+        return '<tr><td class="nm"><span class="cmp-dot' + (s.pin ? ' on' : '') + '" title="' + (s.pin ? 'PIN set up' : 'No PIN yet') + '"></span><button type="button" class="cmp-name" data-cmpst="' + esc(s.name) + '">' + esc(pvName(s.name)) + '</button> <small>' + esc(s.code) + '</small></td>' +
+          (CMP.detail ? secs.map(function (sec) { return sec.acts.map(function (a, i) { return '<td' + (i ? '' : ' class="c43-first"') + '>' + cmpBookActCell(a, s) + '</td>'; }).join(''); }).join('') :
+            secs.map(function (sec) { return '<td class="c43-first">' + cmpBookSecCell(sec, s) + '</td>'; }).join('')) +
+          '<td><span class="c43-pill ' + SL[r.k][1] + '">' + SL[r.k][0] + '</span></td></tr>';
+      }).join('') : '<tr><td colspan="' + (ncol + 2) + '" class="nx-muted" style="padding:16px">No one here.</td></tr>') + '</tbody></table></div>' +
+      '<p class="c43-key"><span><i class="full"></i>All done or all right</span><span><i class="part"></i>Half or more</span><span><i class="low"></i>Under half</span><span><i class="saved"></i>Game score</span></p>' +
+      '<p class="c43-note">' + (CMP.detail ? 'Each cell is the activity\'s best save, with &times; the number of tries. ' : 'In each section, M is missions done and Q is questions right, each out of the number in the book, and Best is the best game score. ') +
+        'Finished means every mission done and every question right. Stuck means a question tried three times and still not right. Tap a name to reset their PIN.</p>';
+    return h + '</div></section>';
+  }
+  function cmpLoadBook() {
+    var cls = CMP.cls, id = CMP.coach;
+    tcall('api_t_cmpBook', cls, id).then(function (b) { if (cls !== CMP.cls || id !== CMP.coach) return; CMP.book = b; if (H.view === 'cmp') renderCmp(); })
+      .catch(function (e) { toast(msg(e)); });
   }
   function cmpLoadGrid() {
     var cls = CMP.cls;
@@ -3738,13 +3836,16 @@
     });
     Array.prototype.forEach.call(v.querySelectorAll('[data-cmpf]'), function (b) { b.onclick = function () { CMP.filt = b.getAttribute('data-cmpf'); renderCmp(); }; });
     var rm = $('cmp-remind'); if (rm) rm.onclick = function () {
-      var g = CMP.grid, c = cmpCoach(CMP.coach), names = g.students.filter(function (s) { return cmpStuOf(g, c, s) === 'none'; }).map(function (s) { return s.name; });
-      cx38Copy(CMP.cls + ': please start Coach ' + c.id + ' ' + c.title + ' on the Computing page. Not started yet: ' + names.join(', ') + '.');
+      var g = CMP.grid, c = cmpCoach(CMP.coach), b = cmpBookData(CMP.coach), names;
+      if (cmpIsBook(c)) names = b.students.filter(function (s) { return cmpBookStuOf(b, s) === 'none'; }).map(function (s) { return s.name; });
+      else names = g.students.filter(function (s) { return cmpStuOf(g, c, s) === 'none'; }).map(function (s) { return s.name; });
+      cx38Copy(CMP.cls + ': please start ' + (cmpIsBook(c) ? 'the ' + c.title : 'Coach ' + c.id + ' ' + c.title) + ' on the Computing page. Not started yet: ' + names.join(', ') + '.');
     };
+    var dt = $('cmp-detail'); if (dt) dt.onclick = function () { CMP.detail = !CMP.detail; renderCmp(); };
     var su = $('cmp-setup'); if (su) su.onclick = function () { su.disabled = true; tcall('api_t_cmpSetup').then(function (d) { CMP.data = d; toast('The Computing students tab is ready'); renderCmp(); }).catch(function (e) { su.disabled = false; toast(msg(e)); }); };
     var ag = $('cmp-again'); if (ag) ag.onclick = loadCmp;
     var ag2 = $('cmp-again2'); if (ag2) ag2.onclick = loadCmp;
-    var r = $('cmp-refresh'); if (r) r.onclick = cmpLoadGrid;
+    var r = $('cmp-refresh'); if (r) r.onclick = function () { if (cmpIsBook(cmpCoach(CMP.coach))) cmpLoadBook(); else cmpLoadGrid(); };
     var cp = $('cmp-copy'); if (cp) cp.onclick = function () {
       var u = CMP.data.studentUrl;
       (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast('Link copied'); }, function () { modal('<h2>The students\' link</h2><p style="word-break:break-all">' + esc(u) + '</p><div class="foot"><button class="btn" id="m-ok">OK</button></div>'); $('m-ok').onclick = closeModal; });
@@ -3755,7 +3856,7 @@
         modal('<h2>' + esc(pvName(name)) + '</h2><p>Reset the PIN when a student has forgotten it and their security answer. They set up a new one on the Computing page with their register number.</p>' +
           '<div class="foot"><button class="btn ghost" id="m-out">Sign out everywhere</button><button class="btn ghost" id="m-cancel">Cancel</button><button class="btn" id="m-pin">Reset PIN</button></div>');
         var go = function (kind) {
-          tcall('api_t_cmpReset', CMP.cls, name, kind).then(function () { closeModal(); toast(kind === 'pin' ? 'PIN reset for ' + name : name + ' is signed out everywhere'); cmpLoadGrid(); }).catch(function (e) { toast(msg(e)); });
+          tcall('api_t_cmpReset', CMP.cls, name, kind).then(function () { closeModal(); toast(kind === 'pin' ? 'PIN reset for ' + name : name + ' is signed out everywhere'); cmpLoadGrid(); if (cmpIsBook(cmpCoach(CMP.coach))) cmpLoadBook(); }).catch(function (e) { toast(msg(e)); });
         };
         $('m-pin').onclick = function () { go('pin'); }; $('m-out').onclick = function () { go('out'); }; $('m-cancel').onclick = closeModal;
       };

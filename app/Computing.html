@@ -631,14 +631,16 @@
   }
   function byCoach() { var by = {}; (home.files || []).forEach(function (f) { (by[f.coach] = by[f.coach] || []).push(f); }); return by; }
   function fullOk(mine, part) { return mine.some(function (f) { return f.part === part && f.score != null && f.score === f.of; }); }
-  // each open Coach: which parts are fully correct, the next part, and what to say
+  // each open Coach: which parts are fully correct, the next part, and what to say. Release 47: an interactive textbook
+  // (kind 'book') has no parts or files; its missions, questions and game scores save from inside the book.
+  function isBook(c) { return !!(c && c.kind === 'book'); }
   function coachState() {
     var by = byCoach();
     return (home.coaches || []).map(function (c) {
       var mine = by[c.id] || [], ok = c.parts.map(function (p) { return fullOk(mine, p[0]); }), d = ok.filter(Boolean).length, nx = ok.indexOf(false);
-      var k = !c.parts.length || d === c.parts.length ? 'done' : d === 0 && !mine.length ? 'start' : 'going';
+      var k = isBook(c) ? 'book' : !c.parts.length || d === c.parts.length ? 'done' : d === 0 && !mine.length ? 'start' : 'going';
       return { c: c, ok: ok, d: d, n: c.parts.length, next: nx, k: k, tried: mine.length,
-        verb: k === 'done' ? 'All correct' : k === 'start' ? 'Start this' : 'Keep going', tc: k === 'done' ? 'var(--tk-corr)' : k === 'start' ? 'var(--tk-start)' : 'var(--tk-finish)' };
+        verb: k === 'done' ? 'All correct' : k === 'start' ? 'Start this' : k === 'book' ? 'Read and play' : 'Keep going', tc: k === 'done' ? 'var(--tk-corr)' : k === 'start' || k === 'book' ? 'var(--tk-start)' : 'var(--tk-finish)' };
     });
   }
   function partsHtml(s, tc) {
@@ -646,15 +648,16 @@
       return '<span class="c-part' + (s.ok[i] ? ' ok' : i === s.next ? ' nx' : '') + '"' + (tc ? ' style="--tc:' + tc + '"' : '') + '>' + (s.ok[i] ? '✓ ' : '') + esc(p[1]) + '</span>';
     }).join('') + '</div>';
   }
-  function getBtn(cls, c, label) { return '<button type="button" class="' + cls + '" data-get="' + esc(c.id) + '" data-name="' + esc(c.file) + '">' + DOWN + esc(label) + '</button>'; }
+  function getBtn(cls, c, label) { return '<button type="button" class="' + cls + '" data-get="' + esc(c.id) + '" data-name="' + esc(c.file) + '">' + DOWN + esc(isBook(c) ? label.replace('Coach', 'textbook') : label) + '</button>'; }
   function totals(list) { var p = 0, d = 0; list.forEach(function (s) { p += s.n; d += s.d; }); return { p: p, d: d }; }
 
   /* ---------- drawing ---------- */
   function drawTop() {
     buildDoors();
-    var list = coachState(), t = totals(list), left = list.filter(function (s) { return s.k !== 'done'; }).length, nf = 0, nc = (home.files || []).length;
+    var list = coachState(), t = totals(list), left = list.filter(function (s) { return s.k !== 'done' && s.k !== 'book'; }).length, nf = 0, nc = (home.files || []).length;
+    var nb = list.filter(function (s) { return s.k === 'book'; }).length;
     list.forEach(function (s) { nf += (s.c.files || []).length; });
-    $('door-coaches-s').textContent = !list.length ? 'None open yet' : left ? left + ' to finish' : 'All correct';
+    $('door-coaches-s').textContent = !list.length ? 'None open yet' : left ? left + ' to finish' : nb === list.length ? (nb === 1 ? '1 textbook' : nb + ' textbooks') : 'All correct';
     $('door-tasks-s').textContent = nf ? (nf === 1 ? '1 Excel file' : nf + ' Excel files') : 'Excel files';
     $('door-files-s').textContent = nc ? (nc === 1 ? '1 checked' : nc + ' checked') : 'Files you check';
     $('r38-me-ini').textContent = initials(home.name).toUpperCase();
@@ -693,9 +696,10 @@
       '<div><span class="r38-lbl">All done</span><h2>Every Coach is fully correct</h2><p>Well done. Your files are all in My files.</p></div>' +
       '<button type="button" class="r38-lamp big" data-door-go="files">See my files</button></section>';
     var s = open[0], c = s.c, nxp = s.next >= 0 ? c.parts[s.next][1] : '', after = open.slice(1, 3).map(function (x) { return x.c.id + ' ' + x.c.title; });
-    var line = s.k === 'start' ? 'You have not started this one yet. ' + (nxp ? 'Start with ' + nxp + '.' : '') : s.d + ' of ' + s.n + ' parts fully correct.' + (nxp ? ' Next is ' + nxp + '.' : '');
+    var line = s.k === 'book' ? 'An interactive textbook. Open it on your laptop and sign in once inside it. Your missions, questions and game scores are saved for Mr Cedric as you go.' :
+      s.k === 'start' ? 'You have not started this one yet. ' + (nxp ? 'Start with ' + nxp + '.' : '') : s.d + ' of ' + s.n + ' parts fully correct.' + (nxp ? ' Next is ' + nxp + '.' : '');
     return '<section class="r38-card r38-next r38-banner r38-in" data-k="nx" style="--tc:' + s.tc + '">' + bannerSky(1, 520, 0.62) +
-      '<div><span class="r38-lbl">Next up</span><h2><span class="r38-num" style="--nc:' + s.tc + '">' + esc(c.id) + '</span>' + esc(c.title) + '</h2><p>' + esc(line) + '</p>' + partsHtml(s, s.tc) + '</div>' +
+      '<div><span class="r38-lbl">Next up</span><h2><span class="r38-num" style="--nc:' + s.tc + '">' + esc(c.id) + '</span>' + esc(c.title) + '</h2><p>' + esc(line) + '</p>' + (s.k === 'book' ? '' : partsHtml(s, s.tc)) + '</div>' +
       getBtn('r38-lamp big', c, 'Download the Coach') +
       (after.length ? '<div class="r38-after">After that: ' + esc(after.join(', then ')) + '.</div>' : '') + '</section>';
   }
@@ -705,14 +709,15 @@
     list.forEach(function (s) { var k = s.c.chapter || 'Coaches'; if (!seen[k]) { seen[k] = { name: k, items: [] }; chapters.push(seen[k]); } seen[k].items.push(s); });
     var ACC = ['var(--s0)', 'var(--s2)', 'var(--s1)', 'var(--s3)'];
     return chapters.map(function (ch, ci) {
-      var done = ch.items.filter(function (s) { return s.k === 'done'; }).length;
+      var done = ch.items.filter(function (s) { return s.k === 'done'; }).length, coaches = ch.items.filter(function (s) { return s.k !== 'book'; }).length;
       return '<section class="r38-card r38-sec r38-banner c-chap r38-in" data-k="ch' + ci + '" style="--ac:' + ACC[ci % ACC.length] + '">' + bannerSky(ci * 3 + 2, 520, 0.7) +
-        '<div class="r38-sech"><div><h2><span class="tx">' + esc(ch.name) + '</span></h2><div class="sub">' + done + ' of ' + ch.items.length + ' fully correct</div></div></div><div class="r38-tasks">' +
+        '<div class="r38-sech"><div><h2><span class="tx">' + esc(ch.name) + '</span></h2><div class="sub">' + (coaches ? done + ' of ' + coaches + ' fully correct' : 'Interactive textbook') + '</div></div></div><div class="r38-tasks">' +
         ch.items.map(function (s, i) {
           var c = s.c, pct = s.n ? Math.round(100 * s.d / s.n) : 0;
-          return '<div class="r38-task' + (nextId && c.id === nextId.id ? ' first' : '') + '" style="--tc:' + s.tc + ';--i:' + i + '"><div class="tb"><span class="tv">' + s.verb + '</span><span class="tw">' + esc((c.files || []).length ? c.files.length + ' task files' : '') + '</span></div>' +
+          return '<div class="r38-task' + (nextId && c.id === nextId.id ? ' first' : '') + '" style="--tc:' + s.tc + ';--i:' + i + '"><div class="tb"><span class="tv">' + s.verb + '</span><span class="tw">' + esc(s.k !== 'book' && (c.files || []).length ? c.files.length + ' task files' : '') + '</span></div>' +
             '<div class="tbody"><div class="rt"><div class="t"><span class="r38-num">' + esc(c.id) + '</span>' + esc(c.title) + '</div>' +
-            '<div class="c-meter"><span class="bar" style="--w:' + pct + '%" aria-hidden="true"><i></i></span><span>' + s.d + ' of ' + s.n + ' practice parts fully correct</span></div>' + partsHtml(s) + '</div>' +
+            (s.k === 'book' ? '<div class="c-meter"><span>Missions, questions and a boss game. Your progress saves from inside the book.</span></div>' :
+              '<div class="c-meter"><span class="bar" style="--w:' + pct + '%" aria-hidden="true"><i></i></span><span>' + s.d + ' of ' + s.n + ' practice parts fully correct</span></div>' + partsHtml(s)) + '</div>' +
             getBtn('r38-tbtn', c, 'Download the Coach') + '</div></div>';
         }).join('') + '</div></section>';
     }).join('') + '<p class="c-note">A Coach shows here when Mr Cedric opens it to your class.</p>';
