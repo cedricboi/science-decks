@@ -512,7 +512,7 @@
     ],
     [
      "s10-2-table0",
-     "Table 10.2",
+     "Table 10.1",
      "10.2",
      "dnd"
     ],
@@ -577,22 +577,10 @@
      "mission"
     ],
     [
-     "s10-3-table0",
-     "Table 10.3",
+     "s10-3-table1",
+     "Table 10.2",
      "10.3",
      "dnd"
-    ],
-    [
-     "s10-3-range-cables",
-     "Range of cables",
-     "10.3",
-     "mission"
-    ],
-    [
-     "s10-3-range-wireless",
-     "Range of wireless",
-     "10.3",
-     "mission"
     ],
     [
      "q103a",
@@ -637,10 +625,10 @@
      "mission"
     ],
     [
-     "q104d",
-     "Question 10.4d",
+     "ord104",
+     "Put in order 10.4",
      "10.4",
-     "mcq"
+     "order"
     ],
     [
      "q104a",
@@ -655,8 +643,8 @@
      "mcq"
     ],
     [
-     "q104c",
-     "Question 10.4c",
+     "q104d",
+     "Question 10.4d",
      "10.4",
      "mcq"
     ],
@@ -685,18 +673,6 @@
      "mission"
     ],
     [
-     "sort-storage",
-     "Sort the storage",
-     "10.5",
-     "dnd"
-    ],
-    [
-     "sort-apps",
-     "Sort the apps",
-     "10.5",
-     "dnd"
-    ],
-    [
      "q105a",
      "Question 10.5a",
      "10.5",
@@ -715,57 +691,39 @@
      "mcq"
     ],
     [
-     "ord106",
-     "Put in order 10.6",
-     "10.6",
-     "order"
+     "sort-storage",
+     "Sort the storage",
+     "10.5",
+     "dnd"
     ],
     [
-     "b-form-f1",
-     "Form field 1",
-     "10.6",
-     "mission"
+     "sort-apps",
+     "Sort the apps",
+     "10.5",
+     "dnd"
     ],
     [
-     "b-form-f2",
-     "Form field 2",
-     "10.6",
-     "mission"
+     "s10-7-table2",
+     "Table 10.5",
+     "10.7",
+     "dnd"
     ],
     [
-     "b-form-f3",
-     "Form field 3",
-     "10.6",
-     "mission"
-    ],
-    [
-     "b-form-f4",
-     "Form field 4",
-     "10.6",
-     "mission"
-    ],
-    [
-     "b-form-f5",
-     "Form field 5",
-     "10.6",
-     "mission"
-    ],
-    [
-     "q106a",
-     "Question 10.6a",
-     "10.6",
+     "q107b",
+     "Question 10.7b",
+     "10.7",
      "mcq"
     ],
     [
-     "q106b",
-     "Question 10.6b",
-     "10.6",
+     "q107a",
+     "Question 10.7a",
+     "10.7",
      "mcq"
     ],
     [
-     "q106c",
-     "Question 10.6c",
-     "10.6",
+     "q107c",
+     "Question 10.7c",
+     "10.7",
      "mcq"
     ],
     [
@@ -785,12 +743,6 @@
      "Poster part 3",
      "10.7",
      "mission"
-    ],
-    [
-     "s10-7-table0",
-     "Table 10.7",
-     "10.7",
-     "dnd"
     ],
     [
      "b-site-s1",
@@ -823,16 +775,64 @@
      "mission"
     ],
     [
-     "q107a",
-     "Question 10.7a",
-     "10.7",
+     "ord106",
+     "Put in order 10.6",
+     "10.6",
+     "order"
+    ],
+    [
+     "q106a",
+     "Question 10.6a",
+     "10.6",
      "mcq"
     ],
     [
-     "q107b",
-     "Question 10.7b",
-     "10.7",
+     "q106b",
+     "Question 10.6b",
+     "10.6",
      "mcq"
+    ],
+    [
+     "q106c",
+     "Question 10.6c",
+     "10.6",
+     "mcq"
+    ],
+    [
+     "b-form-f1",
+     "Form field 1",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f2",
+     "Form field 2",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f3",
+     "Form field 3",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f4",
+     "Form field 4",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-form-f5",
+     "Form field 5",
+     "10.6",
+     "mission"
+    ],
+    [
+     "b-boss-win",
+     "Beat Level 4 of Packet Run",
+     "Boss game",
+     "mission"
     ],
     [
      "boss-best",
