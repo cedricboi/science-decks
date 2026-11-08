@@ -3021,6 +3021,40 @@
     .c43-row { grid-template-columns: 48px minmax(0, 1fr) auto; } .c43-gv { grid-column: 2 / -1; justify-content: flex-start; }
   }
   @media (prefers-reduced-motion: reduce) { .s43-flow, .c43-chip, .c43-filt button, .c43-cls button { transition: none; } }
+  /* Release 48: the class timeline. A dot per task on each student's row, grouped by Coach, with the class's count
+     under each task name. Each dot slot is 26px wide so every row lines up with the header. */
+  .tl-mode { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--nx-soft); border: 1px solid var(--nx-line); margin: 0 0 12px; }
+  .tl-mode button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: var(--nx-ink2); font: 700 15px var(--display); cursor: pointer; }
+  .tl-mode button[aria-pressed="true"] { background: var(--nx-surface); color: var(--nx-ink); box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 1.5px color-mix(in srgb, #5ED39C 55%, transparent); }
+  .tl-grid th, .tl-grid td { padding: 6px 10px; }
+  .tl-grid .tl-th, .tl-grid .tl-td { text-align: left; padding: 4px 10px; }
+  .tl-grid thead tr:not(:first-child) th { border-top: 0; }
+  .tl-track { display: flex; gap: 14px; align-items: center; width: max-content; }
+  .tl-g { display: flex; position: relative; }
+  .tl-td .tl-g::before { content: ''; position: absolute; left: 13px; right: 13px; top: 50%; height: 2px; margin-top: -1px; background: var(--nx-line2, #D5DAE3); border-radius: 2px; }
+  .tl-gl { flex: none; border: 0; background: color-mix(in srgb, #5ED39C 14%, transparent); color: #1F7A4F; border-radius: 8px; font: 800 12.5px var(--text); padding: 4px 0; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  :root[data-theme="dark"] .tl-gl { color: #BFF2D7; }
+  .tl-pl, .tl-ct { flex: none; width: 26px; text-align: center; font: 700 10.5px var(--text); color: var(--nx-muted); letter-spacing: 0; }
+  .tl-ct { font: 800 11.5px var(--text); color: #1F7A4F; border-radius: 6px; padding: 2px 0; background: color-mix(in srgb, #5ED39C calc(var(--r) * 40%), transparent); font-variant-numeric: tabular-nums; }
+  .tl-ct.z { color: var(--nx-muted); background: none; font-weight: 600; }
+  :root[data-theme="dark"] .tl-ct { color: #BFF2D7; }
+  .tl-d { flex: none; position: relative; z-index: 1; display: block; width: 14px; height: 14px; margin: 0 6px; padding: 0; border-radius: 50%; border: 2px solid var(--nx-surface); box-sizing: content-box; background: var(--nx-chip); cursor: default; }
+  .tl-track .tl-d { margin: 0 4px; }
+  a.tl-d, button.tl-d { cursor: pointer; }
+  .tl-d.full { background: #2EB67D; } .tl-d.part { background: #F2B33D; } .tl-d.low { background: #E8664A; } .tl-d.saved { background: #9AA3B2; }
+  .tl-d.none { background: var(--nx-surface); box-shadow: inset 0 0 0 2px var(--nx-line2, #D5DAE3); }
+  .tl-d.ex { border-radius: 4px; }
+  .tl-d.today { box-shadow: 0 0 0 2.5px #2F6FEB; }
+  .tl-d.none.today { box-shadow: inset 0 0 0 2px var(--nx-line2, #D5DAE3), 0 0 0 2.5px #2F6FEB; }
+  .tl-d.dim { opacity: .22; }
+  .tl-n { white-space: nowrap; font-size: 13.5px; color: var(--nx-muted); text-align: left !important; }
+  .tl-n b { font: 700 16px var(--display); color: var(--nx-ink); font-variant-numeric: tabular-nums; }
+  .tl-bar { display: block; width: 64px; height: 5px; margin-top: 3px; border-radius: 3px; background: var(--nx-chip); overflow: hidden; } .tl-bar i { display: block; height: 100%; background: #2EB67D; }
+  .tl-last { white-space: nowrap; font-size: 13.5px; color: var(--nx-muted); text-align: left !important; } .tl-last b { color: var(--nx-ink); }
+  .tl-key i.tl-d { display: inline-block; width: 10px; height: 10px; margin: 0 6px 0 0; border-width: 0; vertical-align: -1px; }
+  .tl-key i.tl-d.full.today { box-shadow: 0 0 0 2px #2F6FEB; margin-left: 2px; }
+  @media (hover: hover) and (pointer: fine) { a.tl-d:hover, button.tl-d:hover { transform: scale(1.25); } .tl-gl:hover { background: color-mix(in srgb, #5ED39C 26%, transparent); } }
+  @media (prefers-reduced-motion: no-preference) { .tl-d { transition: transform 120ms var(--ease-out), opacity 160ms var(--ease-out); } }
 </style>
 <style>
   /* r43 admin: the Admin page (class lists, sign-in, you), as the approved board */
@@ -3647,7 +3681,7 @@
       v.innerHTML = h; cmpWire(); cx38Watch(v); return;
     }
     var book = CMP.coach && cmpIsBook(cmpCoach(CMP.coach));
-    h += CMP.coach ? (book ? cmpBookHtml() : cmpCoachHtml()) : cmpListHtml();
+    h += CMP.coach ? (book ? cmpBookHtml() : cmpCoachHtml()) : cmpModeBar() + (CMP.mode === 'line' ? cmpLineHtml() : cmpListHtml());
     v.innerHTML = h + '</div>'; cmpWire(); cx38Watch(v);
     if (!CMP.grid || CMP.grid.cls !== CMP.cls) cmpLoadGrid();
     if (book && !cmpBookData(CMP.coach)) cmpLoadBook();
@@ -3783,6 +3817,131 @@
         'Finished means every mission done and every question right. Stuck means a question tried three times and still not right. Tap a name to reset their PIN.</p>';
     return h + '</div></section>';
   }
+  /* Release 48: the class timeline. One row per student and one dot per task, in course order across every chapter
+     given to the class (each Coach part, and each section of an interactive textbook), so at the end of a lesson the
+     teacher sees at a glance who has finished what. Today lights up the dots worked on today. */
+  CMP.mode = lsGet('wsh_cmpmode') || 'line'; CMP.tlch = lsGet('wsh_cmptlch') || ''; CMP.today = false; CMP.tlsort = 'list'; CMP.books = {};
+  function cmpTlShort(name) {
+    name = String(name || '').trim();
+    var m = /^(P\d+[a-z]?)\b/i.exec(name); if (m) return m[1];
+    if (/^exit/i.test(name)) return 'Exit';
+    var w = name.split(/\s+/); return w.length > 1 ? w.map(function (x) { return x.charAt(0).toUpperCase(); }).join('').slice(0, 3) : name.slice(0, 4);
+  }
+  function cmpIsToday(t) { return !!t && new Date(t).toDateString() === new Date().toDateString(); }
+  function cmpTlWhen(t) {
+    if (!t) return ''; var d = new Date(t);
+    return cmpIsToday(t) ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  }
+  /* The groups on the timeline for this class: each Coach given to it (or with work in it), in catalogue order. Two
+     books with the same activities (the textbook and its film version) share one group, best of either. */
+  function cmpTlGroups() {
+    var d = CMP.data, cls = CMP.cls, g = CMP.grid && CMP.grid.cls === cls ? CMP.grid : null, groups = [], seenBook = {};
+    var worked = function (c) { if (!g) return false; return Object.keys(g.cells).some(function (k) { return k.split('|')[1] === c.id; }); };
+    d.coaches.forEach(function (c) {
+      if (!cmpIsOpen(cls, c.id) && !(cmpIsBook(c) ? false : worked(c))) return;
+      if (CMP.tlch && (c.chapter || 'Coaches') !== CMP.tlch) return;
+      if (cmpIsBook(c)) {
+        var sig = (c.activities || []).map(function (a) { return a[0]; }).sort().join(',');
+        if (seenBook[sig]) { seenBook[sig].ids.push(c.id); return; }
+        var secs = []; (c.activities || []).forEach(function (a) { var n = a[2] || 'Activities'; if (secs.indexOf(n) < 0) secs.push(n); });
+        groups.push(seenBook[sig] = { book: true, c: c, ids: [c.id], chapter: c.chapter || 'Coaches',
+          items: secs.map(function (n) { return { key: n, short: cmpTlShort(n.replace(/^Boss game$/i, 'Boss')), title: n, acts: (c.activities || []).filter(function (a) { return (a[2] || 'Activities') === n; }) }; }) });
+      } else if (c.parts.length) {
+        groups.push({ book: false, c: c, ids: [c.id], chapter: c.chapter || 'Coaches', items: c.parts.map(function (p) { return { key: p[0], short: cmpTlShort(p[1]), title: p[1] }; }) });
+      }
+    });
+    return groups;
+  }
+  /* One dot: { k: full|part|low|saved|none, t, tip, url } */
+  function cmpTlDot(gr, it, s) {
+    if (!gr.book) {
+      var g = CMP.grid, o = g.cells[s.code + '|' + gr.c.id + '|' + it.key];
+      if (!o) return { k: 'none', tip: 'Not started' };
+      var L = o.last, B = o.best, full = (B && B.score === B.of) || (L.score != null && L.of != null && L.score === L.of);
+      var k = full ? 'full' : L.score == null || L.of == null ? 'saved' : L.score * 2 >= L.of ? 'part' : 'low';
+      var sc = full && B ? B.score + '/' + B.of : L.score == null ? 'saved' : L.score + '/' + L.of;
+      return { k: k, t: L.t, url: L.url, tip: (full ? 'Full marks' : 'Newest ' + sc) + (o.tries > 1 ? ', ' + plural(o.tries, 'try', 'tries') : '') + ', ' + new Date(L.t).toLocaleString() };
+    }
+    var done = 0, tot = 0, any = false, t = 0;
+    it.acts.forEach(function (a) {
+      var b = cmpBookBucket(a[3]); if (!b) return; tot++;
+      var x = null;
+      gr.ids.forEach(function (id) {
+        var bk = CMP.books[CMP.cls + '|' + id], st = bk && bk.students.filter(function (z) { return z.code === s.code; })[0], y = st && st.cells[a[0]];
+        if (y && (!x || (cmpBookDone(y) && !cmpBookDone(x)) || y.t > x.t && cmpBookDone(y) === cmpBookDone(x))) x = y;
+      });
+      if (!x) return; any = true; t = Math.max(t, x.t || 0);
+      if (b === 'g' ? x.score != null || x.of == null : cmpBookDone(x)) done++;
+    });
+    if (!any) return { k: 'none', tip: 'Not started' };
+    return { k: done >= tot ? 'full' : done * 2 >= tot ? 'part' : 'low', t: t, tip: done + ' of ' + tot + ' done, newest ' + new Date(t).toLocaleString() };
+  }
+  function cmpTlBooksReady(groups) { return groups.every(function (gr) { return !gr.book || gr.ids.every(function (id) { return CMP.books[CMP.cls + '|' + id]; }); }); }
+  function cmpTlLoadBooks(groups, force) {
+    groups.forEach(function (gr) {
+      if (!gr.book) return;
+      gr.ids.forEach(function (id) {
+        var key = CMP.cls + '|' + id, cls = CMP.cls;
+        if (!force && (CMP.books[key] || CMP.books['_busy' + key])) return;
+        CMP.books['_busy' + key] = 1;
+        tcall('api_t_cmpBook', cls, id).then(function (b) { CMP.books[key] = b; delete CMP.books['_busy' + key]; if (H.view === 'cmp' && !CMP.coach && CMP.mode === 'line') renderCmp(); })
+          .catch(function (e) { delete CMP.books['_busy' + key]; toast(msg(e)); });
+      });
+    });
+  }
+  function cmpModeBar() {
+    return '<div class="tl-mode" role="group" aria-label="Show"><button type="button" data-cmpmode="line" aria-pressed="' + (CMP.mode === 'line') + '">Class timeline</button><button type="button" data-cmpmode="list" aria-pressed="' + (CMP.mode !== 'line') + '">Give Coaches</button></div>';
+  }
+  function cmpLineHtml() {
+    var d = CMP.data, cls = CMP.cls, g = CMP.grid && CMP.grid.cls === cls ? CMP.grid : null;
+    var chs = []; d.coaches.forEach(function (c) { var k = c.chapter || 'Coaches'; if (chs.indexOf(k) < 0 && cmpIsOpen(cls, c.id)) chs.push(k); });
+    if (CMP.tlch && chs.indexOf(CMP.tlch) < 0) CMP.tlch = '';
+    var groups = cmpTlGroups();
+    var h = '<section class="cx-sec cx38-sec"><div class="cx38-banner' + cx38Lit('cmp|line|' + cls) + '" style="--ac:#5ED39C">' + cx38Sky(5, 560, { noName: true }) +
+      '<span class="cx-ic c43-ic">' + ICON.sheet + '</span><span class="cx38-bt"><h2 class="cx38-h">Class timeline for ' + esc(cls) + '</h2></span><span class="nx-grow"></span>' +
+      '<button class="nx-btn sm ghost" id="tl-refresh" type="button">' + ICON.refresh + 'Refresh</button></div><div class="cx38-sbody">';
+    if (!chs.length) return h + '<div class="c43-empty"><p>' + esc(cls) + ' has no Coaches yet. Give them Coaches first, then every task shows here as a dot on each student\'s timeline.</p><button type="button" class="nx-btn" data-cmpmode="list">Give Coaches</button></div></div></section>';
+    h += '<div class="c43-fbar"><div class="c43-filt" role="group" aria-label="Chapter"><button type="button" data-tlch="" aria-pressed="' + (!CMP.tlch) + '">All chapters</button>' +
+      chs.map(function (k) { return '<button type="button" data-tlch="' + esc(k) + '" aria-pressed="' + (CMP.tlch === k) + '">' + esc(k.replace(/^(Chapter \d+)\s+.*$/, '$1')) + '</button>'; }).join('') + '</div><span class="nx-grow"></span>' +
+      '<button type="button" class="nx-btn sm' + (CMP.today ? '' : ' ghost') + '" id="tl-today" aria-pressed="' + CMP.today + '">Today only</button>' +
+      '<div class="c43-filt" role="group" aria-label="Order"><button type="button" data-tlsort="list" aria-pressed="' + (CMP.tlsort === 'list') + '">Class list</button><button type="button" data-tlsort="most" aria-pressed="' + (CMP.tlsort === 'most') + '">Most done</button><button type="button" data-tlsort="least" aria-pressed="' + (CMP.tlsort === 'least') + '">Least done</button></div></div>';
+    if (!g || !cmpTlBooksReady(groups)) { cmpTlLoadBooks(groups); return h + '<p class="nx-muted">Opening ' + esc(cls) + '...</p></div></section>'; }
+    var total = groups.reduce(function (n, gr) { return n + gr.items.length; }, 0);
+    var rows = g.students.map(function (s, i) {
+      var dots = groups.map(function (gr) { return gr.items.map(function (it) { return cmpTlDot(gr, it, s); }); });
+      var flat = [].concat.apply([], dots), done = flat.filter(function (x) { return x.k === 'full'; }).length;
+      var last = null; groups.forEach(function (gr, gi) { gr.items.forEach(function (it, ii) { var x = dots[gi][ii]; if (x.t && (!last || x.t > last.t)) last = { t: x.t, what: gr.ids[0] + ' ' + it.short }; }); });
+      return { s: s, i: i, dots: dots, done: done, any: flat.some(function (x) { return x.k !== 'none'; }), today: flat.some(function (x) { return cmpIsToday(x.t); }),
+        todayDone: flat.filter(function (x) { return x.k === 'full' && cmpIsToday(x.t); }).length, last: last };
+    });
+    if (CMP.tlsort !== 'list') rows.sort(function (a, b) { return CMP.tlsort === 'most' ? b.done - a.done || a.i - b.i : a.done - b.done || a.i - b.i; });
+    var nToday = rows.filter(function (r) { return r.today; }).length, nAll = rows.filter(function (r) { return total && r.done === total; }).length, nNone = rows.filter(function (r) { return !r.any; }).length;
+    var tasksToday = rows.reduce(function (n, r) { return n + r.todayDone; }, 0);
+    h += '<div class="c43-sum"><span><b class="g">' + nToday + '</b> of ' + rows.length + ' worked today</span><span><b class="g">' + tasksToday + '</b> ' + (tasksToday === 1 ? 'task' : 'tasks') + ' finished today</span><span><b>' + nAll + '</b> finished everything shown</span><span><b class="r">' + nNone + '</b> not started</span></div>';
+    // The class row: how many students have finished each task
+    var count = groups.map(function (gr, gi) { return gr.items.map(function (it, ii) { return rows.filter(function (r) { var x = r.dots[gi][ii]; return x.k === 'full' && (!CMP.today || cmpIsToday(x.t)); }).length; }); });
+    var track = function (fn) { return '<div class="tl-track">' + groups.map(function (gr, gi) { return '<span class="tl-g' + (gr.book ? ' bk' : '') + '">' + gr.items.map(function (it, ii) { return fn(gr, it, gi, ii); }).join('') + '</span>'; }).join('') + '</div>'; };
+    h += '<div class="c43-scroll tl-scroll"><table class="c43-grid tl-grid"><thead>' +
+      '<tr><th class="nm" rowspan="3">Student</th><th rowspan="3" class="tl-nh">Done</th><th class="tl-th"><div class="tl-track">' + groups.map(function (gr) {
+        return '<button type="button" class="tl-gl" data-cmpcoach="' + esc(gr.ids[0]) + '" title="' + esc(gr.ids.join(' and ') + ' ' + gr.c.title + '. Open its full grid.') + '" style="width:' + (gr.items.length * 26) + 'px">' + esc(gr.book ? gr.ids.join('+') : gr.ids[0]) + '</button>'; }).join('') + '</div></th><th rowspan="3">Newest</th></tr>' +
+      '<tr><th class="tl-th">' + track(function (gr, it) { return '<span class="tl-pl" title="' + esc(it.title) + '">' + esc(it.short) + '</span>'; }) + '</th></tr>' +
+      '<tr><th class="tl-th">' + track(function (gr, it, gi, ii) { var n = count[gi][ii], r = rows.length ? n / rows.length : 0; return '<span class="tl-ct' + (n ? '' : ' z') + '" style="--r:' + r.toFixed(2) + '" title="' + n + ' of ' + rows.length + ' finished ' + esc(gr.ids[0] + ' ' + it.title) + (CMP.today ? ' today' : '') + '">' + n + '</span>'; }) + '</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var s = r.s;
+        return '<tr><td class="nm"><button type="button" class="cmp-name" data-cmpst="' + esc(s.name) + '">' + esc(pvName(s.name)) + '</button></td><td class="tl-n"><b>' + r.done + '</b>/' + total + '<span class="tl-bar"><i style="width:' + (total ? Math.round(r.done / total * 100) : 0) + '%"></i></span></td><td class="tl-td">' +
+          track(function (gr, it, gi, ii) {
+            var x = r.dots[gi][ii], td = cmpIsToday(x.t), dim = CMP.today && !td ? ' dim' : '', cl = 'tl-d ' + x.k + (td ? ' today' : '') + dim + (/^exit$/i.test(it.short) ? ' ex' : '');
+            var tip = esc(pvName(s.name) + ', ' + gr.ids[0] + ' ' + it.title + ': ' + x.tip);
+            if (x.url) return '<a class="' + cl + '" href="' + esc(x.url) + '" target="_blank" rel="noopener" title="' + tip + '. Open the file in Drive." aria-label="' + tip + '"></a>';
+            if (gr.book && x.k !== 'none') return '<button type="button" class="' + cl + '" data-cmpcoach="' + esc(gr.ids[0]) + '" title="' + tip + '" aria-label="' + tip + '"></button>';
+            return '<span class="' + cl + '" title="' + tip + '" role="img" aria-label="' + tip + '"></span>';
+          }) + '</td>' +
+          '<td class="tl-last">' + (r.last ? '<b>' + esc(r.last.what) + '</b> ' + esc(cmpTlWhen(r.last.t)) : '<span class="cmp-none">Not started</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="c43-key tl-key"><span><i class="tl-d full"></i>Finished (full marks)</span><span><i class="tl-d part"></i>Half or more</span><span><i class="tl-d low"></i>Under half</span><span><i class="tl-d saved"></i>Saved, not marked</span><span><i class="tl-d none"></i>Not started</span><span><i class="tl-d full today"></i>Worked on today</span></p>' +
+      '<p class="c43-note">Each dot is one task, in course order. The numbers under the task names are how many students have finished it. Tap a dot to open that file in Drive, a Coach\'s name to see its full grid, or a name to reset their PIN. Textbook sections count as finished when every mission is done and every question is right.</p>';
+    return h + '</div></section>';
+  }
   function cmpLoadBook() {
     var cls = CMP.cls, id = CMP.coach;
     tcall('api_t_cmpBook', cls, id).then(function (b) { if (cls !== CMP.cls || id !== CMP.coach) return; CMP.book = b; if (H.view === 'cmp') renderCmp(); })
@@ -3830,6 +3989,11 @@
       };
     });
     Array.prototype.forEach.call(v.querySelectorAll('[data-cmpcoach]'), function (b) { b.onclick = function () { CMP.coach = b.getAttribute('data-cmpcoach'); CMP.filt = 'all'; renderCmp(); window.scrollTo(0, 0); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-cmpmode]'), function (b) { b.onclick = function () { CMP.mode = b.getAttribute('data-cmpmode'); lsSet('wsh_cmpmode', CMP.mode); renderCmp(); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-tlch]'), function (b) { b.onclick = function () { CMP.tlch = b.getAttribute('data-tlch'); lsSet('wsh_cmptlch', CMP.tlch); renderCmp(); }; });
+    Array.prototype.forEach.call(v.querySelectorAll('[data-tlsort]'), function (b) { b.onclick = function () { CMP.tlsort = b.getAttribute('data-tlsort'); renderCmp(); }; });
+    var tt = $('tl-today'); if (tt) tt.onclick = function () { CMP.today = !CMP.today; renderCmp(); };
+    var tr = $('tl-refresh'); if (tr) tr.onclick = function () { cmpLoadGrid(); cmpTlLoadBooks(cmpTlGroups(), true); toast('Refreshing ' + CMP.cls); };
     Array.prototype.forEach.call(v.querySelectorAll('[data-cmpback]'), function (b) { b.onclick = function () { CMP.coach = ''; renderCmp(); }; });
     Array.prototype.forEach.call(v.querySelectorAll('[data-cmptoggle]'), function (b) {
       b.onclick = function () { var id = b.getAttribute('data-cmptoggle'); b.disabled = true; cmpSet(CMP.cls, id, !cmpIsOpen(CMP.cls, id)).catch(function (e) { b.disabled = false; toast(msg(e)); }); };
