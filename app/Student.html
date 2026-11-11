@@ -448,6 +448,57 @@
   .r38-band .hills { position: absolute; left: 50%; bottom: -200px; width: max(1500px, 110vw); transform: translateX(-50%) scaleX(-1); opacity: var(--hillO); filter: var(--skyF); }
   .r38-band .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(var(--r-shd),.45) 0%, rgba(var(--r-shd),.62) 40%, rgba(var(--r-shd),.92) 75%, var(--r-bg) 100%); }
   @media (prefers-reduced-transparency: reduce) { .r38-band .sky, .r38-band .hills { display: none; } }
+  /* r48 the cinema pass: a dim night observatory behind the greeting, taller doors that glow softly, chapters as covers */
+  .r38-band .scene { position: absolute; left: -2%; top: -2%; width: 104%; height: 640px; object-fit: cover; object-position: 50% 64%; filter: brightness(.6) saturate(.9); opacity: .9;
+    -webkit-mask-image: linear-gradient(rgba(0,0,0,.55) 0%, #000 30%, #000 45%, transparent 92%); mask-image: linear-gradient(rgba(0,0,0,.55) 0%, #000 30%, #000 45%, transparent 92%); animation: r48pan 40s ease-in-out infinite alternate; will-change: transform; }
+  @keyframes r48pan { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.08) translate3d(-1.5%, -1%, 0); } }
+  :root[data-look="paper"] .r38-band .scene { display: none; }
+  @media (prefers-reduced-transparency: reduce) { .r38-band .scene { display: none; } }
+  @media (min-width: 901px) {
+    .r38-door { flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 10px; min-height: 132px; padding: 16px 18px; border-radius: 22px;
+      background: linear-gradient(160deg, color-mix(in srgb, var(--dc) 16%, var(--r-card)) 0%, var(--r-card) 78%); border-color: color-mix(in srgb, var(--dc) 24%, var(--r-line));
+      box-shadow: 0 14px 34px rgba(0,0,0,.22); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .r38-door .tl { font-size: 21px; }
+    .r38-door .badge-n { top: 12px; left: auto; right: 12px; }
+  }
+  .r38-door::before { content: ''; position: absolute; z-index: 0; width: 210px; height: 210px; right: -80px; top: -100px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, color-mix(in srgb, var(--dc) 38%, transparent), transparent 70%); opacity: .45; animation: r48glow 4.8s ease-in-out infinite alternate; }
+  .r38-door:nth-child(2)::before { animation-delay: -1.2s; } .r38-door:nth-child(3)::before { animation-delay: -2.4s; } .r38-door:nth-child(4)::before { animation-delay: -3.6s; }
+  @keyframes r48glow { from { opacity: .3; transform: scale(.94); } to { opacity: .6; transform: scale(1.06); } }
+  :root[data-look="paper"] .r38-door::before { opacity: .25; animation: none; }
+  @media (hover: hover) and (pointer: fine) { .r38-door { transition: transform 200ms var(--e-out), background-color 160ms var(--e-out), border-color 160ms var(--e-out), box-shadow 200ms var(--e-out); } .r38-door:hover { transform: translateY(-2px); } .r48-cv:hover img { transform: scale(1.08); } }
+  /* Lessons: each chapter is a cover; the open chapter is a banner with its lessons under it */
+  .r48-th, .r48-covers, .r48-lbl { flex: none; }
+  .r48-covers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .r48-cv { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; border: 0; border-radius: 22px; overflow: hidden; cursor: pointer; text-align: left; color: #fff; font: inherit; background: #120E22;
+    box-shadow: 0 14px 34px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08); animation: r48rise 520ms var(--e-out) both; animation-delay: calc(var(--i, 0) * 70ms + 60ms); transition: transform 200ms var(--e-out); }
+  @keyframes r48rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .r48-cv img, .r48-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .r48-cv img { filter: brightness(.72); transition: transform 1400ms var(--e-out); }
+  .r48-cv .v { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(5,4,12,.92) 100%); }
+  .r48-cv .b { position: absolute; left: 20px; right: 20px; bottom: 16px; }
+  .r48-cv .n, .r48-th .n { font: 800 38px/0.9 var(--r-display); color: #FFB59A; }
+  .r48-cv .t { display: block; margin-top: 4px; font: 700 19px/1.2 var(--r-display); }
+  .r48-cv .m { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: #D3CBEA; }
+  .r48-cv .fix { position: absolute; top: 12px; left: 12px; height: 28px; padding: 0 12px; border-radius: 999px; display: inline-flex; align-items: center; font: 800 12px var(--r-text, inherit); background: rgba(255,156,138,.94); color: #3A0E05; }
+  .r48-cv:active { transform: scale(.985); }
+  .r48-cv:focus-visible { outline: 3px solid var(--s0); outline-offset: 3px; }
+  .r48-th { position: relative; overflow: hidden; border-radius: 24px; background: #0E0A1C; color: #fff; box-shadow: 0 18px 44px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.08); animation: r48rise 480ms var(--e-out) both; }
+  .r48-th .stage48 { position: relative; min-height: 220px; display: flex; align-items: flex-end; padding: 24px 24px 20px; box-sizing: border-box; }
+  .r48-th img { filter: brightness(.7); animation: r48drift 18s ease-in-out infinite alternate; }
+  @keyframes r48drift { from { transform: scale(1.04); } to { transform: scale(1.12) translateX(-2%); } }
+  .r48-th .v { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(14,10,28,.92) 0%, rgba(14,10,28,.55) 50%, rgba(14,10,28,.1) 80%), linear-gradient(180deg, transparent 50%, #0E0A1C 100%); }
+  .r48-th .tx { position: relative; max-width: 560px; }
+  .r48-th h2 { margin: 6px 0 0; font: 800 28px/1.1 var(--r-display); color: #fff; }
+  .r48-th .sub48 { margin-top: 6px; font-size: 14px; font-weight: 600; color: #D3CBEA; }
+  .r48-th .x48 { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; color: #fff; font-size: 22px; line-height: 1; background: rgba(5,4,12,.55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); transition: transform 160ms var(--e-out); }
+  .r48-th .x48:active { transform: scale(.94); }
+  .r48-th .rows48 { position: relative; padding: 4px 10px 12px; }
+  .r48-th .r38-row { color: #fff; }
+  .r48-th .r38-row .t, .r48-th .r38-row .rt { color: #fff; }
+  .r48-lbl { margin: 22px 4px 12px; font: 800 12px var(--r-text, inherit); letter-spacing: .14em; text-transform: uppercase; color: var(--r-tx2); }
+  @media (max-width: 640px) { .r48-covers { grid-template-columns: minmax(0, 1fr); } .r48-th h2 { font-size: 23px; } }
+  @media (prefers-reduced-motion: reduce) { .r38-band .scene, .r38-door::before, .r48-th img { animation: none; } .r48-cv, .r48-th { animation: none; } .r48-cv img { transition: none; } }
 
   /* one column, 920 wide, the same gutters everywhere */
   #v-app { --gut: max(32px, calc((100% - 920px) / 2)); }
@@ -778,6 +829,7 @@
     <canvas class="fx" id="r38-stars"></canvas>
     <img class="hills" alt="" src="https://cedricboi.github.io/science-decks/media/hub-hills.webp" decoding="async">
     <div class="shade"></div>
+    <img class="scene" alt="" src="https://cedricboi.github.io/science-decks/media/covers/hero.webp" decoding="async">
   </div>
   <nav class="side" aria-label="Main">
     <div class="logo"><img id="nav-mark" alt="" class="hidden"><span id="nav-mark-text">lw</span></div>
@@ -1726,16 +1778,22 @@
     }
     if (n.ask && !deckOpen()) { var ab = el('section', 'r38-card r38-minis r38-in'); ab.appendChild(miniRow('Mr Cedric is asking', n.ask.question || n.ask.deckTitle || 'A question from the slides', '', 'Answer now', function () { openDeck(n.ask.url, n.ask.taskId); }, null, 'var(--lamp)')); body.appendChild(ab); }
     if (!list.length) { body.appendChild(el('div', 'r38-empty', 'No lessons yet. Mr Cedric puts the slides here after each lesson.')); return; }
-    list.slice().reverse().forEach(function (c, ci) {
-      var sec = el('section', 'r38-card r38-sec r38-banner r38-in'); sec.style.setProperty('--ac', 'var(--s0)'); sec.style.animationDelay = (ci * 50) + 'ms';
-      sec.innerHTML = bannerSky(4 + ci * 3, 520, 0.8);
-      var open = !!openCh[c.key], h = el('button', 'r38-sech'); h.type = 'button'; h.setAttribute('aria-expanded', String(open));
-      var ht = el('div'); var h2 = el('h2'); if (c.num) { var nm = el('span', 'r38-num', c.num); nm.style.setProperty('--nc', 'var(--s0)'); h2.appendChild(nm); } h2.appendChild(el('span', 'tx', c.name)); ht.appendChild(h2);
-      var fixN = c.lessons.filter(function (l) { return l.fix > 0; }).length;
-      ht.appendChild(el('div', 'sub', (c.lessons.length === 1 ? '1 lesson' : c.lessons.length + ' lessons') + (fixN ? ' · ' + (fixN === 1 ? '1 has answers to put right' : fixN + ' have answers to put right') : ''))); h.appendChild(ht); h.appendChild(chev());
-      h.addEventListener('click', function () { chChosen = true; openCh[c.key] = !openCh[c.key]; drawLessons(); });
-      sec.appendChild(h);
-      if (open) c.lessons.forEach(function (l) {
+    // Release 48: each chapter is a cover with its own art. The open chapter is a banner with its lessons under it,
+    // and the other chapters wait below as covers.
+    var ordered = list.slice().reverse(), openKey = null;
+    ordered.forEach(function (c) { if (openCh[c.key] && !openKey) openKey = c.key; });
+    var fixOf = function (c) { return c.lessons.filter(function (l) { return l.fix > 0; }).length; };
+    var subOf = function (c) { var f = fixOf(c); return (c.lessons.length === 1 ? '1 lesson' : c.lessons.length + ' lessons') + (f ? ' · ' + (f === 1 ? '1 has answers to put right' : f + ' have answers to put right') : ''); };
+    var oc = ordered.filter(function (c) { return c.key === openKey; })[0];
+    if (oc) {
+      var c = oc, sec = el('section', 'r48-th'); sec.setAttribute('aria-label', 'Chapter ' + (c.num || '') + ' ' + c.name);
+      sec.innerHTML = '<div class="stage48"><img alt="" decoding="async" src="' + r48Art(c) + '"><span class="v" aria-hidden="true"></span><div class="tx"><div class="n"></div><h2></h2><div class="sub48"></div></div></div>';
+      sec.querySelector('.n').textContent = c.num || ''; sec.querySelector('h2').textContent = c.name; sec.querySelector('.sub48').textContent = subOf(c);
+      var x = el('button', 'x48', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close this chapter');
+      x.addEventListener('click', function () { chChosen = true; openCh = {}; drawLessons(); });
+      sec.querySelector('.stage48').appendChild(x);
+      var box = el('div', 'rows48');
+      c.lessons.forEach(function (l) {
         var live = n.lesson && n.lesson.deckId === l.id, row = el('div', 'r38-row' + (live ? ' today' : ''));
         var rt = el('div', 'rt'), t = el('div', 't'); if (l.num) { var ln = el('span', 'r38-num', l.num); ln.style.setProperty('--nc', 'var(--s0)'); t.appendChild(ln); } t.appendChild(document.createTextNode(numOf(l.title).num === l.num ? numOf(l.title).name : l.title)); rt.appendChild(t);
         if (live || l.fix > 0) { var s = el('div', 's'); if (live) s.appendChild(el('span', 'r38-chip now', 'In class now')); if (l.fix > 0) s.appendChild(el('span', 'r38-chip late', l.fix + (l.fix === 1 ? ' answer' : ' answers') + ' to put right')); rt.appendChild(s); }
@@ -1743,10 +1801,30 @@
         var ob = el('button', 'r38-open' + (live || l.fix > 0 ? ' solid' : ''), live ? 'Join' : l.fix > 0 ? 'Put it right' : 'Open'); ob.type = 'button';
         ob.setAttribute('aria-label', (live ? 'Join ' : 'Open ') + l.title);
         ob.addEventListener('click', function () { openDeck(l.url, null, l.fix > 0 && !live); });
-        row.appendChild(ob); sec.appendChild(row);
+        row.appendChild(ob); box.appendChild(row);
       });
-      body.appendChild(sec); watchLit(sec, 'ch' + c.key);
-    });
+      sec.appendChild(box); body.appendChild(sec);
+    }
+    var rest = ordered.filter(function (c) { return c.key !== openKey; });
+    if (rest.length) {
+      if (oc) body.appendChild(el('p', 'r48-lbl', 'Other chapters'));
+      var grid = el('div', 'r48-covers');
+      rest.forEach(function (c, ci) {
+        var f = fixOf(c), cv = el('button', 'r48-cv'); cv.type = 'button'; cv.style.setProperty('--i', String(ci));
+        cv.setAttribute('aria-label', 'Chapter ' + (c.num || '') + ', ' + c.name + '. ' + subOf(c));
+        cv.innerHTML = '<img alt="" loading="lazy" decoding="async" src="' + r48Art(c) + '"><span class="v" aria-hidden="true"></span>' + (f ? '<span class="fix"></span>' : '') + '<span class="b"><span class="n"></span><span class="t"></span><span class="m"></span></span>';
+        if (f) cv.querySelector('.fix').textContent = f === 1 ? '1 to put right' : f + ' to put right';
+        cv.querySelector('.n').textContent = c.num || ''; cv.querySelector('.t').textContent = c.name; cv.querySelector('.m').textContent = subOf(c);
+        cv.addEventListener('click', function () { chChosen = true; openCh = {}; openCh[c.key] = true; drawLessons(); var t = $('p-lessons'); if (t && t.scrollIntoView) t.scrollIntoView({ block: 'start' }); });
+        grid.appendChild(cv);
+      });
+      body.appendChild(grid);
+    }
+  }
+  var R48_ART = { science: { 7: 'ch7', 8: 'ch8', 9: 'ch9', 16: 'ch16', _: 'ch8' }, lss: { 7: 'ch7', 8: 'ch8', 9: 'ch9', 16: 'ch16', _: 'ch8' }, g3physics: { 1: 'p1', 2: 'p2', _: 'p1' }, physics: { 9: 'waves', _: 'waves' }, g1computing: { 8: 'c8', 9: 'c9', 10: 'c10', _: 'c8' } };
+  function r48Art(c) {
+    var sub = String(c.key || '').split(/[:|]/)[0].toLowerCase(), m = R48_ART[sub] || R48_ART.science, f = m[parseInt(c.num, 10)] || m._ || 'hero';
+    return 'https://cedricboi.github.io/science-decks/media/covers/' + f + '.webp';
   }
 
   /* ---------- HOMEWORK: one coloured banner per worksheet, the one due first at the top ---------- */

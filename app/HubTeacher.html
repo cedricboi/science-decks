@@ -2784,6 +2784,85 @@
   @media (max-width: 600px) { #view-lib { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } }
   @media (prefers-reduced-motion: reduce) { .w43pk-crumb, .w43pk-act, .w43pk-give { transition: none; } }
 
+  /* ===== r48 the Library as chapter covers, and one chapter's theatre ===== */
+  #view-lib .l48-course { display: inline-flex; align-items: center; gap: 9px; padding-left: 6px; }
+  #view-lib .l48-course small { font: 700 12px var(--text); opacity: .72; }
+  #view-lib .l48-dot { width: 30px; height: 30px; border-radius: 50%; flex: none; background: #1A1430 center / cover no-repeat; box-shadow: 0 0 0 2px rgba(255,255,255,.2); }
+  .l48-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 24px; }
+  .l48-cover { position: relative; display: block; width: 100%; aspect-ratio: 16 / 11; padding: 0; border: 0; border-radius: 24px; overflow: hidden; background: #120C26; color: #fff; text-align: left; cursor: pointer; font: inherit;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08); animation: l48rise 560ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out); }
+  @keyframes l48rise { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+  .l48-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.04); filter: saturate(1.05) brightness(.82); transition: transform 1400ms var(--ease-out), filter 400ms ease; }
+  .l48-cover .l48-v, .l48-stage .l48-v { position: absolute; inset: 0; pointer-events: none; }
+  .l48-cover .l48-v { background: linear-gradient(180deg, rgba(6,4,15,0) 30%, rgba(6,4,15,.55) 62%, rgba(6,4,15,.92) 100%); }
+  .l48-cover .l48-b { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px 20px; display: flex; flex-direction: column; gap: 5px; }
+  .l48-cover .l48-n { font: 800 46px/.9 var(--display); letter-spacing: -.03em; color: var(--ac); text-shadow: 0 2px 18px rgba(0,0,0,.6); }
+  .l48-cover .l48-t { font: 700 21px/1.2 var(--display); color: #fff; }
+  .l48-cover .l48-m { font: 600 13px var(--text); color: #D2C9EE; }
+  .l48-cover .l48-q { display: none; }
+  .l48-chips { position: absolute; top: 14px; right: 14px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 70%; }
+  .l48-chip { height: 26px; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; font: 800 12px var(--text); color: #fff; background: rgba(6,4,15,.62); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .l48-chip svg { width: 12px; height: 12px; }
+  .l48-chip.has { background: rgba(31,122,79,.78); box-shadow: inset 0 0 0 1px rgba(110,231,170,.55); }
+  .l48-warn { align-self: flex-start; margin-bottom: 4px; height: 26px; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; font: 800 12px var(--text); background: rgba(255,200,107,.92); color: #3A2600; }
+  .l48-cover:active { transform: scale(.985); }
+  .l48-cover:focus-visible { outline: 3px solid #C9B9FF; outline-offset: 3px; }
+  @media (hover: hover) and (pointer: fine) {
+    .l48-cover:hover { transform: translateY(-4px); box-shadow: 0 26px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.18); }
+    .l48-cover:hover img { transform: scale(1.1); filter: saturate(1.15) brightness(.95); }
+  }
+  .l48-crumbs { margin: 22px 0 14px; }
+  .l48-back { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 999px; border: 0; cursor: pointer; font: 700 14px var(--text); color: var(--nx-ink); background: var(--nx-surface); box-shadow: inset 0 0 0 1px var(--nx-line); transition: transform 160ms var(--ease-out); }
+  :root[data-theme="dark"] .l48-back { color: #E6DEFF; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+  .l48-back:active { transform: scale(.97); }
+  .l48-th { position: relative; border-radius: 30px; overflow: hidden; background: #0B0719; color: #EDE6FF; box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.08); animation: l48open 520ms var(--ease-out) both; }
+  @keyframes l48open { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+  .l48-stage { position: relative; min-height: 360px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px 24px; padding: 40px 40px 36px; box-sizing: border-box; }
+  .l48-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.8); animation: l48drift 18s ease-in-out infinite alternate; }
+  @keyframes l48drift { from { transform: scale(1.04) translateX(0); } to { transform: scale(1.12) translateX(-2%); } }
+  .l48-stage .l48-v { background: linear-gradient(90deg, rgba(11,7,25,.95) 0%, rgba(11,7,25,.72) 40%, rgba(11,7,25,.12) 72%), linear-gradient(180deg, transparent 55%, #0B0719 100%); }
+  .l48-tx { position: relative; max-width: 600px; }
+  .l48-tx .l48-n { font: 800 92px/.85 var(--display); letter-spacing: -.04em; color: var(--ac); animation: l48in 600ms 100ms var(--ease-out) both; }
+  .l48-tx .l48-t { margin: 8px 0 0; font: 800 38px/1.08 var(--display); letter-spacing: -.02em; color: #fff; animation: l48in 600ms 160ms var(--ease-out) both; }
+  .l48-tx .l48-m { margin-top: 12px; font: 600 15px var(--text); color: #D2C8EE; animation: l48in 600ms 220ms var(--ease-out) both; }
+  @keyframes l48in { from { opacity: 0; transform: translateY(10px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+  .l48-give { position: relative; max-width: 460px; }
+  .l48-give .chgive { justify-content: flex-end; }
+  .l48-give .chg { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .l48-x { position: absolute; top: 18px; right: 18px; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; font-size: 24px; line-height: 1; color: #fff; background: rgba(6,4,15,.6); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: transform 160ms var(--ease-out); }
+  .l48-x:active { transform: scale(.94); }
+  /* the chapter's own content, inside the theatre: the old banner goes, the slides become tiles */
+  .l48-th .l48-old > .libm-ch { background: none !important; border: 0 !important; box-shadow: none !important; margin: 0; padding: 0; border-radius: 0; }
+  .l48-th .l48-old .libm-chh { display: none; }
+  .l48-th .l48-old > .libm-ch::before, .l48-th .l48-old > .libm-ch::after { display: none; }
+  .l48-th .libm-ls > li .l48-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .l48-th .libm-sec { padding: 6px 40px 30px; border: 0; }
+  .l48-th .libm-lbl { margin: 0 0 14px; font: 800 12px var(--text); letter-spacing: .14em; text-transform: uppercase; color: #A99BD1; }
+  .l48-th .libm-ls { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; list-style: none; margin: 0; padding: 0; columns: auto; }
+  .l48-th .libm-ls > li { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-height: 170px; padding: 18px 18px 16px; border-radius: 20px; box-sizing: border-box; break-inside: avoid;
+    background: linear-gradient(160deg, color-mix(in srgb, var(--ac) 16%, #15102B) 0%, #120D25 70%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); animation: l48rise 480ms var(--ease-out) both; }
+  .l48-th .libm-ls > li:nth-child(2) { animation-delay: 60ms; } .l48-th .libm-ls > li:nth-child(3) { animation-delay: 120ms; } .l48-th .libm-ls > li:nth-child(4) { animation-delay: 180ms; } .l48-th .libm-ls > li:nth-child(n+5) { animation-delay: 240ms; }
+  .l48-th .libm-ls > li .n { font: 800 30px/1 var(--display); color: var(--ac); min-width: 0; }
+  .l48-th .libm-ls > li .t { flex: 1; font: 700 16px/1.3 var(--display); color: #fff; }
+  #app .l48-th .libm-ls > li .btn.btn, .l48-th .libm-ls > li .btn.btn { margin-left: 0; min-height: 38px; padding: 0 14px; border-radius: 999px; color: #1A1233; background: #fff; border: 0; box-shadow: none; font-weight: 800; text-decoration: none; }
+  #app .l48-th .libm-ls > li .btn.btn + .btn.btn, .l48-th .libm-ls > li .btn.btn + .btn.btn { color: #E6DEFF; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+  .l48-parts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .l48-parts span { height: 24px; padding: 0 9px; border-radius: 999px; display: inline-flex; align-items: center; font: 700 11px var(--text); background: rgba(255,255,255,.08); color: #CFC5EA; }
+  .l48-th .libm-tp { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; }
+  .l48-th .tpi { background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); border-radius: 18px; color: #fff; }
+  .l48-th .tpi .nm { color: #fff; } .l48-th .tpi small { color: #B8ACD9; }
+  .l48-th .tpi select { background: #1A1430; color: #fff; border-color: rgba(255,255,255,.18); }
+  .l48-th .libm-acts .btn, .l48-th .tpi .x { color: #E6DEFF; }
+  @media (max-width: 1000px) { .l48-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) {
+    .l48-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .l48-stage { min-height: 300px; padding: 70px 20px 22px; }
+    .l48-tx .l48-n { font-size: 64px; } .l48-tx .l48-t { font-size: 28px; }
+    .l48-th .libm-sec { padding: 6px 20px 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .l48-cover, .l48-th, .l48-tx > *, .l48-th .libm-ls > li { animation: none; } .l48-stage img { animation: none; } .l48-cover img { transition: none; } }
+
 </style>
 <style>
   /* ================= r43 points ================= */
@@ -4348,12 +4427,96 @@
     });
     var none = root.querySelector('.w43lib-none'); if (none) none.classList.toggle('hidden', shown > 0);
   }
+  /* ---------------- Release 48: the Library as chapter covers (the "Library · cinema" board) ----------------
+     The library opens on a wall of covers, one per chapter, each with its own painted art. A cover opens the chapter's
+     theatre: a moving banner, the classes to give it to, then the same slides, homework and topical worksheets as before.
+     G1 Computing joins the library from computing.json; its Coaches open on the Computing page. */
+  var L48_ART = { science: { 7: 'ch7', 8: 'ch8', 9: 'ch9', 16: 'ch16', _: 'ch8' }, g3physics: { 1: 'p1', 2: 'p2', _: 'p1' }, physics: { 9: 'waves', _: 'waves' }, g1computing: { 8: 'c8', 9: 'c9', 10: 'c10', _: 'c8' } };
+  function l48Num(name) { var m = /^\s*Chapter\s+(\d+[a-z]?)\s*[—:–-]?\s*(.*)$/i.exec(String(name || '')); return m ? { n: m[1], t: m[2] || name } : /study tools/i.test(name) ? { n: '★', t: 'Study tools' } : { n: '', t: String(name || '') }; }
+  function l48Art(site, subId, gname) {
+    var m = L48_ART[subId] || {}, k = l48Num(gname).n, f = m[parseInt(k, 10)] || (/study tools/i.test(gname) ? 'hero' : m._) || 'hero';
+    return (site || '') + 'media/covers/' + f + '.webp';
+  }
+  function l48CxLoad(site, done) {
+    H.cxLib = null;
+    if (!site) { H.cxLib = { groups: [] }; return; }
+    fetch(site + 'computing.json?t=' + Date.now()).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
+      var by = {}, order = [];
+      (j.coaches || []).forEach(function (c) {
+        var m = /^\s*Chapter\s+(\d+)\s*(.*)$/i.exec(c.chapter || ''), name = m ? 'Chapter ' + m[1] + ' — ' + (m[2] || '') : (c.chapter || 'Coaches');
+        if (!by[name]) { by[name] = { name: name, items: [] }; order.push(name); }
+        by[name].items.push({ num: c.id, title: c.title, kind: c.kind === 'book' ? 'book' : 'coach', id: c.id, parts: (c.parts || []).map(function (p) { return p[1]; }), sections: (c.sections || []).length });
+      });
+      H.cxLib = { id: 'g1computing', name: 'G1 Computing', color: '#5EE0A0', cx: true, groups: order.map(function (n) { return by[n]; }) };
+    }).catch(function () { H.cxLib = { groups: [] }; }).then(function () { if (done) done(); });
+  }
+  function l48Key(sub, g) { return sub.cx ? 'cx|' + g.name : chKey(sub.id, g.name); }
+  function l48Body(sub, cls, site, oldSection) {
+    var groups = (sub.groups || []).filter(function (g) { return (g.items || []).length; }), col = sub.color || '#8B6CFF';
+    var open = W43L.open ? groups.filter(function (g) { return l48Key(sub, g) === W43L.open; })[0] : null;
+    if (!open) W43L.open = null;
+    var info = function (g) {
+      var k = l48Key(sub, g), c = sub.cx ? null : chByKey(k), tp = c ? chTopical(k) : [], nm = l48Num(g.name);
+      var decks = g.items.filter(function (it) { return it.kind !== 'tool'; }).length, books = sub.cx ? g.items.filter(function (it) { return it.kind === 'book'; }).length : 0;
+      var n = sub.cx ? g.items.length - books : c && c.lessons != null ? c.lessons : decks;
+      var gaps = tp.filter(function (t) { return cx38TpGap(t).length; }).length;
+      var meta = sub.cx ? [n ? plural(n, 'Coach', 'Coaches') : '', books ? plural(books, 'interactive book', 'interactive books') : ''].filter(String).join(' · ') : c || decks ? plural(n, 'lesson', 'lessons') + (tp.length ? ' · ' + plural(tp.length, 'topical worksheet', 'topical worksheets') : '') : plural(g.items.length, 'study tool', 'study tools');
+      var classes = c ? teClasses().map(function (x) { return { n: x, has: chHas(x, k) }; }) : [];
+      return { k: k, c: c, tp: tp, num: nm.n, title: nm.t, meta: meta, gaps: gaps, classes: classes, art: l48Art(site, sub.id, g.name) };
+    };
+    if (!open) {
+      return '<div class="l48-grid">' + groups.map(function (g, i) {
+        var f = info(g), q = [g.name].concat(g.items.map(function (it) { return (it.num || '') + ' ' + (it.title || it.file || ''); }), f.tp.map(function (t) { return t.name; }));
+        return '<button type="button" class="libm-ch l48-cover" data-l48open="' + esc(f.k) + '" data-q="' + esc(g.name) + '" style="--i:' + i + ';--ac:' + esc(col) + '" aria-label="' + esc((f.num && f.num !== '★' ? 'Chapter ' + f.num + ', ' : '') + f.title + '. ' + f.meta) + '">' +
+          '<img src="' + esc(f.art) + '" alt="" loading="lazy" decoding="async"><span class="l48-v" aria-hidden="true"></span>' +
+          (f.classes.length ? '<span class="l48-chips">' + f.classes.map(function (x) { return '<span class="l48-chip' + (x.has ? ' has' : '') + '">' + (x.has ? ICON.tick : '') + esc(x.n) + '</span>'; }).join('') + '</span>' : '') +
+          '<span class="l48-b">' + (f.gaps ? '<span class="l48-warn">' + plural(f.gaps, 'worksheet needs', 'worksheets need') + ' a file</span>' : '') + '<span class="l48-n">' + esc(f.num) + '</span><span class="l48-t">' + esc(f.title) + '</span><span class="l48-m">' + esc(f.meta) + '</span></span>' +
+          q.slice(1).map(function (x) { return '<span class="l48-q" data-q="' + esc(x) + '"></span>'; }).join('') + '</button>';
+      }).join('') + '</div>';
+    }
+    var gi = groups.indexOf(open), f = info(open);
+    var body = sub.cx ? '<div class="libm-sec l48-sec"><div class="libm-lbl">Coaches and books</div><ol class="libm-ls l48-reel">' + open.items.map(function (it, i) {
+        return '<li style="--i:' + i + '"><span class="n">' + esc(it.num) + '</span><span class="t">' + esc(it.title) + '</span>' +
+          (it.parts.length ? '<span class="l48-parts">' + it.parts.map(function (p) { return '<span>' + esc(p) + '</span>'; }).join('') + '</span>' : it.kind === 'book' ? '<span class="l48-parts"><span>Missions</span><span>Quick checks</span><span>Boss game</span></span>' : '') +
+          '<span class="l48-acts"><button type="button" class="btn quiet small" data-l48cmp="' + esc(it.id) + '">' + (it.kind === 'book' ? 'See progress' : 'Open in Computing') + '</button></span></li>';
+      }).join('') + '</ol></div>'
+      : '<div class="l48-old">' + oldSection(open, gi) + '</div>';
+    return '<div class="l48-crumbs"><button type="button" class="l48-back" data-l48back><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>All ' + esc(sub.name) + ' chapters</button></div>' +
+      '<section class="l48-th" style="--ac:' + esc(col) + '" aria-label="' + esc((f.num ? 'Chapter ' + f.num + ', ' : '') + f.title) + '"><div class="l48-stage">' +
+      '<img src="' + esc(f.art) + '" alt="" decoding="async"><span class="l48-v" aria-hidden="true"></span>' +
+      '<div class="l48-tx"><div class="l48-n">' + esc(f.num) + '</div><h2 class="l48-t">' + esc(f.title) + '</h2><div class="l48-m">' + esc(sub.name + ' · ' + f.meta) + (f.c && chHas(cls, f.k) ? ' · in Chapters for ' + esc(cls) : '') + '</div></div>' +
+      (f.c ? '<div class="l48-give">' + cx38GiveChips(f.k) + '</div>' : '') +
+      '<button type="button" class="l48-x" data-l48back aria-label="Back to all chapters">×</button></div>' + body + '</section>';
+  }
+  function l48Bind(root, cls, again) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-l48open]'), function (b) {
+      b.onclick = function () { W43L.open = b.getAttribute('data-l48open'); W43L.q = ''; again(); window.scrollTo(0, 0); };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-l48back]'), function (b) {
+      b.onclick = function () { var k = W43L.open; W43L.open = null; again(); var c = k && root.querySelector('[data-l48open="' + k.replace(/"/g, '') + '"]'); if (c) { c.scrollIntoView({ block: 'center' }); c.focus({ preventScroll: true }); } };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-l48cmp]'), function (b) {
+      b.onclick = function () { w43LibOff(); CMP.coach = b.getAttribute('data-l48cmp'); CMP.filt = 'all'; showTab('cmp'); window.scrollTo(0, 0); };
+    });
+  }
+  // Escape in a chapter goes back to the covers (and only that).
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || e.w43done || !W43L.on || !W43L.open) return;
+    var dlg = Array.prototype.some.call(document.querySelectorAll('[role="dialog"], [aria-modal="true"], .modal:not(.hidden)'), function (d) { return d.offsetParent; });
+    if (dlg) return;
+    e.w43done = true;
+    var b = w43LibRoot().querySelector('[data-l48back]'); if (b) b.click();
+  });
   function openLibrary(cls, focus) {
     var cat = H.te || {}, site = H.teSite || '';
     H.libBack = null;
     var subs = (cat.subjects || []).filter(function (s) { return (s.groups || []).some(function (g) { return (g.items || []).length; }); });
+    if (H.cxLib && H.cxLib.groups.length) subs = subs.concat([H.cxLib]);
     if (!subs.length) return;
     var cur = lsGet('wsh_lib_sub') || lsGet('wsh_te_sub'), pick = null, up = null;
+    if (focus) W43L.open = focus; else if (!W43L.keep) W43L.open = null;
+    W43L.keep = false;
+    if (H.cxLib === undefined) l48CxLoad(site, function () { if (W43L.on && !pick && !up) { W43L.keep = true; openLibrary(cls, null); } });
     if (focus) subs.forEach(function (s) { (s.groups || []).forEach(function (g) { if (chKey(s.id, g.name) === focus) cur = s.id; }); });
     if (!subs.some(function (s) { return s.id === cur; })) cur = subs[0].id;
     var again = function () { w43LibShow(); draw(); if (H.view === 'chx') nxChapters(); };
@@ -4367,14 +4530,15 @@
         '<p class="libm-sub">Every lesson and worksheet you can give a class. Each chapter is a package: its slides, the homework for each part, and topical worksheets. Give a class a chapter and it appears on that class\'s page, with its slides open to them for revision.</p></div>' +
         '<div class="w43lib-tools"><label class="w43lib-q"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="w43lib-q" placeholder="Find a lesson or worksheet" aria-label="Find a lesson or worksheet" autocomplete="off"></label>' +
         '<div class="te-subs" role="tablist" aria-label="Course">' + subs.map(function (s) {
-          return '<button role="tab" class="te-subj" data-ls="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '>' + esc(s.name) + '</button>';
-        }).join('') + '</div></div></div></div>' + cx38LibMissing(sub, cls) + '<p class="w43lib-none hidden">No lesson or worksheet matches. Try fewer words.</p><div class="libm-list">' + (sub.groups || []).filter(function (g) { return (g.items || []).length; }).map(function (g, gi) {
+          var gs = (s.groups || []).filter(function (g) { return (g.items || []).length; }), nch = gs.filter(function (g) { return !/study tools/i.test(g.name); }).length;
+          return '<button role="tab" class="te-subj l48-course" data-ls="' + esc(s.id) + '" aria-selected="' + (s.id === cur) + '"' + (s.color ? ' style="--c:' + esc(s.color) + '"' : '') + '><span class="l48-dot" aria-hidden="true" style="background-image:url(' + esc(l48Art(site, s.id, gs[0] ? gs[0].name : '')) + ')"></span>' + esc(s.name) + '<small>' + plural(nch, 'chapter', 'chapters') + '</small></button>';
+        }).join('') + '</div></div></div></div>' + cx38LibMissing(sub, cls) + '<p class="w43lib-none hidden">No lesson or worksheet matches. Try fewer words.</p>' + l48Body(sub, cls, site, function (g, gi) {
           var k = chKey(sub.id, g.name), c = chByKey(k), has = !!(c && chHas(cls, k)), tp = c ? chTopical(k) : [];
           var items = g.items.map(function (it, j) {
             var nl = it.topicId && H.tn && H.tn.parts && H.tn.parts[it.topicId] ? linkCount(it.topicId) : -1;
             return '<li data-q="' + esc((it.num || '') + ' ' + (it.title || it.file || '')) + '"><span class="n">' + esc(it.num || '') + '</span><span class="t">' + esc(it.title || it.file) + '</span>' +
-              (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>'
-                : nl >= 0 ? '<button class="btn quiet small" data-lhw="' + esc(k) + '|' + j + '" title="The homework for each part of this lesson">Homework' + (nl ? ' (' + nl + ')' : '') + '</button>' : '') + '</li>';
+              '<span class="l48-row">' + (it.kind === 'tool' ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open</a>'
+                : (it.file ? '<a class="btn quiet small" href="' + esc(site + encodeURI(it.file)) + '" target="_blank" rel="noopener">Open slides</a>' : '') + (nl >= 0 ? '<button class="btn quiet small" data-lhw="' + esc(k) + '|' + j + '" title="The homework for each part of this lesson">Homework' + (nl ? ' (' + nl + ')' : '') + '</button>' : '')) + '</span></li>';
           }).join('');
           return '<section class="libm-ch cx38-libch' + (has ? ' has' : '') + '" data-q="' + esc(g.name) + '" id="libch-' + esc(k.replace(/[^a-z0-9]+/gi, '-')) + '" style="--chc:' + esc(sub.color || '#8B6CFF') + ';--ac:' + esc(sub.color || '#8B6CFF') + '"><div class="libm-chh cx38-banner' + cx38Lit('lib|' + k) + '">' + cx38Sky(gi * 4 + 2, 250, { sc: 0.9, h: 96, ly: 92 }) + '<div class="libm-cht"><h3>' + cx38ChTitle(g.name, sub.color || '#8B6CFF') + '</h3><span>' +
             (c ? plural(c.lessons != null ? c.lessons : g.items.filter(function (it) { return it.kind !== 'tool'; }).length, 'lesson', 'lessons') + (tp.length ? ' · ' + plural(tp.length, 'topical worksheet', 'topical worksheets') : '') + (has ? ' · in Chapters for ' + esc(cls) : '') + cx38TpMissingLine(tp) : 'Open these from here') + '</span></div>' + (c ? cx38GiveChips(k) : '') + '</div>' +
@@ -4385,12 +4549,13 @@
                 '<button class="x" data-tpx="' + esc(k) + '|' + i + '" aria-label="Take ' + esc(t.name) + ' out of the package">×</button></div>';
             }).join('') + '<div class="libm-acts"><button class="btn quiet small" data-tpadd="' + esc(k) + '">' + ICON.plus + 'Add from my library</button>' +
             '<button class="btn quiet small" data-tpup="' + esc(k) + '">' + ICON.up + 'Upload a worksheet</button></div></div></div>' : '') + '</section>';
-        }).join('') + '</div>';
+        });
       w43LibRoot().innerHTML = h;
+      l48Bind(w43LibRoot(), cls, again);
       cx38Watch(w43LibRoot());
       $('libm-x').onclick = function () { w43LibClose(); };
       if ($('w43lib-q')) { $('w43lib-q').value = W43L.q || ''; $('w43lib-q').oninput = function () { W43L.q = this.value; w43LibFilter(this.value); }; if (W43L.q) w43LibFilter(W43L.q); }
-      Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); draw(); }; });
+      Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-ls]'), function (b) { b.onclick = function () { cur = b.getAttribute('data-ls'); lsSet('wsh_lib_sub', cur); W43L.open = null; draw(); }; });
       var ref = function (attr) { var p = attr.split('|'), i = Number(p.pop()); return { key: p.join('|'), i: i }; };
       var hold = function () { Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-tpm], [data-tpx], [data-tpadd], [data-tpup]'), function (x) { x.disabled = true; }); };
       Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-lhw]'), function (b) {
@@ -4410,7 +4575,7 @@
       Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-tpadd]'), function (b) { b.onclick = function () { pick = { key: b.getAttribute('data-tpadd'), q: '' }; draw(); }; });
       Array.prototype.forEach.call(w43LibRoot().querySelectorAll('[data-tpup]'), function (b) { b.onclick = function () { up = { key: b.getAttribute('data-tpup') }; draw(); }; });
       bindGive(w43LibRoot(), again);
-      if (focus) { var el = $('libch-' + focus.replace(/[^a-z0-9]+/gi, '-')); focus = null; if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 30); }
+      if (focus) { focus = null; window.scrollTo(0, 0); }
       else setTimeout(function () { var x = $('w43lib-q'); if (x && !W43L.q) x.focus({ preventScroll: true }); }, 30);
     };
     // Uploading a worksheet into this chapter: the worksheet library gets it, and the package uses it.
