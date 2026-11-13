@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Claude Guide for Teachers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap">
+<style>
+/* Layout: one reading column, a sticky contents strip, prompts in copyable boxes. Night-sky indigo with an amber marker, matching the session slides. */
+:root{--bg:#f6f5fb;--panel:#ffffff;--ink:#171a3d;--soft:#565a80;--line:#dcdbec;--accent:#b36a00;--accent-bg:#fff3d6;--accent-line:#e9b758;--deep:#1b1f55;--deep-ink:#eef1f8;--good:#1c7a55;--bad:#b03a2e;--code:#f0eff8;
+ --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0f2c;--panel:#151a45;--ink:#eef1f8;--soft:#b3b9d8;--line:#2c3270;--accent:#f2b84b;--accent-bg:#2a2548;--accent-line:#8a6a2a;--deep:#1b2160;--deep-ink:#eef1f8;--good:#56d3a5;--bad:#ff9d90;--code:#0f1338;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c0f2c;--panel:#151a45;--ink:#eef1f8;--soft:#b3b9d8;--line:#2c3270;--accent:#f2b84b;--accent-bg:#2a2548;--accent-line:#8a6a2a;--deep:#1b2160;--deep-ink:#eef1f8;--good:#56d3a5;--bad:#ff9d90;--code:#0f1338;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body)}
+.wrap{max-width:820px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:40px}
+header{display:grid;gap:10px}
+.eye{margin:0;font:700 13px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{margin:0;font:800 clamp(34px,6vw,52px)/1.05 var(--display);text-wrap:balance}
+h2{margin:0 0 4px;font:800 28px/1.15 var(--display);text-wrap:balance}
+h3{margin:0;font:800 19px/1.25 var(--display)}
+p{margin:0}.lead{font-size:20px;color:var(--soft);max-width:60ch}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px}
+nav a:hover,nav a:focus-visible{border-color:var(--accent);outline:none}
+section{display:grid;gap:16px;scroll-margin-top:16px}
+.big{padding:24px 26px;border-radius:18px;background:var(--deep);color:var(--deep-ink);display:grid;gap:10px}
+.big h2{font-size:30px}.big p{max-width:58ch}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pair>div{min-width:0;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:grid;gap:6px;align-content:start}
+.tag{font:700 12px var(--body);letter-spacing:.12em;text-transform:uppercase}
+.tag.no{color:var(--bad)}.tag.yes{color:var(--good)}
+ol.steps{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+ol.steps li::before{content:counter(s);width:38px;height:38px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent-line);color:var(--accent);font:800 18px/36px var(--display);text-align:center}
+ol.steps b{display:block;font:800 18px var(--display)}
+.prompt{border-radius:14px;border:1px solid var(--accent-line);background:var(--accent-bg);overflow:hidden}
+.prompt .top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--accent-line)}
+.prompt .top b{font:800 16px var(--display)}
+.prompt p{padding:14px 16px;font-size:16.5px;user-select:all}
+.prompt u{text-decoration:none;border-bottom:2px dotted var(--accent);font-weight:700}
+button.copy{font:700 13px var(--body);padding:6px 14px;border-radius:99px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer}
+button.copy:hover,button.copy:focus-visible{background:var(--accent);color:var(--bg);outline:none}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.tips>div{min-width:0;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:grid;gap:6px;align-content:start}
+.tips .say{font-size:15px;color:var(--soft);font-style:italic}
+table{width:100%;border-collapse:collapse;font-size:16px}
+.tw{overflow-x:auto;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}th{font:700 12px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+td:first-child{font-weight:700;white-space:nowrap}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.rules li{padding:12px 16px 12px 44px;border-radius:12px;background:var(--panel);border:1px solid var(--line);position:relative}
+.rules li::before{position:absolute;left:16px;top:11px;font:800 18px var(--display)}
+.rules.dont li::before{content:"×";color:var(--bad)}.rules.do li::before{content:"✓";color:var(--good)}
+footer{font-size:14px;color:var(--soft);border-top:1px solid var(--line);padding-top:16px}
+footer a{color:var(--accent)}
+</style>
+<div class="wrap">
+<header>
+  <p class="eye">Science Dept Cross-Pollination Sharing 2026</p>
+  <h1>Claude Guide for Teachers</h1>
+  <p class="lead">How to get Claude to build something useful for your lesson, with prompts you can copy and the habits that save the most time.</p>
+  <nav aria-label="Contents">
+    <a href="#goal">Start with the goal</a><a href="#steps">Your first build</a><a href="#prompts">Prompts to copy</a><a href="#tips">Tips and tricks</a><a href="#words">Words you will see</a><a href="#stuck">When it goes wrong</a><a href="#rules">Student data</a><a href="#share">Sharing</a>
+  </nav>
+</header>
+
+<section id="goal">
+  <div class="big">
+    <p class="eye">The one habit</p>
+    <h2>Tell Claude the end goal.</h2>
+    <p>Most people ask Claude many small questions. Describe the finished product first. Then ask if it is possible, how to achieve it, and which tools you need.</p>
+  </div>
+  <div class="pair">
+    <div><span class="tag no">Small questions</span><p>"What is a good quiz tool?" then "How do I make a timer?" then "Can it show answers?"</p><p style="color:var(--soft)">You do the planning. Claude only answers each piece.</p></div>
+    <div><span class="tag yes">The end goal</span><p>"I want a quiz page where my Sec 1 students write their working before they choose an answer, and I see every answer. Is this possible? How can we achieve it?"</p><p style="color:var(--soft)">Claude plans the whole thing and builds it.</p></div>
+  </div>
+  <h3>Say four things</h3>
+  <ol class="steps">
+    <li><div><b>The finished product</b>What the student sees and does, and what you see.</div></li>
+    <li><div><b>Who it is for</b>The level, the subject, and the learning process you want technology to enhance (your KAT).</div></li>
+    <li><div><b>Is this possible?</b>Let Claude tell you what can and cannot be done before it starts.</div></li>
+    <li><div><b>How, and with which tools?</b>Ask how to achieve it, and whether other tools should be combined with Claude.</div></li>
+  </ol>
+</section>
+
+<section id="steps">
+  <p class="eye">Your first build</p>
+  <h2>Combine two tools you already like.</h2>
+  <p>You do not need a whole hub. Pick one feature you like in one tool and one feature you like in another, and ask Claude to put them on one page.</p>
+  <ol class="steps">
+    <li><div><b>Choose your KAT</b>Which learning process should technology enhance in one lesson next term?</div></li>
+    <li><div><b>Name two tools</b>For example Kahoot and OneNote. Say what you like about each, and what the problem is.</div></li>
+    <li><div><b>Write the prompt</b>Use the template below. Start with the end goal.</div></li>
+    <li><div><b>Try what Claude builds</b>Use it as a student would. Tell Claude what is wrong in plain words.</div></li>
+    <li><div><b>Explain it in one sentence</b>"I combined tool A and tool B so that my students can do this."</div></li>
+  </ol>
+</section>
+
+<section id="prompts">
+  <p class="eye">Prompts to copy</p>
+  <h2>Fill in the blanks, or start from a sample.</h2>
+  <div class="prompt"><div class="top"><b>The template</b><button class="copy" type="button" id="c0" data-t="p0">Copy</button></div><p id="p0">I want <u>[the finished product]</u>. It is for <u>[level and subject]</u>, and the KAT is <u>[your KAT]</u>. It should work like <u>[tool A]</u> and <u>[tool B]</u> together. Is this possible? How can we achieve it? Which tools do we need?</p></div>
+  <div class="prompt"><div class="top"><b>Kahoot + OneNote</b><button class="copy" type="button" id="c1" data-t="p1">Copy</button></div><p id="p1">I want a quiz page where my Sec 1 Science students write their working before they choose an answer, and I see every answer. The KAT is Support Assessment for Learning. It should work like Kahoot and OneNote together. Is this possible? How can we achieve it? Which tools do we need?</p></div>
+  <div class="prompt"><div class="top"><b>PhET + Kahoot</b><button class="copy" type="button" id="c2" data-t="p2">Copy</button></div><p id="p2">I want a page where my Sec 3 Physics students change the angle of a light ray and score points for hitting a target under water. The KAT is Foster Conceptual Change. It should work like PhET and Kahoot together. Is this possible? How can we achieve it? Which tools do we need?</p></div>
+  <div class="prompt"><div class="top"><b>Padlet + exit ticket</b><button class="copy" type="button" id="c3" data-t="p3">Copy</button></div><p id="p3">I want a page where each Sec 2 student posts one answer before leaving, and similar answers are grouped for me. The KAT is Facilitate Learning Together. It should work like Padlet and an exit ticket together. Is this possible? How can we achieve it? Which tools do we need?</p></div>
+  <div class="prompt"><div class="top"><b>Ask about other tools</b><button class="copy" type="button" id="c4" data-t="p4">Copy</button></div><p id="p4">Can this be done with Claude alone? If not, tell me which other tools would help, such as Google Apps Script, GitHub, Canva or an image or video tool, what each one would do, and the steps for someone who has never used them.</p></div>
+</section>
+
+<section id="tips">
+  <p class="eye">Tips and tricks</p>
+  <h2>Habits that save the most time.</h2>
+  <div class="tips">
+    <div><h3>Let Claude ask you questions</h3><p>End your prompt with a request for questions. You will get a better first version.</p><p class="say">"Before you build, ask me anything you need to know."</p></div>
+    <div><h3>Show an example</h3><p>Upload a worksheet, a slide or a screenshot of a tool you like. Claude copies the style far better from an example than from a description.</p><p class="say">"Make it look and feel like this."</p></div>
+    <div><h3>Ask for one sample first</h3><p>For anything big, such as ten worksheets, ask for one. Fix it, then ask for the rest in the same style.</p><p class="say">"Do one first and wait for me."</p></div>
+    <div><h3>Describe what you see</h3><p>You do not need technical words. Say what happened and what you expected.</p><p class="say">"When I press Check, nothing happens. It should show the answer."</p></div>
+    <div><h3>Change one thing at a time</h3><p>Small, clear requests are easier to check than a long list.</p><p class="say">"Keep everything else. Only make the timer bigger."</p></div>
+    <div><h3>Ask Claude to test it</h3><p>Ask it to try the page as a student and to tell you what it could not check.</p><p class="say">"Test this as a student and list what you did not test."</p></div>
+    <div><h3>Ask for the reason</h3><p>If Claude makes a choice you do not understand, ask why. It should explain in plain words.</p><p class="say">"Why did you do it this way? Is there a simpler way?"</p></div>
+    <div><h3>Save your rules once</h3><p>If you always want the same style, tell Claude to remember it, or keep your instructions in a project.</p><p class="say">"From now on, write for Sec 1 students in short sentences."</p></div>
+    <div><h3>Start a new chat when it drifts</h3><p>Very long chats get confused. Ask for a summary, then paste it into a new chat.</p><p class="say">"Summarise what we built and what is left, so I can continue in a new chat."</p></div>
+    <div><h3>Check the content yourself</h3><p>Claude can be wrong about facts, answers and marks. You are the subject teacher. Read before students see it.</p><p class="say">"Show me the answers so I can check them."</p></div>
+  </div>
+</section>
+
+<section id="words">
+  <p class="eye">Words you will see</p>
+  <h2>A short glossary.</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Word</th><th>What it means for you</th></tr></thead>
+    <tbody>
+      <tr><td>Prompt</td><td>The message you type to Claude.</td></tr>
+      <tr><td>Artifact</td><td>A page Claude builds that opens beside the chat, such as a quiz, a game or a simulation. It has its own link.</td></tr>
+      <tr><td>Project</td><td>A folder that keeps your chats, files and instructions for one piece of work together.</td></tr>
+      <tr><td>Connector</td><td>A link between Claude and another app you use, such as Google Drive or Canva, so Claude can work with it.</td></tr>
+      <tr><td>Skill</td><td>A saved set of instructions for a task you repeat, such as making a worksheet in your school's format.</td></tr>
+      <tr><td>KAT</td><td>Key Applications of Technology from the MOE Guide to e-Pedagogy. It names the learning process that technology enhances.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="stuck">
+  <p class="eye">When it goes wrong</p>
+  <h2>Quick fixes.</h2>
+  <div class="tw"><table>
+    <thead><tr><th>What happened</th><th>What to say or do</th></tr></thead>
+    <tbody>
+      <tr><td>It built the wrong thing</td><td>Describe the finished product again, from the student's point of view. Say what should stay and what should change.</td></tr>
+      <tr><td>A button does nothing</td><td>Tell Claude which button, what you pressed before it, and what you expected.</td></tr>
+      <tr><td>It looks wrong on an iPad</td><td>Say which device and send a screenshot. Ask Claude to make it work on that screen size.</td></tr>
+      <tr><td>The answers are wrong</td><td>Give Claude the correct answer and the reason. Ask it to check the others in the same way.</td></tr>
+      <tr><td>It is too complicated</td><td>Ask for the simplest version that does one job. Add features later.</td></tr>
+      <tr><td>Claude says it cannot</td><td>Ask what the closest possible version is, and which other tool could do the missing part.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="rules">
+  <p class="eye">Student data</p>
+  <h2>Keep students safe.</h2>
+  <ul class="rules dont">
+    <li>Do not type student names, NRIC numbers or grades into a prompt.</li>
+    <li>Do not upload class lists, marked scripts with names, or photos of students.</li>
+  </ul>
+  <ul class="rules do">
+    <li>Use made-up names such as Test Student when you need an example.</li>
+    <li>Keep names off the projector. Show totals to the class and keep names on your own screen.</li>
+    <li>Follow the school's and MOE's rules on which tools may hold student data. If you are unsure, ask before you use it with a class.</li>
+  </ul>
+</section>
+
+<section id="share">
+  <p class="eye">Sharing what you built</p>
+  <h2>Getting it to your students.</h2>
+  <ol class="steps">
+    <li><div><b>Open the page Claude built</b>It is private until you choose to share it.</div></li>
+    <li><div><b>Use the Share option on the page</b>Copy the link it gives you.</div></li>
+    <li><div><b>Try the link as a student</b>Open it on another device where you are not signed in, before the lesson.</div></li>
+    <li><div><b>Give students the link</b>Post it where your class already looks, or show a QR code.</div></li>
+  </ol>
+  <p style="color:var(--soft)">If you need students' answers to be saved and seen by you later, tell Claude that at the start. It changes how the page must be built.</p>
+</section>
+
+<footer>
+  <p>Prepared by Cedric and Arnold for the Science Department, Assumption English School. KAT x RAT comes from the MOE Guide to e-Pedagogy: <a href="https://sites.google.com/moe.edu.sg/guidetoe-pedagogy/kat-x-rat">sites.google.com/moe.edu.sg/guidetoe-pedagogy/kat-x-rat</a></p>
+</footer>
+</div>
+<script>
+document.addEventListener('click',function(e){var b=e.target.closest('button.copy');if(!b)return;var el=document.getElementById(b.dataset.t),t=el.textContent;
+ function done(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1600)}
+ function sel(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected. Press copy.';setTimeout(function(){b.textContent='Copy'},2400)}
+ try{navigator.clipboard.writeText(t).then(done,sel)}catch(err){sel()}});
+</script>
+
+</body></html>

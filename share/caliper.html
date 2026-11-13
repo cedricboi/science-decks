@@ -1,0 +1,1051 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Caliper &amp; Micrometer Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#eaeef1; --surface:#ffffff; --surface-2:#f3f5f7; --ink:#131a21; --muted:#55616d; --line:#d2d9df;
+  --accent:#1b58b0; --accent-ink:#ffffff; --accent-soft:#e2ebf8;
+  --good:#1d7446; --good-bg:#e1f2e8; --warn:#8f5300; --warn-bg:#fbeed8; --bad:#ae2a21; --bad-bg:#fbe5e2;
+  --stage-a:#f8fafb; --stage-b:#d3d9e0; --kbd:#e6eaee;
+  --display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1115; --surface:#151b21; --surface-2:#1b232a; --ink:#e3e8ed; --muted:#98a4b0; --line:#28323c;
+    --accent:#7aa8f7; --accent-ink:#0a1322; --accent-soft:#1a2a42;
+    --good:#72d29c; --good-bg:#132d1f; --warn:#efb45e; --warn-bg:#31240f; --bad:#ff8f86; --bad-bg:#381917;
+    --stage-a:#2a333d; --stage-b:#0f1419; --kbd:#232c35;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1115; --surface:#151b21; --surface-2:#1b232a; --ink:#e3e8ed; --muted:#98a4b0; --line:#28323c;
+  --accent:#7aa8f7; --accent-ink:#0a1322; --accent-soft:#1a2a42;
+  --good:#72d29c; --good-bg:#132d1f; --warn:#efb45e; --warn-bg:#31240f; --bad:#ff8f86; --bad-bg:#381917;
+  --stage-a:#2a333d; --stage-b:#0f1419; --kbd:#232c35;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:18px 32px}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,36px);line-height:1.05;margin:0;letter-spacing:.005em;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.score{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip b{color:var(--accent);font-weight:600}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:600 17px/1 var(--display);letter-spacing:.02em;padding:12px 14px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:16px;align-items:start}
+@media (max-width:940px){.app{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:clamp(340px,64vh,720px);border-radius:10px;overflow:hidden;background:radial-gradient(120% 90% at 40% 20%,var(--stage-a),var(--stage-b));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;flex-wrap:wrap}
+.hud .views{display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap}
+.hud button,.zoom button{font:500 12.5px/1 var(--body);background:color-mix(in srgb,var(--surface) 88%,transparent);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer}
+.hud button:hover,.zoom button:hover{border-color:var(--accent)}
+.status{pointer-events:none;font:500 12.5px/1.3 var(--mono);background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid var(--line);border-radius:6px;padding:7px 10px;max-width:100%}
+.status.good{color:var(--good)} .status.warn{color:var(--warn)}
+.zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:34px;height:34px;padding:0;font-size:18px}
+.hint{position:absolute;left:10px;bottom:10px;right:56px;font-size:12px;color:var(--muted);pointer-events:none}
+.stage-msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+.panel{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font:700 15px/1.2 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.objs{display:grid;grid-template-columns:1fr;gap:6px}
+.obj{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--ink);font:inherit;cursor:pointer}
+.obj small{display:block;color:var(--muted);font-size:12.5px;line-height:1.3}
+.obj .nm{font-weight:600;font-size:14px;line-height:1.3}
+.obj[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.obj .tick{flex:none;font:600 11px/1 var(--mono);padding:4px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.obj .tick.done{background:var(--good-bg);color:var(--good);border-color:transparent}
+.part{display:block;margin-bottom:3px;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:500 13.5px/1.1 var(--body);background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:9px 11px;cursor:pointer;font-variant-numeric:tabular-nums}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.grow{flex:1 1 auto}
+.inst{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.inst .btn{text-align:center}
+.range{width:100%;accent-color:var(--accent);margin:10px 0 4px}
+.rlabel{display:flex;justify-content:space-between;font:500 12px var(--mono);color:var(--muted)}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.ans label{display:block;font-weight:600;margin-bottom:6px}
+.ans .line{display:flex;gap:6px;align-items:stretch}
+.ans input{flex:1 1 auto;min-width:0;font:600 18px var(--mono);padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2);color:var(--ink)}
+.ans .unit{align-self:center;font:500 14px var(--mono);color:var(--muted)}
+.fb{margin-top:10px;padding:9px 11px;border-radius:7px;font-size:14px}
+.fb.good{background:var(--good-bg);color:var(--good)}
+.fb.warn{background:var(--warn-bg);color:var(--warn)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.muted{color:var(--muted);font-size:13.5px;margin:0}
+.msg{font-size:13.5px;margin:10px 0 0;padding:8px 10px;border-radius:7px}
+.msg.good{background:var(--good-bg);color:var(--good)} .msg.warn{background:var(--warn-bg);color:var(--warn)} .msg.info{background:var(--surface-2);color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--accent);font:600 13.5px var(--body);padding:0;margin-top:8px;cursor:pointer;text-decoration:underline}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Caliper &amp; Micrometer Lab</h1>
+      <p class="sub">Measure real objects with a digital vernier caliper (reads to 0.01 mm) and a digital micrometer screw gauge (reads to 0.001 mm). Check for zero error first.</p>
+    </div>
+    <div class="score" aria-live="polite">
+      <span class="chip">Caliper <b id="scoreCal">0</b>/5</span>
+      <span class="chip">Micrometer <b id="scoreMic">0</b>/5</span>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabCal" aria-selected="true">Digital vernier caliper</button>
+    <button class="tab" role="tab" id="tabMic" aria-selected="false">Digital micrometer screw gauge</button>
+  </div>
+
+  <div class="app">
+    <div class="stage" id="stage">
+      <canvas id="gl" tabindex="0" aria-label="3D view of the measuring instrument. Drag to rotate. Use arrow keys to move the jaw or spindle."></canvas>
+      <div class="hud">
+        <div class="views" id="views"></div>
+        <div class="status" id="status"></div>
+      </div>
+      <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
+      <div class="hint" id="hint"></div>
+      <div class="stage-msg" id="stageMsg" hidden>The 3D view could not load. Check the internet connection and reload the page.</div>
+    </div>
+
+    <!-- CALIPER PANEL -->
+    <div class="panel" id="panelCal">
+      <div class="card">
+        <h2>How to measure</h2>
+        <ol class="steps">
+          <li>Close the jaws fully. The display should read 0.00 mm. If it does not, press ZERO.</li>
+          <li>Choose an object. Use the outside jaws for an outer diameter, the inside jaws for an internal diameter and the depth rod for a depth.</li>
+          <li>Move the jaw until it touches the object. Record the display reading to 2 decimal places.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Objects</h2>
+        <div class="objs" id="calObjs"></div>
+      </div>
+      <div class="card">
+        <h2>Move the jaw</h2>
+        <div class="row">
+          <button class="btn primary grow" id="calContact">Close jaws</button>
+          <button class="btn grow" id="calBack">Open jaws</button>
+        </div>
+        <input class="range" type="range" id="calRange" min="0" max="150" step="0.01" value="30" aria-label="Jaw opening in millimetres">
+        <div class="rlabel"><span>0 mm</span><span>150 mm</span></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn grow" data-cal="-100">−1 mm</button>
+          <button class="btn grow" data-cal="-1">−0.01</button>
+          <button class="btn grow" data-cal="1">+0.01</button>
+          <button class="btn grow" data-cal="100">+1 mm</button>
+        </div>
+        <h2 style="margin-top:14px">Caliper buttons</h2>
+        <div class="inst">
+          <button class="btn" id="calOn">ON/OFF</button>
+          <button class="btn" id="calZero">ZERO</button>
+          <button class="btn" id="calUnit">mm/in</button>
+        </div>
+        <p class="msg info" id="calMsg">You can also drag the sliding jaw in the 3D view and press the buttons on the caliper.</p>
+      </div>
+      <div class="card ans" id="calAnsCard" hidden>
+        <label for="calAns" id="calAnsLabel">Your reading</label>
+        <div class="line">
+          <input id="calAns" inputmode="decimal" autocomplete="off" placeholder="0.00">
+          <span class="unit">mm</span>
+          <button class="btn primary" id="calCheck">Check</button>
+        </div>
+        <div class="fb" id="calFb" hidden></div>
+        <button class="linkbtn" id="calReveal" hidden>Show the answer</button>
+      </div>
+    </div>
+
+    <!-- MICROMETER PANEL -->
+    <div class="panel" id="panelMic" hidden>
+      <div class="card">
+        <h2>How to measure</h2>
+        <ol class="steps">
+          <li>Close the spindle with the ratchet. The display should read 0.000 mm. If it does not, press ZERO.</li>
+          <li>Choose an object. The spindle opens wider than the object.</li>
+          <li>Turn the thimble until the spindle is close to the object. Finish with the ratchet. Turning the thimble too far squeezes the object and gives a reading that is too small.</li>
+          <li>Record the display reading to 3 decimal places. Turn the display off to practise reading the sleeve and thimble scales.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Objects</h2>
+        <div class="objs" id="micObjs"></div>
+      </div>
+      <div class="card">
+        <h2>Turn the thimble</h2>
+        <div class="row">
+          <button class="btn grow" data-mic="-500">Close 1 turn</button>
+          <button class="btn grow" data-mic="500">Open 1 turn</button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn grow" data-mic="-10">−1 division</button>
+          <button class="btn grow" data-mic="10">+1 division</button>
+        </div>
+        <input class="range" type="range" id="micRange" min="0" max="25" step="0.001" value="6" aria-label="Spindle opening in millimetres">
+        <div class="rlabel"><span>0 mm</span><span>25 mm</span></div>
+        <button class="btn primary" id="micRatchet" style="width:100%;margin-top:10px">Close with the ratchet</button>
+        <h2 style="margin-top:14px">Micrometer buttons</h2>
+        <div class="inst">
+          <button class="btn" id="micOn">ON/OFF</button>
+          <button class="btn" id="micZero">ZERO</button>
+          <button class="btn" id="micUnit">mm/in</button>
+        </div>
+        <p class="msg info" id="micMsg">One turn of the thimble moves the spindle 0.50 mm. One thimble division is 0.01 mm. You can also drag the thimble up or down in the 3D view and click the ratchet.</p>
+      </div>
+      <div class="card ans" id="micAnsCard" hidden>
+        <label for="micAns" id="micAnsLabel">Your reading</label>
+        <div class="line">
+          <input id="micAns" inputmode="decimal" autocomplete="off" placeholder="0.000">
+          <span class="unit">mm</span>
+          <button class="btn primary" id="micCheck">Check</button>
+        </div>
+        <div class="fb" id="micFb" hidden></div>
+        <button class="linkbtn" id="micReveal" hidden>Show the answer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn" id="newSet">New objects and new zero errors</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+if (typeof THREE === 'undefined') { $('#stageMsg').hidden = false; return; }
+
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+
+/* ---------------- Data ---------------- */
+const CAL = {
+  coin:   {name:'Coin', what:'diameter', part:'outside', range:[2200,2600]},
+  rod:    {name:'Steel rod', what:'diameter', part:'outside', range:[1200,2800]},
+  marble: {name:'Glass marble', what:'diameter', part:'outside', range:[1400,1900]},
+  pipe:   {name:'Copper pipe', what:'internal diameter', part:'inside', range:[1400,2600]},
+  block:  {name:'Aluminium block', what:'depth of the hole', part:'depth', range:[1500,4500]},
+};
+const MIC = {
+  wire:    {name:'Copper wire', what:'diameter', range:[500,1600]},
+  bearing: {name:'Ball bearing', what:'diameter', range:[4000,9500]},
+  coin:    {name:'Coin', what:'thickness', range:[1500,2400]},
+  paper:   {name:'Stack of 50 sheets of paper', what:'thickness', range:[4200,5800]},
+  slide:   {name:'Glass slide', what:'thickness', range:[1000,1200]},
+};
+const PART_LABEL = {outside:'Outside jaws', inside:'Inside jaws', depth:'Depth rod'};
+
+const S = {
+  tool:'cal',
+  cal:{d:3000, e:0, on:true, unit:'mm', obj:null, sizes:{}, prog:{}},   // hundredths of a mm
+  mic:{s:6000, e:0, on:true, unit:'mm', obj:null, sizes:{}, prog:{}},   // thousandths of a mm
+};
+function newSet(){
+  for (const k in CAL){ S.cal.sizes[k] = rnd(...CAL[k].range); S.cal.prog[k] = {tries:0, done:false, shown:false}; }
+  for (const k in MIC){ S.mic.sizes[k] = rnd(...MIC[k].range); S.mic.prog[k] = {tries:0, done:false, shown:false}; }
+  S.cal.e = pick([-4,-3,-2,2,3,5]);
+  S.mic.e = pick([-4,-3,-2,2,3,4]);
+}
+newSet();
+
+/* ---------------- Renderer ---------------- */
+const canvas = $('#gl'), stage = $('#stage');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 6000);
+
+// Environment for metal reflections
+(function(){
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene();
+  env.add(new THREE.Mesh(new THREE.BoxGeometry(100,100,100), new THREE.MeshBasicMaterial({color:0x5d646c, side:THREE.BackSide})));
+  function panel(w,h,x,y,z,k,tint){
+    const c = new THREE.Color(tint || 0xffffff).multiplyScalar(k);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color:c, side:THREE.DoubleSide}));
+    m.position.set(x,y,z); m.lookAt(0,0,0); env.add(m);
+  }
+  panel(70,24,0,48,10,5);
+  panel(16,60,-48,5,10,2.4,0xdfe8ff);
+  panel(16,60,48,5,-10,2.0,0xfff1df);
+  panel(80,30,0,-10,48,1.4);
+  panel(90,90,0,-49,0,0.25,0x404040);
+  scene.environment = pm.fromScene(env, 0.035).texture;
+  pm.dispose();
+})();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x6b7480, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(120,220,300); scene.add(key);
+const fill = new THREE.DirectionalLight(0xdfe7ff, 0.35); fill.position.set(-200,-60,120); scene.add(fill);
+
+function tex(cv){ const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t; }
+function makeCanvas(w,h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function extrude(pts, depth, z0, mat, bevel){
+  const sh = new THREE.Shape(); sh.moveTo(pts[0][0], pts[0][1]);
+  for (let i=1;i<pts.length;i++) sh.lineTo(pts[i][0], pts[i][1]);
+  sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, {depth, bevelEnabled:!!bevel, bevelThickness:bevel||0, bevelSize:bevel||0, bevelSegments:2, curveSegments:12});
+  g.translate(0,0,z0);
+  return new THREE.Mesh(g, mat);
+}
+function cylX(r1, r2, len, x0, mat, open, seg){  // cylinder along +x, r1 at right end, r2 at left end
+  const g = new THREE.CylinderGeometry(r1, r2, len, seg||48, 1, !!open);
+  g.rotateZ(-Math.PI/2); g.translate(x0 + len/2, 0, 0);
+  return new THREE.Mesh(g, mat);
+}
+
+const M = {
+  steel: new THREE.MeshStandardMaterial({color:0xd6dbe1, metalness:0.92, roughness:0.26}),
+  satin: new THREE.MeshStandardMaterial({color:0xcfd4da, metalness:0.85, roughness:0.38}),
+  housing: new THREE.MeshStandardMaterial({color:0x22262c, metalness:0.15, roughness:0.5}),
+  btn: new THREE.MeshStandardMaterial({color:0x3b414a, metalness:0.1, roughness:0.45}),
+  btnZero: new THREE.MeshStandardMaterial({color:0xc9772a, metalness:0.1, roughness:0.45}),
+  frame: new THREE.MeshStandardMaterial({color:0x35526f, metalness:0.45, roughness:0.48}),
+  copper: new THREE.MeshStandardMaterial({color:0xc97a4a, metalness:0.9, roughness:0.32, side:THREE.DoubleSide}),
+  copperGlass: new THREE.MeshStandardMaterial({color:0xc97a4a, metalness:0.85, roughness:0.35, side:THREE.DoubleSide, transparent:true, opacity:0.55, depthWrite:false}),
+  coin: new THREE.MeshStandardMaterial({color:0xcdb46c, metalness:0.9, roughness:0.3}),
+  rod: new THREE.MeshStandardMaterial({color:0x9ea7b1, metalness:0.9, roughness:0.4}),
+  marble: new THREE.MeshStandardMaterial({color:0x4fb0c6, metalness:0.1, roughness:0.08, transparent:true, opacity:0.78}),
+  alu: new THREE.MeshStandardMaterial({color:0xbac3cc, metalness:0.75, roughness:0.45, transparent:true, opacity:0.42, depthWrite:false, side:THREE.DoubleSide}),
+  glass: new THREE.MeshStandardMaterial({color:0xbfe6e2, metalness:0.1, roughness:0.05, transparent:true, opacity:0.5}),
+  paperEdge: null, paperFace: new THREE.MeshStandardMaterial({color:0xf5f3ee, roughness:0.9}),
+  anvilTip: new THREE.MeshStandardMaterial({color:0xb9bec5, metalness:0.95, roughness:0.2}),
+};
+
+/* ---------------- Seven-segment LCD ---------------- */
+const SEGS = {'0':'abcdef','1':'bc','2':'abged','3':'abgcd','4':'fgbc','5':'afgcd','6':'afgedc','7':'abc','8':'abcdefg','9':'abcdfg','-':'g',' ':''};
+function segPoly(g, x, y, len, t, horiz){
+  const gp = t*0.25, h = t/2;
+  g.beginPath();
+  if (horiz){
+    g.moveTo(x+gp, y); g.lineTo(x+gp+h, y-h); g.lineTo(x+len-gp-h, y-h); g.lineTo(x+len-gp, y); g.lineTo(x+len-gp-h, y+h); g.lineTo(x+gp+h, y+h);
+  } else {
+    g.moveTo(x, y+gp); g.lineTo(x+h, y+gp+h); g.lineTo(x+h, y+len-gp-h); g.lineTo(x, y+len-gp); g.lineTo(x-h, y+len-gp-h); g.lineTo(x-h, y+gp+h);
+  }
+  g.closePath(); g.fill();
+}
+function drawDigit(g, ch, ox, oy, dw, dh, t, on){
+  const lit = SEGS[ch] || '';
+  const segs = {a:[ox,oy,dw,1], g:[ox,oy+dh/2,dw,1], d:[ox,oy+dh,dw,1], f:[ox,oy,dh/2,0], b:[ox+dw,oy,dh/2,0], e:[ox,oy+dh/2,dh/2,0], c:[ox+dw,oy+dh/2,dh/2,0]};
+  for (const k in segs){
+    const s = segs[k];
+    g.fillStyle = lit.includes(k) && on ? '#161a15' : 'rgba(20,30,15,0.06)';
+    segPoly(g, s[0], s[1], s[2], t, s[3]);
+  }
+}
+function drawLCD(g, x, y, w, h, text, unit, cells){
+  const on = text !== null;
+  const grd = g.createLinearGradient(x, y, x, y+h);
+  grd.addColorStop(0, on ? '#cdd7c0' : '#a3ac9b'); grd.addColorStop(1, on ? '#aab59f' : '#8d9687');
+  g.fillStyle = grd; g.fillRect(x, y, w, h);
+  const unitW = w*0.15, pad = w*0.035;
+  const cw = (w - unitW - pad*2)/cells, dh = h*0.64, dw = cw*0.6, t = Math.max(3, dw*0.19), oy = y + (h-dh)/2;
+  const arr = [];
+  if (on) for (const ch of text){ if (ch === '.') { if (arr.length) arr[arr.length-1].dot = true; } else arr.push({ch, dot:false}); }
+  const start = cells - arr.length;
+  g.save();
+  g.transform(1, 0, -0.08, 1, 0.08*(oy+dh), 0);
+  for (let i=0;i<cells;i++){
+    const ox = x + pad + i*cw + (cw-dw)/2;
+    const c = i >= start ? arr[i-start] : {ch:' ', dot:false};
+    drawDigit(g, c.ch, ox, oy, dw, dh, t, on);
+    g.fillStyle = c.dot && on ? '#161a15' : 'rgba(20,30,15,0.06)';
+    g.beginPath(); g.arc(ox + dw + (cw-dw)/2, oy + dh, t*0.62, 0, Math.PI*2); g.fill();
+  }
+  g.restore();
+  if (on){
+    g.fillStyle = '#161a15';
+    g.font = '600 ' + Math.round(h*0.22) + 'px "IBM Plex Mono", monospace';
+    g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+    g.fillText(unit, x + w - unitW, oy + dh);
+  }
+}
+
+/* =================================================================
+   DIGITAL VERNIER CALIPER   (scene units: mm)
+   ================================================================= */
+const cal = new THREE.Group(); scene.add(cal);
+const calPick = [];
+const BEAM_END = 232;
+
+// beam
+const beam = new THREE.Mesh(new THREE.BoxGeometry(BEAM_END+16, 16, 3.5), M.steel);
+beam.position.set((BEAM_END-16)/2, 0, 0); cal.add(beam);
+// engraved scale on beam
+(function(){
+  const P = 20, W = 160*P, H = 6*P, cv = makeCanvas(W, H), g = cv.getContext('2d');
+  g.fillStyle = '#1a1d21'; g.textAlign = 'center'; g.textBaseline = 'top';
+  g.font = '600 ' + (1.6*P) + 'px "IBM Plex Sans", sans-serif';
+  for (let k=0;k<=150;k++){
+    const x = (2+k)*P, len = k%10===0 ? 3*P : k%5===0 ? 2.1*P : 1.4*P;
+    g.fillRect(x-1.5, 0, 3, len);
+    if (k%10===0) g.fillText(String(k/10), x, 3.3*P);
+  }
+  g.font = '500 ' + (1.2*P) + 'px "IBM Plex Sans", sans-serif'; g.textAlign = 'left';
+  g.fillText('cm', 154*P, 3.5*P);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(160, 6), new THREE.MeshBasicMaterial({map:tex(cv), transparent:true, toneMapped:false}));
+  m.position.set(78, 4.5, 1.77); cal.add(m);
+  cal.userData.scaleCanvas = cv;
+})();
+// fixed jaws
+cal.add(extrude([[-16,-8],[0,-8],[0,-46],[-3,-50],[-9,-43],[-16,-20]], 3.5, -1.75, M.steel, 0));
+cal.add(extrude([[-14,8],[-1,8],[-1,13.5],[3,14],[3,22],[1.6,27],[0,27],[0,16],[-14,12]], 1.6, -1.7, M.steel, 0));
+
+// slider
+const slider = new THREE.Group(); cal.add(slider);
+slider.add(extrude([[0,-8],[16,-8],[16,-20],[9,-43],[3,-50],[0,-46]], 3.5, -1.75, M.steel, 0));
+slider.add(extrude([[0,9],[14,9],[14,12],[0,15],[0,27],[-1.6,27],[-3,22],[-3,13],[0,12]], 1.6, 0.1, M.steel, 0));
+const housing = new THREE.Mesh(new THREE.BoxGeometry(61.5, 24, 8.5), M.housing);
+housing.position.set(31.25, 1, 0.25); slider.add(housing);
+const rodDepth = new THREE.Mesh(new THREE.BoxGeometry(172, 3, 1.2), M.steel);
+rodDepth.position.set(146, 0, -2.4); slider.add(rodDepth);
+const roller = new THREE.Mesh(new THREE.CylinderGeometry(3.3,3.3,3,28), M.satin);
+roller.rotation.x = Math.PI/2; roller.position.set(6.5, -12.4, 3.3); slider.add(roller);
+const lockScrew = new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,3,24), M.satin);
+lockScrew.position.set(30, 14.5, 0.25); slider.add(lockScrew);
+// face plate with LCD
+const CP = 16, calPlateCv = makeCanvas(Math.round(61.5*CP), 24*CP), calPlateG = calPlateCv.getContext('2d');
+const calPlateTex = tex(calPlateCv);
+const calPlate = new THREE.Mesh(new THREE.PlaneGeometry(61.5, 24), new THREE.MeshStandardMaterial({map:calPlateTex, roughness:0.35, metalness:0}));
+calPlate.position.set(31.25, 1, 4.52); slider.add(calPlate);
+const calBtns = {};
+[['on',5.5,M.btn],['zero',12,M.btnZero],['unit',18.5,M.btn]].forEach(([id,yc,mat])=>{
+  const b = new THREE.Mesh(new THREE.BoxGeometry(6, 4.2, 1.2), mat);
+  b.position.set(0.5+46, 13-yc, 5.1); b.userData = {btn:'cal-'+id}; slider.add(b); calBtns[id] = b; calPick.push(b);
+});
+[housing, calPlate, roller, slider.children[0], slider.children[1]].forEach(m => { m.userData.drag = 'slider'; calPick.push(m); });
+
+let calLast = '';
+function drawCalPlate(){
+  const g = calPlateG, P = CP, W = calPlateCv.width, H = calPlateCv.height;
+  const text = calText(), sig = String(text) + S.cal.unit;
+  if (sig === calLast) return; calLast = sig;
+  const bg = g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#2d3239'); bg.addColorStop(1,'#1e2227');
+  g.fillStyle = bg; g.fillRect(0,0,W,H);
+  g.fillStyle = '#121417'; rr(g, 2.4*P, 3.4*P, 38.2*P, 14.2*P, 8); g.fill();
+  drawLCD(g, 3*P, 4*P, 37*P, 13*P, text, S.cal.unit, 6);
+  g.fillStyle = '#dfe3e8'; g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.font = '600 ' + (2.2*P) + 'px "IBM Plex Sans", sans-serif';
+  g.fillText('ON/OFF', 50.3*P, 5.5*P); g.fillText('ZERO', 50.3*P, 12*P); g.fillText('mm/in', 50.3*P, 18.5*P);
+  g.fillStyle = '#8e97a2'; g.font = '500 ' + (1.75*P) + 'px "IBM Plex Mono", monospace';
+  g.fillText('0–150 mm   0.01 mm', 3*P, 20.9*P);
+  calPlateTex.needsUpdate = true;
+}
+
+// caliper objects
+const calObjGroup = new THREE.Group(); cal.add(calObjGroup);
+function buildCalObject(){
+  calObjGroup.clear();
+  const k = S.cal.obj; if (!k) return;
+  const z = S.cal.sizes[k]/100;
+  if (k === 'coin'){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(z/2, z/2, 2, 72), M.coin); body.rotation.x = Math.PI/2; g.add(body);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(z/2-0.9, 0.35, 8, 72), M.coin); rim.position.z = 1; g.add(rim);
+    const rim2 = rim.clone(); rim2.position.z = -1; g.add(rim2);
+    g.position.set(z/2, -28, 0); calObjGroup.add(g);
+  } else if (k === 'rod'){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(z/2, z/2, 34, 64), M.rod); m.rotation.x = Math.PI/2;
+    m.position.set(z/2, -27, 0); calObjGroup.add(m);
+  } else if (k === 'marble'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(z/2, 48, 32), M.marble); m.position.set(z/2, -27, 0); calObjGroup.add(m);
+  } else if (k === 'pipe'){
+    const ri = z/2, ro = ri + 2.2;
+    const pts = [new THREE.Vector2(ri,16), new THREE.Vector2(ro,16), new THREE.Vector2(ro,46), new THREE.Vector2(ri,46), new THREE.Vector2(ri,16)];
+    const m = new THREE.Mesh(new THREE.LatheGeometry(pts, 72), M.copperGlass); m.position.set(z/2, 0, 0); calObjGroup.add(m);
+  } else if (k === 'block'){
+    const x0 = BEAM_END, L = z, T = 10;
+    const box = (w,h,d,x,y,zz) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), M.alu); m.position.set(x,y,zz); calObjGroup.add(m); };
+    box(T, 28, 20, x0+L+T/2, 0, 0);
+    box(L, 10, 20, x0+L/2, 9, 0);
+    box(L, 10, 20, x0+L/2, -9, 0);
+    box(L, 8, 5, x0+L/2, 0, 7.5);
+    box(L, 8, 5, x0+L/2, 0, -7.5);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(L+T, 28, 20)), new THREE.LineBasicMaterial({color:0x6f7a86}));
+    edges.position.set(x0+(L+T)/2, 0, 0); calObjGroup.add(edges);
+    const bottom = new THREE.Mesh(new THREE.PlaneGeometry(8,10), new THREE.MeshStandardMaterial({color:0x8d98a3, metalness:0.6, roughness:0.5, side:THREE.DoubleSide}));
+    bottom.rotation.y = Math.PI/2; bottom.position.set(x0+L-0.02, 0, 0); calObjGroup.add(bottom);
+  }
+}
+
+/* =================================================================
+   DIGITAL MICROMETER SCREW GAUGE
+   ================================================================= */
+const mic = new THREE.Group(); scene.add(mic); mic.visible = false;
+const micPick = [];
+const ZERO_X = 52;            // thimble edge sits here when the gap is 0
+// frame
+mic.add(extrude([[-20,10],[-6,10],[-6,-20],[-2,-26],[26,-26],[30,-20],[30,10],[48,10],[48,-40],[40,-52],[-10,-52],[-20,-42]], 10, -5, M.frame, 0.6));
+const anvil = cylX(3.2, 3.2, 6.6, -6.6, M.anvilTip); mic.add(anvil);
+const collar = cylX(6, 6, 2, 46.5, M.satin); mic.add(collar);
+const lockLever = new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,4,20), M.satin); lockLever.position.set(39, 12, 0); mic.add(lockLever);
+const lockTab = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.6,9), M.satin); lockTab.position.set(39, 14.6, 2.5); mic.add(lockTab);
+// sleeve + main scale
+mic.add(cylX(4.5, 4.5, 32, 48, M.satin));
+(function(){
+  const P = 50, W = 226, H = 32*P, cv = makeCanvas(W, H), g = cv.getContext('2d');
+  const mid = W/2, yOf = x => (80 - x)*P;
+  g.fillStyle = '#15181b';
+  g.fillRect(mid-2, 0, 4, yOf(ZERO_X - 2.5));                       // reading line
+  for (let k=0;k<=25;k++){ const y = yOf(ZERO_X + k); g.fillRect(mid - (k%5===0 ? 78 : 58), y-2.5, (k%5===0 ? 78 : 58), 5); }
+  for (let k=0;k<25;k++){ const y = yOf(ZERO_X + k + 0.5); g.fillRect(mid, y-2.5, 58, 5); }
+  g.font = '600 52px "IBM Plex Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let k=0;k<=25;k+=5){ g.save(); g.translate(26, yOf(ZERO_X + k)); g.rotate(-Math.PI/2); g.fillText(String(k), 0, 0); g.restore(); }
+  const geo = new THREE.CylinderGeometry(4.53, 4.53, 32, 24, 1, true, -0.5, 1.0);
+  geo.rotateZ(-Math.PI/2); geo.translate(64, 0, 0);
+  mic.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({map:tex(cv), transparent:true, toneMapped:false, depthWrite:false})));
+})();
+// spindle + thimble + ratchet (moves)
+const spindle = new THREE.Group(); mic.add(spindle);
+spindle.add(cylX(3.2, 3.2, 80, 0, M.steel));
+const thimbleRot = new THREE.Group(); spindle.add(thimbleRot);
+(function(){
+  // bevel graduations
+  const bw = 2048, bc = makeCanvas(bw, 96), bg = bc.getContext('2d');
+  bg.fillStyle = '#d4d9de'; bg.fillRect(0,0,bw,96); bg.fillStyle = '#15181b';
+  for (let k=0;k<50;k++){ const x = k/50*bw; bg.fillRect(x - (k%5===0?4:2.5), 0, k%5===0?8:5, 96); }
+  bg.fillRect(bw-4, 0, 4, 96);
+  const bevelMat = new THREE.MeshStandardMaterial({map:tex(bc), metalness:0.55, roughness:0.35, side:THREE.DoubleSide});
+  thimbleRot.add(cylX(7, 5, 2.5, ZERO_X, bevelMat, true, 96));
+  // body: graduations + numbers near left, knurl on right
+  const H = 1265, c = makeCanvas(bw, H), g = c.getContext('2d');
+  const grd = g.createLinearGradient(0,0,0,H); grd.addColorStop(0,'#bfc5cb'); grd.addColorStop(1,'#dde1e5');
+  g.fillStyle = grd; g.fillRect(0,0,bw,H);
+  g.strokeStyle = 'rgba(40,46,52,0.55)'; g.lineWidth = 3;
+  for (let i=-900;i<bw+900;i+=16){ g.beginPath(); g.moveTo(i,0); g.lineTo(i+700,700); g.stroke(); g.beginPath(); g.moveTo(i+700,0); g.lineTo(i,700); g.stroke(); }
+  g.fillStyle = 'rgba(30,34,38,0.25)'; g.fillRect(0, 700, bw, 10);
+  g.fillStyle = '#15181b';
+  for (let k=0;k<50;k++){
+    const x = k/50*bw, long = k%5===0;
+    const len = long ? 184 : 120, w = long ? 8 : 5;
+    g.fillRect(x - w/2, H - len, w, len);
+    if (k===0) g.fillRect(bw - w/2, H - len, w, len);
+  }
+  g.font = '700 74px "IBM Plex Sans", sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+  for (let k=0;k<50;k+=5){
+    for (const off of [-bw, 0, bw]){
+      g.save(); g.translate(k/50*bw + off, H - 200); g.rotate(-Math.PI/2); g.fillText(String(k), 0, 0); g.restore();
+    }
+  }
+  const bodyMat = new THREE.MeshStandardMaterial({map:tex(c), metalness:0.55, roughness:0.38});
+  const body = cylX(7, 7, 27.5, ZERO_X + 2.5, bodyMat, false, 96);
+  body.userData.drag = 'thimble'; thimbleRot.add(body); micPick.push(body);
+  // ratchet
+  const rc = makeCanvas(512, 64), rg = rc.getContext('2d');
+  rg.fillStyle = '#cfd4d9'; rg.fillRect(0,0,512,64); rg.fillStyle = '#6b737b';
+  for (let i=0;i<512;i+=16) rg.fillRect(i, 0, 6, 64);
+  const ratchet = cylX(4.3, 4.3, 9, ZERO_X + 30, new THREE.MeshStandardMaterial({map:tex(rc), metalness:0.6, roughness:0.35}), false, 48);
+  ratchet.userData.drag = 'ratchet'; thimbleRot.add(ratchet); micPick.push(ratchet);
+})();
+// display plate
+const MP = 15, micPlateCv = makeCanvas(52*MP, 20*MP), micPlateG = micPlateCv.getContext('2d');
+const micPlateTex = tex(micPlateCv);
+const micPlate = new THREE.Mesh(new THREE.PlaneGeometry(52, 20), new THREE.MeshStandardMaterial({map:micPlateTex, roughness:0.35}));
+micPlate.position.set(14, -39, 5.63); mic.add(micPlate);
+const micBtns = {};
+[['on',2],['zero',19],['unit',36]].forEach(([id,seg])=>{
+  const b = new THREE.Mesh(new THREE.BoxGeometry(5, 3.5, 1.1), id==='zero' ? M.btnZero : M.btn);
+  b.position.set(-12 + seg + 2.5, -29 - 17.25, 6.1); b.userData = {btn:'mic-'+id}; mic.add(b); micBtns[id] = b; micPick.push(b);
+});
+let micLast = '';
+function drawMicPlate(){
+  const g = micPlateG, P = MP, W = micPlateCv.width, H = micPlateCv.height;
+  const text = micText(), sig = String(text) + S.mic.unit;
+  if (sig === micLast) return; micLast = sig;
+  const bg = g.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#26313d'); bg.addColorStop(1,'#1a222b');
+  g.fillStyle = bg; g.fillRect(0,0,W,H);
+  g.fillStyle = '#0f1216'; rr(g, 1.5*P, 2.4*P, 33*P, 12.2*P, 7); g.fill();
+  drawLCD(g, 2*P, 3*P, 32*P, 11*P, text, S.mic.unit, 7);
+  g.fillStyle = '#9fb0c2'; g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.font = '600 ' + (2.1*P) + 'px "IBM Plex Mono", monospace';
+  g.fillText('0–25 mm', 36*P, 6*P); g.fillText('0.001 mm', 36*P, 10*P);
+  g.fillStyle = '#e1e6eb'; g.font = '600 ' + (2.2*P) + 'px "IBM Plex Sans", sans-serif';
+  g.fillText('ON/OFF', 8.3*P, 17.3*P); g.fillText('ZERO', 25.3*P, 17.3*P); g.fillText('mm/in', 42.3*P, 17.3*P);
+  micPlateTex.needsUpdate = true;
+}
+// micrometer objects
+const micObjGroup = new THREE.Group(); mic.add(micObjGroup);
+let paperMats = null;
+function buildMicObject(){
+  micObjGroup.clear();
+  const k = S.mic.obj; if (!k) return;
+  const z = S.mic.sizes[k]/1000;
+  if (k === 'wire'){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(z/2, z/2, 44, 32), M.copper); m.position.set(z/2, 0, 0); micObjGroup.add(m);
+  } else if (k === 'bearing'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(z/2, 48, 32), M.steel); m.position.set(z/2, 0, 0); micObjGroup.add(m);
+  } else if (k === 'coin'){
+    const m = cylX(11, 11, z, 0, M.coin, false, 72); micObjGroup.add(m);
+  } else if (k === 'paper'){
+    if (!paperMats){
+      const c = makeCanvas(1024, 32), g = c.getContext('2d');
+      g.fillStyle = '#f6f4ef'; g.fillRect(0,0,1024,32); g.fillStyle = 'rgba(120,110,95,0.45)';
+      for (let i=0;i<=50;i++) g.fillRect(i/50*1024 - 1, 0, 2, 32);
+      const edge = new THREE.MeshStandardMaterial({map:tex(c), roughness:0.9});
+      paperMats = [M.paperFace, M.paperFace, edge, edge, edge, edge];
+    }
+    const m = new THREE.Mesh(new THREE.BoxGeometry(z, 26, 20), paperMats); m.position.set(z/2, 0, 0); micObjGroup.add(m);
+  } else if (k === 'slide'){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(z, 26, 50), M.glass); m.position.set(z/2, 0, 0); micObjGroup.add(m);
+  }
+}
+
+/* ---------------- Instrument logic ---------------- */
+function calLimits(){
+  const c = S.cal; let lo = 0, hi = 15000;
+  if (c.obj){ const p = CAL[c.obj].part, z = c.sizes[c.obj]; if (p === 'outside') lo = z; else hi = z; }
+  return [lo, hi];
+}
+function calText(){
+  const c = S.cal; if (!c.on) return null;
+  const v = c.d + c.e;
+  if (c.unit === 'mm') return (v/100).toFixed(2);
+  const inch = Math.round(v/100/25.4*2000)/2000;
+  return (inch === 0 ? 0 : inch).toFixed(4);
+}
+function micContact(){ return S.mic.obj ? S.mic.sizes[S.mic.obj] : 0; }
+function micText(){
+  const m = S.mic; if (!m.on) return null;
+  const v = m.s + m.e;
+  if (m.unit === 'mm') return (v/1000).toFixed(3);
+  const inch = Math.round(v/1000/25.4*20000)/20000;
+  return (inch === 0 ? 0 : inch).toFixed(5);
+}
+function setD(v){ const [lo,hi] = calLimits(); S.cal.d = clamp(Math.round(v), lo, hi); refreshCal(); }
+function setS(v){ const c = micContact(); S.mic.s = clamp(Math.round(v), c-5, 25000); refreshMic(); }
+function thimbleTo(v){
+  setS(v);
+  if (S.mic.s < micContact()) micMsg('The thimble was turned after the spindle touched, so the ' + (S.mic.obj ? 'object' : 'anvil') + ' is being squeezed and the reading is too small. Open the thimble a little and close it with the ratchet.', 'warn');
+}
+
+function refreshCal(){
+  const c = S.cal;
+  slider.position.x = c.d/100;
+  roller.rotation.y = c.d/100/3.3;
+  drawCalPlate();
+  const r = $('#calRange'); if (document.activeElement !== r) r.value = (c.d/100).toFixed(2);
+  if (S.tool === 'cal') updateStatus();
+}
+function refreshMic(){
+  const m = S.mic;
+  spindle.position.x = m.s/1000;
+  thimbleRot.rotation.x = -2*Math.PI*(((m.s % 500) + 500) % 500)/500;
+  drawMicPlate();
+  const r = $('#micRange'); if (document.activeElement !== r) r.value = (m.s/1000).toFixed(3);
+  if (S.tool === 'mic') updateStatus();
+}
+function updateStatus(){
+  const el = $('#status');
+  let t = '', cls = '';
+  if (S.tool === 'cal'){
+    const c = S.cal, [lo,hi] = calLimits();
+    if (!c.obj){ t = c.d === 0 ? 'Jaws closed' : 'Jaws open ' + (c.d/100).toFixed(2) + ' mm'; cls = c.d === 0 ? 'good' : ''; }
+    else {
+      const p = CAL[c.obj].part, touching = p === 'outside' ? c.d === lo : c.d === hi;
+      const what = p === 'outside' ? 'Jaws' : p === 'inside' ? 'Inside jaws' : 'Depth rod';
+      t = touching ? what + ' touching the ' + CAL[c.obj].name.toLowerCase() : what + ' not touching yet';
+      cls = touching ? 'good' : '';
+    }
+  } else {
+    const m = S.mic, c = micContact(), thing = m.obj ? 'object' : 'anvil';
+    if (m.s > c){ t = 'Spindle not touching the ' + thing; }
+    else if (m.s === c){ t = 'Spindle touching the ' + thing + ' with the correct force'; cls = 'good'; }
+    else { t = 'Too tight. The ' + thing + ' is being squeezed'; cls = 'warn'; }
+  }
+  el.textContent = t; el.className = 'status ' + cls;
+}
+function calMsg(t, cls){ const e = $('#calMsg'); e.textContent = t; e.className = 'msg ' + (cls || 'info'); }
+function micMsg(t, cls){ const e = $('#micMsg'); e.textContent = t; e.className = 'msg ' + (cls || 'info'); }
+
+let pressAnim = [];
+function pressVisual(mesh){ pressAnim.push({mesh, t0:performance.now(), z:mesh.userData.z0 ?? (mesh.userData.z0 = mesh.position.z)}); }
+function pressBtn(id){
+  const [tool, b] = id.split('-');
+  const st = S[tool];
+  pressVisual((tool === 'cal' ? calBtns : micBtns)[b]);
+  const say = tool === 'cal' ? calMsg : micMsg;
+  if (b === 'on'){ st.on = !st.on; say(st.on ? 'Display on.' : 'Display off. Read the scales instead, or press ON/OFF again.'); }
+  else if (b === 'unit'){ if (!st.on) { say('Turn the display on first.'); return; } st.unit = st.unit === 'mm' ? 'in' : 'mm'; say(st.unit === 'in' ? 'The display now shows inches. Switch back to mm before recording your reading.' : 'The display now shows millimetres.'); }
+  else if (b === 'zero'){
+    if (!st.on) { say('Turn the display on first.'); return; }
+    if (tool === 'cal'){
+      st.e = -st.d;
+      if (st.d === 0) say('Zero set. The closed jaws now read 0.00 mm.', 'good');
+      else say('Zero set while the jaws were ' + (st.d/100).toFixed(2) + ' mm apart. Every reading will now be ' + (st.d/100).toFixed(2) + ' mm too small. Close the jaws fully and press ZERO again.', 'warn');
+    } else {
+      st.e = -st.s;
+      const c = micContact();
+      if (st.obj) say('Zero set with an object in the gap. Every reading will now be too small by ' + (st.s/1000).toFixed(3) + ' mm. Remove the object, close with the ratchet and press ZERO again.', 'warn');
+      else if (st.s === 0) say('Zero set. The closed spindle now reads 0.000 mm.', 'good');
+      else if (st.s < 0) say('Zero set while the spindle was too tight. Readings will now be ' + (-st.s/1000).toFixed(3) + ' mm too large. Open the thimble, close with the ratchet and press ZERO again.', 'warn');
+      else say('Zero set while the spindle was ' + (st.s/1000).toFixed(3) + ' mm from the anvil. Close with the ratchet and press ZERO again.', 'warn');
+    }
+  }
+  tool === 'cal' ? (calLast = '', drawCalPlate()) : (micLast = '', drawMicPlate());
+}
+
+/* ---------------- Tweens ---------------- */
+let tween = null;
+function animateTo(tool, target, ms, done){
+  tween = {tool, from: tool === 'cal' ? S.cal.d : S.mic.s, target, t0: performance.now(), ms, done};
+}
+function stepTween(now){
+  if (!tween) return;
+  const k = Math.min(1, (now - tween.t0)/tween.ms), e = 1 - Math.pow(1-k, 3);
+  const v = tween.from + (tween.target - tween.from)*e;
+  tween.tool === 'cal' ? setD(v) : setS(v);
+  if (k >= 1){ const d = tween.done; tween = null; if (d) d(); }
+}
+
+function calContact(){
+  tween = null;
+  const c = S.cal, [lo,hi] = calLimits();
+  const target = !c.obj ? 0 : CAL[c.obj].part === 'outside' ? lo : hi;
+  animateTo('cal', target, clamp(Math.abs(c.d - target)/4, 250, 1200));
+}
+function calBack(){
+  tween = null;
+  const c = S.cal;
+  let target;
+  if (!c.obj) target = Math.max(c.d, 0) + 2000;
+  else if (CAL[c.obj].part === 'outside') target = c.d + 500;
+  else target = c.d - 500;
+  animateTo('cal', clamp(target, 0, 15000), 450);
+}
+function ratchet(){
+  tween = null;
+  const m = S.mic, c = micContact(), thing = m.obj ? 'object' : 'anvil';
+  pressVisual(thimbleRot.children[2]);
+  const ok = () => micMsg('The ratchet clicks and slips once the spindle touches the ' + thing + '. This keeps the force the same every time you measure.', 'good');
+  if (m.s > c) animateTo('mic', c, clamp((m.s - c)/12, 300, 1500), ok);
+  else if (m.s === c) ok();
+  else micMsg('The ratchet slips at once because the spindle is already too tight. Open the thimble a little, then close it again with the ratchet.', 'warn');
+}
+
+/* ---------------- Views / camera ---------------- */
+const view = {tx:0, ty:0, tz:0, yaw:-0.3, pitch:0.22, dist:500};
+const goal = {...view};
+function setGoal(t){ Object.assign(goal, t); }
+function viewFor(name){
+  const aspect = stage.clientWidth / Math.max(1, stage.clientHeight);
+  const wide = aspect < 1.3 ? 1.3/aspect : 1;
+  if (S.tool === 'cal'){
+    const c = S.cal, d = c.d/100;
+    if (name === 'whole') return {tx:108, ty:-8, tz:0, yaw:-0.28, pitch:0.22, dist:520*wide};
+    if (name === 'display') return {tx:d+26, ty:2, tz:0, yaw:-0.05, pitch:0.06, dist:120*Math.min(wide,1.6)};
+    if (name === 'work'){
+      if (!c.obj) return {tx:d/2, ty:-10, tz:0, yaw:-0.3, pitch:0.2, dist:230*Math.min(wide,1.6)};
+      const p = CAL[c.obj].part, z = c.sizes[c.obj]/100;
+      if (p === 'outside') return {tx:z/2 + 8, ty:-22, tz:0, yaw:-0.3, pitch:0.18, dist:190*Math.min(wide,1.6)};
+      if (p === 'inside') return {tx:z/2 + 6, ty:18, tz:0, yaw:-0.35, pitch:0.35, dist:170*Math.min(wide,1.6)};
+      return {tx:BEAM_END + z/2 - 10, ty:0, tz:0, yaw:-0.55, pitch:0.4, dist:(160 + z*1.6)*Math.min(wide,1.6)};
+    }
+  } else {
+    const s = S.mic.s/1000;
+    if (name === 'whole') return {tx:36, ty:-16, tz:0, yaw:-0.3, pitch:0.2, dist:250*wide};
+    if (name === 'display') return {tx:14, ty:-39, tz:0, yaw:-0.02, pitch:0.04, dist:95*Math.min(wide,1.6)};
+    if (name === 'scales') return {tx:ZERO_X + s + 1, ty:0, tz:0, yaw:-0.05, pitch:0.04, dist:62*Math.min(wide,1.6)};
+    if (name === 'work'){ const z = S.mic.obj ? S.mic.sizes[S.mic.obj]/1000 : 0; return {tx:z/2 + 2, ty:0, tz:0, yaw:-0.4, pitch:0.28, dist:95*Math.min(wide,1.6)}; }
+  }
+}
+function renderViews(){
+  const box = $('#views'); box.innerHTML = '';
+  const list = S.tool === 'cal'
+    ? [['whole','Whole caliper'],['work','Jaws'],['display','Display']]
+    : [['whole','Whole micrometer'],['work','Object'],['scales','Scales'],['display','Display']];
+  for (const [k,label] of list){
+    const b = document.createElement('button'); b.textContent = label;
+    b.addEventListener('click', () => setGoal(viewFor(k)));
+    box.appendChild(b);
+  }
+  $('#hint').textContent = S.tool === 'cal'
+    ? 'Drag the sliding jaw to move it. Drag anywhere else to turn the caliper. Scroll or pinch to zoom.'
+    : 'Drag the thimble up or down to turn it. Click the ratchet to close. Drag elsewhere to turn the micrometer.';
+}
+function updateCamera(){
+  for (const k in goal) view[k] += (goal[k] - view[k]) * 0.14;
+  const cp = Math.cos(view.pitch);
+  camera.position.set(view.tx + view.dist*cp*Math.sin(view.yaw), view.ty + view.dist*Math.sin(view.pitch), view.tz + view.dist*cp*Math.cos(view.yaw));
+  camera.lookAt(view.tx, view.ty, view.tz);
+}
+
+/* ---------------- Pointer input ---------------- */
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), zPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 0), hitPt = new THREE.Vector3();
+function setNdc(e){ const r = canvas.getBoundingClientRect(); ndc.set(((e.clientX - r.left)/r.width)*2 - 1, -((e.clientY - r.top)/r.height)*2 + 1); ray.setFromCamera(ndc, camera); }
+function pickAt(e){
+  setNdc(e);
+  const hits = ray.intersectObjects(S.tool === 'cal' ? calPick : micPick, false);
+  return hits.length ? hits[0].object.userData : null;
+}
+const pointers = new Map();
+let drag = null, pinch = null;
+canvas.addEventListener('pointerdown', e => {
+  canvas.focus({preventScroll:true});
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  canvas.setPointerCapture(e.pointerId);
+  if (pointers.size === 2){
+    const [a,b] = [...pointers.values()];
+    pinch = {d0: Math.hypot(a.x-b.x, a.y-b.y), dist0: goal.dist}; drag = null; return;
+  }
+  const u = pickAt(e);
+  if (u && u.btn){ pressBtn(u.btn); drag = null; return; }
+  if (u && u.drag === 'ratchet'){ ratchet(); drag = null; return; }
+  if (u && u.drag === 'slider' && ray.ray.intersectPlane(zPlane, hitPt)){
+    tween = null; drag = {kind:'slider', x0: hitPt.x, d0: S.cal.d}; canvas.style.cursor = 'grabbing'; return;
+  }
+  if (u && u.drag === 'thimble'){ tween = null; drag = {kind:'thimble', y0: e.clientY, s0: S.mic.s}; canvas.style.cursor = 'ns-resize'; return; }
+  drag = {kind:'orbit', x: e.clientX, y: e.clientY}; canvas.style.cursor = 'grabbing';
+});
+canvas.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pinch && pointers.size === 2){
+    const [a,b] = [...pointers.values()];
+    const d = Math.hypot(a.x-b.x, a.y-b.y);
+    goal.dist = view.dist = clamp(pinch.dist0 * pinch.d0 / Math.max(10, d), 30, 1400); return;
+  }
+  if (!drag){
+    const u = pickAt(e);
+    canvas.style.cursor = !u ? 'grab' : u.btn || u.drag === 'ratchet' ? 'pointer' : u.drag === 'thimble' ? 'ns-resize' : 'ew-resize';
+    return;
+  }
+  if (drag.kind === 'slider'){
+    setNdc(e);
+    if (ray.ray.intersectPlane(zPlane, hitPt)) setD(drag.d0 + (hitPt.x - drag.x0)*100);
+  } else if (drag.kind === 'thimble'){
+    const px = drag.y0 - e.clientY;             // drag up = open
+    thimbleTo(drag.s0 + px*8);
+  } else {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+    goal.yaw = view.yaw = clamp(view.yaw - dx*0.006, -1.25, 1.25);
+    goal.pitch = view.pitch = clamp(view.pitch + dy*0.006, -1.2, 1.3);
+  }
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 0){ drag = null; canvas.style.cursor = 'grab'; }
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('wheel', e => { e.preventDefault(); goal.dist = clamp(goal.dist * Math.exp(e.deltaY*0.0012), 30, 1400); }, {passive:false});
+canvas.addEventListener('dblclick', () => setGoal(viewFor('whole')));
+canvas.addEventListener('keydown', e => {
+  const big = e.shiftKey;
+  if (S.tool === 'cal'){
+    if (e.key === 'ArrowRight'){ tween = null; setD(S.cal.d + (big ? 100 : 1)); e.preventDefault(); }
+    if (e.key === 'ArrowLeft'){ tween = null; setD(S.cal.d - (big ? 100 : 1)); e.preventDefault(); }
+  } else {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight'){ tween = null; thimbleTo(S.mic.s + (big ? 500 : 10)); e.preventDefault(); }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowLeft'){ tween = null; thimbleTo(S.mic.s - (big ? 500 : 10)); e.preventDefault(); }
+  }
+});
+$('#zin').addEventListener('click', () => goal.dist = clamp(goal.dist/1.3, 30, 1400));
+$('#zout').addEventListener('click', () => goal.dist = clamp(goal.dist*1.3, 30, 1400));
+
+/* ---------------- Panel UI ---------------- */
+function renderObjList(tool){
+  const box = $('#' + tool + 'Objs'), st = S[tool], defs = tool === 'cal' ? CAL : MIC;
+  box.innerHTML = '';
+  const none = document.createElement('button');
+  none.className = 'obj'; none.setAttribute('aria-pressed', String(!st.obj));
+  none.innerHTML = '<span><span class="nm">No object</span><small>Use this to check the zero reading.</small></span>';
+  none.addEventListener('click', () => selectObj(tool, null));
+  box.appendChild(none);
+  for (const k in defs){
+    const d = defs[k], p = st.prog[k];
+    const b = document.createElement('button');
+    b.className = 'obj'; b.setAttribute('aria-pressed', String(st.obj === k));
+    const partTag = tool === 'cal' ? '<span class="part">' + PART_LABEL[d.part] + '</span>' : '';
+    b.innerHTML = '<span>' + partTag + '<span class="nm">' + d.name + '</span><small>Measure the ' + d.what + '.</small></span>'
+      + '<span class="tick' + (p.done ? ' done' : '') + '">' + (p.done ? 'Done' : p.shown ? 'Shown' : 'To do') + '</span>';
+    b.addEventListener('click', () => selectObj(tool, k));
+    box.appendChild(b);
+  }
+}
+function selectObj(tool, k){
+  tween = null;
+  const st = S[tool];
+  st.obj = k;
+  if (tool === 'cal'){
+    if (k){
+      const p = CAL[k].part, z = st.sizes[k];
+      if (p === 'outside' && st.d < z + 200) st.d = z + 400;
+      if (p === 'inside' && st.d > z - 200) st.d = Math.max(0, z - 600);
+      if (p === 'depth' && st.d > z - 200) st.d = Math.max(0, Math.round(z*0.35));
+    }
+    buildCalObject(); setD(st.d);
+    calMsg(!k ? 'Close the jaws and check the display reads 0.00 mm.' :
+      CAL[k].part === 'outside' ? 'Close the outside jaws onto the ' + CAL[k].name.toLowerCase() + '.' :
+      CAL[k].part === 'inside' ? 'The inside jaws are in the pipe. Open them until they touch the inner walls.' :
+      'The end of the beam rests on the top of the block. Slide the jaw open until the depth rod touches the bottom of the hole.');
+  } else {
+    if (k && st.s < st.sizes[k] + 300) st.s = st.sizes[k] + rnd(800, 1600);
+    buildMicObject(); setS(st.s);
+    micMsg(!k ? 'Close the spindle with the ratchet and check the display reads 0.000 mm.' :
+      'The ' + MIC[k].name.toLowerCase() + ' is between the anvil and the spindle. Turn the thimble to bring the spindle close, then finish with the ratchet.' + (k === 'paper' ? ' Measuring 50 sheets and dividing by 50 gives a more accurate thickness for one sheet.' : ''));
+  }
+  renderObjList(tool);
+  const card = $('#' + tool + 'AnsCard');
+  card.hidden = !k;
+  if (k){
+    const d = (tool === 'cal' ? CAL : MIC)[k];
+    $('#' + tool + 'AnsLabel').textContent = 'Your reading for the ' + d.what + ' of the ' + d.name.toLowerCase();
+    $('#' + tool + 'Ans').value = '';
+    $('#' + tool + 'Fb').hidden = true;
+    $('#' + tool + 'Reveal').hidden = !(st.prog[k].tries >= 3 && !st.prog[k].done);
+  }
+  setGoal(viewFor('work'));
+}
+function showFb(tool, cls, text){ const f = $('#' + tool + 'Fb'); f.hidden = false; f.className = 'fb ' + cls; f.textContent = text; }
+function signed(v, dp){ return (v > 0 ? '+' : '−') + Math.abs(v).toFixed(dp); }
+function checkAnswer(tool){
+  const st = S[tool], k = st.obj; if (!k) return;
+  const d = (tool === 'cal' ? CAL : MIC)[k], p = st.prog[k];
+  const scale = tool === 'cal' ? 100 : 1000, dp = tool === 'cal' ? 2 : 3, res = tool === 'cal' ? '0.01' : '0.001';
+  const inst = tool === 'cal' ? 'caliper' : 'micrometer';
+  const raw = $('#' + tool + 'Ans').value.trim().replace(/\s*mm$/i, '');
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(raw)){ showFb(tool, 'bad', 'Type your reading as a number in millimetres, for example ' + (tool === 'cal' ? '23.45' : '2.345') + '.'); return; }
+  const places = (raw.split('.')[1] || '').length;
+  if (places > dp){ showFb(tool, 'warn', 'The ' + inst + ' reads to ' + res + ' mm, so give the reading to ' + dp + ' decimal places.'); return; }
+  const ans = Math.round(parseFloat(raw)*scale);
+  const size = st.sizes[k], trueStr = (size/scale).toFixed(dp);
+  if (ans === size){
+    if (places !== dp){ showFb(tool, 'warn', 'The value is right, but it should be written as ' + trueStr + ' mm. The ' + inst + ' reads to ' + res + ' mm, so the reading has ' + dp + ' decimal places.'); return; }
+    p.tries++;
+    const first = !p.done && !p.shown;
+    if (!p.shown) p.done = true;
+    let t = 'Correct. The ' + d.what + ' of the ' + d.name.toLowerCase() + ' is ' + trueStr + ' mm.';
+    if (k === 'paper' && tool === 'mic') t += ' The thickness of one sheet is ' + trueStr + ' ÷ 50 = ' + (size/1000/50).toFixed(4) + ' mm.';
+    if (!first && p.shown) t += ' This one does not add to your score because the answer was shown.';
+    showFb(tool, 'good', t);
+    $('#' + tool + 'Reveal').hidden = true;
+    renderObjList(tool); updateScore();
+    return;
+  }
+  p.tries++;
+  const disp = (tool === 'cal' ? st.d : st.s) + st.e;
+  const pos = tool === 'cal' ? st.d : st.s;
+  const part = tool === 'cal' ? {outside:'jaws', inside:'inside jaws', depth:'depth rod'}[d.part] : 'spindle';
+  let t;
+  if (ans === disp && st.on && st.unit === 'mm'){
+    if (tool === 'mic' && pos < size){
+      t = 'This matches the display, but the spindle was turned too far with the thimble. It is squeezing the ' + d.name.toLowerCase() + ', so the reading is too small. Open the thimble a little and close it again with the ratchet.';
+    } else if (pos !== size){
+      t = 'This matches the display, but the ' + part + (part.endsWith('s') ? ' are' : ' is') + ' not touching the ' + d.name.toLowerCase() + ' yet. Move ' + (part.endsWith('s') ? 'them' : 'it') + ' until ' + (part.endsWith('s') ? 'they touch' : 'it touches') + ', then read the display again.';
+    } else {
+      t = 'This matches the display, but the ' + inst + ' has a zero error of ' + signed(st.e/scale, dp) + ' mm. When fully closed it reads ' + (st.e/scale).toFixed(dp) + ' mm instead of zero. Correct reading = display reading − zero error. You can also close the ' + (tool === 'cal' ? 'jaws' : 'spindle with the ratchet') + ', press ZERO and measure again.';
+    }
+  } else if (st.unit === 'in'){
+    t = 'The display is set to inches. Press mm/in to change it to millimetres, then read it again.';
+  } else if (!st.on){
+    t = 'Not quite. The display is off, so read the scales carefully, or press ON/OFF to turn the display on.';
+  } else {
+    t = 'This is not the ' + d.what + ' of the ' + d.name.toLowerCase() + '. Check that the ' + part + (part.endsWith('s') ? ' touch' : ' touches') + ' the object, then read the display again.';
+  }
+  showFb(tool, 'bad', t);
+  if (p.tries >= 3 && !p.done) $('#' + tool + 'Reveal').hidden = false;
+}
+function reveal(tool){
+  const st = S[tool], k = st.obj; if (!k) return;
+  const d = (tool === 'cal' ? CAL : MIC)[k], scale = tool === 'cal' ? 100 : 1000, dp = tool === 'cal' ? 2 : 3;
+  st.prog[k].shown = true;
+  showFb(tool, 'warn', 'The ' + d.what + ' of the ' + d.name.toLowerCase() + ' is ' + (st.sizes[k]/scale).toFixed(dp) + ' mm. Set the ' + (tool === 'cal' ? 'jaws' : 'spindle') + ' so the display shows this value after correcting for zero error, to see where you went wrong.');
+  $('#' + tool + 'Reveal').hidden = true;
+  renderObjList(tool);
+}
+function updateScore(){
+  const n = st => Object.values(st.prog).filter(p => p.done).length;
+  $('#scoreCal').textContent = n(S.cal); $('#scoreMic').textContent = n(S.mic);
+}
+function setTool(tool){
+  tween = null;
+  S.tool = tool;
+  $('#tabCal').setAttribute('aria-selected', String(tool === 'cal'));
+  $('#tabMic').setAttribute('aria-selected', String(tool === 'mic'));
+  $('#panelCal').hidden = tool !== 'cal'; $('#panelMic').hidden = tool !== 'mic';
+  cal.visible = tool === 'cal'; mic.visible = tool === 'mic';
+  renderViews();
+  const v = viewFor(S[tool].obj ? 'work' : 'whole');
+  Object.assign(view, v, {dist: v.dist*1.25}); setGoal(v);
+  updateStatus();
+}
+
+$('#tabCal').addEventListener('click', () => setTool('cal'));
+$('#tabMic').addEventListener('click', () => setTool('mic'));
+$('#calContact').addEventListener('click', calContact);
+$('#calBack').addEventListener('click', calBack);
+$('#calRange').addEventListener('input', e => { tween = null; setD(parseFloat(e.target.value)*100); });
+document.querySelectorAll('[data-cal]').forEach(b => b.addEventListener('click', () => { tween = null; setD(S.cal.d + Number(b.dataset.cal)); }));
+document.querySelectorAll('[data-mic]').forEach(b => b.addEventListener('click', () => { tween = null; thimbleTo(S.mic.s + Number(b.dataset.mic)); }));
+$('#micRange').addEventListener('input', e => { tween = null; thimbleTo(parseFloat(e.target.value)*1000); });
+$('#micRatchet').addEventListener('click', ratchet);
+['on','zero','unit'].forEach(b => {
+  $('#cal' + b[0].toUpperCase() + b.slice(1)).addEventListener('click', () => pressBtn('cal-' + b));
+  $('#mic' + b[0].toUpperCase() + b.slice(1)).addEventListener('click', () => pressBtn('mic-' + b));
+});
+$('#calCheck').addEventListener('click', () => checkAnswer('cal'));
+$('#micCheck').addEventListener('click', () => checkAnswer('mic'));
+$('#calAns').addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer('cal'); });
+$('#micAns').addEventListener('keydown', e => { if (e.key === 'Enter') checkAnswer('mic'); });
+$('#calReveal').addEventListener('click', () => reveal('cal'));
+$('#micReveal').addEventListener('click', () => reveal('mic'));
+$('#newSet').addEventListener('click', () => {
+  newSet();
+  for (const t of ['cal','mic']){ selectObj(t, null); }
+  calMsg('New objects loaded. The zero error has changed too, so check the zero reading first.');
+  micMsg('New objects loaded. The zero error has changed too, so check the zero reading first.');
+  updateScore(); setTool(S.tool);
+});
+
+/* ---------------- Resize + loop ---------------- */
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+function loop(now){
+  stepTween(now);
+  pressAnim = pressAnim.filter(a => {
+    const k = (now - a.t0)/220;
+    const dip = k < 1 ? Math.sin(k*Math.PI) : 0;
+    if (a.mesh.parent === thimbleRot) a.mesh.position.x = -dip*0.6;
+    else a.mesh.position.z = a.z - dip*0.7;
+    return k < 1;
+  });
+  updateCamera();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+renderObjList('cal'); renderObjList('mic');
+refreshCal(); refreshMic();
+setTool('cal');
+calMsg('Start with the jaws closed. Press "Close jaws" and check whether the display reads 0.00 mm.');
+micMsg('Start by closing the spindle with the ratchet. Check whether the display reads 0.000 mm.');
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { calLast = ''; micLast = ''; drawCalPlate(); drawMicPlate(); });
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
