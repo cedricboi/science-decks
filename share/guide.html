@@ -15,7 +15,7 @@ header{display:grid;gap:10px}
 .eye{margin:0;font:700 13px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 h1{margin:0;font:800 clamp(34px,6vw,52px)/1.05 var(--display);text-wrap:balance}
 h2{margin:0 0 4px;font:800 28px/1.15 var(--display);text-wrap:balance}
-h3{margin:0;font:800 19px/1.25 var(--display)}
+h3{margin:0;font:800 19px/1.25 var(--display)}section>h3{margin-top:14px;font-size:22px}
 p{margin:0}.lead{font-size:20px;color:var(--soft);max-width:60ch}
 nav{display:flex;flex-wrap:wrap;gap:8px}
 nav a{padding:6px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:700;font-size:14px}
@@ -59,7 +59,7 @@ footer a{color:var(--accent)}
   <h1>Claude Guide for Teachers</h1>
   <p class="lead">How to get Claude to build something useful for your lesson, with prompts you can copy and the habits that save the most time.</p>
   <nav aria-label="Contents">
-    <a href="#goal">Start with the goal</a><a href="#steps">Your first build</a><a href="#prompts">Prompts to copy</a><a href="#tips">Tips and tricks</a><a href="#words">Words you will see</a><a href="#stuck">When it goes wrong</a><a href="#rules">Student data</a><a href="#share">Sharing</a>
+    <a href="#goal">Start with the goal</a><a href="#steps">Your first build</a><a href="#prompts">Prompts to copy</a><a href="#tips">Tips and tricks</a><a href="#words">Words you will see</a><a href="#stuck">When it goes wrong</a><a href="#rules">Student data</a><a href="#share">Sharing</a><a href="#host">Hosting</a>
   </nav>
 </header>
 
@@ -178,6 +178,57 @@ footer a{color:var(--accent)}
     <li><div><b>Give students the link</b>Post it where your class already looks, or show a QR code.</div></li>
   </ol>
   <p style="color:var(--soft)">If you need students' answers to be saved and seen by you later, tell Claude that at the start. It changes how the page must be built.</p>
+</section>
+
+<section id="host">
+  <p class="eye">Putting it online</p>
+  <h2>Hosting, step by step.</h2>
+  <p>You do not need all of this on day one. Start with the first row, and move down only when you need what the next row gives.</p>
+  <div class="tw"><table>
+    <thead><tr><th>I want to</th><th>Use</th><th>What it gives</th></tr></thead>
+    <tbody>
+      <tr><td>Show my class a quiz, game or simulation</td><td>Claude's own share link</td><td>A link straight away. Nothing else to learn.</td></tr>
+      <tr><td>Have a permanent page with a plain address</td><td>GitHub Pages</td><td>A free public web page. Students do not sign in.</td></tr>
+      <tr><td>Save students' answers, or have them sign in</td><td>Google Apps Script with a Google Sheet</td><td>A small app that keeps records in your Sheet.</td></tr>
+      <tr><td>Keep files such as worksheet PDFs</td><td>Google Drive</td><td>A folder your app can read from and save to.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="pair">
+    <div><span class="tag yes">How Mr Cedric's hub fits together</span><p><b>GitHub</b> holds the pages: lesson slides, games and the hub's screens.</p><p><b>Google Apps Script</b> is the engine: sign-in, handing in and marking.</p><p><b>Google Sheets</b> keeps the records. <b>Google Drive</b> keeps the worksheet files.</p></div>
+    <div><span class="tag no">Before you host anything</span><p>A GitHub page is public. Anyone with the address can open it.</p><p>Never put student names, NRIC numbers or grades in a public page.</p><p>Check your school's rules before students sign in to anything you build.</p></div>
+  </div>
+
+  <h3>A. Put a page on GitHub Pages</h3>
+  <ol class="steps">
+    <li><div><b>Get the page as one file</b>Ask Claude: "Give me this as a single HTML file that I can host." Download the file.</div></li>
+    <li><div><b>Make a free GitHub account</b>Go to github.com and sign up.</div></li>
+    <li><div><b>Create a new repository</b>A repository is a folder for one project. Give it a short name such as my-lessons, and choose Public. On a free account, GitHub Pages only works with a public repository.</div></li>
+    <li><div><b>Upload your file</b>In the repository, choose Add file, then Upload files. Drag your HTML file in and press Commit changes.</div></li>
+    <li><div><b>Turn on Pages</b>Open Settings, then Pages. Under Build and deployment, set Source to Deploy from a branch, and choose the main branch.</div></li>
+    <li><div><b>Open your address</b>Wait a few minutes. It can take up to ten. Your page is at yourname.github.io/my-lessons/yourfile.html. A file named index.html opens at yourname.github.io/my-lessons.</div></li>
+    <li><div><b>To change the page later</b>Upload a file with the same name again. The address stays the same.</div></li>
+  </ol>
+  <div class="prompt"><div class="top"><b>Ask Claude to walk you through it</b><button class="copy" type="button" id="c5" data-t="p5">Copy</button></div><p id="p5">I want to put this page online with GitHub Pages. I have never used GitHub. Walk me through it one step at a time, and wait for me to say done after each step. If I send a screenshot, tell me where to click.</p></div>
+
+  <h3>B. Save answers with Google Apps Script</h3>
+  <p>You only need this when the page must remember things, such as each student's answer.</p>
+  <ol class="steps">
+    <li><div><b>Say it in your end goal</b>Tell Claude that each student's answer must be saved to a Google Sheet, and that you want to use Google Apps Script. Ask for the code and the setup steps.</div></li>
+    <li><div><b>Make a Google Sheet</b>This is where the records will go. Open Extensions, then Apps Script.</div></li>
+    <li><div><b>Paste the code</b>Paste what Claude gives you into the files it names, and save.</div></li>
+    <li><div><b>Deploy it as a web app</b>Choose Deploy, then New deployment, and pick Web app as the type. Fill in who the app runs as and who can open it, then press Deploy. Google will ask you to approve the permissions.</div></li>
+    <li><div><b>Copy the web app address</b>It ends in /exec. This is the link you give students.</div></li>
+    <li><div><b>After every change</b>Deploy a new version, or students will keep seeing the old one. Ask Claude to remind you how each time.</div></li>
+  </ol>
+  <div class="prompt"><div class="top"><b>Ask Claude to set it up with you</b><button class="copy" type="button" id="c6" data-t="p6">Copy</button></div><p id="p6">I want this page to save each student's answer in a Google Sheet using Google Apps Script. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me after each step. Use made-up names in any example.</p></div>
+
+  <h3>C. Keep files in Google Drive</h3>
+  <ol class="steps">
+    <li><div><b>Make one folder for the project</b>Put your worksheet PDFs in it.</div></li>
+    <li><div><b>Tell Claude what the folder is for</b>For example, "worksheets are in this folder, and handed-in work should be saved in a second folder". Claude writes the Apps Script to do it.</div></li>
+    <li><div><b>Keep the folder private</b>Let your app decide who sees what. Do not set a folder of student work to anyone with the link.</div></li>
+  </ol>
+  <p style="color:var(--soft)">Menu names on GitHub and Google change from time to time. If a button is not where this page says, send Claude a screenshot and ask where to click.</p>
 </section>
 
 <footer>
