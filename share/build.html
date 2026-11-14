@@ -58,7 +58,7 @@ footer a{color:var(--amber)}
 </style></head><body>
 <div class="wrap">
 <header>
-<p class="eye">Try It Yourself · about 30 minutes</p>
+<p class="eye">Try It Yourself · steps 1 to 5 today</p>
 <h1>Build your own tool.</h1>
 <p class="soft">Seven short steps. You leave with one working page for one lesson of yours. You do not write any code.</p>
 </header>
@@ -86,7 +86,7 @@ footer a{color:var(--amber)}
 <h2>Choose your KAT.</h2>
 <p class="soft">Think of one lesson next term. Which learning process should technology enhance? Choose one.</p>
 <div class="kats" id="kats"></div>
-<label>The lesson I have in mind<small>Level, subject and topic. For example, Sec 1 Science, reading a vernier caliper.</small><input id="f-lesson" autocomplete="off"></label>
+<label>Level and subject<small>For example, Sec 1 Science.</small><input id="f-lesson" placeholder="Sec 1 Science" autocomplete="off"></label>
 </section>
 
 <!-- 2 -->
@@ -124,7 +124,7 @@ footer a{color:var(--amber)}
 
 <!-- 4 -->
 <section class="step" data-t="4 Build" hidden>
-<p class="eye">Step 4 of 7 · 12 minutes</p>
+<p class="eye">Step 4 of 7 · about 12 minutes</p>
 <h2>Build it. Describe, try, correct.</h2>
 <ol>
 <li><b>Paste your prompt into Claude.</b> Read its plan. If it asks you questions, answer them.</li>
@@ -157,8 +157,8 @@ footer a{color:var(--amber)}
 </ul>
 <h3>Share</h3>
 <ol>
-<li>What Claude builds is called an artifact. Open the <b>Share</b> menu on it and copy the link.</li>
-<li>Open the link on a device that is not signed in to your account. Check that it opens and works.</li>
+<li>What Claude builds is called an artifact. Open <b>Share</b> or <b>Publish</b> on it. Choose the option that lets anyone with the link open it, then copy the link.</li>
+<li>Open the link on a device that is not signed in to your account. Check that it opens and works. On a school account, sharing outside the school may be switched off.</li>
 <li>Paste the link into SLS or Google Classroom, or make a QR code.</li>
 </ol>
 <div class="box"><b>This is enough for most lessons.</b> A quiz, a game or a simulation needs nothing more. The next two steps are for when you need more.</div>
@@ -195,7 +195,7 @@ footer a{color:var(--amber)}
 <li><b>After every change, deploy a new version.</b> Otherwise students keep seeing the old one.</li>
 </ol>
 <details><summary>What the code looks like</summary>
-<p class="soft">You do not need to write this. It is here so that it does not look mysterious when Claude gives you something similar. The first part opens your page. The second part adds one row to the Sheet.</p>
+<p class="soft">You do not need to write this. It is here so that it does not look mysterious when Claude gives you something similar. In this small example the page lives inside Apps Script too. The first part opens the page. The second part adds one row to the Sheet.</p>
 <pre>function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index');
 }
@@ -220,7 +220,7 @@ function saveAnswer(seat, answer) {
 <li><b>Make a free account</b> at github.com.</li>
 <li><b>Create a new repository.</b> A repository is a folder for one project. Give it a short name such as my-lessons, and choose <b>Public</b>.</li>
 <li><b>Upload your file.</b> Choose <b>Add file</b>, then <b>Upload files</b>. Drag the file in and press <b>Commit changes</b>.</li>
-<li><b>Turn on Pages.</b> Open <b>Settings</b>, then <b>Pages</b>. Set Source to <b>Deploy from a branch</b> and choose the <b>main</b> branch.</li>
+<li><b>Turn on Pages.</b> Open <b>Settings</b>, then <b>Pages</b>. Set Source to <b>Deploy from a branch</b>, choose the <b>main</b> branch and press <b>Save</b>.</li>
 <li><b>Open your address.</b> Wait a few minutes. Your page is at yourname.github.io/my-lessons/yourfile.html.</li>
 </ol>
 <p class="soft">To change the page later, upload a file with the same name again. The address stays the same.</p>
