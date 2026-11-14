@@ -49,6 +49,7 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  var L={moe:['https://sites.google.com/moe.edu.sg/guidetoe-pedagogy/kat-x-rat','KAT x RAT guide','The MOE Guide to e-Pedagogy page on the eight KATs and RAT.','MOE'],
    rift:['https://academy-rift.onrender.com/','Academy Rift','Every turn starts with a question. Press GO TO SCHOOL for a practice fight.','Game'],
    lab:['https://cedricboi.github.io/science-decks/share/caliper.html','Caliper and Micrometer Lab','Handle the instrument and read the scale.','Live lab'],
+   build:['https://cedricboi.github.io/science-decks/share/build.html','Build Your Own Tool','Seven guided steps. It writes your prompt with you.','Start here'],
    claude:['https://claude.ai','Open Claude','Start a new chat and paste your prompt.','claude.ai'],
    guide:['https://cedricboi.github.io/science-decks/share/guide.html','Claude Guide for Teachers','Prompts to copy, tips and tricks, and the student data rules.','Guide'],
    aes:['https://sites.google.com/moe.edu.sg/aestech/student-learning-space-sls/acp-interactives','AES Prompt Generator','Draft your prompt here, then paste it into Claude.','AES Tech'],
@@ -56,7 +57,7 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  var PARTS=window.__parts={1:['Part 1 · 5 minutes','Refresher on e-Pedagogy','Mr Cedric and Arnold are presenting this part. Open the guide if you want to read along.',['moe']],
    2:['Part 2 · 10 minutes','What I built with Claude','Watch the hub demo first. Then try the game and the live lab.',['rift','lab']],
    3:['Part 3 · 30 minutes','Try It Yourself!','Write your plan on the Try It Yourself worksheet in the Homework door. Then open Claude and build.',['claude','guide','aes']],
-   0:['Today','Links for today','Each link opens in a new tab.',['rift','lab','claude','guide','aes','all']],
+   0:['Today','Links for today','Each link opens in a new tab.',['build','rift','lab','claude','guide','aes','all']],
    4:['Part 4 · 10 minutes','Consolidation','Tell your neighbour what you built, in one sentence. Then take the links with you.',['guide','all']]};
  function linkPop(n,teach){var p=PARTS[n];if(!p)return false;document.getElementById('lp-eye').textContent=p[0];document.getElementById('lp-h').textContent=p[1];
    document.getElementById('lp-p').textContent=teach?'You are teaching this part. Your slides are in the other tab. These are the links your class sees for this part.':p[2];

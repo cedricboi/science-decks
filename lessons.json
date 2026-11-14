@@ -341,8 +341,17 @@
        "live": false
       },
       {
-       "file": "share/index.html",
+       "file": "share/build.html",
        "num": "1.2",
+       "title": "Build Your Own Tool",
+       "note": "Seven guided steps, with Google Apps Script and GitHub",
+       "kind": "deck",
+       "topicId": "staff-claude-3",
+       "live": false
+      },
+      {
+       "file": "share/index.html",
+       "num": "1.3",
        "title": "Try It Yourself: links for today",
        "note": "The game, the lab, Claude and the guide",
        "kind": "deck",

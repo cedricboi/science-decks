@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Build Your Own Tool</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* One night-sky column to match the slides. Seven short steps, one at a time, with a progress strip that stays at the top. */
+:root{color-scheme:dark;--night:#070a1c;--deep:#10143a;--ink:#eef1f8;--soft:#b9c1de;--amber:#f2b84b;--green:#6fd9a0;--line:rgba(238,241,248,.2);--glass:rgba(20,25,62,.82);--field:#0b0e2a;
+--display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--night);color:var(--ink);font:400 17px/1.55 var(--body);
+background-image:radial-gradient(1px 1px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 72% 9%,#fff 50%,transparent 51%),radial-gradient(2px 2px at 88% 34%,var(--amber) 50%,transparent 51%),radial-gradient(1px 1px at 34% 46%,#fff 50%,transparent 51%),radial-gradient(ellipse at 70% 0%,rgba(110,95,215,.35),transparent 60%),linear-gradient(180deg,var(--night),var(--deep));background-attachment:fixed}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eye{margin:0;font:700 13px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+h1{margin:8px 0 8px;font:800 clamp(36px,8vw,60px)/1.02 var(--display);letter-spacing:-.02em;text-wrap:balance}
+h2{margin:0 0 6px;font:800 clamp(26px,5vw,34px)/1.12 var(--display);text-wrap:balance}
+h3{margin:22px 0 8px;font:800 20px var(--display)}
+p{margin:8px 0}.soft{color:var(--soft)}
+.prog{position:sticky;top:0;z-index:5;margin:18px -4px 22px;padding:10px 4px;background:linear-gradient(180deg,var(--night) 70%,transparent);display:flex;gap:6px;overflow-x:auto}
+.prog button{flex:1 0 auto;min-width:0;padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--glass);color:var(--soft);font:700 13.5px var(--body);cursor:pointer;white-space:nowrap}
+.prog button[aria-current="step"]{background:var(--amber);border-color:var(--amber);color:#12163a}
+.prog button.done{border-color:var(--green);color:var(--green)}
+.step{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:24px clamp(16px,4vw,30px);display:grid;gap:6px}
+.kats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:10px}
+.kats button{text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:400 15px/1.35 var(--body);cursor:pointer;display:grid;gap:2px}
+.kats button b{font:800 17px var(--display)}.kats button span{color:var(--soft)}
+.kats button[aria-pressed="true"]{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset}
+label{display:grid;gap:5px;margin-top:12px;font-weight:700}
+label small{font-weight:400;color:var(--soft);font-size:14.5px}
+input,textarea{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:400 16.5px/1.4 var(--body)}
+textarea{min-height:74px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 16px}
+.prompt{margin-top:12px;padding:16px 18px;border-radius:14px;border:2px solid var(--amber);background:rgba(242,184,75,.08);white-space:pre-wrap;font-size:16.5px;user-select:all}
+.prompt.plain{border:1px solid var(--line);background:var(--field)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--ink);font:800 15.5px var(--body);cursor:pointer;text-decoration:none}
+.btn.go{background:var(--amber);border-color:var(--amber);color:#12163a}
+.btn.small{padding:7px 14px;font-size:14px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+ol,ul{margin:8px 0;padding-left:22px}li{margin:6px 0}
+ul.check{list-style:none;padding:0}ul.check li{display:flex;gap:11px;align-items:flex-start}
+ul.check input{flex:none;width:21px;height:21px;margin-top:3px;accent-color:var(--green)}
+.box{margin-top:12px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--field)}
+.box.warn{border-color:#ff9c8a;background:rgba(255,156,138,.08)}
+.four{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px}
+.four div{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field)}
+.four b{display:block;font:800 17px var(--display);color:var(--amber)}.four span{color:var(--soft);font-size:15px}
+.fit{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px}
+.fit div{padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field);position:relative}
+.fit b{display:block;font:800 17px var(--display)}.fit i{display:block;font-style:normal;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);font-weight:700}.fit span{color:var(--soft);font-size:15px}
+pre{margin:10px 0 0;padding:14px 16px;border-radius:12px;background:#05071a;border:1px solid var(--line);overflow-x:auto;font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#d7ddf5}
+details{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:var(--field);padding:4px 16px}
+summary{cursor:pointer;font-weight:800;padding:10px 0}
+.need{color:#ffb9ab;font-weight:700;font-size:15px;margin-top:6px}
+.tablewrap{overflow-x:auto;margin-top:10px}table{border-collapse:collapse;width:100%;font-size:15.5px}th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}th{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+footer{color:var(--soft);font-size:14.5px;margin-top:26px}
+footer a{color:var(--amber)}
+</style></head><body>
+<div class="wrap">
+<header>
+<p class="eye">Try It Yourself · about 30 minutes</p>
+<h1>Build your own tool.</h1>
+<p class="soft">Seven short steps. You leave with one working page for one lesson of yours. You do not write any code.</p>
+</header>
+
+<nav class="prog" id="prog" aria-label="Steps"></nav>
+
+<!-- 0 -->
+<section class="step" data-t="Start">
+<p class="eye">Before you begin</p>
+<h2>How I decide what to build.</h2>
+<p class="soft">Everything in my hub started from something I liked in a tool I already used. You will follow the same four thoughts.</p>
+<div class="four">
+<div><b>1 · I like this</b><span>There is a feature I like in a tool I already use.</span></div>
+<div><b>2 · But I have a problem</b><span>It does not fit my lesson, or it sits somewhere separate.</span></div>
+<div><b>3 · So I build that part</b><span>Claude builds the feature I like, without the problem.</span></div>
+<div><b>4 · It goes in one place</b><span>One page, made of the parts I like.</span></div>
+</div>
+<div class="box"><b>Today's target is small.</b> Combine two tools you like into one page for one lesson. You do not need a hub.</div>
+<div class="box warn"><b>One rule before anything else.</b> Never type student names, NRIC numbers or grades into Claude. Use made-up names.</div>
+</section>
+
+<!-- 1 -->
+<section class="step" data-t="1 KAT" hidden>
+<p class="eye">Step 1 of 7 · 2 minutes</p>
+<h2>Choose your KAT.</h2>
+<p class="soft">Think of one lesson next term. Which learning process should technology enhance? Choose one.</p>
+<div class="kats" id="kats"></div>
+<label>The lesson I have in mind<small>Level, subject and topic. For example, Sec 1 Science, reading a vernier caliper.</small><input id="f-lesson" autocomplete="off"></label>
+</section>
+
+<!-- 2 -->
+<section class="step" data-t="2 Tools" hidden>
+<p class="eye">Step 2 of 7 · 3 minutes</p>
+<h2>Name two tools you like.</h2>
+<p class="soft">Pick tools you already use. Write the one feature you like in each. Then write the problem.</p>
+<div class="two">
+<label>Tool A<input id="f-a" placeholder="Kahoot" autocomplete="off"></label>
+<label>The feature I like in it<input id="f-af" placeholder="a fast quiz with points" autocomplete="off"></label>
+<label>Tool B<input id="f-b" placeholder="OneNote" autocomplete="off"></label>
+<label>The feature I like in it<input id="f-bf" placeholder="students write their working by hand" autocomplete="off"></label>
+</div>
+<label>My problem with using them as they are<small>For example, they are in two places, so students guess the answer without showing working.</small><textarea id="f-prob"></textarea></label>
+</section>
+
+<!-- 3 -->
+<section class="step" data-t="3 Goal" hidden>
+<p class="eye">Step 3 of 7 · 4 minutes</p>
+<h2>Describe the finished product.</h2>
+<p class="soft">Most people ask Claude many small questions. Describe where you want to end up, and let Claude plan the way there.</p>
+<label>What students see and do<small>Write it as if you are watching a student use it.</small><textarea id="f-stu" placeholder="write their working in a box, then choose an answer"></textarea></label>
+<label>What I see as the teacher<small>Leave this empty if you only need the student page today.</small><textarea id="f-tea" placeholder="every student's answer on one screen"></textarea></label>
+<h3>Your prompt</h3>
+<p class="soft">This is built from your answers. It ends with the three questions I always ask.</p>
+<div class="prompt" id="p-main"></div>
+<p class="need" id="need" hidden></p>
+<div class="row"><button class="btn go" type="button" data-copy="p-main">Copy the prompt</button><a class="btn" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude</a></div>
+<details><summary>Stuck? Three prompts you can borrow</summary>
+<p><b>Kahoot + OneNote.</b> I want a quiz page where my Sec 1 Science students write their working before they choose an answer, and I see every answer. The KAT is Support Assessment for Learning. It should work like Kahoot and OneNote together. Is this possible? How can we achieve it? Which tools do we need?</p>
+<p><b>PhET + Kahoot.</b> I want a page where my Sec 3 Physics students change the angle of a light ray and score points for hitting a target under water. The KAT is Foster Conceptual Change. It should work like PhET and Kahoot together. Is this possible? How can we achieve it? Which tools do we need?</p>
+<p><b>Padlet + exit ticket.</b> I want a page where each Sec 2 student posts one answer before leaving, and similar answers are grouped for me. The KAT is Facilitate Learning Together. It should work like Padlet and an exit ticket together. Is this possible? How can we achieve it? Which tools do we need?</p>
+</details>
+</section>
+
+<!-- 4 -->
+<section class="step" data-t="4 Build" hidden>
+<p class="eye">Step 4 of 7 · 12 minutes</p>
+<h2>Build it. Describe, try, correct.</h2>
+<ol>
+<li><b>Paste your prompt into Claude.</b> Read its plan. If it asks you questions, answer them.</li>
+<li><b>Say "Build the first version."</b> A working page appears beside the chat.</li>
+<li><b>Try it as a student.</b> Press every button. Answer every question, once correctly and once wrongly.</li>
+<li><b>Say what to change.</b> One change at a time works best. Repeat until it is right.</li>
+</ol>
+<h3>Things to type when it is not right</h3>
+<div class="tablewrap"><table>
+<tr><th>If</th><th>Type this</th><th></th></tr>
+<tr><td>Too much on screen</td><td id="c1">Show one question at a time, with large text.</td><td><button class="btn small" type="button" data-copy="c1">Copy</button></td></tr>
+<tr><td>The feedback only says right or wrong</td><td id="c2">When an answer is wrong, explain why in one sentence, then let the student try again.</td><td><button class="btn small" type="button" data-copy="c2">Copy</button></td></tr>
+<tr><td>The language is too hard</td><td id="c3">Use simpler words. My students are 13 years old.</td><td><button class="btn small" type="button" data-copy="c3">Copy</button></td></tr>
+<tr><td>Something does not work</td><td id="c4">Something is broken. Test every button yourself, tell me what you found, and fix it.</td><td><button class="btn small" type="button" data-copy="c4">Copy</button></td></tr>
+<tr><td>The science is wrong</td><td id="c5">Question 3 is wrong. The correct answer is … because … Check every other question for the same mistake.</td><td><button class="btn small" type="button" data-copy="c5">Copy</button></td></tr>
+<tr><td>You want your own questions</td><td id="c6">Replace the questions with these. Keep everything else the same.</td><td><button class="btn small" type="button" data-copy="c6">Copy</button></td></tr>
+</table></div>
+<div class="box"><b>You are the teacher in this conversation.</b> Claude can be wrong and still sound sure. Read every question and every answer before a student sees it.</div>
+</section>
+
+<!-- 5 -->
+<section class="step" data-t="5 Share" hidden>
+<p class="eye">Step 5 of 7 · 3 minutes</p>
+<h2>Check it, then share it.</h2>
+<h3>Check</h3>
+<ul class="check" data-k="chk">
+<li><input type="checkbox"><span>I answered every question myself, and the answers are correct.</span></li>
+<li><input type="checkbox"><span>There are no student names, NRIC numbers or grades anywhere in it.</span></li>
+<li><input type="checkbox"><span>It still serves the KAT I chose in step 1.</span></li>
+</ul>
+<h3>Share</h3>
+<ol>
+<li>What Claude builds is called an artifact. Open the <b>Share</b> menu on it and copy the link.</li>
+<li>Open the link on a device that is not signed in to your account. Check that it opens and works.</li>
+<li>Paste the link into SLS or Google Classroom, or make a QR code.</li>
+</ol>
+<div class="box"><b>This is enough for most lessons.</b> A quiz, a game or a simulation needs nothing more. The next two steps are for when you need more.</div>
+<div class="tablewrap"><table>
+<tr><th>I want to</th><th>Use</th><th>Go to</th></tr>
+<tr><td>Show my class a quiz, game or simulation</td><td>Claude's share link</td><td>You are done</td></tr>
+<tr><td>Save each student's answer, or see who has finished</td><td>Google Apps Script with a Google Sheet</td><td>Step 6</td></tr>
+<tr><td>Have a permanent page with a plain address</td><td>GitHub Pages</td><td>Step 7</td></tr>
+</table></div>
+</section>
+
+<!-- 6 -->
+<section class="step" data-t="6 Apps Script" hidden>
+<p class="eye">Step 6 of 7 · going further</p>
+<h2>Save answers with Google Apps Script.</h2>
+<p class="soft">A page from Claude forgets everything when it is closed. If you want to see each student's answer afterwards, something has to keep it. Google Apps Script does that, and it comes free with your Google account.</p>
+<h3>What it is, in plain words</h3>
+<div class="fit">
+<div><i>The page</i><b>What students see</b><span>The quiz or activity Claude built.</span></div>
+<div><i>Apps Script</i><b>The engine</b><span>A few lines of code that live inside a Google Sheet. It receives each answer.</span></div>
+<div><i>Google Sheet</i><b>The record book</b><span>One row for every answer, with the time.</span></div>
+<div><i>Google Drive</i><b>The filing cabinet</b><span>Files such as worksheet PDFs, if you need them.</span></div>
+</div>
+<p class="soft">This is how my own hub works. Apps Script runs the sign-in, the handing in and the marking, and Google Sheets keeps the records.</p>
+<h3>Ask Claude to set it up with you</h3>
+<div class="prompt" id="p-gas"></div>
+<div class="row"><button class="btn go" type="button" data-copy="p-gas">Copy the prompt</button></div>
+<h3>What the steps look like</h3>
+<ol>
+<li><b>Make a Google Sheet.</b> This is where the records go. Open <b>Extensions</b>, then <b>Apps Script</b>.</li>
+<li><b>Paste the code.</b> Claude gives you the code and names the files it goes into. Save.</li>
+<li><b>Deploy it as a web app.</b> Choose <b>Deploy</b>, then <b>New deployment</b>, and pick <b>Web app</b>. Fill in who the app runs as and who can open it, then press Deploy. Google asks you to approve the permissions.</li>
+<li><b>Copy the web app address.</b> It ends in <b>/exec</b>. This is the link you give students.</li>
+<li><b>After every change, deploy a new version.</b> Otherwise students keep seeing the old one.</li>
+</ol>
+<details><summary>What the code looks like</summary>
+<p class="soft">You do not need to write this. It is here so that it does not look mysterious when Claude gives you something similar. The first part opens your page. The second part adds one row to the Sheet.</p>
+<pre>function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index');
+}
+
+function saveAnswer(seat, answer) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  sheet.appendRow([new Date(), seat, answer]);
+  return 'Saved';
+}</pre>
+</details>
+<div class="box warn"><b>Before students use it.</b> Use seat numbers or made-up names in your first test. Check your school's rules before students sign in to anything you build. Keep the Sheet private to you.</div>
+</section>
+
+<!-- 7 -->
+<section class="step" data-t="7 GitHub" hidden>
+<p class="eye">Step 7 of 7 · going further</p>
+<h2>Give it a permanent address with GitHub.</h2>
+<p class="soft">GitHub is a free place to keep files online. It has two uses for a teacher. It keeps every version of your page, and its Pages feature turns a file into a public web page. This page you are reading is on GitHub Pages.</p>
+<h3>The steps</h3>
+<ol>
+<li><b>Get the page as one file.</b> Ask Claude for a single HTML file that you can host, and download it.</li>
+<li><b>Make a free account</b> at github.com.</li>
+<li><b>Create a new repository.</b> A repository is a folder for one project. Give it a short name such as my-lessons, and choose <b>Public</b>.</li>
+<li><b>Upload your file.</b> Choose <b>Add file</b>, then <b>Upload files</b>. Drag the file in and press <b>Commit changes</b>.</li>
+<li><b>Turn on Pages.</b> Open <b>Settings</b>, then <b>Pages</b>. Set Source to <b>Deploy from a branch</b> and choose the <b>main</b> branch.</li>
+<li><b>Open your address.</b> Wait a few minutes. Your page is at yourname.github.io/my-lessons/yourfile.html.</li>
+</ol>
+<p class="soft">To change the page later, upload a file with the same name again. The address stays the same.</p>
+<h3>Ask Claude to walk you through it</h3>
+<div class="prompt plain" id="p-gh">I want to put this page online with GitHub Pages. I have never used GitHub. First give me the page as a single HTML file that I can host. Then walk me through it one step at a time, and wait for me to say done after each step. If I send a screenshot, tell me where to click.</div>
+<div class="row"><button class="btn go" type="button" data-copy="p-gh">Copy the prompt</button></div>
+<div class="box warn"><b>A GitHub page is public.</b> Anyone with the address can open it. Never put student names, NRIC numbers or grades in a public page.</div>
+<h3>How the pieces fit together</h3>
+<div class="fit">
+<div><i>GitHub</i><b>Holds the pages</b><span>Slides, games and screens. Public, with a plain address.</span></div>
+<div><i>Apps Script</i><b>Runs the engine</b><span>Sign-in, saving answers, handing in.</span></div>
+<div><i>Sheets and Drive</i><b>Keep the records</b><span>Private to you.</span></div>
+</div>
+<p class="soft">Menu names on GitHub and Google change from time to time. If a button is not where this page says, send Claude a screenshot and ask where to click.</p>
+<h3>Your one sentence for Consolidation</h3>
+<p class="soft">You will say this to your partner in the last part of the session.</p>
+<div class="prompt plain" id="p-say"></div>
+</section>
+
+<div class="nav"><button class="btn" type="button" id="back">Back</button><button class="btn go" type="button" id="next">Next</button></div>
+<footer>Cedric &amp; Arnold, Assumption English School. Your answers stay in this browser and are not sent anywhere. <a href="./">All links for today</a> · <a href="guide.html">Claude Guide for Teachers</a></footer>
+</div>
+
+<script>
+(function(){
+var KATS=[['Support Assessment for Learning','Turn assessment data into clear insights that help students advance.'],['Embed Scaffolding','Give students support at the moment they need it.'],['Provide Differentiation','Use data about students to tailor instruction for different learners.'],['Enable Personalisation','Let students chart their own learning path and get tailored responses.'],['Develop Metacognition','Help students monitor, organise and refine their thinking.'],['Increase Motivation','Help students take ownership and persist in their learning.'],['Foster Conceptual Change','Let students show and externalise what they understand.'],['Facilitate Learning Together',"Let students build on one another's ideas in groups."]];
+var K='build-own-tool-v1',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){st={}}
+function save(){try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
+function $(i){return document.getElementById(i)}
+var steps=[].slice.call(document.querySelectorAll('.step')),prog=$('prog'),cur=Math.min(steps.length-1,Math.max(0,st.cur|0));
+steps.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.textContent=s.getAttribute('data-t');b.onclick=function(){go(i)};prog.appendChild(b)});
+function go(i){cur=Math.max(0,Math.min(steps.length-1,i));st.cur=cur;st.seen=Math.max(st.seen|0,cur);save();
+ steps.forEach(function(s,k){s.hidden=k!==cur});
+ [].forEach.call(prog.children,function(b,k){if(k===cur)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');b.classList.toggle('done',k<(st.seen|0)&&k!==cur)});
+ $('back').style.visibility=cur?'visible':'hidden';$('next').textContent=cur===0?'Begin':cur===steps.length-1?'Back to the start':cur===5?'Go further':'Next';
+ var a=prog.children[cur];if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest',inline:'center'});render();window.scrollTo(0,0)}
+$('back').onclick=function(){go(cur-1)};$('next').onclick=function(){go(cur===steps.length-1?0:cur+1)};
+var kb=$('kats');KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span>';b.firstChild.textContent=k[0];b.lastChild.textContent=k[1];b.onclick=function(){st.kat=k[0];save();render()};kb.appendChild(b)});
+var F=['lesson','a','af','b','bf','prob','stu','tea'];
+F.forEach(function(f){var e=$('f-'+f);e.value=st[f]||'';e.addEventListener('input',function(){st[f]=e.value;save();render()})});
+function v(f,d){var x=(st[f]||'').trim().replace(/[.\s]+$/,'');return x||d}
+function lc(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+function render(){
+ [].forEach.call(kb.children,function(b){b.setAttribute('aria-pressed',b.firstChild.textContent===st.kat)});
+ var miss=[];if(!st.kat)miss.push('your KAT (step 1)');if(!(st.a||'').trim()||!(st.b||'').trim())miss.push('your two tools (step 2)');if(!(st.stu||'').trim())miss.push('what students do');
+ var A=v('a','[tool A]'),B=v('b','[tool B]'),af=v('af',''),bf=v('bf','');
+ var p='I want a page where my '+v('lesson','[level and subject]')+' students '+lc(v('stu','[what students see and do]'))+'.';
+ if((st.tea||'').trim())p+=' As the teacher, I want to see '+lc(v('tea',''))+'.';
+ p+='\nThe KAT is '+(st.kat||'[your KAT]')+'.';
+ p+='\nIt should work like '+A+' and '+B+' together.';
+ if(af||bf)p+='\nWhat I like in '+A+': '+lc(af||'[the feature]')+'. What I like in '+B+': '+lc(bf||'[the feature]')+'.';
+ if((st.prob||'').trim())p+='\nMy problem now is that '+lc(v('prob',''))+'.';
+ p+='\nIs this possible? How can we achieve it? Which tools do we need?\nUse made-up names in any example. Ask me questions before you build.';
+ $('p-main').textContent=p;
+ var n=$('need');n.hidden=!miss.length;n.textContent=miss.length?'Still to fill in: '+miss.join(', ')+'.':'';
+ $('p-gas').textContent='I want this page to save each student’s answer in a Google Sheet using Google Apps Script, so that I can see '+lc(v('tea','every answer afterwards'))+'. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me to say done after each step. Students will enter a seat number, not a name. Use made-up names in any example.';
+ $('p-say').textContent='I combined '+A+' and '+B+' into one page so that my '+v('lesson','[level and subject]')+' students can '+lc(v('stu','[what students do]'))+'. The KAT is '+(st.kat||'[your KAT]')+'.';
+}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-copy]');if(!b)return;var el=$(b.getAttribute('data-copy')),t=el.textContent,old=b.textContent;
+ function ok(){b.textContent='Copied';setTimeout(function(){b.textContent=old},1400)}
+ function sel(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected. Press Ctrl+C';setTimeout(function(){b.textContent=old},2600)}
+ try{navigator.clipboard.writeText(t).then(ok,sel)}catch(x){sel()}});
+[].forEach.call(document.querySelectorAll('ul.check'),function(u){var k=u.getAttribute('data-k');[].forEach.call(u.querySelectorAll('input'),function(c,i){c.checked=!!st[k+i];c.onchange=function(){st[k+i]=c.checked;save()}})});
+go(cur);
+})();
+</script>
+</body></html>
