@@ -1,14 +1,12 @@
 {
-  "build": "2026-11-11-cinema-library",
-  "seq": 48,
-  "ref": "f4c64f426b5978d6221b9788b24102aa183f9c07",
-  "title": "learnwithmrcedric: the Library as chapter covers, and the student hub at night",
+  "build": "2026-11-14-slim-doors",
+  "seq": 49,
+  "ref": "976efd2ee93755b3d0987740dfd1cd985fcbf74b",
+  "title": "learnwithmrcedric: the student doors fold away inside a room",
   "notes": [
     "No server code to paste: the pages update themselves within about ten minutes",
-    "The Library opens on a wall of chapter covers with painted art. Each cover shows which classes have the chapter and whether a worksheet still needs a file",
-    "Tap a cover to open the chapter: a moving banner with the classes to give it to, the lessons as tiles (Open slides, Homework) and the topical worksheets",
-    "G1 Computing is now a course in the Library. Its Coaches and books open on the Computing page",
-    "Students see a dim night observatory behind their greeting, softly glowing doors, and their chapters as covers in Lessons"
+    "Student hub: once a student opens Lessons, Homework, My files, Arcade or Me, the four doors fold into one slim strip and the title shrinks, so the work below gets the room. They open out again on the start page",
+    "The Staff sharing chapter cover uses the observatory picture"
   ],
   "files": [
     {
@@ -81,7 +79,7 @@
       "name": "Student",
       "type": "HTML",
       "path": "Student.html",
-      "sha256": "5e6a107caa27cc1304aa718a5ced8317375c4167b3eabba67be31ffbb02ac225"
+      "sha256": "d485f2971263865ac376088b42d75105a32c0f09c58f73cee52ae012abbe5668"
     },
     {
       "name": "Styles",
@@ -103,6 +101,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 49,
+      "build": "2026-11-14-slim-doors",
+      "ref": "976efd2ee93755b3d0987740dfd1cd985fcbf74b",
+      "needsServer": 47,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "aefb2c8215c0a5370a7f3545e7ffe57066bc57110e2254a8706c380ab29665ad"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "d485f2971263865ac376088b42d75105a32c0f09c58f73cee52ae012abbe5668"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
+        }
+      ]
+    },
     {
       "seq": 48,
       "build": "2026-11-11-cinema-library",
@@ -508,65 +564,6 @@
           "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
         }
       ]
-    },
-    {
-      "seq": 33,
-      "build": "2026-10-27-old-pages-retired",
-      "ref": "f4c64f426b5978d6221b9788b24102aa183f9c07",
-      "needsServer": 33,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "aefb2c8215c0a5370a7f3545e7ffe57066bc57110e2254a8706c380ab29665ad"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "5e6a107caa27cc1304aa718a5ced8317375c4167b3eabba67be31ffbb02ac225"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ],
-      "pinned": true
     }
   ],
   "server": [
