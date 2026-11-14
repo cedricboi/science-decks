@@ -1,6 +1,6 @@
 {
  "about": "The list of lessons on this site. index.html, Live Board and learnwithmrcedric read it. Live Board and Claude update it when a lesson is added; you never need to edit it by hand.",
- "updated": "2026-10-10T11:46:26.580Z",
+ "updated": "2026-11-14T09:48:03.000Z",
  "liveboard": "https://script.google.com/macros/s/AKfycbx-MTv5lHHVpwgMB0dz1Zo-8iwln05emI8GGv_LJIBAjCEG4po_3ZY050uXdZYgINOYjA/exec",
  "subjects": [
   {
@@ -318,6 +318,36 @@
        "note": "Revise and practise on your own",
        "kind": "tool",
        "small": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "staff",
+   "name": "Staff sharing",
+   "color": "#B36A00",
+   "groups": [
+    {
+     "name": "Chapter 1 — Using Claude to Achieve",
+     "items": [
+      {
+       "file": "Staff-Claude.html",
+       "num": "1.1",
+       "title": "Using Claude to Achieve",
+       "note": "The slides for the sharing session",
+       "kind": "deck",
+       "topicId": "staff-claude-1",
+       "live": false
+      },
+      {
+       "file": "share/index.html",
+       "num": "1.2",
+       "title": "Try It Yourself: links for today",
+       "note": "The game, the lab, Claude and the guide",
+       "kind": "deck",
+       "topicId": "staff-claude-2",
+       "live": false
       }
      ]
     }
