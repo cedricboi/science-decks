@@ -508,15 +508,15 @@
       ]
     },
     {
-      "seq": 42,
-      "build": "2026-10-27-computing-students",
-      "ref": "96216ae0a2b22668e0c73bf09557bc8f41ed7216",
-      "needsServer": 34,
+      "seq": 33,
+      "build": "2026-10-27-old-pages-retired",
+      "ref": "f4c64f426b5978d6221b9788b24102aa183f9c07",
+      "needsServer": 33,
       "files": [
         {
           "name": "Computing",
           "path": "Computing.html",
-          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
+          "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
         },
         {
           "name": "Guide",
@@ -526,12 +526,12 @@
         {
           "name": "Homework",
           "path": "Homework.html",
-          "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
+          "sha256": "6bf9d3dc2557396d88942ba2fa98a7c57785624adc43040fb233936421c89caa"
         },
         {
           "name": "HubTeacher",
           "path": "HubTeacher.html",
-          "sha256": "d6aa9ef1b666e9891015bcd4e6dd6adedf361e3018741df136ea4ab6397a872c"
+          "sha256": "aefb2c8215c0a5370a7f3545e7ffe57066bc57110e2254a8706c380ab29665ad"
         },
         {
           "name": "Ink",
@@ -551,7 +551,7 @@
         {
           "name": "Student",
           "path": "Student.html",
-          "sha256": "7512e7226463d519e35b837eff8de159fe21ad8616964147c81ac2e3cd902b2c"
+          "sha256": "5e6a107caa27cc1304aa718a5ced8317375c4167b3eabba67be31ffbb02ac225"
         },
         {
           "name": "Styles",
@@ -563,7 +563,8 @@
           "path": "Teacher.html",
           "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
         }
-      ]
+      ],
+      "pinned": true
     }
   ],
   "server": [
