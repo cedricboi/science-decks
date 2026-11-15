@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lesson slides · demo copy</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#12163a;color:#eef1f8;font:18px/1.5 system-ui,sans-serif}p{max-width:34em;padding:0 20px;text-align:center}a{color:#f2b84b}</style>
+</head><body><p id="m">Opening the slides…</p>
+<script>
+/* Demo only. Loads one of the real lesson slides and connects it to the demo hub in the tab that opened it,
+   so nobody signs in and nothing reaches the real class records. */
+(function(){
+  function BRIDGE(){
+    var real=window.fetch;
+    function hub(){try{var o=window.opener;return o&&!o.closed&&o.__srv?o:null}catch(e){return null}}
+    function ask(url,o){var H=hub();if(!H)return null;var out;
+      try{if(o&&String(o.method||'').toUpperCase()==='POST'){var ev=H.JSON.parse(JSON.stringify({postData:{contents:String(o.body||'{}')},parameter:{}}));out=H.__srv.doPost(ev).getContent()}
+        else{var q={};new URL(url).searchParams.forEach(function(v,k){q[k]=v});var r=H.__srv.doGet(H.JSON.parse(JSON.stringify({parameter:q,parameters:{}})));out=r&&r.getContent?r.getContent():'{}'}
+      }catch(e){out=JSON.stringify({ok:false,error:'The demo hub could not answer.'})}
+      return String(out)}
+    window.fetch=function(u,o){var url=String(u&&u.url||u);
+      if(!/script\.google(usercontent)?\.com/.test(url))return real.apply(this,arguments);
+      if(!hub())return Promise.reject(new TypeError('The demo hub tab is closed.'));
+      return new Promise(function(ok){setTimeout(function(){ok(new Response(ask(url,o),{status:200,headers:{'Content-Type':'application/json'}}))},25)})};
+    try{var sb=navigator.sendBeacon&&navigator.sendBeacon.bind(navigator);if(sb)navigator.sendBeacon=function(u,d){if(/script\.google(usercontent)?\.com/.test(String(u))){try{ask(String(u),{method:'POST',body:typeof d==='string'?d:'{}'})}catch(e){}return true}return sb(u,d)}}catch(e){}
+    // The presenter view never asks for the PIN in the demo.
+    try{var H=hub();if(H&&/(?:^#|&)present(?:&|$)/.test(location.hash)&&!/(?:^#|&)tk=tk_/.test(location.hash))sessionStorage.setItem('liveboard.presenter',String(H.__srv.teacherPin_()))}catch(e){}
+    // With no demo hub tab, look at the slides without signing in.
+    if(!hub()){var n=0,t=setInterval(function(){var b=document.querySelector('.lbx-skip:not([hidden])');if(b){b.click();clearInterval(t)}else if(++n>120)clearInterval(t)},250)}
+  }
+  var d=new URLSearchParams(location.search).get('d')||'',m=document.getElementById('m');
+  if(!/^[A-Za-z0-9][\w.-]*\.html$/.test(d)){m.innerHTML='No lesson was chosen. Open the slides from <a href="hub.html">the demo hub</a>.';return}
+  fetch('../'+d,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.text()}).then(function(html){
+    var tag='<script>('+BRIDGE.toString()+')();<\/script>';
+    var i=html.search(/<head[^>]*>/i);
+    if(i>=0){var e=html.indexOf('>',i)+1;html=html.slice(0,e)+tag+html.slice(e)}else html=tag+html;
+    document.open();document.write(html);document.close();
+  }).catch(function(){m.innerHTML='The slides could not be loaded. Check the internet connection, then open them again from <a href="hub.html">the demo hub</a>.'});
+})();
+</script></body></html>
