@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Built with Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* One screen on a projector: a short heading and three columns of small cards. Single dark look on purpose, to match the slides. */
+:root{color-scheme:dark;--night:#070a1c;--deep:#10143a;--ink:#eef1f8;--soft:#b9c1de;--amber:#f2b84b;--line:rgba(238,241,248,.2);--glass:rgba(20,25,62,.78);
+--display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Nunito Sans","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--night);color:var(--ink);font:400 16px/1.4 var(--body);
+background-image:radial-gradient(1px 1px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 72% 9%,#fff 50%,transparent 51%),radial-gradient(2px 2px at 88% 34%,var(--amber) 50%,transparent 51%),radial-gradient(1px 1px at 34% 46%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 58% 71%,#fff 50%,transparent 51%),radial-gradient(ellipse at 70% 0%,rgba(110,95,215,.35),transparent 60%),linear-gradient(180deg,var(--night),var(--deep))}
+.wrap{max-width:1500px;margin:0 auto;padding-block:clamp(14px,2.4vh,26px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:6px 30px;margin-bottom:clamp(10px,1.8vh,18px)}
+.eye{margin:0;font:700 12px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+h1{margin:2px 0 0;font:800 clamp(30px,4.2vw,50px)/1 var(--display);letter-spacing:-.02em}
+header p.how{margin:0;max-width:44ch;color:var(--soft);font-size:15.5px}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.4vw,22px)}
+h2{margin:0 0 8px;font:800 19px var(--display);color:var(--amber);display:flex;align-items:baseline;gap:10px}
+h2 small{font:600 13px var(--body);color:var(--soft)}
+.stack{display:grid;gap:8px}
+.c{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;min-width:0;padding:9px 14px 10px;border-radius:13px;background:var(--glass);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+a.c{transition:transform .15s ease,border-color .15s ease}a.c:hover{transform:translateY(-2px);border-color:var(--amber)}a.c:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.c b{font:800 18px/1.15 var(--display)}
+.c span{grid-column:1;color:var(--soft);font-size:14.5px;line-height:1.3}
+.c i{grid-column:1;font:700 11.5px var(--body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#d9c08a;margin-top:2px}
+.c em{grid-column:2;grid-row:1/span 3;font:800 12px var(--body);font-style:normal;letter-spacing:.08em;text-transform:uppercase;padding:6px 11px;border-radius:99px;background:var(--amber);color:#12163a;white-space:nowrap}
+.c em.in{background:transparent;border:1px solid var(--line);color:var(--soft)}
+footer{margin-top:clamp(10px,1.6vh,16px);padding-top:10px;border-top:1px solid var(--line);color:var(--soft);font-size:14.5px;display:flex;flex-wrap:wrap;gap:4px 28px;justify-content:space-between}
+footer b{color:var(--ink)}
+@media (max-width:1000px){.cols{grid-template-columns:1fr}}
+@media (min-width:1001px) and (max-height:900px){.stack{gap:6px}.c{padding:6px 13px 7px}.c b{font-size:17px}.c span{font-size:14px;line-height:1.25}.c i{font-size:10.5px;margin-top:1px}h2{margin-bottom:5px;font-size:17px}h1{font-size:38px}header{margin-bottom:8px}footer{margin-top:8px;padding-top:7px;font-size:13.5px}.wrap{padding-block:10px}}
+@media (prefers-reduced-motion:reduce){a.c{transition:none}}
+</style></head><body><div class="wrap">
+<header><div><p class="eye">Mr Cedric · Assumption English School</p><h1>Everything I built with Claude.</h1></div>
+<p class="how">I do not write code. I describe the finished product, try it as a student, and say what to change. A gold label opens the real thing.</p></header>
+<div class="cols">
+<section><h2>For my lessons <small>what students use</small></h2><div class="stack">
+<a class="c" href="https://cedricboi.github.io/science-decks/share/hub.html" target="_blank" rel="noopener"><b>Teacher Hub and student hub</b><span>Assign, teach, collect, mark, return and track, in one place.</span><i>Google Apps Script · Google Sheets · GitHub</i><em>Open demo</em></a>
+<a class="c" href="https://cedricboi.github.io/science-decks/share/deck.html?d=Phy1-L5.html" target="_blank" rel="noopener"><b>Interactive lesson slides</b><span>Each student has the slides, with a live model or a question on every slide.</span><i>One HTML file per lesson</i><em>Open lesson</em></a>
+<div class="c"><b>AfL inside the slides</b><span>An answers wall, a check-in, an exit ticket and a live class quiz.</span><i>Replaces Padlet, ClassPoint, Kahoot and Blooket</i><em class="in">In the slides</em></div>
+<div class="c"><b>Worksheets on the iPad</b><span>Students write on the PDF. Claude marks first, then I check and return.</span><i>Ticks, crosses and comments on the script</i><em class="in">In the hub</em></div>
+<div class="c"><b>Study Buddy question banks</b><span>Past-paper practice by topic, with hints and a record of mistakes.</span><i>Physics and Lower Secondary Science</i><em class="in">Student sign-in</em></div>
+<div class="c"><b>Computing Coach</b><span>Self-paced spreadsheet tasks that check each student's file.</span><i>So I can help the students who need me most</i><em class="in">In the hub</em></div>
+</div></section>
+<section><h2>To play and explore <small>games and live models</small></h2><div class="stack">
+<a class="c" href="https://academy-rift.onrender.com/" target="_blank" rel="noopener"><b>Academy Rift</b><span>A battle game where every turn starts with a question.</span><i>Hosted on Render · my own characters and music</i><em>Play</em></a>
+<a class="c" href="https://cedricboi.github.io/science-decks/share/caliper.html" target="_blank" rel="noopener"><b>Caliper and Micrometer Lab</b><span>A live instrument that students handle and read.</span><i>Drawn from real dimensions</i><em>Open lab</em></a>
+<div class="c"><b>Games inside the slides</b><span>Tool Call and other short games where the science is the rule.</span><i>Points go to the hub</i><em class="in">In the slides</em></div>
+<div class="c"><b>Avatar shop and night market</b><span>Points for good work buy avatar items, and the class walks around together.</span><i>A reason to hand in on time</i><em class="in">In the hub</em></div>
+<div class="c"><b>3D knot lessons</b><span>Step-by-step knots in 3D for new NPCC cadets.</span><i>Started with the figure-of-eight</i><em class="in">For my CCA</em></div>
+<div class="c"><b>Taipei Walkabout</b><span>A walk through real street views to practise Mandarin.</span><i>Google Street View · recorded voices</i><em class="in">Personal project</em></div>
+</div></section>
+<section><h2>For my own work <small>what saves me time</small></h2><div class="stack">
+<div class="c"><b>Exam papers and answer keys</b><span>Papers in the school format, with a table of specifications and an explained key.</span><i>Word files, ready to print</i><em class="in">On my laptop</em></div>
+<div class="c"><b>Quiz and worksheet makers</b><span>Textbook pages become a worksheet or a Blooket file.</span><i>Reusable instructions that Claude follows</i><em class="in">On my laptop</em></div>
+<div class="c"><b>Quest Journal</b><span>A desk screen that shows my calendar, deadlines and to-dos.</span><i>Google Apps Script · a small tablet</i><em class="in">On my desk</em></div>
+<div class="c"><b>POA Coach</b><span>Practice questions built for a colleague's subject.</span><i>The same idea, another department</i><em class="in">For a colleague</em></div>
+<a class="c" href="https://cedricboi.github.io/science-decks/Staff-Claude.html" target="_blank" rel="noopener"><b>These slides</b><span>The slides, their editing Studio and the recordings in them.</span><i>Voice by ElevenLabs · pictures from prompts Claude wrote</i><em>Open slides</em></a>
+<a class="c" href="https://cedricboi.github.io/science-decks/share/build.html" target="_blank" rel="noopener"><b>Build Your Own Tool</b><span>Seven guided steps that write your first prompt with you.</span><i>Start here after the session</i><em>Start</em></a>
+</div></section>
+</div>
+<footer><span><b>What Claude did:</b> the code, the drawings, the hosting steps and the fixes.</span><span><b>What I did:</b> chose what to build, tested every part as a student, and kept student data out of public pages.</span></footer>
+</div></body></html>
