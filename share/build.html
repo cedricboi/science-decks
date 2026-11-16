@@ -22,7 +22,7 @@ p{margin:8px 0}.soft{color:var(--soft)}
 .step{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:24px clamp(16px,4vw,30px);display:grid;gap:6px}
 .kats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:10px}
 .kats button{text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:400 15px/1.35 var(--body);cursor:pointer;display:grid;gap:2px}
-.kats button b{font:800 17px var(--display)}.kats button span{color:var(--soft)}.kats button em{font-style:normal;font-size:14px;color:var(--ink);margin-top:5px;padding-top:6px;border-top:1px dashed var(--line)}#katcount{color:var(--amber);white-space:nowrap}.kats button[aria-pressed="true"] b::after{content:" \2713";color:var(--amber)}
+.kats button b{font:800 17px var(--display)}.kats button span{color:var(--soft)}.kats button em{font-style:normal;font-size:14px;color:var(--ink);margin-top:5px;padding-top:6px;border-top:1px dashed var(--line)}#katcount{color:var(--amber);white-space:nowrap}.kc{margin:0}.linkbtn{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}#edbar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:#fff;color:#12163a;border-bottom:4px solid var(--amber);font-size:15px}#edbar b{font:800 16px var(--display)}#edhelp{flex:1 1 260px;min-width:0}#edbar input{font:600 15px var(--body);padding:7px 10px;border-radius:10px;border:2px solid #4a5196;background:#fff;color:#12163a;width:150px}#edbar .btn{border-color:#4a5196;color:#12163a;background:#fff}#edbar .btn.go{background:var(--amber);border-color:var(--amber)}#edmsg{flex:1 1 100%;font-weight:700;min-height:20px}#edmsg.bad{color:#b3261e}#edmsg.ok{color:#1c7a3d}body.editing [data-ek]{outline:2px dashed rgba(242,184,75,.75);outline-offset:3px;border-radius:4px;cursor:text;min-width:20px}body.editing [data-ek]:focus{outline:2px solid var(--amber);background:rgba(242,184,75,.1)}body.editing .prog{top:0;position:static}.edpanel{margin-top:12px;padding:14px;border-radius:14px;border:2px dashed var(--amber);background:var(--field);display:grid;gap:10px}.edpanel h4{margin:0;font:800 17px var(--display);color:var(--amber)}.edpanel p{margin:0;font-size:14px;color:var(--soft)}.edpanel .krow{display:grid;grid-template-columns:1fr 1.4fr 1.4fr auto;gap:6px;align-items:start}.edpanel input,.edpanel textarea{width:100%;font:400 14px/1.4 var(--body);padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#070a1c;color:var(--ink)}.edpanel textarea{min-height:150px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:13px}.edpanel textarea.sm{min-height:70px}.edpanel code{color:var(--amber);font-size:13px}@media (max-width:700px){.edpanel .krow{grid-template-columns:1fr}}.kats button[aria-pressed="true"] b::after{content:" \2713";color:var(--amber)}
 .kats button[aria-pressed="true"]{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset}
 label{display:grid;gap:5px;margin-top:12px;font-weight:700}
 label small{font-weight:400;color:var(--soft);font-size:14.5px}
@@ -56,6 +56,7 @@ summary{cursor:pointer;font-weight:800;padding:10px 0}
 footer{color:var(--soft);font-size:14.5px;margin-top:26px}
 footer a{color:var(--amber)}
 </style></head><body>
+<div id="edbar" hidden><b>Editing.</b><span id="edhelp">Click any words to change them. The KATs are edited in step 1 and the prompt in step 3.</span><input id="edpass" type="password" autocomplete="off" placeholder="Passcode" aria-label="Passcode for saving"><button class="btn go small" type="button" id="edsave">Save for everyone</button><button class="btn small" type="button" id="eddown">Download a backup</button><button class="btn small" type="button" id="edreset">Back to the original</button><button class="btn small" type="button" id="edstop">Stop editing</button><span id="edmsg" role="status"></span></div>
 <div class="wrap">
 <header>
 <p class="eye">Try It Yourself · steps 1 to 5 today</p>
@@ -84,8 +85,10 @@ footer a{color:var(--amber)}
 <section class="step" data-t="1 KAT" hidden>
 <p class="eye">Step 1 of 7 · 2 minutes</p>
 <h2>Choose your KAT.</h2>
-<p class="soft">Think of one lesson next term. Which learning processes should technology enhance? Choose one or more. Press a KAT again to remove it. <b id="katcount" aria-live="polite"></b></p>
+<p class="soft">Think of one lesson next term. Which learning processes should technology enhance? Choose one or more. Press a KAT again to remove it.</p>
+<p class="kc"><b id="katcount" aria-live="polite"></b></p>
 <div class="kats" id="kats"></div>
+<div class="edpanel" id="kated" hidden></div>
 <label>Level and subject<small>For example, Sec 1 Science.</small><input id="f-lesson" placeholder="Sec 1 Science" autocomplete="off"></label>
 </section>
 
@@ -113,6 +116,7 @@ footer a{color:var(--amber)}
 <h3>Your prompt</h3>
 <p class="soft">This is built from your answers. It ends with the three questions I always ask.</p>
 <div class="prompt" id="p-main"></div>
+<div class="edpanel" id="tpled" hidden></div>
 <p class="need" id="need" hidden></p>
 <div class="row"><button class="btn go" type="button" data-copy="p-main">Copy the prompt</button><a class="btn" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude</a></div>
 <details><summary>Stuck? Three prompts you can borrow</summary>
@@ -241,12 +245,13 @@ function saveAnswer(seat, answer) {
 </section>
 
 <div class="nav"><button class="btn" type="button" id="back">Back</button><button class="btn go" type="button" id="next">Next</button></div>
-<footer>Cedric &amp; Arnold, Assumption English School. Your answers stay in this browser and are not sent anywhere. <a href="./">All links for today</a> · <a href="guide.html">Claude Guide for Teachers</a></footer>
+<footer>Cedric &amp; Arnold, Assumption English School. Your answers stay in this browser and are not sent anywhere. <a href="./">All links for today</a> · <a href="guide.html">Claude Guide for Teachers</a> · <button type="button" class="linkbtn" id="edstart">Edit this page</button></footer>
 </div>
 
 <script>
 (function(){
-var KATS=[
+var RELAY="https://script.google.com/macros/s/AKfycbzJvIRMTmLgr-1nWxwL8cEgxubEfknXZjtq-W6i0BpfXFicy58LoBrOl4f_BmkeCGXH/exec";
+var KATS0=[
 ['Support Assessment for Learning','Turn assessment data into clear insights that help students advance.','An exit ticket that shows which question most of the class got wrong.'],
 ['Embed Scaffolding','Give students support at the moment they need it.','A worked example that reveals one hint at a time when a student is stuck.'],
 ['Provide Differentiation','Use data about students to tailor instruction for different learners.','A quiz that gives an easier or a harder next question, based on the last answer.'],
@@ -255,6 +260,11 @@ var KATS=[
 ['Increase Motivation','Help students take ownership and persist in their learning.','Points and badges for handing in work on time.'],
 ['Foster Conceptual Change','Let students show and externalise what they understand.','Students move a live model, then explain in writing what changed.'],
 ['Facilitate Learning Together',"Let students build on one another's ideas in groups.",'A wall where every student posts an answer and replies to one other answer.']];
+var TPL0={
+ main:"I want a page where my {lesson} students {students}.[[ As the teacher, I want to see {teacher}.]]\n{kats}\nIt should work like {toolA} and {toolB} together.[[\nWhat I like in {toolA}: {likeA|[the feature]}. What I like in {toolB}: {likeB|[the feature]}.]][[\nMy problem now is that {problem}.]]\nIs this possible? How can we achieve it? Which tools do we need?\nUse made-up names in any example. Ask me questions before you build.",
+ gas:"I want this page to save each student’s answer in a Google Sheet using Google Apps Script, so that I can see {teacher|every answer afterwards}. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me to say done after each step. Students will enter a seat number, not a name. Use made-up names in any example.",
+ say:"I combined {toolA} and {toolB} into one page so that my {lesson} students can {students|[what students do]}. {kats}"};
+var KATS=KATS0.map(function(k){return k.slice()}),TPL={main:TPL0.main,gas:TPL0.gas,say:TPL0.say};
 var K='build-own-tool-v1',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){st={}}
 if(!Array.isArray(st.kats))st.kats=st.kat?[st.kat]:[];
 function save(){try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
@@ -267,33 +277,87 @@ function go(i){cur=Math.max(0,Math.min(steps.length-1,i));st.cur=cur;st.seen=Mat
  $('back').style.visibility=cur?'visible':'hidden';$('next').textContent=cur===0?'Begin':cur===steps.length-1?'Back to the start':cur===5?'Go further':'Next';
  var a=prog.children[cur];if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest',inline:'center'});render();window.scrollTo(0,0)}
 $('back').onclick=function(){go(cur-1)};$('next').onclick=function(){go(cur===steps.length-1?0:cur+1)};
-var kb=$('kats');KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span><em></em>';b.children[0].textContent=k[0];b.children[1].textContent=k[1];b.children[2].textContent='Example: '+k[2];b.onclick=function(){var p=st.kats.indexOf(k[0]);if(p<0)st.kats.push(k[0]);else st.kats.splice(p,1);save();render()};kb.appendChild(b)});
+var kb=$('kats');
+function buildKats(){kb.textContent='';KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span><em></em>';b.children[0].textContent=k[0];b.children[1].textContent=k[1];b.children[2].textContent=k[2]?'Example: '+k[2]:'';b.children[2].hidden=!k[2];b.onclick=function(){if(document.body.classList.contains('editing'))return;var p=st.kats.indexOf(k[0]);if(p<0)st.kats.push(k[0]);else st.kats.splice(p,1);save();render()};kb.appendChild(b)})}
+buildKats();
 function katText(){var a=KATS.map(function(k){return k[0]}).filter(function(n){return st.kats.indexOf(n)>=0});if(!a.length)return 'The KAT is [your KAT].';if(a.length===1)return 'The KAT is '+a[0]+'.';return 'The KATs are '+a.slice(0,-1).join(', ')+' and '+a[a.length-1]+'.'}
 var F=['lesson','a','af','b','bf','prob','stu','tea'];
 F.forEach(function(f){var e=$('f-'+f);e.value=st[f]||'';e.addEventListener('input',function(){st[f]=e.value;save();render()})});
 function v(f,d){var x=(st[f]||'').trim().replace(/[.\s]+$/,'');return x||d}
-function lc(s){return s.charAt(0).toLowerCase()+s.slice(1)}
+function lc(s){return s?s.charAt(0).toLowerCase()+s.slice(1):s}
+/* The prompt is written from a template. {name} is filled from the answers. {name|words} uses the words when the answer is empty. A part inside [[ ]] is left out when all its optional answers are empty. */
+var OPT={teacher:1,likeA:1,likeB:1,problem:1};
+function vals(){return {lesson:v('lesson','[level and subject]'),students:lc(v('stu','')),teacher:lc(v('tea','')),kats:katText(),toolA:v('a','[tool A]'),toolB:v('b','[tool B]'),likeA:lc(v('af','')),likeB:lc(v('bf','')),problem:lc(v('prob',''))}}
+function fill(t,V){
+ function sub(x,inBlock){return x.replace(/\{(\w+)(?:\|([^}]*))?\}/g,function(m,n,d){if(!(n in V))return m;if(V[n])return V[n];if(d!=null)return d;if(n==='students')return '[what students see and do]';return OPT[n]?(inBlock?'[...]':''):m})}
+ t=String(t).replace(/\[\[([\s\S]*?)\]\]/g,function(m,body){var any=false,has=false;body.replace(/\{(\w+)(?:\|[^}]*)?\}/g,function(mm,n){if(OPT[n]){has=true;if(V[n])any=true}});return (!has||any)?sub(body,true):''});
+ return sub(t,false)}
 function render(){
  [].forEach.call(kb.children,function(b){b.setAttribute('aria-pressed',String(st.kats.indexOf(b.firstChild.textContent)>=0))});var kc=$('katcount');if(kc)kc.textContent=st.kats.length?st.kats.length+' chosen':'None chosen yet';
  var miss=[];if(!st.kats.length)miss.push('your KAT (step 1)');if(!(st.a||'').trim()||!(st.b||'').trim())miss.push('your two tools (step 2)');if(!(st.stu||'').trim())miss.push('what students do');
- var A=v('a','[tool A]'),B=v('b','[tool B]'),af=v('af',''),bf=v('bf','');
- var p='I want a page where my '+v('lesson','[level and subject]')+' students '+lc(v('stu','[what students see and do]'))+'.';
- if((st.tea||'').trim())p+=' As the teacher, I want to see '+lc(v('tea',''))+'.';
- p+='\n'+katText();
- p+='\nIt should work like '+A+' and '+B+' together.';
- if(af||bf)p+='\nWhat I like in '+A+': '+lc(af||'[the feature]')+'. What I like in '+B+': '+lc(bf||'[the feature]')+'.';
- if((st.prob||'').trim())p+='\nMy problem now is that '+lc(v('prob',''))+'.';
- p+='\nIs this possible? How can we achieve it? Which tools do we need?\nUse made-up names in any example. Ask me questions before you build.';
- $('p-main').textContent=p;
+ var V=vals();
+ $('p-main').textContent=fill(TPL.main,V);
  var n=$('need');n.hidden=!miss.length;n.textContent=miss.length?'Still to fill in: '+miss.join(', ')+'.':'';
- $('p-gas').textContent='I want this page to save each student’s answer in a Google Sheet using Google Apps Script, so that I can see '+lc(v('tea','every answer afterwards'))+'. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me to say done after each step. Students will enter a seat number, not a name. Use made-up names in any example.';
- $('p-say').textContent='I combined '+A+' and '+B+' into one page so that my '+v('lesson','[level and subject]')+' students can '+lc(v('stu','[what students do]'))+'. '+katText();
+ $('p-gas').textContent=fill(TPL.gas,V);
+ $('p-say').textContent=fill(TPL.say,V);
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-copy]');if(!b)return;var el=$(b.getAttribute('data-copy')),t=el.textContent,old=b.textContent;
  function ok(){b.textContent='Copied';setTimeout(function(){b.textContent=old},1400)}
  function sel(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected. Press Ctrl+C';setTimeout(function(){b.textContent=old},2600)}
  try{navigator.clipboard.writeText(t).then(ok,sel)}catch(x){sel()}});
 [].forEach.call(document.querySelectorAll('ul.check'),function(u){var k=u.getAttribute('data-k');[].forEach.call(u.querySelectorAll('input'),function(c,i){c.checked=!!st[k+i];c.onchange=function(){st[k+i]=c.checked;save()}})});
+
+/* ---------- the owner can edit the words, the KATs and the prompt ---------- */
+[].forEach.call(document.querySelectorAll('label'),function(l){var n=l.firstChild;if(n&&n.nodeType===3&&n.nodeValue.trim()){var sp=document.createElement('span');sp.className='lt';sp.textContent=n.nodeValue;l.replaceChild(sp,n)}});
+var SEL='h1,h2,h3,p.eye,p.soft,p:not([class]),li,td,th,.box,.four b,.four span,.fit i,.fit b,.fit span,summary,label>span.lt,label>small,pre,#p-gh';
+var ED=[],ORIG={};
+function mark(root,pre){var n=0;[].forEach.call(root.querySelectorAll(SEL),function(el){
+  if(el.closest('#kats,.edpanel,#edbar'))return;if(el.id&&!/^(c\d|p-gh)$/.test(el.id))return;if(el.tagName==='LI'&&el.querySelector('input')){el=el.querySelector('span');if(!el)return}
+  if(el.querySelector('button,input,textarea,select,[id]'))return;if(el.closest('[data-ek]'))return;
+  var k=pre+':'+(n++);el.setAttribute('data-ek',k);ED.push(el);ORIG[k]=el.innerHTML})}
+mark(document.querySelector('header'),'h');steps.forEach(function(s,i){mark(s,'s'+i)});var ft=document.querySelector('footer');
+var TAB0=steps.map(function(s){return s.getAttribute('data-t')});
+function clean(html){var t=document.createElement('template');t.innerHTML=String(html);var OKT={B:1,I:1,EM:1,STRONG:1,U:1,BR:1};
+ (function walk(node){[].slice.call(node.childNodes).forEach(function(c){if(c.nodeType===1){if(/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|LINK|META)$/.test(c.tagName)){node.removeChild(c);return}walk(c);if(OKT[c.tagName]){[].slice.call(c.attributes).forEach(function(a){c.removeAttribute(a.name)})}else{while(c.firstChild)node.insertBefore(c.firstChild,c);node.removeChild(c)}}else if(c.nodeType!==3)node.removeChild(c)})})(t.content);
+ var d=document.createElement('div');d.appendChild(t.content);return d.innerHTML}
+function str(x,n){return String(x==null?'':x).slice(0,n)}
+function apply(c){c=c&&typeof c==='object'?c:{};
+ ED.forEach(function(el){var k=el.getAttribute('data-ek');el.innerHTML=(c.text&&typeof c.text[k]==='string')?clean(c.text[k]):ORIG[k]});
+ steps.forEach(function(s,i){var t=(c.tabs&&typeof c.tabs[i]==='string'&&c.tabs[i].trim())?str(c.tabs[i],24):TAB0[i];s.setAttribute('data-t',t);prog.children[i].textContent=t});
+ KATS=(Array.isArray(c.kats)&&c.kats.length?c.kats:KATS0).filter(function(k){return Array.isArray(k)&&str(k[0],80).trim()}).slice(0,16).map(function(k){return [str(k[0],80).trim(),str(k[1],200),str(k[2],200)]});if(!KATS.length)KATS=KATS0.map(function(k){return k.slice()});
+ TPL={main:(c.tpl&&typeof c.tpl.main==='string'&&c.tpl.main.trim())?str(c.tpl.main,4000):TPL0.main,gas:(c.tpl&&typeof c.tpl.gas==='string'&&c.tpl.gas.trim())?str(c.tpl.gas,4000):TPL0.gas,say:(c.tpl&&typeof c.tpl.say==='string'&&c.tpl.say.trim())?str(c.tpl.say,4000):TPL0.say};
+ buildKats();render()}
+var CK='build-page-words-v1',LIVE={};
+function post(b){var ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){if(ctl)ctl.abort()},9000);return fetch(RELAY,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b),signal:ctl?ctl.signal:undefined}).then(function(r){clearTimeout(t);return r.json()}).catch(function(){clearTimeout(t);return {ok:false,error:'The page could not reach the place where the words are kept. Check the internet and try again.'}})}
+try{var c0=JSON.parse(localStorage.getItem(CK)||'null');if(c0){LIVE=c0;apply(c0)}}catch(e){}
+post({cfg:'get'}).then(function(r){if(!r||!r.ok)return;var c={};try{c=r.data?JSON.parse(r.data):{}}catch(e){c={}}var same=JSON.stringify(c)===JSON.stringify(LIVE);LIVE=c;try{localStorage.setItem(CK,JSON.stringify(c))}catch(e){}window.__locked=!!r.locked;if(!same&&!document.body.classList.contains('editing'))apply(c)});
+var bar=$('edbar'),msg=$('edmsg');
+function say(t,cls){msg.textContent=t||'';msg.className=cls||''}
+function collect(){var c={v:1,text:{},tabs:{},kats:null,tpl:{}};
+ ED.forEach(function(el){var k=el.getAttribute('data-ek'),h=clean(el.innerHTML);if(h!==clean(ORIG[k]))c.text[k]=h});
+ [].forEach.call(document.querySelectorAll('#tabed input'),function(inp,i){var t=inp.value.trim();if(t&&t!==TAB0[i])c.tabs[i]=t});
+ var rows=[].slice.call(document.querySelectorAll('#kated .krow')).map(function(r){var x=r.querySelectorAll('input');return [x[0].value.trim(),x[1].value.trim(),x[2].value.trim()]}).filter(function(k){return k[0]});
+ if(JSON.stringify(rows)!==JSON.stringify(KATS0))c.kats=rows;else delete c.kats;
+ ['main','gas','say'].forEach(function(n){var t=$('tpl-'+n);if(t&&t.value.trim()&&t.value!==TPL0[n])c.tpl[n]=t.value});
+ return c}
+function krow(k){var r=document.createElement('div');r.className='krow';r.innerHTML='<input aria-label="Name" maxlength="80"><input aria-label="Short description" maxlength="200"><input aria-label="Example" maxlength="200"><button type="button" class="btn small">Remove</button>';var x=r.querySelectorAll('input');x[0].value=k[0];x[1].value=k[1];x[2].value=k[2];r.querySelector('button').onclick=function(){r.parentNode.removeChild(r);preview()};[].forEach.call(x,function(i){i.addEventListener('input',preview)});return r}
+function preview(){var c=collect();KATS=(c.kats||KATS0).map(function(k){return k.slice()});if(!KATS.length)KATS=KATS0.map(function(k){return k.slice()});TPL={main:c.tpl.main||TPL0.main,gas:c.tpl.gas||TPL0.gas,say:c.tpl.say||TPL0.say};buildKats();render();[].forEach.call(document.querySelectorAll('#tabed input'),function(inp,i){prog.children[i].textContent=inp.value.trim()||TAB0[i]})}
+function panels(){var ke=$('kated');ke.textContent='';var h=document.createElement('h4');h.textContent='Edit the KATs';ke.appendChild(h);var p=document.createElement('p');p.textContent='Each row is a name, a short description and an example. An empty name removes the row.';ke.appendChild(p);
+ var box=document.createElement('div');box.style.display='grid';box.style.gap='6px';KATS.forEach(function(k){box.appendChild(krow(k))});ke.appendChild(box);var add=document.createElement('button');add.type='button';add.className='btn small';add.textContent='Add a KAT';add.onclick=function(){box.appendChild(krow(['','','']))};ke.appendChild(add);ke.hidden=false;
+ var te=$('tpled');te.innerHTML='<h4>Edit the prompt it writes</h4><p>Words in curly brackets are filled in from the answers: <code>{lesson}</code> <code>{students}</code> <code>{teacher}</code> <code>{kats}</code> <code>{toolA}</code> <code>{toolB}</code> <code>{likeA}</code> <code>{likeB}</code> <code>{problem}</code>. Write <code>{teacher|some words}</code> to use those words when the answer is empty. A part inside <code>[[ ]]</code> is left out when its answers are empty. The box above shows the result as you type.</p><label>The main prompt, step 3<textarea id="tpl-main"></textarea></label><label>The Apps Script prompt, step 6<textarea id="tpl-gas" class="sm"></textarea></label><label>The one sentence, step 7<textarea id="tpl-say" class="sm"></textarea></label><h4>Names on the step buttons</h4><div id="tabed" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px"></div>';
+ $('tpl-main').value=TPL.main;$('tpl-gas').value=TPL.gas;$('tpl-say').value=TPL.say;['main','gas','say'].forEach(function(n){$('tpl-'+n).addEventListener('input',preview)});
+ var tb=$('tabed');steps.forEach(function(s,i){var inp=document.createElement('input');inp.maxLength=24;inp.value=s.getAttribute('data-t');inp.setAttribute('aria-label','Name of step button '+(i+1));inp.addEventListener('input',preview);tb.appendChild(inp)});te.hidden=false}
+function editing(on){document.body.classList.toggle('editing',on);bar.hidden=!on;ED.forEach(function(el){if(on){el.setAttribute('contenteditable','true');el.setAttribute('spellcheck','true')}else{el.removeAttribute('contenteditable');el.removeAttribute('spellcheck')}});
+ if(on){panels();say(window.__locked?'Type your passcode, then press Save for everyone.':'No passcode is set yet. The passcode you type on your first save becomes the passcode.')}else{$('kated').hidden=true;$('tpled').hidden=true;apply(LIVE)}}
+$('edstart').onclick=function(){editing(true);window.scrollTo(0,0)};$('edstop').onclick=function(){editing(false)};
+document.addEventListener('keydown',function(e){if(document.body.classList.contains('editing')&&e.target&&e.target.getAttribute&&e.target.getAttribute('data-ek')&&e.key==='Enter'&&e.target.tagName!=='PRE'&&!e.shiftKey){e.preventDefault()}});
+document.addEventListener('paste',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-ek]');if(!t||!document.body.classList.contains('editing'))return;e.preventDefault();var x=(e.clipboardData||window.clipboardData).getData('text/plain');document.execCommand('insertText',false,x)});
+function send(c,done){var pass=$('edpass').value;if(pass.length<4){say('Type a passcode of at least four characters.','bad');$('edpass').focus();return}var data=JSON.stringify(c);if(data.length>88000){say('That is too much text to save. Shorten something and try again.','bad');return}
+ say('Saving.');$('edsave').disabled=true;post({cfg:'set',pass:pass,data:data}).then(function(r){$('edsave').disabled=false;if(!r||!r.ok){say((r&&r.error)||'It did not save. Try again.','bad');return}LIVE=c;window.__locked=true;try{localStorage.setItem(CK,data)}catch(e){}done()})}
+$('edsave').onclick=function(){send(collect(),function(){say('Saved. Every teacher who opens or reloads this page now sees your version.','ok')})};
+var armed=0;$('edreset').onclick=function(){if(Date.now()-armed>6000){armed=Date.now();say('Press Back to the original once more to remove every change you saved. This cannot be undone, so download a backup first if you want one.','bad');return}armed=0;send({},function(){editing(false);editing(true);say('The page is back to the original wording.','ok')})};
+$('eddown').onclick=function(){var data=JSON.stringify(collect(),null,1),a=document.createElement('a');try{a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download='build-your-own-tool-words.json';document.body.appendChild(a);a.click();document.body.removeChild(a);say('The backup was downloaded. Send it to Claude if you ever need it put back.','ok')}catch(e){say('This browser would not download the file.','bad')}};
+if(/[?&]edit\b/.test(location.search))setTimeout(function(){editing(true)},400);
 go(cur);
 })();
 </script>
