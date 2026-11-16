@@ -22,7 +22,7 @@ p{margin:8px 0}.soft{color:var(--soft)}
 .step{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:24px clamp(16px,4vw,30px);display:grid;gap:6px}
 .kats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:10px}
 .kats button{text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:400 15px/1.35 var(--body);cursor:pointer;display:grid;gap:2px}
-.kats button b{font:800 17px var(--display)}.kats button span{color:var(--soft)}
+.kats button b{font:800 17px var(--display)}.kats button span{color:var(--soft)}.kats button em{font-style:normal;font-size:14px;color:var(--ink);margin-top:5px;padding-top:6px;border-top:1px dashed var(--line)}#katcount{color:var(--amber);white-space:nowrap}.kats button[aria-pressed="true"] b::after{content:" \2713";color:var(--amber)}
 .kats button[aria-pressed="true"]{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset}
 label{display:grid;gap:5px;margin-top:12px;font-weight:700}
 label small{font-weight:400;color:var(--soft);font-size:14.5px}
@@ -84,7 +84,7 @@ footer a{color:var(--amber)}
 <section class="step" data-t="1 KAT" hidden>
 <p class="eye">Step 1 of 7 · 2 minutes</p>
 <h2>Choose your KAT.</h2>
-<p class="soft">Think of one lesson next term. Which learning process should technology enhance? Choose one.</p>
+<p class="soft">Think of one lesson next term. Which learning processes should technology enhance? Choose one or more. Press a KAT again to remove it. <b id="katcount" aria-live="polite"></b></p>
 <div class="kats" id="kats"></div>
 <label>Level and subject<small>For example, Sec 1 Science.</small><input id="f-lesson" placeholder="Sec 1 Science" autocomplete="off"></label>
 </section>
@@ -153,7 +153,7 @@ footer a{color:var(--amber)}
 <ul class="check" data-k="chk">
 <li><input type="checkbox"><span>I answered every question myself, and the answers are correct.</span></li>
 <li><input type="checkbox"><span>There are no student names, NRIC numbers or grades anywhere in it.</span></li>
-<li><input type="checkbox"><span>It still serves the KAT I chose in step 1.</span></li>
+<li><input type="checkbox"><span>It still serves every KAT I chose in step 1.</span></li>
 </ul>
 <h3>Share</h3>
 <ol>
@@ -246,8 +246,17 @@ function saveAnswer(seat, answer) {
 
 <script>
 (function(){
-var KATS=[['Support Assessment for Learning','Turn assessment data into clear insights that help students advance.'],['Embed Scaffolding','Give students support at the moment they need it.'],['Provide Differentiation','Use data about students to tailor instruction for different learners.'],['Enable Personalisation','Let students chart their own learning path and get tailored responses.'],['Develop Metacognition','Help students monitor, organise and refine their thinking.'],['Increase Motivation','Help students take ownership and persist in their learning.'],['Foster Conceptual Change','Let students show and externalise what they understand.'],['Facilitate Learning Together',"Let students build on one another's ideas in groups."]];
+var KATS=[
+['Support Assessment for Learning','Turn assessment data into clear insights that help students advance.','An exit ticket that shows which question most of the class got wrong.'],
+['Embed Scaffolding','Give students support at the moment they need it.','A worked example that reveals one hint at a time when a student is stuck.'],
+['Provide Differentiation','Use data about students to tailor instruction for different learners.','A quiz that gives an easier or a harder next question, based on the last answer.'],
+['Enable Personalisation','Let students chart their own learning path and get tailored responses.','Students choose which topic to revise and get feedback on their own answers.'],
+['Develop Metacognition','Help students monitor, organise and refine their thinking.','Students rate how sure they are before they see the answer.'],
+['Increase Motivation','Help students take ownership and persist in their learning.','Points and badges for handing in work on time.'],
+['Foster Conceptual Change','Let students show and externalise what they understand.','Students move a live model, then explain in writing what changed.'],
+['Facilitate Learning Together',"Let students build on one another's ideas in groups.",'A wall where every student posts an answer and replies to one other answer.']];
 var K='build-own-tool-v1',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){st={}}
+if(!Array.isArray(st.kats))st.kats=st.kat?[st.kat]:[];
 function save(){try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
 function $(i){return document.getElementById(i)}
 var steps=[].slice.call(document.querySelectorAll('.step')),prog=$('prog'),cur=Math.min(steps.length-1,Math.max(0,st.cur|0));
@@ -258,18 +267,19 @@ function go(i){cur=Math.max(0,Math.min(steps.length-1,i));st.cur=cur;st.seen=Mat
  $('back').style.visibility=cur?'visible':'hidden';$('next').textContent=cur===0?'Begin':cur===steps.length-1?'Back to the start':cur===5?'Go further':'Next';
  var a=prog.children[cur];if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest',inline:'center'});render();window.scrollTo(0,0)}
 $('back').onclick=function(){go(cur-1)};$('next').onclick=function(){go(cur===steps.length-1?0:cur+1)};
-var kb=$('kats');KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span>';b.firstChild.textContent=k[0];b.lastChild.textContent=k[1];b.onclick=function(){st.kat=k[0];save();render()};kb.appendChild(b)});
+var kb=$('kats');KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span><em></em>';b.children[0].textContent=k[0];b.children[1].textContent=k[1];b.children[2].textContent='Example: '+k[2];b.onclick=function(){var p=st.kats.indexOf(k[0]);if(p<0)st.kats.push(k[0]);else st.kats.splice(p,1);save();render()};kb.appendChild(b)});
+function katText(){var a=KATS.map(function(k){return k[0]}).filter(function(n){return st.kats.indexOf(n)>=0});if(!a.length)return 'The KAT is [your KAT].';if(a.length===1)return 'The KAT is '+a[0]+'.';return 'The KATs are '+a.slice(0,-1).join(', ')+' and '+a[a.length-1]+'.'}
 var F=['lesson','a','af','b','bf','prob','stu','tea'];
 F.forEach(function(f){var e=$('f-'+f);e.value=st[f]||'';e.addEventListener('input',function(){st[f]=e.value;save();render()})});
 function v(f,d){var x=(st[f]||'').trim().replace(/[.\s]+$/,'');return x||d}
 function lc(s){return s.charAt(0).toLowerCase()+s.slice(1)}
 function render(){
- [].forEach.call(kb.children,function(b){b.setAttribute('aria-pressed',b.firstChild.textContent===st.kat)});
- var miss=[];if(!st.kat)miss.push('your KAT (step 1)');if(!(st.a||'').trim()||!(st.b||'').trim())miss.push('your two tools (step 2)');if(!(st.stu||'').trim())miss.push('what students do');
+ [].forEach.call(kb.children,function(b){b.setAttribute('aria-pressed',String(st.kats.indexOf(b.firstChild.textContent)>=0))});var kc=$('katcount');if(kc)kc.textContent=st.kats.length?st.kats.length+' chosen':'None chosen yet';
+ var miss=[];if(!st.kats.length)miss.push('your KAT (step 1)');if(!(st.a||'').trim()||!(st.b||'').trim())miss.push('your two tools (step 2)');if(!(st.stu||'').trim())miss.push('what students do');
  var A=v('a','[tool A]'),B=v('b','[tool B]'),af=v('af',''),bf=v('bf','');
  var p='I want a page where my '+v('lesson','[level and subject]')+' students '+lc(v('stu','[what students see and do]'))+'.';
  if((st.tea||'').trim())p+=' As the teacher, I want to see '+lc(v('tea',''))+'.';
- p+='\nThe KAT is '+(st.kat||'[your KAT]')+'.';
+ p+='\n'+katText();
  p+='\nIt should work like '+A+' and '+B+' together.';
  if(af||bf)p+='\nWhat I like in '+A+': '+lc(af||'[the feature]')+'. What I like in '+B+': '+lc(bf||'[the feature]')+'.';
  if((st.prob||'').trim())p+='\nMy problem now is that '+lc(v('prob',''))+'.';
@@ -277,7 +287,7 @@ function render(){
  $('p-main').textContent=p;
  var n=$('need');n.hidden=!miss.length;n.textContent=miss.length?'Still to fill in: '+miss.join(', ')+'.':'';
  $('p-gas').textContent='I want this page to save each student’s answer in a Google Sheet using Google Apps Script, so that I can see '+lc(v('tea','every answer afterwards'))+'. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me to say done after each step. Students will enter a seat number, not a name. Use made-up names in any example.';
- $('p-say').textContent='I combined '+A+' and '+B+' into one page so that my '+v('lesson','[level and subject]')+' students can '+lc(v('stu','[what students do]'))+'. The KAT is '+(st.kat||'[your KAT]')+'.';
+ $('p-say').textContent='I combined '+A+' and '+B+' into one page so that my '+v('lesson','[level and subject]')+' students can '+lc(v('stu','[what students do]'))+'. '+katText();
 }
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-copy]');if(!b)return;var el=$(b.getAttribute('data-copy')),t=el.textContent,old=b.textContent;
  function ok(){b.textContent='Copied';setTimeout(function(){b.textContent=old},1400)}
