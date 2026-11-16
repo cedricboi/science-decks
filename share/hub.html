@@ -381,7 +381,7 @@ card.addEventListener('click',function(e){var a=e.target.getAttribute&&e.target.
 bar.addEventListener('click',function(e){var a=e.target.getAttribute&&e.target.getAttribute('data-a');if(a==='next')next();else if(a==='stop')explore()});
 function next(){if(busy)return;if(i>=M.length-1)endCard();else go(i+1)}
 addEventListener('keydown',function(e){if(bar.hidden||busy)return;if(e.target&&e.target.closest&&e.target.closest('#tbar')&&(e.key==='Enter'||e.key===' '))return;if(e.key==='ArrowRight'||e.key==='Enter'||e.key===' '||e.key==='PageDown'){e.preventDefault();next()}});
-if(/^#student/.test(location.hash)||window.__client){card.hidden=true;free=true;bar.hidden=true}else if(window.__fresh){free=true;bar.hidden=true;freshCard()}else startCard();
+if(/^#student/.test(location.hash)||window.__client){card.hidden=true;free=true;bar.hidden=true}else if(window.__fresh){free=true;bar.hidden=true;card.hidden=true}else startCard();
 window.__tour={go:go,next:next,count:M.length,state:function(){return {i:i,busy:busy,spot:spot.style.display==='block',title:i>=0?M[i].title:''}}};
 })();
 </script></body></html>
