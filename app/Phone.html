@@ -777,7 +777,7 @@ button:disabled{opacity:.5;cursor:default}
       }
       if (S.lesson) {
         var fun = !!(S.ctl && S.ctl.fun);
-        sh.appendChild(btn('b full', bst('avatars') || (fun ? 'Close avatars and the night market' : 'Open avatars and the night market'), function () { S.ctl = S.ctl || {}; S.ctl.fun = !fun; cmd('avatars', { on: !fun }, 'avatars'); drawSheet(); }));
+        sh.appendChild(btn('b full', bst('avatars') || (fun ? 'Close avatars and the carnival' : 'Open avatars and the carnival'), function () { S.ctl = S.ctl || {}; S.ctl.fun = !fun; cmd('avatars', { on: !fun }, 'avatars'); drawSheet(); }));
         sh.appendChild(btn('b full', 'Stop following this lesson on the phone', function () { leave(false); }));
       }
       if (x.forget) {

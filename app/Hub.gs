@@ -1680,7 +1680,7 @@ function api_t_alloc(token, cls, deckId, on) {
   return r.alloc || {};
 }
 
-/* Avatars and the night market are closed to a class while its Science lesson is running, unless the teacher
+/* Avatars and the carnival are closed to a class while its Science lesson is running, unless the teacher
    opens them on the phone. Live Board knows; the answer is kept for 30 seconds. If Live Board cannot be reached,
    they stay open. */
 function funState_(s) {
@@ -1692,7 +1692,7 @@ function funState_(s) {
   return out;
 }
 function funGuard_(s) {
-  if (s.cls !== 'TEST' && !funState_(s).open) throw new Error('FUN_CLOSED: Avatars and the night market are closed during your Science lesson. They open again after the lesson.');
+  if (s.cls !== 'TEST' && !funState_(s).open) throw new Error('FUN_CLOSED: Avatars and the carnival are closed during your Science lesson. They open again after the lesson.');
   return s;
 }
 function api_fun(token) { var s = who_(token); return s.cls === 'TEST' ? { open: true, live: false } : funState_(s); }
@@ -3203,18 +3203,19 @@ function api_t_uncheck(token, id, cls, name) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Points, the avatar shop and the night market                        */
+/* Points, the avatar shop and the carnival                        */
 /* ------------------------------------------------------------------ */
 //
 // Students earn points for each worksheet once the marking is given back. Points are worked out
 // afresh from the Submissions tab every time, so changing a score or a due date changes the points.
 // Points buy clothes and accessories for the student's avatar, or are changed into tokens, which buy
-// real prizes at the night market at the end of term. The balance never goes below zero.
+// real prizes at the carnival at the end of term. The balance never goes below zero.
 // Everything a student spends is written to the "Rewards log" tab.
 
 var RW_TABS = {
   log: { name: 'Rewards log', headers: ['Time', 'Class', 'Reg No', 'Name', 'What', 'Item', 'Points', 'Tokens', 'Ticket', 'Collected', 'Note'] },
   avatars: { name: 'Avatars', headers: ['Class', 'Reg No', 'Name', 'Outfit', 'Updated', 'Theme'] },
+  // The tab keeps its first name, Night market, so the prizes already in it stay where they are.
   market: { name: 'Night market', headers: ['ID', 'Prize', 'Picture', 'Tokens', 'How many (blank = no limit)', 'On sale'] }
 };
 
@@ -3222,12 +3223,13 @@ var RW_TABS = {
 var RW_RULES = { onTime: 10, late: 10, top: 30, mid: 20, low: 10, blank: 20, topPct: 85, midPct: 70, lowPct: 50, perToken: 20, priceScale: 1, from: '', board: 'class',
   daily: 2, dailyFun: 1, questOnTime: 20, questQuiz: 10 };
 // What students spend points or tokens on. Everything else in the Rewards log (Teacher, Daily) is earned.
-var RW_SPEND = { Shop: 1, Tokens: 1, Market: 1, Sticker: 1, Theme: 1, Hint: 1 };
+var RW_SPEND = { Shop: 1, Tokens: 1, Market: 1, Sticker: 1, Theme: 1, Hint: 1, Pack: 1, Sell: 1 };
 // Colour themes for the homework page: [id, name, price in points]. Sky is free.
 var RW_THEMES = [['sky', 'Sky', 0], ['ocean', 'Ocean', 60], ['forest', 'Rainforest', 80], ['sunset', 'Sunset', 80], ['candy', 'Candy floss', 100],
   ['lava', 'Lava', 120], ['galaxy', 'Galaxy', 150], ['aurora', 'Aurora', 200], ['gold', 'Gold', 300]];
 
-// The shop: [id, name, what it is, rarity, price in points]. Free things everyone has.
+// The costumes: [id, name, what it is, rarity, old price]. Free things everyone has. The rest come from packs (see
+// "costume packs" below), so the old price is only kept to tell the free things (0) from the others.
 var RW_ITEMS = [
   ['hair_short', 'Short', 'hair', 'free', 0], ['hair_spiky', 'Spiky', 'hair', 'free', 0], ['hair_bob', 'Bob', 'hair', 'free', 0],
   ['hair_long', 'Long', 'hair', 'free', 0], ['hair_ponytail', 'Ponytail', 'hair', 'free', 0], ['hair_buns', 'Space buns', 'hair', 'free', 0],
@@ -3273,7 +3275,7 @@ var RW_DEFAULT_PRIZES = [
   ['P1', 'Chupa Chups', 'lollipop', 2, 40], ['P2', 'Gummy bears', 'gummies', 3, 20], ['P3', 'Sticker sheet', 'stickers', 3, 20], ['P4', 'Popcorn', 'popcorn', 4, 15],
   ['P5', 'Keychain', 'keychain', 5, 10], ['P6', 'Mystery box', 'mystery', 6, 10], ['P7', 'Plush bear', 'plushie', 8, 5], ['P8', 'Chagee milk tea', 'milktea', 15, 5]
 ];
-// Stickers students show in a speech bubble at the night market: [id, words on it, price in tokens].
+// Stickers students show in a speech bubble at the carnival: [id, words on it, price in tokens].
 var RW_STICKERS = [
   ['st_lol', 'LOL', 1], ['st_cry', 'Waaah', 1], ['st_wow', 'Wah!', 1], ['st_love', 'Love it', 1], ['st_angry', 'Grrr', 1],
   ['st_sleep', 'Zzz', 1], ['st_think', 'Hmm...', 1], ['st_cool', 'GG', 2], ['st_thumbs', 'Nice!', 2], ['st_party', 'Yay!', 2],
@@ -3281,6 +3283,132 @@ var RW_STICKERS = [
   ['st_alamak', 'Alamak!', 2], ['st_durian', 'Durian?', 3], ['st_milktea', 'Shiok!', 3], ['st_dance', 'Dance!', 3], ['st_champ', 'Champion', 3]
 ];
 var RW_ARTS = ['lollipop', 'milktea', 'gummies', 'stickers', 'keychain', 'popcorn', 'eraser', 'pen', 'chocolate', 'mystery', 'ticket', 'candyfloss', 'icecream', 'plushie', 'chips', 'drink', 'cookie'];
+
+/* ---------- costume packs ----------
+   Costumes are not bought one by one any more. A student opens a pack and gets 3 pieces.
+   A piece they already have is a spare, and a spare can be sold for a few points. */
+
+// The pieces that only come from packs: [id, name, what it is, rarity, a number that is not used].
+RW_ITEMS = RW_ITEMS.concat([
+  ['hat_helmet', 'Skate helmet', 'hat', 'common', 50], ['top_flannel', 'Checked shirt', 'top', 'common', 50], ['shoe_skate', 'Skate shoes', 'shoes', 'common', 50],
+  ['hand_boba', 'Bubble tea', 'hand', 'common', 50], ['eye_headband', 'Sweatband', 'eyes', 'common', 50], ['back_skateboard', 'Skateboard', 'back', 'rare', 100],
+  ['top_puffer', 'Puffer jacket', 'top', 'rare', 100], ['top_batik', 'Batik shirt', 'top', 'rare', 100], ['pet_drone', 'Camera drone', 'pet', 'legendary', 350],
+  ['eye_clown', 'Clown nose', 'eyes', 'common', 50], ['bot_clown', 'Spotty trousers', 'bottom', 'common', 50], ['hat_clown', 'Rainbow wig', 'hat', 'rare', 100],
+  ['top_clown', 'Clown suit', 'top', 'rare', 100], ['shoe_clown', 'Giant clown shoes', 'shoes', 'rare', 100], ['top_dino', 'Dino suit', 'top', 'rare', 100],
+  ['bot_dino', 'Dino suit legs', 'bottom', 'rare', 100], ['back_dino', 'Dino tail', 'back', 'rare', 100], ['bot_lion', 'Lion dance trousers', 'bottom', 'rare', 100],
+  ['hat_dino', 'Dino hood', 'hat', 'epic', 180], ['hat_boba', 'Bubble tea hat', 'hat', 'epic', 180], ['top_ringmaster', 'Ringmaster coat', 'top', 'epic', 180],
+  ['top_lion', 'Lion dance jacket', 'top', 'epic', 180], ['hat_lion', 'Lion dance head', 'hat', 'legendary', 350],
+  ['top_atom', 'Atom tee', 'top', 'common', 50], ['top_formula', 'Formula tee', 'top', 'common', 50], ['hat_hardhat', 'Hard hat', 'hat', 'common', 50],
+  ['bot_diver', 'Diving suit legs', 'bottom', 'common', 50], ['shoe_diver', 'Lead boots', 'shoes', 'common', 50], ['bot_hazmat', 'Hazmat trousers', 'bottom', 'common', 50],
+  ['top_diver', 'Diving suit', 'top', 'rare', 100], ['back_tank', 'Air tanks', 'back', 'rare', 100], ['hat_hazmat', 'Hazmat hood', 'hat', 'rare', 100],
+  ['top_hazmat', 'Hazmat suit', 'top', 'rare', 100], ['hat_alien', 'Alien antennae', 'hat', 'rare', 100], ['shoe_mecha', 'Thruster boots', 'shoes', 'rare', 100],
+  ['hat_diver', 'Brass diving helmet', 'hat', 'epic', 180], ['pet_jelly', 'Glow jellyfish', 'pet', 'epic', 180], ['face_alien', 'Alien', 'face', 'epic', 180],
+  ['top_mecha', 'Mecha armour', 'top', 'epic', 180], ['bot_mecha', 'Mecha legs', 'bottom', 'epic', 180], ['hat_mecha', 'Mecha helmet', 'hat', 'legendary', 350],
+  ['pet_ufo', 'Mini UFO', 'pet', 'legendary', 350],
+  ['bot_pirate', 'Striped breeches', 'bottom', 'common', 50], ['shoe_pirate', 'Buckle boots', 'shoes', 'common', 50], ['eye_mask', 'Hero mask', 'eyes', 'common', 50],
+  ['bot_hero', 'Hero tights', 'bottom', 'common', 50], ['shoe_hero', 'Hero boots', 'shoes', 'common', 50], ['bot_ninja', 'Ninja trousers', 'bottom', 'common', 50],
+  ['top_wizard', 'Wizard robe', 'top', 'rare', 100], ['bot_wizard', 'Wizard robe skirt', 'bottom', 'rare', 100], ['top_pirate', 'Captain coat', 'top', 'rare', 100],
+  ['bot_knight', 'Knight greaves', 'bottom', 'rare', 100], ['shoe_knight', 'Steel boots', 'shoes', 'rare', 100], ['hand_shield', 'Knight shield', 'hand', 'rare', 100],
+  ['hat_ninja', 'Ninja hood', 'hat', 'rare', 100], ['top_ninja', 'Ninja jacket', 'top', 'rare', 100], ['top_hero', 'Hero suit', 'top', 'rare', 100],
+  ['pet_parrot', 'Parrot', 'pet', 'epic', 180], ['hat_knight', 'Knight helmet', 'hat', 'epic', 180], ['top_knight', 'Knight armour', 'top', 'epic', 180],
+  ['back_katana', 'Twin swords', 'back', 'epic', 180],
+  ['hat_nova', 'Supernova crown', 'hat', 'mythic', 999], ['top_nova', 'Supernova armour', 'top', 'mythic', 999], ['bot_nova', 'Supernova greaves', 'bottom', 'mythic', 999],
+  ['shoe_nova', 'Comet boots', 'shoes', 'mythic', 999], ['back_nova', 'Nebula wings', 'back', 'mythic', 999]
+]);
+
+// The packs: [id, name, price in points, what it says on the pack, the pieces inside].
+var RW_PACKS = [
+  ['street', 'Street Pack', 80, 'Everyday style',
+    'hat_cap hat_backcap hat_beanie hat_bucket eye_round eye_shades top_striped top_hoodie bot_shorts bot_jeans bot_track bot_cargo shoe_slippers shoe_boots shoe_rain ' +
+    'back_pack face_wink face_freckles hat_helmet top_flannel shoe_skate hand_boba eye_headband ' +
+    'hat_headphones top_denim top_jersey top_tiedye bot_plaid bot_camo shoe_hightop back_guitar hand_umbrella face_cool pet_dog pet_cat back_skateboard top_puffer top_batik ' +
+    'top_varsity shoe_light hat_durian shoe_gold pet_drone'],
+  ['carnival', 'Carnival Pack', 80, 'Fun and festival',
+    'hat_party hat_straw eye_moustache hand_icecream hand_balloon face_sleepy face_tongue face_shocked eye_clown bot_clown ' +
+    'hat_cat hat_bunny hat_chef hat_cone hat_flowers top_hawaii eye_3d hand_foam face_hearts pet_duck hat_clown top_clown shoe_clown top_dino bot_dino back_dino bot_lion ' +
+    'hat_top top_tux hat_propeller eye_star face_stars back_butterfly back_angel pet_penguin hat_dino hat_boba top_ringmaster top_lion hat_halo hat_lion'],
+  ['science', 'Science Pack', 80, 'Lab, sea and space',
+    'hand_magnifier top_atom top_formula hat_hardhat bot_diver shoe_diver bot_hazmat ' +
+    'eye_goggles top_labcoat hat_grad face_determined top_diver back_tank hat_hazmat top_hazmat hat_alien shoe_mecha ' +
+    'hand_flask top_gold face_robot eye_visor pet_robot pet_axolotl top_galaxy bot_galaxy bot_space hat_diver pet_jelly face_alien top_mecha bot_mecha ' +
+    'hat_atom hat_astro top_space back_jet pet_planet hand_sword hat_mecha pet_ufo'],
+  ['legends', 'Legends Pack', 80, 'Heroes and stories',
+    'eye_patch bot_pirate shoe_pirate eye_mask bot_hero shoe_hero bot_ninja ' +
+    'hat_cowboy back_cape back_shell top_wizard bot_wizard top_pirate bot_knight shoe_knight hand_shield hat_ninja top_ninja top_hero ' +
+    'hat_pirate hat_witch hat_viking hand_wand pet_parrot hat_knight top_knight back_katana back_dragon pet_dragon hat_crown']
+];
+// The rarest uniform. Its five pieces are in every pack.
+var RW_MYTHIC = ['hat_nova', 'top_nova', 'bot_nova', 'shoe_nova', 'back_nova'];
+// Pieces that make one outfit together: [name, the pieces].
+var RW_SETS = [
+  ['Supernova', 'hat_nova top_nova bot_nova shoe_nova back_nova'], ['Astronaut', 'hat_astro top_space bot_space back_jet'],
+  ['Mecha', 'hat_mecha top_mecha bot_mecha shoe_mecha'], ['Deep sea diver', 'hat_diver top_diver bot_diver shoe_diver back_tank'],
+  ['Hazmat', 'hat_hazmat top_hazmat bot_hazmat'], ['Lion dance', 'hat_lion top_lion bot_lion'], ['Dinosaur', 'hat_dino top_dino bot_dino back_dino'],
+  ['Clown', 'hat_clown eye_clown top_clown bot_clown shoe_clown'], ['Ringmaster', 'hat_top top_ringmaster'], ['Wizard', 'hat_witch top_wizard bot_wizard hand_wand'],
+  ['Pirate', 'hat_pirate eye_patch top_pirate bot_pirate shoe_pirate pet_parrot'], ['Knight', 'hat_knight top_knight bot_knight shoe_knight hand_shield'],
+  ['Ninja', 'hat_ninja top_ninja bot_ninja back_katana'], ['Hero', 'eye_mask top_hero bot_hero shoe_hero back_cape'],
+  ['Skater', 'hat_helmet back_skateboard shoe_skate'], ['Galaxy', 'top_galaxy bot_galaxy']
+];
+// The chance of each rarity, in parts out of 10 000. "first" is for the first two pieces of a pack and
+// "third" is for the third piece, which is always rare or better. To make the rarest uniform easier or
+// harder to get, change the two mythic numbers.
+var RW_ODDS = {
+  first: { common: 7000, rare: 2300, epic: 600, legendary: 85, mythic: 15 },
+  third: { rare: 7600, epic: 1900, legendary: 410, mythic: 90 }
+};
+// After this many packs in a row with nothing legendary or better, the third piece of the next pack is legendary.
+var RW_PITY = 25;
+// What one spare piece sells for, in points.
+var RW_SELL = { common: 2, rare: 5, epic: 10, legendary: 25, mythic: 50 };
+
+function rwTiers_() { var t = {}; RW_ITEMS.forEach(function (x) { t[x[0]] = x[3]; }); return t; }
+function rwPackOf_() {
+  var m = {};
+  RW_PACKS.forEach(function (p) { p[4].split(' ').forEach(function (id) { m[id] = p[0]; }); });
+  RW_MYTHIC.forEach(function (id) { m[id] = 'all'; });
+  return m;
+}
+function rwSetOf_() { var m = {}; RW_SETS.forEach(function (s) { s[1].split(' ').forEach(function (id) { m[id] = s[0]; }); }); return m; }
+// The pieces in one pack, grouped by rarity.
+function rwPool_(packId) {
+  var pack = null, tiers = rwTiers_(), pool = {};
+  RW_PACKS.forEach(function (p) { if (p[0] === packId) pack = p; });
+  if (!pack) return null;
+  pack[4].split(' ').concat(RW_MYTHIC).forEach(function (id) { var t = tiers[id]; if (t && t !== 'free') (pool[t] = pool[t] || []).push(id); });
+  return pool;
+}
+// Picks the three pieces of one pack. have: how many of each piece the student has now.
+// dry: how many packs in a row they have opened with nothing legendary or better.
+function rwDraw_(packId, have, dry, rnd) {
+  rnd = rnd || Math.random;
+  var pool = rwPool_(packId), out = [], ORDER = ['mythic', 'legendary', 'epic', 'rare', 'common'];
+  have = have || {};
+  function tier(odds) {
+    var total = 0, k, r;
+    for (k in odds) if (pool[k] && pool[k].length) total += odds[k];
+    r = rnd() * total;
+    for (k in odds) { if (!pool[k] || !pool[k].length) continue; r -= odds[k]; if (r < 0) return k; }
+    return pool.rare ? 'rare' : 'common';
+  }
+  for (var i = 0; i < 3; i++) {
+    var t = tier(i < 2 ? RW_ODDS.first : RW_ODDS.third);
+    if (i === 2 && dry >= RW_PITY - 1 && t !== 'mythic' && pool.legendary) t = 'legendary';
+    var list = pool[t].filter(function (id) { return out.indexOf(id) < 0; });     // never the same piece twice in one pack
+    // The rarest uniform does not give the same piece again until the student has all of it.
+    if (t === 'mythic') { var lack = list.filter(function (id) { return !have[id]; }); if (lack.length) list = lack; }
+    // If every piece of that rarity is already in this pack, the next rarity down is used.
+    while (!list.length && t !== 'common') {
+      t = ORDER[ORDER.indexOf(t) + 1];
+      list = (pool[t] || []).filter(function (id) { return out.indexOf(id) < 0; });
+    }
+    if (!list.length) list = pool.common || pool.rare;
+    out.push(list[Math.floor(rnd() * list.length)]);
+  }
+  return out;
+}
+function rwPacks_(rules) {
+  return RW_PACKS.map(function (p) { return { id: p[0], name: p[1], price: rwPrice_(p[2], rules), line: p[3], n: p[4].split(' ').length + RW_MYTHIC.length }; });
+}
 
 function rwN_(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 function isYes_(v) { return v === true || /^(yes|y|true|1|x|✓)$/i.test(String(v == null ? '' : v).trim()); }
@@ -3308,7 +3436,8 @@ function rwPrice_(price, rules) {
   return price ? Math.max(5, Math.round(price * k / 5) * 5) : 0;
 }
 function rwItems_(rules) {
-  return RW_ITEMS.map(function (x) { return { id: x[0], name: x[1], slot: x[2], tier: x[3], price: rwPrice_(x[4], rules) }; });
+  var packOf = rwPackOf_(), setOf = rwSetOf_();
+  return RW_ITEMS.map(function (x) { return { id: x[0], name: x[1], slot: x[2], tier: x[3], price: rwPrice_(x[4], rules), pack: packOf[x[0]] || '', set: setOf[x[0]] || '' }; });
 }
 
 // Makes the three reward tabs the first time they are needed.
@@ -3389,10 +3518,12 @@ function rwLedger_(s, assigns, subs, log, rules, items) {
     if (!a.fileId || !canSee_(a, s)) return;
     rwSubEvents_(a, subs[a.id + '|' + studentKey_(s)], rules).forEach(function (e) { ev.push(e); });
   });
-  var names = {};
-  items.forEach(function (it) { names[it.id] = it.name; });
+  var names = {}, tierOf = {}, packNames = {};
+  items.forEach(function (it) { names[it.id] = it.name; tierOf[it.id] = it.tier; });
+  RW_PACKS.forEach(function (p) { packNames[p[0]] = p[1]; });
   RW_STICKERS.forEach(function (x) { names[x[0]] = x[1]; });
   var owned = [], orders = [], stickers = [], themes = [], rights = [], qDays = {}, daily = [];
+  var have = {}, dry = 0, packs = 0;     // how many of each piece, packs in a row with nothing legendary, packs opened
   var onTimes = ev.filter(function (e) { return e.onTime; }).map(function (e) { return e.t; });
   log.forEach(function (e) {
     if (e.cls !== s.cls || hubNormName_(e.name) !== hubNormName_(s.name)) return;
@@ -3404,15 +3535,24 @@ function rwLedger_(s, assigns, subs, log, rules, items) {
       if (e.points) ev.push({ t: e.time, text: d[0] === 'r' ? 'Revision rush: ' + (Number(d[2]) || 0) + ' right' : (RW_DAILY_NAMES[d[0]] || 'Daily puzzle') + ': right', points: e.points, tokens: 0, spend: false });
       return;
     }
+    var got = e.what === 'Pack' ? e.note.split(' ').filter(function (id) { return names[id]; }) : [];
     var text = e.what === 'Shop' ? 'Bought ' + (names[e.item] || e.note || e.item)
+      : e.what === 'Pack' ? 'Opened a ' + (packNames[e.item] || 'pack') + ': ' + got.map(function (id) { return names[id]; }).join(', ')
+      : e.what === 'Sell' ? 'Sold a spare ' + (names[e.item] || e.note || e.item)
       : e.what === 'Tokens' ? 'Changed points into ' + e.tokens + (e.tokens === 1 ? ' token' : ' tokens')
-      : e.what === 'Market' ? 'Night market: ' + (e.note || e.item)
+      : e.what === 'Market' ? 'Carnival: ' + (e.note || e.item)
       : e.what === 'Sticker' ? 'Bought the "' + (names[e.item] || e.note || e.item) + '" sticker'
       : e.what === 'Theme' ? 'Unlocked the ' + (e.note || e.item) + ' colour theme'
       : e.what === 'Hint' ? 'Used a hint' + (e.note ? ': ' + e.note : '')
       : (e.note || 'From your teacher');
     ev.push({ t: e.time, text: text, points: e.points, tokens: e.tokens, spend: !!RW_SPEND[e.what] });
-    if (e.what === 'Shop') owned.push(e.item);
+    if (e.what === 'Shop') have[e.item] = (have[e.item] || 0) + 1;
+    if (e.what === 'Pack') {
+      got.forEach(function (id) { have[id] = (have[id] || 0) + 1; });
+      packs++;
+      dry = got.some(function (id) { return tierOf[id] === 'legendary' || tierOf[id] === 'mythic'; }) ? 0 : dry + 1;
+    }
+    if (e.what === 'Sell' && have[e.item] > 0) have[e.item]--;
     if (e.what === 'Theme' && themes.indexOf(e.item) < 0) themes.push(e.item);
     if (e.what === 'Sticker' && stickers.indexOf(e.item) < 0) stickers.push(e.item);
     if (e.what === 'Market') orders.push({ row: e.row, code: e.code, prize: e.note || e.item, id: e.item, when: Utilities.formatDate(e.time, TZ, 'd MMM'), done: !!e.done });
@@ -3427,6 +3567,7 @@ function rwLedger_(s, assigns, subs, log, rules, items) {
       if (list.length >= q.goal && q.points > 0) { ev.push({ t: list[q.goal - 1], text: 'Weekly quest done: ' + q.done, points: q.points, tokens: 0, spend: false }); quests++; }
     });
   });
+  Object.keys(have).forEach(function (id) { if (have[id] > 0) owned.push(id); else delete have[id]; });
   ev.sort(function (x, y) { return x.t - y.t; });
   // Points never go below zero. Things that happen at the same moment (the score and the blank paper for one
   // worksheet) count together, so the order they are listed in does not change the balance.
@@ -3444,7 +3585,7 @@ function rwLedger_(s, assigns, subs, log, rules, items) {
     i = j;
   }
   return { points: p, tokens: t, earned: earned, lost: lost, events: out, owned: owned, orders: orders, stickers: stickers,
-    themes: themes, onTimes: onTimes, rights: rights, qDays: qDays, daily: daily, quests: quests };
+    themes: themes, onTimes: onTimes, rights: rights, qDays: qDays, daily: daily, quests: quests, have: have, dry: dry, packs: packs };
 }
 
 function rwStudentOutfits_() {
@@ -3463,6 +3604,7 @@ function rwState_(s) {
   return {
     points: L.points, tokens: L.tokens, earned: L.earned,
     owned: L.owned, outfit: av ? av.outfit : null, items: items,
+    counts: L.have, packs: rwPacks_(rules), odds: RW_ODDS, sell: RW_SELL, pity: { every: RW_PITY, dry: L.dry }, opened: L.packs,
     stickers: L.stickers, stickerShop: RW_STICKERS.map(function (x) { return { id: x[0], name: x[1], tokens: x[2] }; }),
     rules: { onTime: rules.onTime, late: rules.late, top: rules.top, mid: rules.mid, low: rules.low, blank: rules.blank,
       topPct: rules.topPct, midPct: rules.midPct, lowPct: rules.lowPct, perToken: rules.perToken },
@@ -3498,12 +3640,56 @@ function api_rw_buy(token, id) {
   var lock = hubLock_();
   lock.waitLock(30000);
   try {
+    throw new Error('Costumes come in packs now. Open a pack to get new pieces.');
     var st = rwState_(s), it = null;
     st.items.forEach(function (x) { if (x.id === id) it = x; });
     if (!it) throw new Error('That item is not in the shop.');
     if (!it.price || st.owned.indexOf(id) >= 0) throw new Error('You already have ' + it.name + '.');
     if (st.points < it.price) throw new Error('You need ' + rwN_(it.price - st.points, 'more point', 'more points') + ' for ' + it.name + '.');
     rwSheet_('log').appendRow([new Date(), s.cls, s.reg, s.name, 'Shop', it.id, -it.price, 0, '', '', it.name]);
+  } finally { lock.releaseLock(); }
+  return rwState_(s);
+}
+
+// Opens one pack: takes the points and gives 3 pieces. The server chooses the pieces.
+function api_rw_pack(token, packId) {
+  needUnfrozen_();
+  var s = funGuard_(who_(token)), cards;
+  var lock = hubLock_();
+  lock.waitLock(30000);
+  try {
+    var st = rwState_(s), pack = null;
+    st.packs.forEach(function (p) { if (p.id === packId) pack = p; });
+    if (!pack) throw new Error('That pack is not on sale.');
+    if (st.points < pack.price) throw new Error('You need ' + rwN_(pack.price - st.points, 'more point', 'more points') + ' for the ' + pack.name + '.');
+    var ids = rwDraw_(pack.id, st.counts, st.pity.dry);
+    cards = ids.map(function (id) { return { id: id, isNew: !st.counts[id] }; });
+    rwSheet_('log').appendRow([new Date(), s.cls, s.reg, s.name, 'Pack', pack.id, -pack.price, 0, '', '', ids.join(' ')]);
+  } finally { lock.releaseLock(); }
+  return { state: rwState_(s), cards: cards };
+}
+
+// Sells spare pieces for a few points each. json is a list of piece ids, one for each spare to sell.
+// The student always keeps one of every piece.
+function api_rw_sell(token, json) {
+  needUnfrozen_();
+  var s = funGuard_(who_(token)), ids = parseJson_(String(json || '')) || [];
+  if (!ids.length || ids.length > 500) throw new Error('Choose which spare pieces to sell.');
+  var lock = hubLock_();
+  lock.waitLock(30000);
+  try {
+    var st = rwState_(s), byId = {}, left = {}, now = new Date(), rows = [];
+    st.items.forEach(function (x) { byId[x.id] = x; });
+    ids.forEach(function (id) {
+      id = String(id);
+      var it = byId[id], n = left[id] == null ? (st.counts[id] || 0) : left[id];
+      if (!it || !RW_SELL[it.tier]) throw new Error('That piece cannot be sold.');
+      if (n < 2) throw new Error('You only have one ' + it.name + ', so it is not a spare.');
+      left[id] = n - 1;
+      rows.push([now, s.cls, s.reg, s.name, 'Sell', id, RW_SELL[it.tier], 0, '', '', it.name]);
+    });
+    var sh = rwSheet_('log');
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
   } finally { lock.releaseLock(); }
   return rwState_(s);
 }
@@ -3523,7 +3709,7 @@ function api_rw_exchange(token, n) {
   return rwState_(s);
 }
 
-// Buys a sticker with tokens. Stickers are shown at the night market, so they cost tokens, not points.
+// Buys a sticker with tokens. Stickers are shown at the carnival, so they cost tokens, not points.
 function api_rw_sticker(token, id) {
   needUnfrozen_();
   var s = funGuard_(who_(token)), x = null;
@@ -3595,7 +3781,7 @@ function api_rw_order(token, prizeId) {
   var lock = hubLock_();
   lock.waitLock(30000);
   try {
-    if (!rwMarketState_().open) throw new Error('The night market is not open yet.');
+    if (!rwMarketState_().open) throw new Error('The carnival is not open yet.');
     var log = rwLog_();
     rwPrizes_(log).forEach(function (p) { if (p.id === prizeId && p.onSale) prize = p; });
     if (!prize) throw new Error('That prize is not on sale.');
@@ -3612,7 +3798,7 @@ function api_rw_order(token, prizeId) {
   return { state: st2, order: { code: code, prize: prize.name }, market: rwMarketFor_(s, rwLog_(), st2.orders) };
 }
 
-// The leaderboard in the middle of the night market: points earned from homework and from the teacher,
+// The leaderboard in the middle of the carnival: points earned from homework and from the teacher,
 // less points taken away. Spending does not lower anyone's place. Only the top ten are shown by name.
 function rwLeaderboard_(s, log) {
   var rules = rwRules_();
@@ -4709,7 +4895,7 @@ function extraNeeds_(now, live) {
       var n = byCls[c].length;
       items.push({ level: 'info', action: 'prizes', kind: 'prizes', cls: c, classes: [c], count: n, list: byCls[c], text: rwN_(n, 'prize', 'prizes') + ' to hand out in ' + c + '.' });
     });
-  } catch (e) { /* no night market yet */ }
+  } catch (e) { /* no carnival yet */ }
   var known = studentsByClass_();
   ((live && live.help) || []).forEach(function (h) {
     items.push({ level: 'warn', action: 'letin', kind: 'letin', cls: h.cls, classes: [hubClassFor_(h.cls, known) || h.cls], name: h.name, gkey: h.key, twice: !!h.twice, at: h.at,

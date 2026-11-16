@@ -4182,7 +4182,7 @@
       H.dash.attention = H.dash.attention.filter(function (x) { return x !== n; }); renderDash(H.dash);
     }).catch(function (e) { if (b) b.disabled = false; if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not done', msg(e)); });
   }
-  // Night market prizes to hand out in a class: tick each one as it is given.
+  // Carnival prizes to hand out in a class: tick each one as it is given.
   function prizesBox(n) {
     modal('<h2>Prizes to hand out · ' + esc(n.cls) + '</h2><p>Check the code on the student\'s ticket, then tap Given.</p><div class="pzlist">' + n.list.map(function (p, i) {
       return '<div class="pz"><span><b>' + esc(p.name) + '</b>' + esc(p.prize) + ' · ' + esc(p.when) + '</span><code>' + esc(p.code) + '</code><button class="btn small" data-pz="' + i + '">Given</button></div>';
@@ -8055,7 +8055,7 @@
     }).catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Could not open the note', msg(e)); });
   }
 
-  /* ---------------- points, shop and night market ---------------- */
+  /* ---------------- points, shop and carnival ---------------- */
 
   var PRIZE_ARTS = { lollipop: 'Lollipop', milktea: 'Milk tea', gummies: 'Gummy bag', stickers: 'Sticker sheet', keychain: 'Keychain', popcorn: 'Popcorn',
     eraser: 'Eraser', pen: 'Pen', chocolate: 'Chocolate bar', mystery: 'Mystery box', ticket: 'Pass or ticket', candyfloss: 'Candy floss',
@@ -8311,7 +8311,7 @@
   }
   function prizePic(art) { return '<img class="ppic" alt="" src="' + (PRIZE_PICS[art] || PRIZE_PICS.mystery || ART_NONE) + '">'; }
 
-  // The night market, drawn small: lanterns, three stalls and the sign on the gate.
+  // The carnival, drawn small: lanterns, three stalls and the sign on the gate.
   function marketArt(open) {
     var lan = '', i, xs = [40, 110, 180, 250, 320, 390, 460, 530];
     for (i = 0; i < xs.length; i++) {
@@ -8327,7 +8327,7 @@
         '<rect x="' + (x + 30) + '" y="92" width="60" height="16" rx="4" fill="#FFF3D1"/><text x="' + (x + 60) + '" y="104" text-anchor="middle" font-size="10" font-weight="800" fill="#6B3A12" font-family="Bricolage Grotesque, sans-serif">' + sign + '</text>' +
         '<circle cx="' + (x + 30) + '" cy="152" r="7" fill="#FFD34D" opacity=".9"/><rect x="' + (x + 50) + '" y="146" width="14" height="14" rx="3" fill="#FF9AA8"/><circle cx="' + (x + 84) + '" cy="153" r="6" fill="#8FD3FF"/>';
     };
-    return '<svg class="mkart' + (open ? ' open' : '') + '" viewBox="0 0 570 200" role="img" aria-label="The night market, ' + (open ? 'open' : 'closed') + '">' +
+    return '<svg class="mkart' + (open ? ' open' : '') + '" viewBox="0 0 570 200" role="img" aria-label="The carnival, ' + (open ? 'open' : 'closed') + '">' +
       '<defs><linearGradient id="mksky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171B45"/><stop offset="1" stop-color="#3A2F66"/></linearGradient></defs>' +
       '<rect width="570" height="200" rx="16" fill="url(#mksky)"/>' +
       [[60, 70], [150, 55], [300, 80], [420, 60], [500, 90], [250, 50], [30, 110], [540, 40]].map(function (st) { return '<circle cx="' + st[0] + '" cy="' + st[1] + '" r="1.4" fill="#FFF6C9" opacity=".8"/>'; }).join('') +
@@ -8356,14 +8356,14 @@
         (i % Math.ceil(w.length / 6) === 0 || i === w.length - 1 ? '<text x="' + (x0 + bar + gap / 2).toFixed(1) + '" y="' + (Hh - 8) + '" text-anchor="middle" class="tl">' + lab + '</text>' : '');
     }).join('');
     return '<svg class="pchart" viewBox="0 0 ' + W + ' ' + Hh + '" role="img" aria-label="Points earned and spent each week">' + grid + bars + '</svg>' +
-      '<div class="pkey"><span><i class="be"></i>Earned</span><span><i class="bs"></i>Spent in the shop</span></div>';
+      '<div class="pkey"><span><i class="be"></i>Earned</span><span><i class="bs"></i>Spent</span></div>';
   }
 
   // Steppers for the rules, and a worked example that follows the numbers.
   var RULES = [
     ['hand', 'Handing in', [['onTime', 'On time', 'points', 5], ['late', 'Late', 'points taken away', 5], ['blank', 'More than half left blank', 'points taken away', 5]]],
     ['score', 'Scores', [['topPct', 'Top band from', '%', 5], ['top', 'Top band', 'points', 5], ['midPct', 'Middle band from', '%', 5], ['mid', 'Middle band', 'points', 5], ['lowPct', 'Lowest band from', '%', 5], ['low', 'Lowest band', 'points', 5]]],
-    ['shop', 'Tokens and shop', [['perToken', '1 token costs', 'points', 5], ['priceScale', 'Shop prices times', '', 0.25]]],
+    ['shop', 'Tokens and packs', [['perToken', '1 token costs', 'points', 5], ['priceScale', 'Pack prices times', '', 0.25]]],
     ['daily', 'Daily puzzles and weekly quests', [['daily', 'Question of the day right', 'points', 1], ['dailyFun', 'Myth or fact, or zoom puzzle, right', 'points', 1], ['questOnTime', 'Quest: 2 on time in a week', 'points', 5], ['questQuiz', 'Quest: 3 puzzles right in a week', 'points', 5]]]
   ];
   function ruleVals() {
@@ -8379,7 +8379,7 @@
 
   /* ================= Release 43: Points, as the approved board =================
      One class at a time first (a card per class: points this week, the class goal, prizes waiting), then that class's
-     leaderboard, goal, weeks and stickers. Under it, what every class shares: the night market, the tickets to hand out
+     leaderboard, goal, weeks and stickers. Under it, what every class shares: the carnival, the tickets to hand out
      (a short list, grouped by class), the prizes (changed right on their cards) and how points are earned. Every number
      comes from api_t_rewards, and every change goes back through the same calls as before. */
   var PT43_IC = {
@@ -8414,7 +8414,7 @@
     var goalOf = function (c) { return (r.goals || []).filter(function (x) { return x.cls === c; })[0]; };
     var pct = function (g) { return Math.min(100, Math.round(100 * g.have / g.target)); };
     var h = '<div class="cx38 pt43"><header class="w43-ph pt43-ph"><button type="button" class="w43-crumb" data-w43home>‹ Overview</button>' +
-      '<div class="pt43-hrow"><div><h1 class="w43-h1">Points</h1><p class="w43-lede">Track one class at a time, then look after the night market every class shares.</p></div><span class="nx-grow"></span>' +
+      '<div class="pt43-hrow"><div><h1 class="w43-h1">Points</h1><p class="w43-lede">Track one class at a time, then look after the carnival every class shares.</p></div><span class="nx-grow"></span>' +
       '<button type="button" class="nx-btn ghost sm" id="rw-preview">See it as a student</button><a class="nx-btn ghost sm" href="' + esc(r.sheet) + '" target="_blank" rel="noopener">Rewards log</a></div></header>';
 
     if (!pick) {
@@ -8464,11 +8464,11 @@
 
     // what every class shares
     var onSale = r.prizes.filter(function (p) { return p.onSale !== false; }).length, gp = pt43Grand(r);
-    h += '<div class="pt43-div"><span>The night market, for every class</span><i></i><small>' + plural(onSale, 'prize', 'prizes') + ' on sale · ' + plural(waiting.length, 'ticket', 'tickets') + ' waiting</small></div>';
+    h += '<div class="pt43-div"><span>The carnival, for every class</span><i></i><small>' + plural(onSale, 'prize', 'prizes') + ' on sale · ' + plural(waiting.length, 'ticket', 'tickets') + ' waiting</small></div>';
     // the market
     var lan = ''; for (var li = 0; li < 5; li++) lan += '<i></i>';
-    h += pt43Sec('market', '#FFB45C', 3, PT43_IC.market, 'Night market', '', '',
-      '<div class="pt43-mk' + (m.open ? ' open' : '') + '"><div class="pt43-mkrow"><label class="bigswitch"><input type="checkbox" id="rw-open"' + (m.open ? ' checked' : '') + '><span class="track"></span><span class="lab"><b>' + (m.open ? 'The night market is open' : 'The night market is closed') + '</b>' +
+    h += pt43Sec('market', '#FFB45C', 3, PT43_IC.market, 'Carnival', '', '',
+      '<div class="pt43-mk' + (m.open ? ' open' : '') + '"><div class="pt43-mkrow"><label class="bigswitch"><input type="checkbox" id="rw-open"' + (m.open ? ' checked' : '') + '><span class="track"></span><span class="lab"><b>' + (m.open ? 'The carnival is open' : 'The carnival is closed') + '</b>' +
         '<span>' + (m.open ? 'Students can get prizes now.' : 'Students can walk around and look, but cannot get prizes.') + '</span></span></label><span class="nx-grow"></span><span class="pt43-lan" aria-hidden="true">' + lan + '</span></div>' +
       '<div class="pt43-mkf' + (m.open ? ' hidden' : '') + '"><div class="field notefield"><label for="rw-note">Sign on the gate while it is closed</label><div class="row"><input type="text" id="rw-note" maxlength="60" value="' + esc(m.note) + '" placeholder="Opens at the end of term"><button class="btn ghost small" id="rw-savenote">Save</button></div></div>' +
         '<div class="field countfield"><label for="rw-at">Opens by itself at</label><div class="row"><input type="datetime-local" id="rw-at" value="' + (m.opensAt ? isoLocal(m.opensAt) : '') + '"><button class="btn small' + (m.opensAt ? '' : ' ghost') + '" id="rw-saveat">' + (m.opensAt ? 'Change' : 'Start the countdown') + '</button>' + (m.opensAt ? '<button class="btn quiet small" id="rw-clearat">Stop</button>' : '') + '</div>' +
@@ -8483,7 +8483,7 @@
             '<span class="pt43-tn">' + esc(o.name) + '</span><span class="pt43-tw">' + esc(o.when) + '</span><button class="btn small' + (o === waiting[0] ? ' pt43-first' : ' ghost') + '" data-hand="' + o.row + '">Given</button></div>';
         }).join('') + '</div>';
       }).join('') + '</div>' + (waiting.length > 5 ? '<button type="button" class="btn quiet small pt43-more" id="pt-showall">' + (showAll ? 'Show fewer' : 'Show all ' + waiting.length) + '</button>' : '')
-      : emptyState('No tickets waiting', 'Prizes students get at the night market show here.');
+      : emptyState('No tickets waiting', 'Prizes students get at the carnival show here.');
     if (done.length) tick += '<details class="handed pt43-done"><summary>Given <span class="n">' + done.length + '</span></summary><ul>' +
       done.map(function (o) { return '<li><span class="code sm">' + esc(o.code) + '</span><span>' + esc(o.cls + ' ' + o.name) + '</span><span class="muted">' + esc(o.prize) + ', ' + esc(o.done) + '</span><button class="btn quiet small" data-undo="' + o.row + '">Undo</button></li>'; }).join('') + '</ul></details>';
     h += pt43Sec('hand', '#5ED39C', 9, PT43_IC.ticket, 'Prizes to hand out', '', waiting.length ? '<span class="pt43-wait">' + waiting.length + ' waiting</span>' : '', tick, 'pt43-hand');
@@ -8521,7 +8521,7 @@
   document.addEventListener('visibilitychange', function () { if (document.hidden) PENDING.slice().forEach(function (j) { j.go(); }); });
   function rwErr(e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not saved', msg(e)); }
   function savePrizes(list, note) {
-    busy('Saving the night market...');
+    busy('Saving the carnival...');
     return tcall('api_t_rwPrizes', list.map(function (p) { return { id: p.id || '', name: p.name, art: p.art, tokens: p.tokens, stock: p.stock == null ? '' : p.stock, onSale: p.onSale !== false }; }))
       .then(function () { closeModal(); toast(note || 'Prizes saved'); return loadRewards(); }).catch(rwErr);
   }
@@ -8758,13 +8758,13 @@
     if ($('pt-showall')) $('pt-showall').onclick = function () { H.rwAllT = !H.rwAllT; renderRewards(); };
     $('rw-open').onchange = function () {
       var on = this.checked;
-      tcall('api_t_rwMarket', { open: on, note: $('rw-note').value }).then(function () { toast(on ? 'Night market open' : 'Night market closed'); return loadRewards(); })
+      tcall('api_t_rwMarket', { open: on, note: $('rw-note').value }).then(function () { toast(on ? 'Carnival open' : 'Carnival closed'); return loadRewards(); })
         .catch(function (e) { if (!/TEACHER_SIGNED_OUT/.test(e.message)) alertBox('Not changed', msg(e)); });
     };
     $('rw-savenote').onclick = function () { tcall('api_t_rwMarket', { note: $('rw-note').value }).then(function () { toast('Sign saved'); H.rw.market.note = $('rw-note').value; }).catch(rwErr); };
     $('rw-saveat').onclick = function () {
       var at = $('rw-at').value;
-      if (!at) { alertBox('Choose a time', 'Choose the day and time the night market opens.'); return; }
+      if (!at) { alertBox('Choose a time', 'Choose the day and time the carnival opens.'); return; }
       tcall('api_t_rwMarket', { opensAt: at.replace('T', ' ') }).then(function () { toast('Countdown started'); return loadRewards(); }).catch(rwErr);
     };
     if ($('rw-clearat')) $('rw-clearat').onclick = function () { tcall('api_t_rwMarket', { opensAt: '' }).then(function () { toast('Countdown stopped'); return loadRewards(); }).catch(rwErr); };
@@ -9535,7 +9535,7 @@
   $('nx-menu-btn').onclick = function (e) { e.stopPropagation(); nxMenu(); togglePop(this, $('pop-nx')); };
   // Release 43: the Settings menu of the boards. Five places, each with one line, and the page you are on marked.
   var W43_MENU = [
-    ['rw', 'Points and night market', 'Prizes, class goals and the market', '#FFC86B', '<path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.3l6-.8z"/>'],
+    ['rw', 'Points and carnival', 'Prizes, class goals and the market', '#FFC86B', '<path d="M12 3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.3l6-.8z"/>'],
     ['cmp', 'Computing', 'Spreadsheet Coaches for the computing classes', '#5ED39C', '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M9 4v16"/>'],
     ['adm', 'Admin', 'Class lists, passwords and your PIN', '#7CC4EE', '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 11h5M18.5 8.5v5"/>'],
     ['set', 'Settings', 'Homework, Claude, phone and setup', '#B98CFF', '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'],
@@ -9720,7 +9720,7 @@
         } else if (gr.k === 'sethw' && it.key === 'sethw|' + cls) {
           out.push({ k: 'you', rank: 5, num: nxSetRows(cls).length, text: 'to set · ' + it.verb, title: 'Homework taught, not set', ref: ref });
         } else if (gr.k === 'hand' && it.classes) {
-          it.classes.forEach(function (c, ci) { if (chNorm(c.label) === cn) { var n = (it.ns || [])[ci]; out.push({ k: 'you', rank: 6, num: n && n.count ? n.count : '', text: 'prizes to hand out', title: 'Night market', ref: ref + '|' + ci }); } });
+          it.classes.forEach(function (c, ci) { if (chNorm(c.label) === cn) { var n = (it.ns || [])[ci]; out.push({ k: 'you', rank: 6, num: n && n.count ? n.count : '', text: 'prizes to hand out', title: 'Carnival', ref: ref + '|' + ci }); } });
         } else if (gr.k === 'follow' && w && w43Mine(w, cls) && /^corrlate\|/.test(it.key || '')) {
           var n2 = (w.corrOwed || []).filter(function (x) { return chNorm(String(x).split(' ')[0]) === cn; }).length;
           if (n2) out.push({ k: 'late', rank: 8, num: n2, text: 'owe corrections', title: w.title, ref: ref });
@@ -10388,11 +10388,11 @@
       var split = Object.keys(by).sort().map(function (c) { return c + ' ' + by[c]; }).join(', ');
       g.follow.push({ key: key, local: true, snoozed: snz[key] === today, title: w.title, sub: plural(w.corrDue - w.corrDone, 'student still owes', 'students still owe') + ' corrections' + (split ? ' · ' + split : '') + '.', verb: 'See who', run: function () { openDetail(w.id, 'corr'); } });
     });
-    // Night market prizes: one line, a button for each class.
+    // Carnival prizes: one line, a button for each class.
     [false, true].forEach(function (off) {
       var list = prizes.filter(function (n) { return !!n.snoozed === off; }); if (!list.length) return;
       var total = list.reduce(function (t, n) { return t + (n.count || 0); }, 0);
-      g.hand.push({ n: list[0], ns: list, key: list[0].key, snoozed: off, title: plural(total, 'prize', 'prizes') + ' to hand out', sub: 'Night market · ' + list.map(function (n) { return n.cls + ' ' + (n.count || 0); }).join(', ') + '.',
+      g.hand.push({ n: list[0], ns: list, key: list[0].key, snoozed: off, title: plural(total, 'prize', 'prizes') + ' to hand out', sub: 'Carnival · ' + list.map(function (n) { return n.cls + ' ' + (n.count || 0); }).join(', ') + '.',
         verb: list.length === 1 ? 'Hand out' : '', classes: list.map(function (n) { return { label: n.cls, aria: 'Hand out ' + plural(n.count || 0, 'prize', 'prizes') + ' in ' + n.cls, run: function () { prizesBox(n); } }; }),
         run: function () { prizesBox(list[0]); } });
     });

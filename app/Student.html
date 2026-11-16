@@ -914,7 +914,7 @@
         <div class="mecol">
           <div class="tiles">
             <button class="tile" id="t-shop" type="button"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1.5 12h-13z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg></span><span><span class="t">Avatar shop</span><span class="s" id="t-shop-s">Hair, clothes and colours for your avatar</span></span></button>
-            <button class="tile" id="t-market" type="button"><span class="ic" style="background:#FFF1C2;color:#8A6400"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></span><span><span class="t">Night market</span><span class="s" id="t-market-s">Spend your tokens at the stalls</span></span></button>
+            <button class="tile" id="t-market" type="button"><span class="ic" style="background:#FFF1C2;color:#8A6400"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg></span><span><span class="t">Carnival</span><span class="s" id="t-market-s">Spend your tokens at the stalls</span></span></button>
             <button class="tile" id="t-arcade" type="button"><span class="ic" style="background:#E2F6EC;color:#0B6E47"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 11v3M6.5 12.5h3M15 12h.01M17 14h.01"/></svg></span><span><span class="t">Arcade</span><span class="s" id="t-arcade-s">Puzzles, quests and revision rush</span></span></button>
             <button class="tile" id="t-badges" type="button"><span class="ic" style="background:#EFE7FF;color:#5B3BB0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13l-2 8 5-3 5 3-2-8"/></svg></span><span><span class="t">Badges</span><span class="s" id="t-badges-s">The badges you have earned</span></span></button>
           </div>
@@ -956,7 +956,7 @@
   <p><b>Lessons</b> has the slides from class. Open any of them to revise.</p>
   <p><b>Homework</b> shows what to do. The one due first is always at the top.</p>
   <p><b>My files</b> keeps your worksheets and notes in folders. Homework goes into its chapter by itself.</p>
-  <p><b>Arcade</b> is where your points live: puzzles, quests, and the night market.</p>
+  <p><b>Arcade</b> is where your points live: puzzles, quests, and the carnival.</p>
   <p>Stuck on a question? Open the worksheet and tap <b>Help</b>. Mr Cedric can see when you are stuck.</p>
 </div>
 
@@ -1414,7 +1414,7 @@
       var dr = L ? L.door : panel;
       document.body.classList.remove('inlayer'); $('backpill').classList.add('hidden');
       $('h1').textContent = dr === 'files' ? 'My files' : 'Arcade';
-      $('hsub').textContent = dr === 'files' ? 'Your worksheets and notes. Homework goes into its chapter by itself.' : 'Your points and tokens. Play today\'s puzzles. Spend your tokens at the night market.';
+      $('hsub').textContent = dr === 'files' ? 'Your worksheets and notes. Homework goes into its chapter by itself.' : 'Your points and tokens. Play today\'s puzzles. Spend your tokens at the carnival.';
       drawFresh(); return;
     }
     document.body.classList.toggle('inlayer', !!L);
@@ -2186,14 +2186,14 @@
     }).catch(function () { p.textContent = 'This could not load. Try again in a moment.'; });
   });
 
-  /* Rewards (avatar shop, night market): loaded only when the student taps, never at boot. */
+  /* Rewards (avatar shop, carnival): loaded only when the student taps, never at boot. */
   var rwToken = null;
   function hubToken() {
     if (rwToken && rwToken.at > Date.now() - 25 * 60000) return Promise.resolve(rwToken.token);
     return call('api_ticketLogin', me.st).then(function (r) { if (!r || !r.token) throw new Error('Could not open'); rwToken = { token: r.token, at: Date.now() }; return r.token; });
   }
   function openRewards(tab) {
-    if (!funOpen()) { toast('The avatar shop and the night market open after the lesson.'); return; }
+    if (!funOpen()) { toast('The avatar shop and the carnival open after the lesson.'); return; }
     var go = function () {
       hubToken().then(function (tok) {
         window.Rewards.open({ tab: tab, call: function (name, token) { var a = Array.prototype.slice.call(arguments, 2); return call.apply(null, [name, typeof token === 'function' ? token() : token].concat(a)); }, token: function () { return rwToken ? rwToken.token : tok; },

@@ -796,7 +796,7 @@
   .r38-earn li:first-child { border-top: 0; }
   .r38-earn li b { color: var(--s3); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .r38-earn li.minus b { color: var(--late); }
-  /* the night market, a door of its own above today's puzzles */
+  /* the carnival, a door of its own above today's puzzles */
   .r38-mk { display: flex; align-items: center; gap: 18px; width: 100%; margin: 18px 0 0; text-align: left; padding: 18px 22px; border-radius: 22px; font: inherit; color: var(--ink);
     border: 1px solid color-mix(in srgb, var(--s1) 40%, var(--line)); background: linear-gradient(110deg, color-mix(in srgb, var(--s1) 18%, var(--surface)), var(--surface) 70%); }
   .r38-mk .mi { flex: none; width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; color: var(--s1); background: color-mix(in srgb, var(--s1) 18%, transparent); }
@@ -1080,7 +1080,7 @@
         <button class="me-full hidden" id="btn-me" aria-label="My avatar"><span class="sprite" id="me-sprite"></span></button>
       </div>
       <div class="pills hidden" id="btn-rw-wrap">
-        <button class="pill" id="btn-rw" aria-label="My avatar, points and night market"></button>
+        <button class="pill" id="btn-rw" aria-label="My avatar, points and carnival"></button>
         <button class="pill go" id="btn-shop">My avatar &rsaquo;</button>
       </div>
       <div class="hero-nav hidden" id="hero-nav" role="tablist" aria-label="My homework"><button id="hv-todo" role="tab" type="button">To do</button><button id="hv-folders" role="tab" type="button">My folders</button><button id="hv-fun" role="tab" type="button">Arcade<span class="tabdot hidden" id="hv-fun-dot" aria-hidden="true"></span></button></div>
@@ -1512,7 +1512,7 @@
     var st = (S.stickers || []).filter(function (id) { return window.Rewards && Rewards.stickerPic && Rewards.stickerPic(id); });
     if (st.length && day % 2) {
       var id = st[day % st.length];
-      el.innerHTML = '<img alt="" src="' + Rewards.stickerPic(id) + '"><span>Your sticker of the day. Show it off at the night market.</span>';
+      el.innerHTML = '<img alt="" src="' + Rewards.stickerPic(id) + '"><span>Your sticker of the day. Show it off at the carnival.</span>';
     } else el.innerHTML = '<span><b>Did you know?</b> ' + esc(FACTS[day % FACTS.length]) + '</span>';
   }
 
@@ -2125,7 +2125,7 @@
   }
   window.__wshNotePdf = function () { return Ink.notePdf({ paper: S.doc.paper, strokes: S.strokes, label: 'test' }); };   // for testing only
 
-  /* ---------------- Points, avatar and night market ---------------- */
+  /* ---------------- Points, avatar and carnival ---------------- */
 
   var STAR = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#FFC21A" stroke="#C98A00" stroke-width="2"/><path d="M16 7.5l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L16 20.8l-5.4 2.9 1.2-5.9-4.4-4.1 6-.7z" fill="#FFF6C9" stroke="#C98A00" stroke-width="1.2" stroke-linejoin="round"/></svg>';
   var TOKEN = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#E5484D" stroke="#9E1B25" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="none" stroke="#FFD98A" stroke-width="1.6" stroke-dasharray="2 2.2"/><rect x="12.5" y="12.5" width="7" height="7" rx="1" fill="#9E1B25"/><rect x="13.8" y="13.8" width="4.4" height="4.4" rx=".6" fill="#FFE3A1"/></svg>';
@@ -2168,7 +2168,7 @@
     }).catch(function (e) { rwLoading = null; throw e; });
     return rwLoading;
   }
-  /* Avatars and the night market are closed while the class is in its Science lesson (unless the teacher opens them),
+  /* Avatars and the carnival are closed while the class is in its Science lesson (unless the teacher opens them),
      so the Fun tab and the avatar button are hidden then. Checked when the page opens and every minute. */
   function funCheck() {
     if (!S.token) return;
@@ -2180,7 +2180,7 @@
     if (!open && S.hwView === 'fun') { S.hwView = 'todo'; renderList(); }
   }
   setInterval(function () { if (!document.hidden && S.token && $('scr-list') && !$('scr-list').classList.contains('hidden')) funCheck(); }, 60000);
-  function funClosed() { alertBox('Closed during the lesson', 'Avatars, the Arcade and the night market are closed while your class is in its Science lesson. They open again after the lesson.'); }
+  function funClosed() { alertBox('Closed during the lesson', 'Avatars, the Arcade and the carnival are closed while your class is in its Science lesson. They open again after the lesson.'); }
   function openShop() {
     if (SHELL) { shellSay('rewards', { tab: 'shop' }); return; }
     busy('Opening your avatar');
@@ -2704,7 +2704,7 @@
     if (lsGet('wsh_compact') === '1') setCompact(true);
   }
 
-  /* ---------------- This week: quests, the class goal and the night market ---------------- */
+  /* ---------------- This week: quests, the class goal and the carnival ---------------- */
 
   var QI = { onTime: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
     quiz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17h6M10 20.5h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>' };
@@ -2725,18 +2725,18 @@
       h += '<div class="tile goal"><div class="goal-top">' + ROCKET + '<div><h3>Class goal: ' + esc(g.text) + '</h3><p>Everyone\'s points count towards it.</p></div></div>' +
         '<div class="meter gold"><i style="width:' + pct + '%"></i></div><div class="meter-row"><span><b>' + g.have.toLocaleString('en-GB') + '</b> of ' + g.target.toLocaleString('en-GB') + ' points</span><span>' + pct + '%</span></div></div>';
     }
-    var m = SHELL ? {} : (sum.market || {});                 // release 38: in the shell the night market has its own door, above the puzzles
-    if (m.open) h += '<div class="tile market-tile"><h3>The night market is open!</h3><p>Spend your tokens on real prizes.</p><button class="btn" id="go-market">Go to the night market</button></div>';
-    else if (m.opensAt && m.opensAt > Date.now()) h += '<div class="tile market-tile"><h3>The night market opens soon</h3><p>' + esc(new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })) + '</p><div class="count" id="mk-count" data-at="' + m.opensAt + '">' + countParts(m.opensAt) + '</div></div>';
+    var m = SHELL ? {} : (sum.market || {});                 // release 38: in the shell the carnival has its own door, above the puzzles
+    if (m.open) h += '<div class="tile market-tile"><h3>The carnival is open!</h3><p>Spend your tokens on real prizes.</p><button class="btn" id="go-market">Go to the carnival</button></div>';
+    else if (m.opensAt && m.opensAt > Date.now()) h += '<div class="tile market-tile"><h3>The carnival opens soon</h3><p>' + esc(new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })) + '</p><div class="count" id="mk-count" data-at="' + m.opensAt + '">' + countParts(m.opensAt) + '</div></div>';
     return h;
   }
   /* Release 38, in the shell: the points box, with how you earn them (the teacher's own rules, from the server), and
-     the night market as a door of its own. */
+     the carnival as a door of its own. */
   function r38Wallet() {
     var sum = S.sum || {}, r = S.rules, p = Number(sum.points) || 0, t = Number(sum.tokens) || 0, h = '';
     h += '<section class="r38-ar" aria-label="Your points and tokens"><div class="r38-ava" aria-hidden="true">' + (S.ava ? '<img alt="" src="' + esc(S.ava) + '">' : '<span>' + esc(S.avaIni || '') + '</span>') + '</div><div><div class="wal"><div><span class="n pt">' + p.toLocaleString('en-GB') + '</span><span class="u">' + (p === 1 ? 'point' : 'points') + '</span></div>' +
       '<div><span class="n tk">' + t + '</span><span class="u">' + (t === 1 ? 'token' : 'tokens') + '</span></div></div>' +
-      '<p class="note">' + (r ? esc(String(r.perToken)) + ' points make 1 token. Change them at the night market, and spend tokens on real prizes.' : 'Points come from your worksheets, puzzles and quests.') + '</p></div>';
+      '<p class="note">' + (r ? esc(String(r.perToken)) + ' points make 1 token. Change them at the carnival, and spend tokens on real prizes.' : 'Points come from your worksheets, puzzles and quests.') + '</p></div>';
     if (r) {
       h += '<div class="r38-earn"><h3>How you earn</h3><ul>' +
         '<li><span>Hand it in on time</span><b>+' + esc(String(r.onTime)) + '</b></li>' +
@@ -2752,9 +2752,9 @@
     var m = (S.sum && S.sum.market) || {}, icon = '<span class="mi" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/><path d="M10 20v-4h4v4"/></svg></span>';
     var go = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
     var t = Number((S.sum && S.sum.tokens) || 0);
-    if (m.open) return '<div class="r38-mk">' + icon + '<span class="mt"><b>Night market</b><small>The stalls are open. Spend your ' + t + (t === 1 ? ' token' : ' tokens') + ' on prizes, and dress your avatar.</small></span><button class="mg" id="r38-mk-go" data-tab="market" type="button">Go in' + go + '</button></div>';
+    if (m.open) return '<div class="r38-mk">' + icon + '<span class="mt"><b>Carnival</b><small>The stalls are open. Spend your ' + t + (t === 1 ? ' token' : ' tokens') + ' on prizes, and dress your avatar.</small></span><button class="mg" id="r38-mk-go" data-tab="market" type="button">Go in' + go + '</button></div>';
     var when = m.opensAt && m.opensAt > Date.now() ? new Date(m.opensAt).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }) : '';
-    return '<div class="r38-mk">' + icon + '<span class="mt"><b>Night market</b><small>' + (when ? 'The stalls open ' + esc(when) + '.' : 'The stalls are closed for now.') + ' You can still dress your avatar.</small>' +
+    return '<div class="r38-mk">' + icon + '<span class="mt"><b>Carnival</b><small>' + (when ? 'The stalls open ' + esc(when) + '.' : 'The stalls are closed for now.') + ' You can still dress your avatar.</small>' +
       (when ? '<span class="count" id="mk-count" data-at="' + m.opensAt + '">' + countParts(m.opensAt) + '</span>' : '') + '</span><button class="mg quiet" id="r38-mk-go" data-tab="shop" type="button">Dress my avatar</button></div>';
   }
   function countParts(at) {
@@ -2768,7 +2768,7 @@
   function renderFun() {
     $('list-body').innerHTML = '<div class="fun" id="fun-body"></div>';
     renderSide();
-    clearInterval(dueTimer); dueTimer = setInterval(tickDue, 60000);   // the night market countdown
+    clearInterval(dueTimer); dueTimer = setInterval(tickDue, 60000);   // the carnival countdown
   }
   // Fills Fun when it is showing. On any tab it checks for new badges and keeps the dot on the Fun tab up to date.
   function renderSide() {
