@@ -135,15 +135,16 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  var bar=document.getElementById('bar');bar.parentNode.insertBefore(rib,bar.nextSibling);
  var card=document.createElement('div');card.id='swapc';card.setAttribute('role','status');card.innerHTML='<div class="old"><small>Before</small><h3></h3><p></p></div><div class="arr">→</div><div class="new"><small></small><h3></h3><p></p></div>';document.body.appendChild(card);
  var last='',maxStage=-1,timer=0;
- function beat(k){var b=B[k];if(!b||k===last)return;last=k;maxStage=Math.max(maxStage,b[0]);
+ window.__ribST=ST;
+ function beat(k){var b=B[k];if(!b||k===last)return;last=k;maxStage=Math.max(maxStage,b[0]);window.__beatNow=b[0];
   [].forEach.call(rib.children,function(d,i){d.className=i===b[0]?'on':(i<=maxStage?'done':'')});
   var on=rib.children[b[0]];if(on&&on.scrollIntoView)try{on.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}
   card.querySelector('.old h3').textContent=b[1];card.querySelector('.old p').textContent=b[2];
   card.querySelector('.new small').textContent='Now · '+(b[0]+1)+' of 6 in my hub';card.querySelector('.new h3').textContent=b[3];card.querySelector('.new p').textContent=b[4];
   var sb=document.getElementById('sbar');if(sb)card.style.bottom=(sb.offsetHeight+14)+'px';card.classList.add('show');clearTimeout(timer);timer=setTimeout(function(){card.classList.remove('show')},9000)}
  window.__beat=beat;window.__beatState=function(){return {last:last,max:maxStage,show:card.classList.contains('show')}};
- window.__callBase=window.__callBase||window.__call;var oc=window.__call;window.__call=function(fn,a,ok,bad){try{var k=FN[fn];if(k==='track'&&(last==='pile'||last==='ret'))k=null;if(fn==='api_t_update'&&a&&a[2]&&a[2].showMarked)k='ret';if(k)beat(k)}catch(e){}return oc(fn,a,ok,bad)};
- var on=window.__note;window.__note=function(u){try{if(/science-decks\/[\w.-]+\.html/.test(String(u))&&!/links-\d/.test(String(u)))beat('teach')}catch(e){}return on(u)};
+ window.__callBase=window.__callBase||window.__call;var oc=window.__call;window.__call=function(fn,a,ok,bad){try{var k=FN[fn];if(k==='track'&&(last==='pile'||last==='ret'))k=null;if(fn==='api_t_update'&&a&&a[2]&&a[2].showMarked)k='ret';if(k)window.__beat(k)}catch(e){}return oc(fn,a,ok,bad)};
+ var on=window.__note;window.__note=function(u){try{if(/science-decks\/[\w.-]+\.html/.test(String(u))&&!/links-\d/.test(String(u)))window.__beat('teach')}catch(e){}return on(u)};
  card.addEventListener('transitionend',function(){});
  addEventListener('keydown',function(e){if(e.key==='Escape')card.classList.remove('show')});
 })();
@@ -156,8 +157,18 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  +'#sbar.pulse{animation:sbp .9s ease}@keyframes sbp{0%{background:#f2b84b}100%{background:#12163a}}'
  +'@media (max-width:760px){#sbar{flex-wrap:wrap}#sbar .t{flex-basis:100%;order:3}}';document.head.appendChild(css);
  var bar=document.createElement('div');bar.id='sbar';bar.setAttribute('role','region');bar.setAttribute('aria-label','The step you are on');
- bar.innerHTML='<span class="n"></span><div class="t" aria-live="polite"><b></b><span></span></div><button type="button" data-s="all">All steps</button><button type="button" data-s="back">Back</button><button type="button" class="nx" data-s="next">Next step</button>';
+ bar.innerHTML='<span class="n"></span><span class="rp" hidden></span><i class="sp"></i><div class="t" aria-live="polite"><b></b><span></span></div><button type="button" data-s="all">Steps</button><button type="button" data-s="back">Back</button><button type="button" class="nx" data-s="next">Next</button>';
  document.body.appendChild(bar);var i=0;
+ /* One bar only. The top bar and the six-part strip are hidden, and their controls sit in this bar. */
+ try{var top=document.getElementById('bar');bar.appendChild(top);document.body.classList.add('slim');
+  var la=document.getElementById('linksall');if(la)la.textContent='Links';
+  var ss=document.createElement('style');ss.textContent='body.slim #rib{display:none}body.slim #bar{display:contents}body.slim #bar>b,body.slim #bar>span{display:none}'
+   +'#sbar{flex-wrap:wrap;gap:6px 10px;padding-top:7px;padding-bottom:8px}#sbar .t{flex:1 1 100%!important}#sbar .t b{font-size:17px}#sbar .t span{font-size:15px}#sbar .sp{flex:1 1 0;min-width:0}#sbar .t{order:3;flex-basis:100%}#sbar>button{order:2}'
+   +'#sbar .rp{flex:none;font:700 13px system-ui,sans-serif;color:#f2b84b;border:1px solid #f2b84b;border-radius:99px;padding:6px 12px;white-space:nowrap}#sbar .rp s{color:#c9cee6;text-decoration-color:#ff7a6b;text-decoration-thickness:2px}'
+   +'#sbar #linksall,#sbar .fbtn{margin-left:0!important}#sbar #sw{padding:2px}#sbar #sw button{border:0;padding:7px 14px}#sbar #cchip{border:2px solid #f2b84b;color:#f2b84b}'
+   +'@media (max-width:1500px){body.slim:has(#cchip) #sbar .rp{display:none}}@media (max-width:900px){#sbar .rp{display:none}}';document.head.appendChild(ss);
+  var ob=window.__beat;if(ob)window.__beat=function(k){ob(k);try{var st=window.__beatState(),m=st.max,rp=bar.querySelector('.rp');var R=window.__ribST;if(R&&m>=0){var cur=R[window.__beatNow!=null?window.__beatNow:m];rp.innerHTML='';rp.appendChild(document.createTextNode((R.indexOf(cur)+1)+' of 6 · '+cur[0]+' replaces '));var x=document.createElement('s');x.textContent=cur[1];rp.appendChild(x);rp.hidden=false}}catch(e){}};
+ }catch(e){}
  function F(){return window.__FSTEPS||[]}
  function draw(p){var f=F();if(!f.length)return;i=Math.max(0,Math.min(i,f.length-1));bar.querySelector('.n').textContent='Step '+(i+1)+' of '+f.length;bar.querySelector('.t b').textContent=f[i][0];bar.querySelector('.t span').textContent=f[i][1];
   bar.querySelector('[data-s=back]').disabled=i===0;bar.querySelector('[data-s=next]').disabled=i===f.length-1;if(p){bar.classList.remove('pulse');void bar.offsetWidth;bar.classList.add('pulse')}}
@@ -232,7 +243,7 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  if(!window.__fresh||!RELAY)return;
  var S=window.__srv,bar=document.getElementById('bar'),la=document.getElementById('linksall'),code='',link=null,seats={},joined=0,handed={},chip=null;
  var base=window.__callBase||window.__call;
- function draw(){if(chip)chip.innerHTML='Class code<b>'+code+'</b>'+joined+' joined · '+Object.keys(handed).length+' handed in'}
+ function draw(){if(chip)chip.innerHTML='Code<b>'+code+'</b>'+joined+' in · '+Object.keys(handed).length+' done';chip.setAttribute('aria-label','Class code '+code+'. '+joined+' joined, '+Object.keys(handed).length+' handed in.')}
  function big(){var c=card('<small>Join my class as a student</small><h2>Click “Join my class” on the slide, then type</h2><div class="code">'+code+'</div><p>'+joined+' joined so far. No name or password is needed. Each person gets a made-up seat name such as Amber Otter.</p><button type="button" id="cc-x">Close</button>');c.querySelector('#cc-x').onclick=closeCard}
  function onMsg(o){if(!o||!o.c)return;var c=String(o.c);
   if(o.k==='join'){var s=seats[c];if(!s){if(joined>=40){link.post(c,{k:'no',why:'The class is full.'});return}try{s=seats[c]=S.__join()}catch(e){window.__err('class','join '+e.message);link.post(c,{k:'no',why:'The class could not add you. Tell Mr Cedric.'});return}joined++;draw();var cc=document.getElementById('ccard');if(cc&&!cc.hidden&&cc.querySelector('.code'))big()}
