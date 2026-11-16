@@ -178,6 +178,14 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
  function draw(p){var f=F();if(!f.length)return;i=Math.max(0,Math.min(i,f.length-1));bar.querySelector('.n').textContent='Step '+(i+1)+' of '+f.length;bar.querySelector('.t b').textContent=f[i][0];bar.querySelector('.t span').textContent=f[i][1];
   room();bar.querySelector('[data-s=back]').disabled=i===0;bar.querySelector('[data-s=next]').disabled=i===f.length-1;if(p){bar.classList.remove('pulse');void bar.offsetWidth;bar.classList.add('pulse')}}
  /* What the teachers in the room do at each step. It shows on the projector, above the step for the presenter. */
+ /* A small tab pulls the whole bar down out of the way, and brings it back. */
+ try{var tb=document.createElement('button');tb.type='button';tb.id='sbtab';var ts=document.createElement('style');
+  ts.textContent='#sbtab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:0;z-index:99990;font:800 13px system-ui,sans-serif;letter-spacing:.04em;padding:6px 14px 7px;border-radius:12px 12px 0 0;border:2px solid #f2b84b;border-bottom:0;background:#12163a;color:#f2b84b;cursor:pointer;white-space:nowrap}#sbtab:focus-visible{outline:2px solid #fff;outline-offset:2px}body.sbar-off #sbar{display:none}body.sbar-off #sbtab{background:#f2b84b;color:#12163a}';
+  document.head.appendChild(ts);document.body.appendChild(tb);
+  var off=false;try{off=sessionStorage.getItem('demo_bar_off')==='1'}catch(e){}
+  function tabDraw(){document.body.classList.toggle('sbar-off',off);tb.setAttribute('aria-expanded',String(!off));tb.textContent=off?'\u25B2 Show the bar \u00B7 step '+(i+1):'\u25BC Hide the bar';tb.style.bottom=off?'0':bar.offsetHeight+'px'}
+  tb.onclick=function(){off=!off;try{sessionStorage.setItem('demo_bar_off',off?'1':'0')}catch(e){}tabDraw()};
+  setInterval(tabDraw,500);window.__tabDraw=tabDraw}catch(e){}
  function roomTxt(){var st=window.__classState?window.__classState():null,open=!!(st&&st.code),c=open?st.code:'';
   if(i<4)return [0,'Watch the screen. Do not join yet.'];
   if(i===4)return [0,'Watch how a student hands in. Your turn is next.'];
