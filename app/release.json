@@ -1,14 +1,13 @@
 {
-  "build": "2026-11-16-costume-packs",
-  "seq": 50,
-  "ref": "6314be422dfd341176d827771b2d396b484576a6",
-  "title": "learnwithmrcedric: costume packs and the carnival",
+  "build": "2026-11-17-foil-packs",
+  "seq": 51,
+  "ref": "d7177d96492cc9549eb1ffd8872b814d4ccbc36e",
+  "title": "learnwithmrcedric: foil packs, new cards and tidier avatars",
   "notes": [
-    "Release 50 needs server code: paste App.gs and Hub.gs from the code page, then deploy a new version. Until then students keep the release 49 pages",
-    "Costumes come from four packs of 3 pieces at 80 points each. The third piece is always Rare or better, and a piece a student already has is a spare they can sell for a few points",
-    "66 new costume pieces, with the Supernova uniform as the rarest. The chances are shown to students on the Packs tab",
-    "The night market is now the Carnival, with a Ferris wheel and a roller coaster students can sit on, a mini map and a new avatar stage",
-    "The prize tab in your sheet keeps its name, Night market, so the prizes in it stay where they are"
+    "No new server code. These pages need the release 50 server code. If you have already pasted and deployed it, the pages update themselves within about ten minutes. If not, paste App.gs and Hub.gs from the code page first",
+    "Costume packs are now real 3D foil packs. Opening one is a short film: the top tears off, the cards rise out, and each card is turned one at a time at full size",
+    "Every costume piece has its own card with a short description, many with a bit of science in them. Legendary and Mythic pieces are full-picture cards",
+    "Avatars: hair now fits the head and sits properly under hats, the fringe no longer covers the eyes, and things in the hand are held instead of sticking out of the arm"
   ],
   "files": [
     {
@@ -75,7 +74,7 @@
       "name": "Rewards",
       "type": "HTML",
       "path": "Rewards.html",
-      "sha256": "939bc5598496d9b84a666ff4bb2fef4b0f2f9e0c8fa1b4a9eaa2ec4fab8ff463"
+      "sha256": "ab6870516c081268338361385f214ed98eb613bdbff09378701ae592d628ac0c"
     },
     {
       "name": "Student",
@@ -103,6 +102,64 @@
     }
   ],
   "pages": [
+    {
+      "seq": 51,
+      "build": "2026-11-17-foil-packs",
+      "ref": "d7177d96492cc9549eb1ffd8872b814d4ccbc36e",
+      "needsServer": 50,
+      "files": [
+        {
+          "name": "Computing",
+          "path": "Computing.html",
+          "sha256": "e3e256ef53ee2a4a72ce096097f4fafd13a28fc57dbb42084d7d40cba722b449"
+        },
+        {
+          "name": "Guide",
+          "path": "Guide.html",
+          "sha256": "075babaa86905ebdcc9f11a3c7c67809a302199a69028990d8cacf31e5fd0f59"
+        },
+        {
+          "name": "Homework",
+          "path": "Homework.html",
+          "sha256": "2ded6565b2912e47581c32c70d6c701534e8b125b77825e754fb0ba104eefe77"
+        },
+        {
+          "name": "HubTeacher",
+          "path": "HubTeacher.html",
+          "sha256": "cce996f94a63554ce104849f56ca3b817ba712cf1987989d5054af362b922952"
+        },
+        {
+          "name": "Ink",
+          "path": "Ink.html",
+          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
+        },
+        {
+          "name": "Phone",
+          "path": "Phone.html",
+          "sha256": "4dd012fb7bcbe677e50c26f27fd48573d25212db0a4a7b5e9d4cfb4b6184b40c"
+        },
+        {
+          "name": "Rewards",
+          "path": "Rewards.html",
+          "sha256": "ab6870516c081268338361385f214ed98eb613bdbff09378701ae592d628ac0c"
+        },
+        {
+          "name": "Student",
+          "path": "Student.html",
+          "sha256": "96ed06c60bbf156794bd6960b69af900bba34df60ba622a4216d72b028147521"
+        },
+        {
+          "name": "Styles",
+          "path": "Styles.html",
+          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
+        },
+        {
+          "name": "Teacher",
+          "path": "Teacher.html",
+          "sha256": "414fca89377be8f196b039cd5ed363d80c2affb26660febf417df77aaaa912fc"
+        }
+      ]
+    },
     {
       "seq": 50,
       "build": "2026-11-16-costume-packs",
@@ -438,64 +495,6 @@
           "name": "Student",
           "path": "Student.html",
           "sha256": "e094882873e26324cd58c7698fffb057825e242c347ef9fb36cdc9654fb9be37"
-        },
-        {
-          "name": "Styles",
-          "path": "Styles.html",
-          "sha256": "15ec677c523ec78c9b76632541113c9f1da8ea5b69de18c9135b6cadf72b6fb7"
-        },
-        {
-          "name": "Teacher",
-          "path": "Teacher.html",
-          "sha256": "a411588a5a5cec30f39f29fc8b35ef19817d2566869b4cebca78bec619cb08fa"
-        }
-      ]
-    },
-    {
-      "seq": 44,
-      "build": "2026-10-28-teacher-hub-boards",
-      "ref": "7e3ee93d4813fbac93fb4d8c235f104e2c4e6aa2",
-      "needsServer": 34,
-      "files": [
-        {
-          "name": "Computing",
-          "path": "Computing.html",
-          "sha256": "213f4e83261ad1280649cd903d608617a2331a6e458a6c147fa10cf03acd0a96"
-        },
-        {
-          "name": "Guide",
-          "path": "Guide.html",
-          "sha256": "a37a272202a789c7532afbd61d48537eddd1fc252ddf051fc39af08c5a1b9100"
-        },
-        {
-          "name": "Homework",
-          "path": "Homework.html",
-          "sha256": "5c8d30766175fad963799ad321a62a8e6aec3c6c5d1b5455b42975aef62fa5c3"
-        },
-        {
-          "name": "HubTeacher",
-          "path": "HubTeacher.html",
-          "sha256": "2b8a976d944264d9b6a418403ba284d8cfc2b53d74fbfd5cb6b67b8b1c639884"
-        },
-        {
-          "name": "Ink",
-          "path": "Ink.html",
-          "sha256": "0cf8a5a6a7b21d580d18a05954c3f072825df78246838bbceb29f465e02833d9"
-        },
-        {
-          "name": "Phone",
-          "path": "Phone.html",
-          "sha256": "a8fa2216528ea0f440d07f21c7a1ad202c3a90495475abb5ad66115e92b731d4"
-        },
-        {
-          "name": "Rewards",
-          "path": "Rewards.html",
-          "sha256": "042389a495aeb15ce5aab4de195de3ee81673bdff403b25e40297cba6aae8331"
-        },
-        {
-          "name": "Student",
-          "path": "Student.html",
-          "sha256": "df8008c7cf4a270b607707066751f3b706ecb4d6b29a2dbd9fe46a2fd9186c98"
         },
         {
           "name": "Styles",
