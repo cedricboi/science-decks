@@ -84,12 +84,17 @@ footer a{color:var(--amber)}
 <!-- 1 -->
 <section class="step" data-t="1 KAT" hidden>
 <p class="eye">Step 1 of 7 · 2 minutes</p>
-<h2>Choose your KAT.</h2>
-<p class="soft">Think of one lesson next term. Which learning processes should technology enhance? Choose one or more. Press a KAT again to remove it.</p>
+<h2>Choose your KAT and your lesson.</h2>
+<p class="soft">Think of one lesson next term. Which learning processes should technology enhance? Choose one or more. Most tools serve one to three. Press a KAT again to remove it.</p>
 <p class="kc"><b id="katcount" aria-live="polite"></b></p>
 <div class="kats" id="kats"></div>
 <div class="edpanel" id="kated" hidden></div>
+<h3>Your lesson</h3>
+<p class="soft">The more Claude knows about the lesson, the better the page fits it. The last three boxes can be left empty.</p>
 <label>Level and subject<small>For example, Sec 1 Science.</small><input id="f-lesson" placeholder="Sec 1 Science" autocomplete="off"></label>
+<label>Topic<small>The one lesson you have in mind.</small><input id="f-topic" placeholder="Reading a vernier caliper" autocomplete="off"></label>
+<label>Learning outcome<small>Finish this sentence: by the end, students can…</small><textarea id="f-lo" placeholder="read a vernier caliper to 0.01 cm"></textarea></label>
+<label>Success criteria<small>How you and your students will know they have got it.</small><textarea id="f-sc" placeholder="a student reads three different scales correctly, and can explain a zero error"></textarea></label>
 </section>
 
 <!-- 2 -->
@@ -261,7 +266,7 @@ var KATS0=[
 ['Foster Conceptual Change','Let students show and externalise what they understand.','Students move a live model, then explain in writing what changed.'],
 ['Facilitate Learning Together',"Let students build on one another's ideas in groups.",'A wall where every student posts an answer and replies to one other answer.']];
 var TPL0={
- main:"I want a page where my {lesson} students {students}.[[ As the teacher, I want to see {teacher}.]]\n{kats}\nIt should work like {toolA} and {toolB} together.[[\nWhat I like in {toolA}: {likeA|[the feature]}. What I like in {toolB}: {likeB|[the feature]}.]][[\nMy problem now is that {problem}.]]\nIs this possible? How can we achieve it? Which tools do we need?\nUse made-up names in any example. Ask me questions before you build.",
+ main:"I want a page where my {lesson} students {students}.[[ As the teacher, I want to see {teacher}.]]\n{kats}[[\nThe topic is {topic}.]][[\nBy the end of the lesson, students can {lo}.]][[\nThe success criteria are: {sc}. Let the page show each student how they are doing against these.]]\nIt should work like {toolA} and {toolB} together.[[\nWhat I like in {toolA}: {likeA|[the feature]}. What I like in {toolB}: {likeB|[the feature]}.]][[\nMy problem now is that {problem}.]]\nIs this possible? How can we achieve it? Which tools do we need?\nUse made-up names in any example. Ask me questions before you build.",
  gas:"I want this page to save each student’s answer in a Google Sheet using Google Apps Script, so that I can see {teacher|every answer afterwards}. I have never used Apps Script. Give me the code, then walk me through the setup one step at a time, and wait for me to say done after each step. Students will enter a seat number, not a name. Use made-up names in any example.",
  say:"I combined {toolA} and {toolB} into one page so that my {lesson} students can {students|[what students do]}. {kats}"};
 var KATS=KATS0.map(function(k){return k.slice()}),TPL={main:TPL0.main,gas:TPL0.gas,say:TPL0.say};
@@ -281,13 +286,13 @@ var kb=$('kats');
 function buildKats(){kb.textContent='';KATS.forEach(function(k){var b=document.createElement('button');b.type='button';b.innerHTML='<b></b><span></span><em></em>';b.children[0].textContent=k[0];b.children[1].textContent=k[1];b.children[2].textContent=k[2]?'Example: '+k[2]:'';b.children[2].hidden=!k[2];b.onclick=function(){if(document.body.classList.contains('editing'))return;var p=st.kats.indexOf(k[0]);if(p<0)st.kats.push(k[0]);else st.kats.splice(p,1);save();render()};kb.appendChild(b)})}
 buildKats();
 function katText(){var a=KATS.map(function(k){return k[0]}).filter(function(n){return st.kats.indexOf(n)>=0});if(!a.length)return 'The KAT is [your KAT].';if(a.length===1)return 'The KAT is '+a[0]+'.';return 'The KATs are '+a.slice(0,-1).join(', ')+' and '+a[a.length-1]+'.'}
-var F=['lesson','a','af','b','bf','prob','stu','tea'];
+var F=['lesson','topic','lo','sc','a','af','b','bf','prob','stu','tea'];
 F.forEach(function(f){var e=$('f-'+f);e.value=st[f]||'';e.addEventListener('input',function(){st[f]=e.value;save();render()})});
 function v(f,d){var x=(st[f]||'').trim().replace(/[.\s]+$/,'');return x||d}
 function lc(s){return s?s.charAt(0).toLowerCase()+s.slice(1):s}
 /* The prompt is written from a template. {name} is filled from the answers. {name|words} uses the words when the answer is empty. A part inside [[ ]] is left out when all its optional answers are empty. */
-var OPT={teacher:1,likeA:1,likeB:1,problem:1};
-function vals(){return {lesson:v('lesson','[level and subject]'),students:lc(v('stu','')),teacher:lc(v('tea','')),kats:katText(),toolA:v('a','[tool A]'),toolB:v('b','[tool B]'),likeA:lc(v('af','')),likeB:lc(v('bf','')),problem:lc(v('prob',''))}}
+var OPT={teacher:1,likeA:1,likeB:1,problem:1,topic:1,lo:1,sc:1};
+function vals(){return {lesson:v('lesson','[level and subject]'),topic:lc(v('topic','')),lo:lc(v('lo','')).replace(/^(students|they) (can|will be able to) /i,''),sc:lc(v('sc','')),students:lc(v('stu','')),teacher:lc(v('tea','')),kats:katText(),toolA:v('a','[tool A]'),toolB:v('b','[tool B]'),likeA:lc(v('af','')),likeB:lc(v('bf','')),problem:lc(v('prob',''))}}
 function fill(t,V){
  function sub(x,inBlock){return x.replace(/\{(\w+)(?:\|([^}]*))?\}/g,function(m,n,d){if(!(n in V))return m;if(V[n])return V[n];if(d!=null)return d;if(n==='students')return '[what students see and do]';return OPT[n]?(inBlock?'[...]':''):m})}
  t=String(t).replace(/\[\[([\s\S]*?)\]\]/g,function(m,body){var any=false,has=false;body.replace(/\{(\w+)(?:\|[^}]*)?\}/g,function(mm,n){if(OPT[n]){has=true;if(V[n])any=true}});return (!has||any)?sub(body,true):''});
@@ -344,7 +349,7 @@ function krow(k){var r=document.createElement('div');r.className='krow';r.innerH
 function preview(){var c=collect();KATS=(c.kats||KATS0).map(function(k){return k.slice()});if(!KATS.length)KATS=KATS0.map(function(k){return k.slice()});TPL={main:c.tpl.main||TPL0.main,gas:c.tpl.gas||TPL0.gas,say:c.tpl.say||TPL0.say};buildKats();render();[].forEach.call(document.querySelectorAll('#tabed input'),function(inp,i){prog.children[i].textContent=inp.value.trim()||TAB0[i]})}
 function panels(){var ke=$('kated');ke.textContent='';var h=document.createElement('h4');h.textContent='Edit the KATs';ke.appendChild(h);var p=document.createElement('p');p.textContent='Each row is a name, a short description and an example. An empty name removes the row.';ke.appendChild(p);
  var box=document.createElement('div');box.style.display='grid';box.style.gap='6px';KATS.forEach(function(k){box.appendChild(krow(k))});ke.appendChild(box);var add=document.createElement('button');add.type='button';add.className='btn small';add.textContent='Add a KAT';add.onclick=function(){box.appendChild(krow(['','','']))};ke.appendChild(add);ke.hidden=false;
- var te=$('tpled');te.innerHTML='<h4>Edit the prompt it writes</h4><p>Words in curly brackets are filled in from the answers: <code>{lesson}</code> <code>{students}</code> <code>{teacher}</code> <code>{kats}</code> <code>{toolA}</code> <code>{toolB}</code> <code>{likeA}</code> <code>{likeB}</code> <code>{problem}</code>. Write <code>{teacher|some words}</code> to use those words when the answer is empty. A part inside <code>[[ ]]</code> is left out when its answers are empty. The box above shows the result as you type.</p><label>The main prompt, step 3<textarea id="tpl-main"></textarea></label><label>The Apps Script prompt, step 6<textarea id="tpl-gas" class="sm"></textarea></label><label>The one sentence, step 7<textarea id="tpl-say" class="sm"></textarea></label><h4>Names on the step buttons</h4><div id="tabed" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px"></div>';
+ var te=$('tpled');te.innerHTML='<h4>Edit the prompt it writes</h4><p>Words in curly brackets are filled in from the answers: <code>{lesson}</code> <code>{topic}</code> <code>{lo}</code> <code>{sc}</code> <code>{students}</code> <code>{teacher}</code> <code>{kats}</code> <code>{toolA}</code> <code>{toolB}</code> <code>{likeA}</code> <code>{likeB}</code> <code>{problem}</code>. Write <code>{teacher|some words}</code> to use those words when the answer is empty. A part inside <code>[[ ]]</code> is left out when its answers are empty. The box above shows the result as you type.</p><label>The main prompt, step 3<textarea id="tpl-main"></textarea></label><label>The Apps Script prompt, step 6<textarea id="tpl-gas" class="sm"></textarea></label><label>The one sentence, step 7<textarea id="tpl-say" class="sm"></textarea></label><h4>Names on the step buttons</h4><div id="tabed" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px"></div>';
  $('tpl-main').value=TPL.main;$('tpl-gas').value=TPL.gas;$('tpl-say').value=TPL.say;['main','gas','say'].forEach(function(n){$('tpl-'+n).addEventListener('input',preview)});
  var tb=$('tabed');steps.forEach(function(s,i){var inp=document.createElement('input');inp.maxLength=24;inp.value=s.getAttribute('data-t');inp.setAttribute('aria-label','Name of step button '+(i+1));inp.addEventListener('input',preview);tb.appendChild(inp)});te.hidden=false}
 function editing(on){document.body.classList.toggle('editing',on);bar.hidden=!on;ED.forEach(function(el){if(on){el.setAttribute('contenteditable','true');el.setAttribute('spellcheck','true')}else{el.removeAttribute('contenteditable');el.removeAttribute('spellcheck')}});

@@ -108,42 +108,42 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
 })();
 /*SWAP*/
 (function(){if(!window.__fresh||window.__client)return;
- // Six stages of one lesson. Each names the tool it replaces, in the same words as the slide.
- var ST=[['Assign','Google Classroom'],['Teach','Canva'],['Hand in','Kami'],['Track','OneNote'],['Return','file marking'],['Correct','paper']];
- var B={assign:[0,'Google Classroom','It is one more app for students to open.','Assign','The chapter and the worksheet go to the class from this one page.'],
-  teach:[1,'Canva','Students only watch the slides.','Teach','My slides open from the hub. Students work on them.'],
-  hand:[2,'Kami','Students write on the worksheet in another app.','Hand in','The student writes on the worksheet here and hands it in.'],
-  track:[3,'OneNote','I cannot see quickly who has not handed in.','Track','I see who has yet to hand in, on one page.'],
-  pile:[3,'Kami','I open the worksheets one student at a time.','Track','Every script is in one pile. By page shows the same page for every student.'],
-  ret:[4,'Marking file by file','I open, mark and send back each file.','Return','Claude marks first. I check, then return it to the whole class.'],
-  corr:[5,'Corrections on paper','The marked work and the corrections are in different places.','Correct','The student sees the marks and corrects in green on the same worksheet.']};
+ // Six stages of one lesson. Each names the tool it integrates, in the same words as the slide.
+ var ST=[['Assign','Google Classroom'],['Teach','Canva'],['Hand in','Kami'],['Track','OneNote'],['Return','marking'],['Correct','corrections']];
+ var B={assign:[0,'Google Classroom','It gives work to a whole class at once.','Assign','The chapter and the worksheet go to the class from this one page.'],
+  teach:[1,'Canva','It makes clear slides that are easy to follow.','Teach','My slides open from the hub. Students work on them.'],
+  hand:[2,'Kami','Students write on a worksheet on the screen.','Hand in','The student writes on the worksheet here and hands it in.'],
+  track:[3,'OneNote','It keeps the work of every student.','Track','I see who has yet to hand in, on one page.'],
+  pile:[3,'Kami','I mark on the worksheet itself.','Track','Every script is in one pile. By page shows the same page for every student.'],
+  ret:[4,'Marking','I mark each script and send it back.','Return','Claude marks first. I check, then return it to the whole class.'],
+  corr:[5,'Corrections','Students correct their own mistakes.','Correct','The student sees the marks and corrects in green on the same worksheet.']};
  var FN={api_t_library:'assign',api_t_chapterGive:'assign',api_t_topicalSave:'assign',api_t_newFromLibrary:'assign',api_open:'hand',api_submit:'hand',api_t_marks:'track',api_t_review:'pile',api_t_trackRecord:'ret',api_t_markWithClaude:'ret',api_t_claudeNext:'ret',api_openCorrection:'corr'};
  var css=document.createElement('style');css.textContent='#rib{display:flex;gap:6px;padding:7px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px));background:#0e1234;border-bottom:1px solid #2c3270;overflow-x:auto}'
  +'#rib div{flex:1 1 0;min-width:150px;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;border:1px solid #2c3270;color:#8f96bd;transition:background .3s,border-color .3s,color .3s}'
  +'#rib i{flex:none;font-style:normal;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:2px solid currentColor;font-weight:800;font-size:12px}'
- +'#rib b{font:800 14px system-ui,sans-serif;white-space:nowrap}#rib s{margin-left:auto;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}'
+ +'#rib b{font:800 14px system-ui,sans-serif;white-space:nowrap}#rib s{text-decoration:none;margin-left:auto;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}'
  +'#rib div.done{color:#c9cee6;border-color:#4a5196}#rib div.done i{background:#c9cee6;color:#0e1234;border-color:#c9cee6}'
  +'#rib div.on{background:#f2b84b;border-color:#f2b84b;color:#12163a}#rib div.on i{background:#12163a;color:#f2b84b;border-color:#12163a}'
  +'#swapc{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);opacity:0;z-index:55;pointer-events:none;width:min(980px,94vw);display:grid;grid-template-columns:1fr auto 1.15fr;align-items:stretch;gap:0;border-radius:18px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.65);transition:opacity .35s ease,transform .35s ease;font-family:system-ui,sans-serif}'
  +'#swapc.show{opacity:1;transform:translate(-50%,0)}'
  +'#swapc .old{background:#2a2f55;color:#c9cee6;padding:16px 20px}#swapc .new{background:#f2b84b;color:#12163a;padding:16px 20px}'
  +'#swapc small{display:block;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.8}'
- +'#swapc h3{margin:4px 0 4px;font:800 28px/1.1 system-ui,sans-serif}#swapc .old h3{text-decoration:line-through;text-decoration-color:#ff7a6b;text-decoration-thickness:3px;color:#fff}'
+ +'#swapc h3{margin:4px 0 4px;font:800 28px/1.1 system-ui,sans-serif}#swapc .old h3{color:#fff}'
  +'#swapc p{margin:0;font-weight:600;font-size:16px;line-height:1.35}'
  +'#swapc .arr{display:grid;place-items:center;background:#12163a;color:#f2b84b;font:800 30px system-ui;padding:0 14px}'
  +'@media (max-width:700px){#swapc{grid-template-columns:1fr}#swapc .arr{display:none}#swapc h3{font-size:22px}}';
  document.head.appendChild(css);
- var rib=document.createElement('div');rib.id='rib';rib.setAttribute('aria-label','The six parts of one lesson and the tool each one replaces');
+ var rib=document.createElement('div');rib.id='rib';rib.setAttribute('aria-label','The six parts of one lesson and the tool each one integrates');
  rib.innerHTML=ST.map(function(x,i){return '<div><i>'+(i+1)+'</i><b>'+x[0]+'</b><s>'+x[1]+'</s></div>'}).join('');
  var bar=document.getElementById('bar');bar.parentNode.insertBefore(rib,bar.nextSibling);
- var card=document.createElement('div');card.id='swapc';card.setAttribute('role','status');card.innerHTML='<div class="old"><small>Before</small><h3></h3><p></p></div><div class="arr">→</div><div class="new"><small></small><h3></h3><p></p></div>';document.body.appendChild(card);
+ var card=document.createElement('div');card.id='swapc';card.setAttribute('role','status');card.innerHTML='<div class="old"><small>What I like</small><h3></h3><p></p></div><div class="arr">→</div><div class="new"><small></small><h3></h3><p></p></div>';document.body.appendChild(card);
  var last='',maxStage=-1,timer=0;
  window.__ribST=ST;
  function beat(k){var b=B[k];if(!b||k===last)return;last=k;maxStage=Math.max(maxStage,b[0]);window.__beatNow=b[0];
   [].forEach.call(rib.children,function(d,i){d.className=i===b[0]?'on':(i<=maxStage?'done':'')});
   var on=rib.children[b[0]];if(on&&on.scrollIntoView)try{on.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}
   card.querySelector('.old h3').textContent=b[1];card.querySelector('.old p').textContent=b[2];
-  card.querySelector('.new small').textContent='Now · '+(b[0]+1)+' of 6 in my hub';card.querySelector('.new h3').textContent=b[3];card.querySelector('.new p').textContent=b[4];
+  card.querySelector('.new small').textContent='Integrated in my hub · '+(b[0]+1)+' of 6';card.querySelector('.new h3').textContent=b[3];card.querySelector('.new p').textContent=b[4];
   var sb=document.getElementById('sbar');if(sb)card.style.bottom=(sb.offsetHeight+14)+'px';card.classList.add('show');clearTimeout(timer);timer=setTimeout(function(){card.classList.remove('show')},9000)}
  window.__beat=beat;window.__beatState=function(){return {last:last,max:maxStage,show:card.classList.contains('show')}};
  window.__callBase=window.__callBase||window.__call;var oc=window.__call;window.__call=function(fn,a,ok,bad){try{var k=FN[fn];if(k==='track'&&(last==='pile'||last==='ret'))k=null;if(fn==='api_t_update'&&a&&a[2]&&a[2].showMarked)k='ret';if(k)window.__beat(k)}catch(e){}return oc(fn,a,ok,bad)};
@@ -167,12 +167,12 @@ body[data-view=teacher] #pg-teacher,body[data-view=student] #pg-student{visibili
   var la=document.getElementById('linksall');if(la)la.textContent='Links';
   var ss=document.createElement('style');ss.textContent='body.slim #rib{display:none}body.slim #bar{display:contents}body.slim #bar>b,body.slim #bar>span{display:none}'
    +'#sbar{flex-wrap:wrap;gap:6px 10px;padding-top:7px;padding-bottom:8px}#sbar .t{flex:1 1 100%!important}#sbar .t b{font-size:17px}#sbar .t span{font-size:15px}#sbar .sp{flex:1 1 0;min-width:0}#sbar .t{order:3;flex-basis:100%}#sbar>button{order:2}'
-   +'#sbar .rp{flex:none;font:700 13px system-ui,sans-serif;color:#f2b84b;border:1px solid #f2b84b;border-radius:99px;padding:6px 12px;white-space:nowrap}#sbar .rp s{color:#c9cee6;text-decoration-color:#ff7a6b;text-decoration-thickness:2px}'
+   +'#sbar .rp{flex:none;font:700 13px system-ui,sans-serif;color:#f2b84b;border:1px solid #f2b84b;border-radius:99px;padding:6px 12px;white-space:nowrap}#sbar .rp s{color:#c9cee6;text-decoration:none}'
    +'#sbar .room{order:-1;flex:1 1 100%;display:flex;align-items:center;gap:12px;margin:-7px calc(-1*max(16px,env(safe-area-inset-right,0px))) 0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:6px 16px;background:#1b2160;color:#c9cee6;font:600 15px system-ui,sans-serif;line-height:1.3}#sbar .room em{flex:none;font:800 12px system-ui,sans-serif;font-style:normal;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}'
    +'#sbar .room.act{background:#fff;color:#12163a;font:800 21px system-ui,sans-serif;padding:10px 16px;animation:roomin .5s ease}#sbar .room.act em{background:#12163a;color:#fff;border-color:#12163a;font-size:13px}@keyframes roomin{from{background:#f2b84b}to{background:#fff}}'
    +'#sbar #linksall,#sbar .fbtn{margin-left:0!important}#sbar #sw{padding:2px}#sbar #sw button{border:0;padding:7px 14px}#sbar #cchip{border:2px solid #f2b84b;color:#f2b84b}'
    +'@media (max-width:1500px){body.slim:has(#cchip) #sbar .rp{display:none}}@media (max-width:900px){#sbar .rp{display:none}}';document.head.appendChild(ss);
-  var ob=window.__beat;if(ob)window.__beat=function(k){ob(k);try{var st=window.__beatState(),m=st.max,rp=bar.querySelector('.rp');var R=window.__ribST;if(R&&m>=0){var cur=R[window.__beatNow!=null?window.__beatNow:m];rp.innerHTML='';rp.appendChild(document.createTextNode((R.indexOf(cur)+1)+' of 6 · '+cur[0]+' replaces '));var x=document.createElement('s');x.textContent=cur[1];rp.appendChild(x);rp.hidden=false}}catch(e){}};
+  var ob=window.__beat;if(ob)window.__beat=function(k){ob(k);try{var st=window.__beatState(),m=st.max,rp=bar.querySelector('.rp');var R=window.__ribST;if(R&&m>=0){var cur=R[window.__beatNow!=null?window.__beatNow:m];rp.innerHTML='';rp.appendChild(document.createTextNode((R.indexOf(cur)+1)+' of 6 · '+cur[0]+' integrates '));var x=document.createElement('s');x.textContent=cur[1];rp.appendChild(x);rp.hidden=false}}catch(e){}};
  }catch(e){}
  function F(){return window.__FSTEPS||[]}
  function draw(p){var f=F();if(!f.length)return;i=Math.max(0,Math.min(i,f.length-1));bar.querySelector('.n').textContent='Step '+(i+1)+' of '+f.length;bar.querySelector('.t b').textContent=f[i][0];bar.querySelector('.t span').textContent=f[i][1];
@@ -366,7 +366,7 @@ function place(){if(free||!cur||!cur.e.isConnected){spot.style.display='none';re
  spot.style.display='block';spot.style.left=x+'px';spot.style.top=y+'px';spot.style.width=(rt-x)+'px';spot.style.height=(b-y)+'px'}
 (function loop(){place();requestAnimationFrame(loop)})();
 function paint(){var m=M[i],lis='';for(var k=0;k<PARTS.length;k++)lis+='<li class="'+(k===m.p?'on':k<m.p?'done':'')+'">'+PARTS[k]+'</li>';
- bar.innerHTML='<ol aria-label="Parts of the lesson">'+lis+'</ol><div class="tx"><h3>'+m.title+'<span class="tag">Replaces '+m.tag+'</span></h3><p>'+m.say+'</p></div><div class="btns"><button type="button" data-a="stop">Stop</button><button type="button" class="go" data-a="next">'+(i===M.length-1?'Finish':'Next')+'</button></div>';}
+ bar.innerHTML='<ol aria-label="Parts of the lesson">'+lis+'</ol><div class="tx"><h3>'+m.title+'<span class="tag">Integrates '+m.tag+'</span></h3><p>'+m.say+'</p></div><div class="btns"><button type="button" data-a="stop">Stop</button><button type="button" class="go" data-a="next">'+(i===M.length-1?'Finish':'Next')+'</button></div>';}
 function setBusy(v){busy=v;var b=bar.querySelector('button.go');if(b){b.disabled=v;b.textContent=v?'…':(i===M.length-1?'Finish':'Next')}}
 async function go(n){if(busy)return;i=n;var m=M[i];bar.hidden=false;block.style.display='block';free=false;paint();setBusy(true);cur=null;
  try{if(m.pre){m.pre();await sleep(900)}
@@ -378,7 +378,7 @@ async function go(n){if(busy)return;i=n;var m=M[i];bar.hidden=false;block.style.
 function startCard(){card.hidden=false;card.innerHTML='<div><small>Demo · about five minutes</small><h2>One lesson in my hub, start to end.</h2><p>This is my real hub with one made-up class, 1D1. You will see five things, in the order a teacher lives them.</p><ol class="flow">'+PARTS.map(function(p,k){return '<li>'+(k+1)+' · '+p+'</li>'}).join('')+'</ol><p>Press Next to move on. The demo presses the buttons for you and lights up the one thing to look at.</p><div class="row"><button type="button" class="go" data-a="start">Start</button><button type="button" data-a="free">Explore on my own</button><button type="button" data-a="fresh">Set it up myself</button></div></div>'}
 function endCard(){bar.hidden=true;block.style.display='none';spot.style.display='none';cur=null;free=true;card.hidden=false;
  var rows=[['My own checklist','The first page: what to teach, what is waiting'],['Canva and PhET','Teach, with slides and live models for every student'],['ClassPoint, Padlet, Blooket','Questions inside the lesson, with every answer'],['Google Classroom, OneNote','Giving work and seeing who has handed in'],['Kami','Marking, with Claude doing the first pass'],['Kahoot and Blooket','Points, the Arcade and the night market']];
- card.innerHTML='<div><small>That is one lesson, start to end</small><h2>What the hub replaced for me.</h2><table>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('')+'</table><p>You do not need a hub. Start by combining two tools you already like.</p><div class="row"><button type="button" class="go" data-a="free">Explore the hub</button><button type="button" data-a="again">Start again</button></div></div>'}
+ card.innerHTML='<div><small>That is one lesson, start to end</small><h2>What the hub integrates for me.</h2><table>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'}).join('')+'</table><p>You do not need a hub. Start by combining two tools you already like.</p><div class="row"><button type="button" class="go" data-a="free">Explore the hub</button><button type="button" data-a="again">Start again</button></div></div>'}
 
 var FSTEPS=[["Assign the chapter", "Press Choose the first lesson on the 1D1 row. The Library opens. Press G3 Physics, then 1 Physical Quantities. Press Give beside 1D1."], ["Add the worksheet", "On the same page press Add from my library. Choose 1.5 Which instrument quick check."], ["Teach the lesson", "Press Overview. The 1D1 row now shows the lesson. Press Teach. The slides open in a new tab with no sign-in. Press Start the lesson, then come back to this tab."], ["Set the homework", "Press 1D1 to open the class page. Press More, then Worksheets not out yet, then Deploy."], ["Be the student", "Press Student hub, Homework, then Start. Tick one box for each of the four questions. Press Hand in."], ["The class hands in", "Press Teacher Hub, then Open my class. The teachers join and hand in. Then press Students hand in for two made-up students."], ["Track who has handed in", "Press 1D1, then the worksheet. It shows who has yet to hand in. Press Marking, then Mark by hand."], ["See every student's work", "Each script is in the pile. By page shows the same page for every student. Press Back."], ["Mark and return", "Press Mark with Claude, Start marking, Check the sample, Mark the rest, Check and return, then Return to 1D1."], ["See it come back", "Press Student hub, then Homework. The marks and the comment are there. Press Do corrections and write in green."]];
 window.__FSTEPS=FSTEPS;
